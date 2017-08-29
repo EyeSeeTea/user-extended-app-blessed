@@ -1793,6 +1793,10 @@ d2-manifest@^1.0.0-2:
     minimist "^1.1.0"
     readline-sync "^1.4.1"
 
+"d2-ui@git+https://github.com/EyeSeeTea/d2-ui#2.27-org_unit_intersection_policy":
+  version "27.0.1"
+  resolved "git+https://github.com/EyeSeeTea/d2-ui#b36f14ae90fca8ac4f193f6aa62f4d44ef3582e1"
+
 d2-utilizr@0.2.9:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/d2-utilizr/-/d2-utilizr-0.2.9.tgz#b1cdf25820c825cf683a0bdd69a88fa524a424d3"
@@ -3498,14 +3502,14 @@ js-tokens@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.1.tgz#08e9f132484a2c45a30907e9dc4d5567b7f114d7"
 
-js-yaml@3.0.1, js-yaml@3.x:
+js-yaml@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.0.1.tgz#76405fea5bce30fc8f405d48c6dca7f0a32c6afe"
   dependencies:
     argparse "~ 0.1.11"
     esprima "~ 1.0.2"
 
-js-yaml@^3.5.1:
+js-yaml@3.x, js-yaml@^3.5.1:
   version "3.8.4"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.8.4.tgz#520b4564f86573ba96662af85a8cafa7b4b5a6f6"
   dependencies:

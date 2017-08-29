@@ -1,0 +1,6 @@
+btoa = (s) => new Buffer(s).toString('base64');
+
+Object.assign(exports, {
+  "baseUrl": "https://singapore-dev.psi-mis.org",
+  "authorization": "Basic " + btoa("test_jose:PASSWORDHERE"),
+});
