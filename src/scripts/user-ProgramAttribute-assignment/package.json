@@ -1,0 +1,31 @@
+{
+  "name": "user-ProgramAttribute-assignment",
+  "version": "1.0.0",
+  "description": "Fix attributeCategoryOptions attribute for program events",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo 'Error: no test specified' && exit 1"
+  },
+  "dependencies": {
+    "moment": "^2.15.2",
+    "request": "^2.34",
+    "request-promise": "^4.1.1",
+    "underscore": "^1.8.3",
+    "bluebird": "^3.5.0",
+    "basic-authorization-header": "^0.2.7",
+    "nconf": "^0.8.4"
+  },
+  "author": "EyeSeeTea Team",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:EyeSeeTea/organisationUnit-User-Assigment.git"
+  },
+  "engines": {
+    "node": ">=6.4.0"
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "eslint": "^3.17.1"
+  }
+}

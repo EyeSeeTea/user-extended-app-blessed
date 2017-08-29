@@ -1,0 +1,15 @@
+{
+    "api": {
+        "url": "http://localhost:8080/api/25",
+        "auth": {
+            "username": "admin",
+            "password": "district"
+        }
+    },
+    "orgUnitGroupOrigin": "HrO7HMn5SdV",
+    "orgUnitGroupTarget": "Quztsf7ZOWl",
+    "program": "fUycPoiPP58",
+    "dataElementId": "LgKbAY6905A",
+    "dataElementAnswer": "1",
+    "startDate": "-30"
+}

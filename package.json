@@ -1,0 +1,108 @@
+{
+  "name": "organisation-unit-assignment-app",
+  "version": "0.1.0",
+  "description": "DHIS2 Organisation Unit Assignment app",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EyeSeeTea/organisationUnit-User-Assigment.git"
+  },
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "prestart": "d2-manifest package.json manifest.webapp",
+    "start": "webpack-dev-server",
+    "test": "karma start test/config/karma.config.js --single-run true",
+    "test-watch": "karma start test/config/karma.config.js",
+    "lint": "eslint src && eslint --env node,mocha --global expect,sinon --rule 'no-unused-expressions: 0' test && scss-lint",
+    "__prebuild": "npm test && npm run lint",
+    "build": "rm -rf build && webpack && npm run manifest",
+    "postbuild": "cp -rv src/i18n index.html icon.png node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js node_modules/ckeditor ./build/",
+    "validate": "npm ls",
+    "manifest": "d2-manifest package.json build/manifest.webapp"
+  },
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-core": "^6.8.0",
+    "babel-eslint": "^6.0.4",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "chai": "3.0.0",
+    "classnames": "^2.2.3",
+    "coveralls": "2.11.4",
+    "css-loader": "^0.23.1",
+    "d2": "27.0.0-8",
+    "d2-manifest": "^1.0.0-2",
+    "d2-ui": "git+https://github.com/tokland/d2-ui#2.27-org_unit_intersection_policy",
+    "d2-utilizr": "0.2.9",
+    "d3-color": "1.0.2",
+    "eslint": "^2.9.0",
+    "eslint": "^3.6.0",
+    "eslint-config-dhis2": "^2.0.2",
+    "eslint-plugin-react": "^4.1.0",
+    "eslint-plugin-react": "^6.3.0",
+    "fbjs": "^0.2.1",
+    "http-proxy": "git+https://github.com/nicolayr/node-http-proxy.git",
+    "istanbul": "0.3.18",
+    "jquery": "^2.2.3",
+    "karma": "0.13.9",
+    "karma-babel-preprocessor": "5.2.1",
+    "karma-chai": "0.1.0",
+    "karma-coverage": "0.5.0",
+    "karma-mocha": "0.2.0",
+    "karma-mocha-reporter": "1.1.1",
+    "karma-phantomjs-launcher": "0.2.1",
+    "karma-sinon": "1.0.4",
+    "karma-sinon-chai": "1.0.0",
+    "karma-sourcemap-loader": "0.3.5",
+    "karma-webpack": "1.7.0",
+    "lodash.isfinite": "^3.3.1",
+    "lodash.isnumber": "^3.0.3",
+    "lodash.isequal": "^4.5.0",
+    "loglevel": "^1.4.0",
+    "material-ui": "^0.17",
+    "mocha": "2.2.5",
+    "moment": "^2.13.0",
+    "node-sass": "^3.7.0",
+    "phantomjs": "1.9.18",
+    "phantomjs-polyfill": "0.0.1",
+    "precommit-hook": "3.0.0",
+    "react": "15.4.2",
+    "react-dnd": "^2.1.4",
+    "react-dnd-html5-backend": "^2.1.2",
+    "react-dom": "15.4.2",
+    "react-router": "^2.5.2",
+    "react-tap-event-plugin": "^2.0.1",
+    "rx": "^4.1.0",
+    "rxjs": "^5.2.0",
+    "sass-loader": "^3.2.0",
+    "sinon": "^1.17.4",
+    "sinon-chai": "2.8.0",
+    "style-loader": "^0.13.1",
+    "webpack": "^1.13.0",
+    "webpack-dev-server": "^1.14.1",
+    "webpack-visualizer-plugin": "^0.1.5"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.8.0",
+    "ckeditor": "^4.5.9",
+    "jquery": "^2.2.3",
+    "prop-types": "^15.5.10"
+  },
+  "manifest.webapp": {
+    "name": "Organisation Unit Assignment app",
+    "icons": {
+      "48": "icon.png"
+    },
+    "developer": {
+      "url": "http://eyeseetea.com/",
+      "name": "EyeSeeTea Ltd"
+    },
+    "activities": {
+      "dhis": {
+        "href": "*"
+      }
+    }
+  }
+}

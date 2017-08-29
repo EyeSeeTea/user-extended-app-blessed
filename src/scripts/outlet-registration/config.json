@@ -1,0 +1,20 @@
+{
+    "auth": "YXF1aW50YW5hOkFxdWludGFuYTIwMTY=",
+    "protocol": "http",
+    "url": "localhost:8080/api",
+    "rootOrgUnit":"RZjIN6Adcdr",
+    "program":"hVSZs58OP0J",
+    "apiVersion": "24",
+    "fromDate":"-30",
+    "dataElements":{
+        "address":"S4KnuSGGSH0",
+        "phoneNumber":"dC4LpNObiP0",
+        "contactPerson":"FgR7164Pn7W",
+        "name":"uxZmf110cOY",
+        "alreadyImported":"TNajXQv9drP",
+        "outletType":"Ax2E6EpdTsL"
+    },    
+    "organisationUnitGroups": ["HrO7HMn5SdV"],
+    "programs": ["QyUMOWoz2aR","fUycPoiPP58"],
+    "dataSets": ["S7pelNuoIAP"]
+}

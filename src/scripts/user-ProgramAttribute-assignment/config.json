@@ -1,0 +1,11 @@
+{
+    "api": {
+        "url": "http://localhost:8080/api/25",
+        "auth": {
+            "username": "admin",
+            "password": "district"
+        }
+    },
+    "fromDate":"-30",    
+    "programs": ["fUycPoiPP58", "FcSSx0KtXo9"]
+}

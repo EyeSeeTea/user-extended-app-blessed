@@ -1,0 +1,34 @@
+{
+  "name": "copy-orgunits-by-datalement-answer",
+  "version": "1.0.0",
+  "description": "Assign organisation unit groups for RDT-trained events",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo 'Error: no test specified' && exit 1"
+  },
+  "dependencies": {
+    "basic-authorization-header": "^0.2",
+    "bluebird": "^3.5",
+    "d2": "^25",
+    "lodash": "",
+    "moment": "^2.15",
+    "nconf": "^0.8",
+    "node-fetch": "^1.7.1",
+    "querystringify": "^1.0.0",
+    "request": "^2.34",
+    "request-promise": "^4.1"
+  },
+  "author": "EyeSeeTea Team",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:EyeSeeTea/organisationUnit-User-Assigment.git"
+  },
+  "engines": {
+    "node": ">=6.4.0"
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "eslint": "^3.17.1"
+  }
+}

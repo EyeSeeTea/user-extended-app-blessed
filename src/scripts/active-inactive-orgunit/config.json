@@ -1,0 +1,17 @@
+{
+  "api": {
+    "url": "localhost:8080/api/25",
+    "protocol": "http",
+    "auth": {
+      "username": "admin",
+      "password": "district"
+    }
+  },
+  "attributes": {
+    "level": "Dci7UEL1fsO",
+    "parent": "BF3XnPHZGEM",
+    "orgUnitGroup": "IvH9OP1INZu",
+    "period": "GYVtN5RxY3W"
+  },
+  "dataElementGroup": "VZuTpbPy1L9"
+}
