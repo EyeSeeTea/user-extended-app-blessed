@@ -7,7 +7,7 @@ var colors = require('colors');
 const isDevBuild = process.argv[1].indexOf('webpack-dev-server') !== -1;
 const dhisConfigPath = process.env.DHIS2_HOME ?
     `${process.env.DHIS2_HOME}/config` : `${__dirname}/config`;
-let dhisConfig;
+var dhisConfig;
 
 try {
     dhisConfig = require(dhisConfigPath);

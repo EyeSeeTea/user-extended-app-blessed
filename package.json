@@ -34,7 +34,7 @@
     "css-loader": "^0.23.1",
     "d2": "27.0.0-8",
     "d2-manifest": "^1.0.0-2",
-    "d2-ui": "git+https://github.com/EyeSeeTea/d2-ui#2.27-org_unit_intersection_policy",
+    "d2-ui": "27.0.1",
     "d2-utilizr": "0.2.9",
     "d3-color": "1.0.2",
     "eslint": "^3.6.0",
