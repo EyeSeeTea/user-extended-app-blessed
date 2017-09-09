@@ -19,3 +19,6 @@ npm-debug.log
 stats.json
 
 .vscode*
+
+# Ignore config.js
+config.js
