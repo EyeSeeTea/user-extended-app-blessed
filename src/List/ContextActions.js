@@ -9,14 +9,19 @@ config.i18n.strings.add('assignToOrgUnits');
 
 const contextActions = Action.createActionsFromNames([
   'details',
-  'assignToOrgUnits'
+  'assignToOrgUnits',
+  'assignRoles',
+  'assignGroups',
+  'edit'
 ]);
 
+/** Show user details */
 contextActions.details
   .subscribe(({data: model}) => {
     detailsStore.setState(model);
   });
 
+/** Assign user to organization unit */
 contextActions.assignToOrgUnits
   .subscribe(async ({data: model}) => {
     const d2 = await getD2();
@@ -31,6 +36,24 @@ contextActions.assignToOrgUnits
       roots: userOrgUnitRoots,
       open: true,
     });
+  });
+
+/** Assign roles */
+contextActions.assignRoles
+  .subscribe(({data: model}) => {
+    alert('Assign roles');
+  });
+
+/** Assign to groups */
+contextActions.assignGroups
+  .subscribe(({data: model}) => {
+    alert('Assign to groups');
+  });
+
+/** Edit user */
+contextActions.edit
+  .subscribe(({data: model}) => {
+    alert('Edit user');
   });
 
 export default contextActions;
