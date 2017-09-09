@@ -8,29 +8,29 @@ config.i18n.strings.add('details');
 config.i18n.strings.add('assignToOrgUnits');
 
 const contextActions = Action.createActionsFromNames([
-    'details',
-    'assignToOrgUnits'
+  'details',
+  'assignToOrgUnits'
 ]);
 
 contextActions.details
-    .subscribe(({ data: model }) => {
-        detailsStore.setState(model);
-    });
-    
-contextActions.assignToOrgUnits
-    .subscribe(async({ data: model }) => {
-        const d2 = await getD2();
-        const options = {fields: ":all,organisationUnits[id,path,displayName]"};
-        const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
-        const userOrgUnitRoots = await appStateStore
-            .map(appState => appState.userOrganisationUnits.toArray())
-            .first().toPromise();
+  .subscribe(({data: model}) => {
+    detailsStore.setState(model);
+  });
 
-        orgUnitAssignmentDialogStore.setState({
-            model: modelItem,
-            roots: userOrgUnitRoots,
-            open: true,
-        });
+contextActions.assignToOrgUnits
+  .subscribe(async ({data: model}) => {
+    const d2 = await getD2();
+    const options = {fields: ":all,organisationUnits[id,path,displayName]"};
+    const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+    const userOrgUnitRoots = await appStateStore
+      .map(appState => appState.userOrganisationUnits.toArray())
+      .first().toPromise();
+
+    orgUnitAssignmentDialogStore.setState({
+      model: modelItem,
+      roots: userOrgUnitRoots,
+      open: true,
     });
+  });
 
 export default contextActions;
