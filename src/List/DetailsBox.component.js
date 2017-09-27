@@ -49,7 +49,8 @@ export default React.createClass({
 
                 return (
                     <div key={fieldName} className="detail-field">
-                        <div className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
+                        <div
+                            className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
                         <div className={`detail-field__value detail-field__${fieldName}`}>{valueToRender}</div>
                     </div>
                 );
@@ -96,7 +97,8 @@ export default React.createClass({
 
         return (
             <div className={classList}>
-                <FontIcon className="details-box__close-button material-icons" onClick={this.props.onClose}>close</FontIcon>
+                <FontIcon className="details-box__close-button material-icons"
+                          onClick={this.props.onClose}>close</FontIcon>
                 <div>
                     {this.getDetailBoxContent()}
                 </div>

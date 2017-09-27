@@ -44,8 +44,8 @@ function loadList({ params }, replace, callback) {
 
 const routes = (
     <Router history={hashHistory}>
-        <Route path="/" component={App} >
-            <IndexRedirect to="list/userSection/user" />        
+        <Route path="/" component={App}>
+            <IndexRedirect to="list/userSection/user"/>
             <Route path="list/:groupName">
                 <Route
                     path=":modelType"

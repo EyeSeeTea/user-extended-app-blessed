@@ -22,6 +22,7 @@ log.setLevel(log.levels.INFO);
 // Check this repo:
 // https://github.com/zilverline/react-tap-event-plugin
 import injectTapEventPlugin from 'react-tap-event-plugin';
+
 injectTapEventPlugin();
 
 import appState, { setAppState } from './appStateStore';
@@ -30,7 +31,8 @@ import { goToRoute } from '../router';
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
 const withMuiContext = Object.assign(AppWithD2.childContextTypes,
-    {muiTheme: PropTypes.object});
+    { muiTheme: PropTypes.object });
+
 class App extends AppWithD2 {
     getChildContext() {
         return Object.assign({}, super.getChildContext(), {
@@ -49,7 +51,7 @@ class App extends AppWithD2 {
             .map(() => false);
 
         const nonAllSectionSelected$ = appState
-            // The all section is managed separately so we do not want to process those any further
+        // The all section is managed separately so we do not want to process those any further
             .filter(state => state.sideBar.currentSection !== 'all')
             .map((state) => (
                 // Check if the current section is in the list of mainSections
@@ -76,22 +78,23 @@ class App extends AppWithD2 {
 
     render() {
         if (!this.state.d2) {
-            return (<LoadingMask />);
+            return (<LoadingMask/>);
         }
 
         return (
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
-                    <HeaderBar />
+                    <HeaderBar/>
                     <SinglePanelLayout>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>}
-                    <SnackbarContainer />
+                    <SnackbarContainer/>
                 </div>
             </MuiThemeProvider>
         );
     }
 }
+
 App.defaultProps = {
     d2: getInstance(),
 };

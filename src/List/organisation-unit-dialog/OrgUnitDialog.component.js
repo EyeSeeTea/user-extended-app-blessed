@@ -54,14 +54,15 @@ class OrgUnitDialog extends React.Component {
             }),
         ])
             .then(([
-                levels,
-                groups,
-            ]) => {
-                this.setState({ 
-                    groups, 
-                    levels });
+                       levels,
+                       groups,
+                   ]) => {
+                this.setState({
+                    groups,
+                    levels
+                });
             });
-            
+
 
         this.disposable = this._searchOrganisationUnits
             .map(action => action.data)
@@ -83,7 +84,7 @@ class OrgUnitDialog extends React.Component {
                 this.setState({ rootOrgUnits: orgUnits });
             });
     }
-    
+
     componentWillUnmount() {
         this.disposable && this.disposable.dispose();
     }
@@ -97,7 +98,7 @@ class OrgUnitDialog extends React.Component {
             });
         }
     }
-    
+
     setNewSelection(selected) {
         const d2 = this.context.d2;
         const modelOrgUnits = this.props.model.organisationUnits;
@@ -153,7 +154,7 @@ class OrgUnitDialog extends React.Component {
         this.props.model.modelDefinition.modelValidations.userGroups.owner = true;
 
         // Use same organisation units for <Data output and analysis organisation units>
-        const {model} = this.props;
+        const { model } = this.props;
         const getIds = (collection) => collection.toArray().map(obj => obj.id);
         if (!isEqual(getIds(model.organisationUnits), getIds(model.dataViewOrganisationUnits))) {
             model.dataViewOrganisationUnits = model.organisationUnits;
@@ -178,7 +179,7 @@ class OrgUnitDialog extends React.Component {
             this.props.onRequestClose();
         }
     }
-    
+
     renderRoots() {
         if (this.state.rootOrgUnits.length) {
             return (
@@ -200,13 +201,13 @@ class OrgUnitDialog extends React.Component {
         return (
             <div>{this.context.d2.i18n.getTranslation('no_roots_found')}</div>
         );
-    }    
+    }
 
     render() {
         if (!this.state.rootOrgUnits) {
             return (<div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>);
         }
-                
+
         const {
             root,
         } = { ...this.props };
@@ -271,15 +272,15 @@ class OrgUnitDialog extends React.Component {
                 <div style={styles.wrapper}>
                     {this.state.loading ? (
                         <div style={styles.loadingMask}>
-                            <LoadingMask />
+                            <LoadingMask/>
                         </div>
                     ) : undefined}
-                    
+
                     <TextField
                         onChange={(event) => this._searchOrganisationUnits(event.target.value)}
                         floatingLabelText={this.context.d2.i18n.getTranslation('filter_organisation_units_by_name')}
                         fullWidth
-                    />                    
+                    />
                     <div style={styles.controls}>
                         <OrgUnitSelectByGroup
                             groups={this.state.groups}
@@ -303,12 +304,13 @@ class OrgUnitDialog extends React.Component {
                     <div className="organisation-unit-tree__selected">
                         {`${this.state.selected.length} ${this.getTranslation('organisation_units_selected')}`}
                     </div>
-                    {this.renderRoots()}                    
+                    {this.renderRoots()}
                 </div>
             </Dialog>
         );
     }
 }
+
 OrgUnitDialog.propTypes = {
     onRequestClose: PropTypes.func.isRequired,
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,

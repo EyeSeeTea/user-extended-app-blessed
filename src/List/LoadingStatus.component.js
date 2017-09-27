@@ -14,10 +14,12 @@ export default React.createClass({
     },
 
     render() {
-        if (!this.props.isLoading) { return null; }
+        if (!this.props.isLoading) {
+            return null;
+        }
 
         return (
-            <LinearProgress mode="indeterminate" style={{ backgroundColor: 'lightblue' }} />
+            <LinearProgress mode="indeterminate" style={{ backgroundColor: 'lightblue' }}/>
         );
     },
 });

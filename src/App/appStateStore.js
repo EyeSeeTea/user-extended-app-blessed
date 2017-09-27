@@ -50,7 +50,7 @@ async function getCurrentUserOrganisationUnits(disableCache = false) {
     const organisationUnitsCollection = await d2.currentUser.getOrganisationUnits();
 
     if (d2.currentUser.authorities.has('ALL') && !organisationUnitsCollection.size) {
-        const rootLevelOrgUnits = await d2.models.organisationUnits.list({level: 1});
+        const rootLevelOrgUnits = await d2.models.organisationUnits.list({ level: 1 });
 
         getCurrentUserOrganisationUnits.currentUserOrganisationUnits = rootLevelOrgUnits;
 

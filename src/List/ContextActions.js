@@ -8,52 +8,52 @@ config.i18n.strings.add('details');
 config.i18n.strings.add('assignToOrgUnits');
 
 const contextActions = Action.createActionsFromNames([
-  'details',
-  'assignToOrgUnits',
-  'assignRoles',
-  'assignGroups',
-  'edit'
+    'details',
+    'assignToOrgUnits',
+    'assignRoles',
+    'assignGroups',
+    'edit'
 ]);
 
 /** Show user details */
 contextActions.details
-  .subscribe(({data: model}) => {
-    detailsStore.setState(model);
-  });
+    .subscribe(({ data: model }) => {
+        detailsStore.setState(model);
+    });
 
 /** Assign user to organization unit */
 contextActions.assignToOrgUnits
-  .subscribe(async ({data: model}) => {
-    const d2 = await getD2();
-    const options = {fields: ":all,organisationUnits[id,path,displayName]"};
-    const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
-    const userOrgUnitRoots = await appStateStore
-      .map(appState => appState.userOrganisationUnits.toArray())
-      .first().toPromise();
+    .subscribe(async ({ data: model }) => {
+        const d2 = await getD2();
+        const options = { fields: ":all,organisationUnits[id,path,displayName]" };
+        const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+        const userOrgUnitRoots = await appStateStore
+            .map(appState => appState.userOrganisationUnits.toArray())
+            .first().toPromise();
 
-    orgUnitAssignmentDialogStore.setState({
-      model: modelItem,
-      roots: userOrgUnitRoots,
-      open: true,
+        orgUnitAssignmentDialogStore.setState({
+            model: modelItem,
+            roots: userOrgUnitRoots,
+            open: true,
+        });
     });
-  });
 
 /** Assign roles */
 contextActions.assignRoles
-  .subscribe(({data: model}) => {
-    alert('Assign roles');
-  });
+    .subscribe(({ data: model }) => {
+        alert('Assign roles');
+    });
 
 /** Assign to groups */
 contextActions.assignGroups
-  .subscribe(({data: model}) => {
-    alert('Assign to groups');
-  });
+    .subscribe(({ data: model }) => {
+        alert('Assign to groups');
+    });
 
 /** Edit user */
 contextActions.edit
-  .subscribe(({data: model}) => {
-    alert('Edit user');
-  });
+    .subscribe(({ data: model }) => {
+        alert('Edit user');
+    });
 
 export default contextActions;
