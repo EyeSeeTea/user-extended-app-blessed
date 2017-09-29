@@ -5,7 +5,7 @@ import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
     'displayName|rename(name),shortName,id,userCredentials[username],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level';
+    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess]';
 
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC'
