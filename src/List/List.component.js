@@ -283,6 +283,7 @@ const List = React.createClass({
 
         const contextMenuIcons = {
             assignToOrgUnits: 'business',
+            assignToOrgUnitsOutput: 'business',
             assignRoles: 'assignment',
             assignGroups: 'group_add'
         };

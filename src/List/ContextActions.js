@@ -10,6 +10,7 @@ config.i18n.strings.add('assignToOrgUnits');
 const contextActions = Action.createActionsFromNames([
     'details',
     'assignToOrgUnits',
+    'assignToOrgUnitsOutput',
     'assignRoles',
     'assignGroups',
     'edit'
@@ -37,6 +38,23 @@ contextActions.assignToOrgUnits
             open: true,
         });
     });
+
+    /** Assign user to organization unit */
+contextActions.assignToOrgUnitsOutput
+.subscribe(async ({ data: model }) => {
+    const d2 = await getD2();
+    const options = { fields: ":all,organisationUnits[id,path,displayName]" };
+    const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+    const userOrgUnitRoots = await appStateStore
+        .map(appState => appState.userOrganisationUnits.toArray())
+        .first().toPromise();
+
+    orgUnitAssignmentDialogStore.setState({
+        model: modelItem,
+        roots: userOrgUnitRoots,
+        open: true,
+    });
+});
 
 /** Assign roles */
 contextActions.assignRoles
