@@ -29,7 +29,8 @@ export default React.createClass({
                 'lastUpdated',
                 'id',
                 'href',
-                'userGroups'
+                'userGroups',
+                'organisationUnits'
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -68,18 +69,20 @@ export default React.createClass({
             case 'href':
                 // Suffix the url with the .json extension to always get the json representation of the api resource
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-            case 'roles':
-                return;
             case 'name':
                 return value;
             case 'userGroups':
-                const userGroupsToDisplay = [];
-                value.valuesContainerMap.forEach((ug) => {
-                    if(ug.displayName) {
-                        userGroupsToDisplay.push(<div key={ug.displayName}>{ug.displayName}</div>)
-                    }
+                const groups = [];
+                value.map(groupName => {
+                    groups.push(<div key={groupName}>{groupName}</div>)
                 });
-                return <div>{userGroupsToDisplay}</div>;
+                return <div>{groups}</div>;
+            case 'organisationUnits':
+                const units = [];
+                value.map(unitName => {
+                    units.push(<div key={unitName}>{unitName}</div>)
+                });
+                return <div>{units}</div>;
             default:
                 return value;
         }
@@ -94,7 +97,8 @@ export default React.createClass({
 
         return (
             <div className={classList}>
-                <FontIcon className="details-box__close-button material-icons" onClick={this.props.onClose}>close</FontIcon>
+                <FontIcon className="details-box__close-button material-icons"
+                          onClick={this.props.onClose}>close</FontIcon>
                 <div> {this.getDetailBoxContent()} </div>
             </div>
         );

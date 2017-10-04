@@ -119,6 +119,41 @@ const List = React.createClass({
         };
     },
 
+    convertListToTableRows(list) {
+        list.map((item) => {
+            /** Extract user groups names */
+            if (item.userGroups) {
+                const userGroups = [];
+                item.userGroups.valuesContainerMap.forEach(ug => {
+                    if (ug.displayName) {
+                        userGroups.push(ug.displayName);
+                    }
+                });
+                item.userGroups = userGroups;
+            }
+
+            /** Extract organization units names */
+            if (item.organisationUnits) {
+                const organisationUnits = [];
+                item.organisationUnits.valuesContainerMap.forEach(ug => {
+                    if (ug.displayName) {
+                        organisationUnits.push(ug.displayName);
+                    }
+                });
+                item.organisationUnits = organisationUnits;
+            }
+            /** Extract user roles */
+            // if (item.userCredentials && item.userCredentials.userRoles) {
+            //     const roles = [];
+            //     item.userCredentials.userRoles.valuesContainerMap.forEach(role => {
+            //         roles.push(role);
+            //     });
+            //     item.userRoles = roles;
+            // }
+        });
+        return list;
+    },
+
     componentWillMount() {
         const sourceStoreDisposable = listStore
             .subscribe(listStoreValue => {
@@ -127,7 +162,7 @@ const List = React.createClass({
                 }
 
                 this.setState({
-                    dataRows: listStoreValue.list,
+                    dataRows: this.convertListToTableRows(listStoreValue.list),
                     pager: listStoreValue.pager,
                     tableColumns: listStoreValue.tableColumns,
                     isLoading: false,
