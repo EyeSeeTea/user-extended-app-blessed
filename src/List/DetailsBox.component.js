@@ -28,8 +28,7 @@ export default React.createClass({
                 'created',
                 'lastUpdated',
                 'id',
-                'href',
-                'userGroups'
+                'href'
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -50,8 +49,7 @@ export default React.createClass({
 
                 return (
                     <div key={fieldName} className="detail-field">
-                        <div
-                            className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
+                        <div className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
                         <div className={`detail-field__value detail-field__${fieldName}`}>{valueToRender}</div>
                     </div>
                 );
@@ -60,29 +58,34 @@ export default React.createClass({
 
 
     getValueToRender(fieldName, value) {
+        const getDateString = dateValue => {
+            const stringifiedDate = new Date(dateValue).toString();
 
-        switch (fieldName) {
-            case 'created':
-            case 'lastUpdated':
-                return (<p>{new Date(value).toString()}</p>);
-            case 'href':
-                // Suffix the url with the .json extension to always get the json representation of the api resource
-                return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-            case 'roles':
-                return;
-            case 'name':
-                return value;
-            case 'userGroups':
-                const userGroupsToDisplay = [];
-                value.valuesContainerMap.forEach((ug) => {
-                    if(ug.displayName) {
-                        userGroupsToDisplay.push(<div key={ug.displayName}>{ug.displayName}</div>)
-                    }
-                });
-                return <div>{userGroupsToDisplay}</div>;
-            default:
-                return value;
+            return stringifiedDate === 'Invalid Date' ? dateValue : stringifiedDate;
+        };
+
+        if (Array.isArray(value) && value.length) {
+            const namesToDisplay = value
+                .map(v => v.displayName ? v.displayName : v.name)
+                .filter(name => name);
+
+            return (
+                <ul>
+                    {namesToDisplay.map(name => <li key={name}>{name}</li>)}
+                </ul>
+            );
         }
+
+        if (fieldName === 'created' || fieldName === 'lastUpdated') {
+            return getDateString(value);
+        }
+
+        if (fieldName === 'href') {
+            // Suffix the url with the .json extension to always get the json representation of the api resource
+            return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
+        }
+
+        return value;
     },
 
     render() {
@@ -95,7 +98,9 @@ export default React.createClass({
         return (
             <div className={classList}>
                 <FontIcon className="details-box__close-button material-icons" onClick={this.props.onClose}>close</FontIcon>
-                <div> {this.getDetailBoxContent()} </div>
+                <div>
+                    {this.getDetailBoxContent()}
+                </div>
             </div>
         );
     },

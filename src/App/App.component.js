@@ -51,7 +51,7 @@ class App extends AppWithD2 {
             .map(() => false);
 
         const nonAllSectionSelected$ = appState
-        // The all section is managed separately so we do not want to process those any further
+            // The all section is managed separately so we do not want to process those any further
             .filter(state => state.sideBar.currentSection !== 'all')
             .map((state) => (
                 // Check if the current section is in the list of mainSections
@@ -78,17 +78,17 @@ class App extends AppWithD2 {
 
     render() {
         if (!this.state.d2) {
-            return (<LoadingMask/>);
+            return (<LoadingMask />);
         }
 
         return (
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
-                    <HeaderBar/>
+                    <HeaderBar />
                     <SinglePanelLayout>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>}
-                    <SnackbarContainer/>
+                    <SnackbarContainer />
                 </div>
             </MuiThemeProvider>
         );

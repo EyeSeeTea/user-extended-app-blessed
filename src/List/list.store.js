@@ -5,7 +5,7 @@ import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
     'displayName|rename(name),shortName,id,userCredentials[username],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess]';
+    'displayDescription,code,publicAccess,access,href,level';
 
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC'
@@ -93,6 +93,5 @@ export default Store.create({
 
             complete(`${modelType} list with search on 'displayName' for '${searchString}' is loading`);
         });
-
     },
 }).initialise();
