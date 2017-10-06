@@ -22,7 +22,6 @@ log.setLevel(log.levels.INFO);
 // Check this repo:
 // https://github.com/zilverline/react-tap-event-plugin
 import injectTapEventPlugin from 'react-tap-event-plugin';
-
 injectTapEventPlugin();
 
 import appState, { setAppState } from './appStateStore';

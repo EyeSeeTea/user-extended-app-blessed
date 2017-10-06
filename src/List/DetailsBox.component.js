@@ -28,7 +28,7 @@ export default React.createClass({
                 'created',
                 'lastUpdated',
                 'id',
-                'href'
+                'href',
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -55,7 +55,6 @@ export default React.createClass({
                 );
             });
     },
-
 
     getValueToRender(fieldName, value) {
         const getDateString = dateValue => {

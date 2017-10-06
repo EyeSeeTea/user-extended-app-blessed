@@ -94,4 +94,5 @@ export default Store.create({
             complete(`${modelType} list with search on 'displayName' for '${searchString}' is loading`);
         });
     },
+    
 }).initialise();
