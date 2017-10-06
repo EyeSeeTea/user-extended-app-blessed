@@ -70,6 +70,7 @@ export default Store.create({
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
             }
+
             let modelDefinition;
             if (searchString) {
                 modelDefinition = d2.models[modelType]
@@ -92,6 +93,5 @@ export default Store.create({
 
             complete(`${modelType} list with search on 'displayName' for '${searchString}' is loading`);
         });
-
     },
 }).initialise();

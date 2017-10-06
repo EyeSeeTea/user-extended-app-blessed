@@ -40,7 +40,7 @@ function startApp() {
     );
 }
 
-render(<MuiThemeProvider muiTheme={appTheme}><LoadingMask/></MuiThemeProvider>,
+render(<MuiThemeProvider muiTheme={appTheme}><LoadingMask /></MuiThemeProvider>,
     document.getElementById('app'));
 
 getManifest('./manifest.webapp')

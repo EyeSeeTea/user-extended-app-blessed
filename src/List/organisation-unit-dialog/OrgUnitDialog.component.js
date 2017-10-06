@@ -54,9 +54,9 @@ class OrgUnitDialog extends React.Component {
             }),
         ])
             .then(([
-                       levels,
-                       groups,
-                   ]) => {
+                levels,
+                groups,
+            ]) => {
                 this.setState({
                     groups,
                     levels
@@ -105,13 +105,13 @@ class OrgUnitDialog extends React.Component {
         const assigned = modelOrgUnits.toArray().map(ou => ou.path);
 
         const additions = selected
-        // Filter out already assigned ids
+            // Filter out already assigned ids
             .filter(path => assigned.indexOf(path) === -1)
             // Add the rest
             .map(path => d2.models.organisationUnits.create({ id: _.last(path.split("/")), path }));
 
         const deletions = assigned
-        // Filter out ids that should be left in
+            // Filter out ids that should be left in
             .filter(path => selected.indexOf(path) === -1)
             // Add the rest
             .map(path => d2.models.organisationUnits.create({ id: _.last(path.split("/")), path }));
@@ -272,7 +272,7 @@ class OrgUnitDialog extends React.Component {
                 <div style={styles.wrapper}>
                     {this.state.loading ? (
                         <div style={styles.loadingMask}>
-                            <LoadingMask/>
+                            <LoadingMask />
                         </div>
                     ) : undefined}
 
