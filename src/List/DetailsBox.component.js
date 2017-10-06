@@ -59,34 +59,30 @@ export default React.createClass({
     },
 
     getValueToRender(fieldName, value) {
-        const getDateString = dateValue => {
-            const stringifiedDate = new Date(dateValue).toString();
-
-            return stringifiedDate === 'Invalid Date' ? dateValue : stringifiedDate;
-        };
-
-        if (Array.isArray(value) && value.length) {
-            const namesToDisplay = value
-                .map(v => v.displayName ? v.displayName : v.name)
-                .filter(name => name);
-
-            return (
-                <ul>
-                    {namesToDisplay.map(name => <li key={name}>{name}</li>)}
-                </ul>
-            );
+        switch (fieldName) {
+            case 'created':
+            case 'lastUpdated':
+                return (<div>{new Date(value).toString()}</div>);
+            case 'href':
+                // Suffix the url with the .json extension to always get the json representation of the api resource
+                return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
+            case 'name':
+                return value;
+            case 'userGroups':
+                const groups = [];
+                value.map(groupName => {
+                    groups.push(<div key={groupName}>{groupName}</div>)
+                });
+                return <div>{groups}</div>;
+            case 'organisationUnits':
+                const units = [];
+                value.map(unitName => {
+                    units.push(<div key={unitName}>{unitName}</div>)
+                });
+                return <div>{units}</div>;
+            default:
+                return value;
         }
-
-        if (fieldName === 'created' || fieldName === 'lastUpdated') {
-            return getDateString(value);
-        }
-
-        if (fieldName === 'href') {
-            // Suffix the url with the .json extension to always get the json representation of the api resource
-            return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-        }
-
-        return value;
     },
 
     render() {
