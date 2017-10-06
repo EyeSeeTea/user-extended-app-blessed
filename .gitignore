@@ -1,6 +1,6 @@
 *.iml
 .idea/*
-
+package-lock.json
 node_modules*
 .sass-cache
 src/css/*
@@ -19,3 +19,6 @@ npm-debug.log
 stats.json
 
 .vscode*
+
+# Ignore config.js
+config.js

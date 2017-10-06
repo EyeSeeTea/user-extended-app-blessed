@@ -31,7 +31,7 @@ export default React.createClass({
                 'href',
             ],
             showDetailBox: false,
-            onClose: () => {},
+            onClose: () => { },
         };
     },
 

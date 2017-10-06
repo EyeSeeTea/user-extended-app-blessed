@@ -192,12 +192,12 @@ const List = React.createClass({
 
         // Switch action for special cases
         switch (action) {
-        case 'details':
-            return model.access.read;
-        case 'assignToOrgUnits':
-            return model.modelDefinition.name === 'user' && model.access.write;
-        default:
-            return true;
+            case 'details':
+                return model.access.read;
+            case 'assignToOrgUnits':
+                return model.modelDefinition.name === 'user' && model.access.write;
+            default:
+                return true;
         }
     },
 
@@ -210,11 +210,10 @@ const List = React.createClass({
                 });
 
                 listActions.filter({
-                        modelType: this.props.params.modelType,
-                        searchString: value,
-                        canManage: !this.state.showAllUsers,
-                    })
-                    .subscribe(() => {}, (error) => log.error(error));
+                    modelType: this.props.params.modelType,
+                    searchString: value,
+                    canManage: !this.state.showAllUsers,
+                }).subscribe(() => { }, (error) => log.error(error));
             });
 
         this.registerDisposable(searchListByNameDisposable);
@@ -227,7 +226,7 @@ const List = React.createClass({
             canManage: isChecked,
         });
 
-        this.setState({showAllUsers: !isChecked});
+        this.setState({ showAllUsers: !isChecked });
     },
 
     render() {
@@ -281,16 +280,19 @@ const List = React.createClass({
 
         const contextMenuIcons = {
             assignToOrgUnits: 'business',
+            assignToOrgUnitsOutput: 'business',
+            assignRoles: 'assignment',
+            assignGroups: 'group_add'
         };
 
         return (
             <div>
                 <div>
-                    <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>                    
+                    <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>
                 </div>
                 <div>
                     <div style={{ float: 'left', width: '30%' }}>
-                        <SearchBox searchObserverHandler={this.searchListByName}/>
+                        <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
                     <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
                         <Checkbox
@@ -314,7 +316,7 @@ const List = React.createClass({
                             columns={this.state.tableColumns}
                             contextMenuActions={availableActions}
                             contextMenuIcons={contextMenuIcons}
-                            primaryAction={(user, ev) => availableActions.assignToOrgUnits(user)}
+                            primaryAction={(user, ev) => contextActions.details(user)}
                             isContextActionAllowed={this.isContextActionAllowed}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
@@ -326,7 +328,7 @@ const List = React.createClass({
                                 detailsObject={this.state.detailsObject}
                                 onClose={listActions.hideDetailsBox}
                             />
-                        : null}
+                            : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
@@ -336,7 +338,7 @@ const List = React.createClass({
                     onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
                     onOrgUnitAssignmentError={this._orgUnitAssignmentError}
                     onRequestClose={this._closeOrgUnitDialog}
-                /> : null }
+                /> : null}
             </div>
         );
     },

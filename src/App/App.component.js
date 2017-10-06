@@ -30,7 +30,8 @@ import { goToRoute } from '../router';
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
 const withMuiContext = Object.assign(AppWithD2.childContextTypes,
-    {muiTheme: PropTypes.object});
+    { muiTheme: PropTypes.object });
+
 class App extends AppWithD2 {
     getChildContext() {
         return Object.assign({}, super.getChildContext(), {
@@ -92,6 +93,7 @@ class App extends AppWithD2 {
         );
     }
 }
+
 App.defaultProps = {
     d2: getInstance(),
 };

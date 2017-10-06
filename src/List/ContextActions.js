@@ -9,18 +9,24 @@ config.i18n.strings.add('assignToOrgUnits');
 
 const contextActions = Action.createActionsFromNames([
     'details',
-    'assignToOrgUnits'
+    'assignToOrgUnits',
+    'assignToOrgUnitsOutput',
+    'assignRoles',
+    'assignGroups',
+    'edit'
 ]);
 
+/** Show user details */
 contextActions.details
     .subscribe(({ data: model }) => {
         detailsStore.setState(model);
     });
-    
+
+/** Assign user to organization unit */
 contextActions.assignToOrgUnits
-    .subscribe(async({ data: model }) => {
+    .subscribe(async ({ data: model }) => {
         const d2 = await getD2();
-        const options = {fields: ":all,organisationUnits[id,path,displayName]"};
+        const options = { fields: ":all,organisationUnits[id,path,displayName]" };
         const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
         const userOrgUnitRoots = await appStateStore
             .map(appState => appState.userOrganisationUnits.toArray())
@@ -31,6 +37,41 @@ contextActions.assignToOrgUnits
             roots: userOrgUnitRoots,
             open: true,
         });
+    });
+
+    /** Assign user to organization unit */
+contextActions.assignToOrgUnitsOutput
+.subscribe(async ({ data: model }) => {
+    const d2 = await getD2();
+    const options = { fields: ":all,organisationUnits[id,path,displayName]" };
+    const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+    const userOrgUnitRoots = await appStateStore
+        .map(appState => appState.userOrganisationUnits.toArray())
+        .first().toPromise();
+
+    orgUnitAssignmentDialogStore.setState({
+        model: modelItem,
+        roots: userOrgUnitRoots,
+        open: true,
+    });
+});
+
+/** Assign roles */
+contextActions.assignRoles
+    .subscribe(({ data: model }) => {
+        alert('Assign roles');
+    });
+
+/** Assign to groups */
+contextActions.assignGroups
+    .subscribe(({ data: model }) => {
+        alert('Assign to groups');
+    });
+
+/** Edit user */
+contextActions.edit
+    .subscribe(({ data: model }) => {
+        alert('Edit user');
     });
 
 export default contextActions;
