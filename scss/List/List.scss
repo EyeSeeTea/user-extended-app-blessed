@@ -1,27 +1,60 @@
 .list {
-  color: inherit;
+    color: inherit;
 }
 
 .data-table-wrap {
-  display: flex;
-  flex: 2;
-  transition: width .2s linear;
-  transition-delay: .1s;
+    display: flex;
+    flex: 2;
+    transition: width .2s linear;
+    transition-delay: .1s;
 }
 
 .details-box-wrap.show-as-column {
-  flex: 1;
-  margin-left: 1rem;
-  margin-right: 1rem;
-  opacity: 1;
+    flex: 1;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    opacity: 1;
 }
 
 .list-details-wrap {
-  flex: 1;
-  display: flex;
-  flex-orientation: row;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
 }
 
 .list-search-field input[type="search"]::-webkit-search-decoration {
-  display: none;
+    display: none;
+}
+
+// Align user management controls
+.user-management-controls {
+    display: flex;
+    align-items: center;
+}
+
+.user-management-control {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-end;
+    height: 72px;
+    margin-bottom: 2em;
+    padding-right: 2em;
+    &:last-child {
+        padding-right: 0;
+    }
+    >* {
+        flex: 1;
+    }
+}
+
+.checkbox-managable-users {
+    margin-bottom: 1em;
+}
+
+.select-filter {
+    width: unset !important;
+}
+
+.data-table-pager--buttons {
+    margin: 0 !important;
 }

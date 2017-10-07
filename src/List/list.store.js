@@ -73,9 +73,22 @@ export default Store.create({
 
             let modelDefinition;
             if (searchString) {
-                modelDefinition = d2.models[modelType]
+
+                console.log(searchBy);
+
+                // if(searchBy === 'name') {
+                    modelDefinition = d2.models[modelType]
                     .filter().on('displayName').ilike(searchString)
                     .filter().on('userCredentials.username').ilike(searchString);
+                // } else if(searchBy === 'role') {
+                //     modelDefinition = d2.models[modelType]
+                //     .filter().on('userCredentials.userRoles.id').ilike(searchString);
+                // } else {
+                //     // Search by group
+                //     modelDefinition = d2.models[modelType]
+                //     .filter().on('userCredentials.userGroups.displayName').ilike(searchString)
+                //     .filter().on('userCredentials.userGroups.id').ilike(searchString);
+                // }
             } else {
                 modelDefinition = d2.models[modelType]
                     .filter().on('name').notEqual('default');

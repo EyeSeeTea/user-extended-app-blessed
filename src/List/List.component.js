@@ -22,6 +22,8 @@ import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
 import { Observable } from 'rx';
 import PropTypes from 'prop-types';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -97,6 +99,7 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
+            searchBy: "name",
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -140,7 +143,7 @@ const List = React.createClass({
                     }
                 });
                 item.organisationUnits = organisationUnits;
-                
+
                 /** TODO: replace with OUOuput */
                 item.organisationUnitsOutput = organisationUnits;
             }
@@ -240,8 +243,8 @@ const List = React.createClass({
         }
     },
 
-    searchListByName(searchObserver) {
-        const searchListByNameDisposable = searchObserver
+    searchList(searchObserver) {
+        const searchListDisposable = searchObserver
             .subscribe((value) => {
                 this.setState({
                     isLoading: true,
@@ -251,21 +254,27 @@ const List = React.createClass({
                 listActions.filter({
                     modelType: this.props.params.modelType,
                     searchString: value,
+                    searchBy: this.state.searchBy,
                     canManage: !this.state.showAllUsers,
                 }).subscribe(() => { }, (error) => log.error(error));
             });
 
-        this.registerDisposable(searchListByNameDisposable);
+        this.registerDisposable(searchListDisposable);
     },
 
     _onCanManageClick(ev, isChecked) {
         listActions.filter({
             modelType: this.props.params.modelType,
             searchString: this.state.searchString,
+            searchBy: this.state.searchBy,
             canManage: isChecked,
         });
 
         this.setState({ showAllUsers: !isChecked });
+    },
+
+    searchFilter(event, index, value) {
+        this.setState({ searchBy: value });
     },
 
     render() {
@@ -314,7 +323,7 @@ const List = React.createClass({
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
-            },
+            }
         };
 
         const contextMenuIcons = {
@@ -329,18 +338,28 @@ const List = React.createClass({
                 <div>
                     <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>
                 </div>
-                <div>
-                    <div style={{ float: 'left', width: '30%' }}>
-                        <SearchBox searchObserverHandler={this.searchListByName} />
+                <div className="user-management-controls">
+                    <div className="user-management-control">
+                        <SearchBox searchObserverHandler={this.searchList} />
                     </div>
-                    <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
-                        <Checkbox
+                    <div className="user-management-control">
+                        <SelectField className="select-filter" floatingLabelText={this.getTranslation('filter_by')}
+                            value={this.state.searchBy}
+                            onChange={this.searchFilter}>
+                            <MenuItem value="name" primaryText={this.getTranslation('name')} />
+                            <MenuItem value="role" primaryText={this.getTranslation('role')} />
+                            <MenuItem value="group" primaryText={this.getTranslation('group')}  />
+                        </SelectField>
+                    </div>
+                    <div className="user-management-control">
+                        <Checkbox className="checkbox-managable-users"
                             label={this.getTranslation('display_only_users_can_manage')}
                             onCheck={this._onCanManageClick}
                             checked={!this.state.showAllUsers}
                         />
                     </div>
-                    <div>
+                    <div className="user-management-control fill-space"></div>
+                    <div className="user-management-control">
                         <Pagination {...paginationProps} />
                     </div>
                 </div>
