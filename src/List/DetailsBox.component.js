@@ -6,6 +6,7 @@ import FontIcon from 'material-ui/FontIcon/FontIcon';
 import PropTypes from 'prop-types';
 import Translate from 'd2-ui/lib/i18n/Translate.mixin';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
+import Moment from 'react-moment';
 
 export default React.createClass({
     propTypes: {
@@ -29,8 +30,10 @@ export default React.createClass({
                 'lastUpdated',
                 'id',
                 'href',
+                'userRoles',
                 'userGroups',
-                'organisationUnits'
+                'organisationUnits',
+                'organisationUnitsOutput'
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -62,24 +65,36 @@ export default React.createClass({
         switch (fieldName) {
             case 'created':
             case 'lastUpdated':
-                return (<div>{new Date(value).toString()}</div>);
+                return (<Moment format='MMM D, YYYY'>{value}</Moment>);
             case 'href':
                 // Suffix the url with the .json extension to always get the json representation of the api resource
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
             case 'name':
                 return value;
+            case 'userRoles':
+                const roles = [];
+                value.map(roleItem => {
+                    roles.push(<div key={roleItem}>{roleItem}</div>)
+                });
+                return <div>{roles}</div>;
             case 'userGroups':
                 const groups = [];
-                value.map(groupName => {
-                    groups.push(<div key={groupName}>{groupName}</div>)
+                value.map(groupItem => {
+                    groups.push(<div key={groupItem}>{groupItem}</div>)
                 });
                 return <div>{groups}</div>;
             case 'organisationUnits':
                 const units = [];
-                value.map(unitName => {
-                    units.push(<div key={unitName}>{unitName}</div>)
+                value.map(unitItem => {
+                    units.push(<div key={unitItem}>{unitItem}</div>)
                 });
                 return <div>{units}</div>;
+            case 'organisationUnitsOutput':
+                const unitsOutput = [];
+                value.map(unitItem => {
+                    unitsOutput.push(<div key={unitItem}>{unitItem}</div>)
+                });
+                return <div>{unitsOutput}</div>;
             default:
                 return value;
         }

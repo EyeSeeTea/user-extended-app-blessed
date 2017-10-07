@@ -120,7 +120,7 @@ const List = React.createClass({
 
     convertListToTableRows(list) {
         list.map((item) => {
-            /** Extract user groups names */
+            /** Extract user groups items */
             if (item.userGroups) {
                 const userGroups = [];
                 item.userGroups.valuesContainerMap.forEach(ug => {
@@ -131,7 +131,7 @@ const List = React.createClass({
                 item.userGroups = userGroups;
             }
 
-            /** Extract organization units names */
+            /** Extract organization units items */
             if (item.organisationUnits) {
                 const organisationUnits = [];
                 item.organisationUnits.valuesContainerMap.forEach(ug => {
@@ -140,15 +140,19 @@ const List = React.createClass({
                     }
                 });
                 item.organisationUnits = organisationUnits;
+                
+                /** TODO: replace with OUOuput */
+                item.organisationUnitsOutput = organisationUnits;
             }
+
             /** Extract user roles */
-            // if (item.userCredentials && item.userCredentials.userRoles) {
-            //     const roles = [];
-            //     item.userCredentials.userRoles.valuesContainerMap.forEach(role => {
-            //         roles.push(role);
-            //     });
-            //     item.userRoles = roles;
-            // }
+            if (item.userCredentials && item.userCredentials.userRoles) {
+                const roles = [];
+                item.userCredentials.userRoles.forEach(role => {
+                    roles.push(role.id);
+                });
+                item.userRoles = roles;
+            }
         });
         return list;
     },

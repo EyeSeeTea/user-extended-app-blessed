@@ -5,7 +5,7 @@ import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
     'displayName|rename(name),shortName,id,userCredentials[username, userRoles],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess],organisationUnits[*]';
+    'displayDescription,code,publicAccess,access,href,level,userRoles[id],userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
 
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';
@@ -15,7 +15,7 @@ const columnObservable = appState
     .map(appState => appState.sideBar.currentSubSection)
     .distinctUntilChanged()
     .map(subSection => {
-        return ['name', 'username', 'lastUpdated', 'userGroups', 'organisationUnits'];
+        return ['name', 'username', 'lastUpdated', 'userRoles', 'userGroups', 'organisationUnits', 'organisationUnitsOutput'];
     });
 
 export default Store.create({
