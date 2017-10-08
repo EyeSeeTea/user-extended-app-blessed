@@ -15,7 +15,7 @@ listActions.loadList.subscribe(action => {
 });
 
 listActions.filter.subscribe(action => {
-    listStore.filter(action.data.modelType, action.data.searchString, action.data.canManage, action.complete, action.error);
+    listStore.filter(action.data.modelType, action.data.searchString, action.data.searchBy, action.data.canManage, action.complete, action.error);
 });
 
 // TODO: For simple action mapping like this we should be able to do something less boiler plate like

@@ -4,8 +4,8 @@ import Store from 'd2-ui/lib/store/Store';
 import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
-    'displayName|rename(name),shortName,id,userCredentials[username, userRoles],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level,userRoles[id],userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
+    'displayName|rename(name),shortName,id,userCredentials[username, userRoles[displayName]],lastUpdated,created,' +
+    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
 
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';
@@ -65,7 +65,7 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, searchString, canManage, complete, error) {
+    async filter(modelType, searchString, searchBy, canManage, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
@@ -74,21 +74,18 @@ export default Store.create({
             let modelDefinition;
             if (searchString) {
 
-                console.log(searchBy);
-
-                // if(searchBy === 'name') {
+                if (searchBy === 'name') {
                     modelDefinition = d2.models[modelType]
-                    .filter().on('displayName').ilike(searchString)
-                    .filter().on('userCredentials.username').ilike(searchString);
-                // } else if(searchBy === 'role') {
-                //     modelDefinition = d2.models[modelType]
-                //     .filter().on('userCredentials.userRoles.id').ilike(searchString);
-                // } else {
-                //     // Search by group
-                //     modelDefinition = d2.models[modelType]
-                //     .filter().on('userCredentials.userGroups.displayName').ilike(searchString)
-                //     .filter().on('userCredentials.userGroups.id').ilike(searchString);
-                // }
+                        .filter().on('displayName').ilike(searchString)
+                        .filter().on('userCredentials.username').ilike(searchString);
+                } else if (searchBy === 'role') {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('userCredentials.userRoles.displayName').ilike(searchString);
+                } else {
+                    // Search by group
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('userGroups.displayName').ilike(searchString)
+                }
             } else {
                 modelDefinition = d2.models[modelType]
                     .filter().on('name').notEqual('default');
