@@ -4,8 +4,8 @@ import Store from 'd2-ui/lib/store/Store';
 import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
-    'displayName|rename(name),shortName,id,userCredentials[username, userRoles],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level,userRoles[id],userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
+    'displayName|rename(name),shortName,id,userCredentials[username, userRoles[displayName]],lastUpdated,created,' +
+    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
 
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';

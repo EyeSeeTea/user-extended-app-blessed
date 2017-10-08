@@ -149,7 +149,7 @@ const List = React.createClass({
             if (item.userCredentials && item.userCredentials.userRoles) {
                 const roles = [];
                 item.userCredentials.userRoles.forEach(role => {
-                    roles.push(role.id);
+                    roles.push(role.displayName);
                 });
                 item.userRoles = roles;
             }
