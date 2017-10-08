@@ -24,6 +24,7 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import Sticky from 'react-stickynode';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -315,14 +316,18 @@ const List = React.createClass({
                 flex: 1,
                 marginLeft: '1rem',
                 marginRight: '1rem',
+                marginBottom: '1rem',
                 opacity: 1,
-                flexGrow: 0,
+                flexGrow: 0
             },
 
             listDetailsWrap: {
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
+            },
+            stickyWrapper: {
+                width: 350
             }
         };
 
@@ -381,11 +386,15 @@ const List = React.createClass({
                     </div>
                     {
                         this.state.detailsObject ?
-                            <DetailsBoxWithScroll
-                                style={styles.detailsBoxWrap}
-                                detailsObject={this.state.detailsObject}
-                                onClose={listActions.hideDetailsBox}
-                            />
+                            <div style={styles.stickyWrapper}>
+                                <Sticky enabled={true} top={56}>
+                                    <DetailsBoxWithScroll
+                                        style={styles.detailsBoxWrap}
+                                        detailsObject={this.state.detailsObject}
+                                        onClose={listActions.hideDetailsBox}
+                                    />
+                                </Sticky>
+                            </div>
                             : null}
                 </div>
 

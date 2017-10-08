@@ -21,7 +21,7 @@
     "manifest": "d2-manifest package.json build/manifest.webapp"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.2",
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.8.0",
     "babel-eslint": "^6.0.4",
     "babel-loader": "^6.2.4",
@@ -70,6 +70,7 @@
     "react-dnd": "^2.1.4",
     "react-dnd-html5-backend": "^2.1.2",
     "react-dom": "15.4.2",
+    "react-moment": "^0.6.5",
     "react-router": "^2.5.2",
     "react-tap-event-plugin": "^2.0.1",
     "rx": "^4.1.0",
@@ -87,7 +88,7 @@
     "ckeditor": "^4.5.9",
     "jquery": "^2.2.3",
     "prop-types": "^15.5.10",
-    "react-moment": "^0.6.5"
+    "react-stickynode": "^1.4.0"
   },
   "manifest.webapp": {
     "name": "Organisation Unit Assignment app",

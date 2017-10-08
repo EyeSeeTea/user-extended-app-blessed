@@ -23,12 +23,8 @@ $detail-box--field-value--color: #333;
 
 .detail-field {
   padding-bottom: 1rem;
-  border-bottom: 1px solid #E0E0E0;
-  margin-bottom: 1em;
 }
 
 .detail-field:last-child {
   padding-bottom: 0;
-  margin-bottom: 0;
-  border-bottom: unset;
 }
