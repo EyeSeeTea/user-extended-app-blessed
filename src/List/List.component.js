@@ -22,7 +22,6 @@ import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
 import { Observable } from 'rx';
 import PropTypes from 'prop-types';
-import Sticky from 'react-stickynode';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -369,13 +368,11 @@ const List = React.createClass({
                     {
                         this.state.detailsObject ?
                             <div style={styles.stickyWrapper}>
-                                <Sticky enabled={true} top={56}>
-                                    <DetailsBoxWithScroll
-                                        style={styles.detailsBoxWrap}
-                                        detailsObject={this.state.detailsObject}
-                                        onClose={listActions.hideDetailsBox}
-                                    />
-                                </Sticky>
+                                <DetailsBoxWithScroll
+                                    style={styles.detailsBoxWrap}
+                                    detailsObject={this.state.detailsObject}
+                                    onClose={listActions.hideDetailsBox}
+                                />
                             </div>
                             : null}
                 </div>
