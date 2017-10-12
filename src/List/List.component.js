@@ -308,17 +308,14 @@ const List = React.createClass({
                 marginRight: '1rem',
                 marginBottom: '1rem',
                 opacity: 1,
-                flexGrow: 0
+                flexGrow: 0,
+                minWidth: '350px'
             },
 
             listDetailsWrap: {
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
-            },
-
-            stickyWrapper: {
-                width: 350,
             }
         };
 
@@ -367,14 +364,12 @@ const List = React.createClass({
                     </div>
                     {
                         this.state.detailsObject ?
-                            <div style={styles.stickyWrapper}>
-                                <DetailsBoxWithScroll
-                                    style={styles.detailsBoxWrap}
-                                    detailsObject={this.state.detailsObject}
-                                    onClose={listActions.hideDetailsBox}
-                                />
-                            </div>
-                            : null}
+                            <DetailsBoxWithScroll
+                                style={styles.detailsBoxWrap}
+                                detailsObject={this.state.detailsObject}
+                                onClose={listActions.hideDetailsBox}
+                            />
+                        : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
