@@ -32,7 +32,10 @@
     align-items: flex-end;
     height: 72px;
     margin-bottom: 2em;
-    padding-right: 2em;
+    padding: 0 1em;
+    &:first-child {
+        padding-left: 0;
+    }
     &:last-child {
         padding-right: 0;
     }
@@ -41,12 +44,17 @@
     }
 }
 
-.checkbox-managable-users {
+.select-role, .select-group,.fill-space {
+    flex: 1;
+}
+
+.control-checkbox {
     margin-bottom: 1em;
 }
 
-.select-filter {
+.control-select-role, .control-select-group {
     width: unset !important;
+    max-width: 250px;
 }
 
 .data-table-pager--buttons {

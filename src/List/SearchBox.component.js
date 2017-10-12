@@ -6,7 +6,7 @@ import { config } from 'd2/lib/d2';
 import PropTypes from 'prop-types';
 import { currentSubSection$ } from '../App/appStateStore';
 
-config.i18n.strings.add('search');
+config.i18n.strings.add('search_by_name');
 
 const SearchBox = React.createClass({
     propTypes: {
@@ -50,7 +50,7 @@ const SearchBox = React.createClass({
                     fullWidth
                     type="search"
                     onChange={this._onKeyUp}
-                    hintText={`${this.getTranslation('search')}`}
+                    hintText={`${this.getTranslation('search_by_name')}`}
                 />
             </div>
         );

@@ -20,6 +20,8 @@ const columnObservable = appState
 
 export default Store.create({
     listSourceSubject: new Subject(),
+    listRolesSubject: new Subject(),
+    listGroupsSubject: new Subject(),
 
     initialise() {
         this.listSourceSubject
@@ -32,7 +34,7 @@ export default Store.create({
                     list: modelCollection.toArray().map(user => {
                         user.username = user.userCredentials && user.userCredentials.username;
                         return user;
-                    }),
+                    })
                 });
             });
         return this;
@@ -57,6 +59,28 @@ export default Store.create({
         });
     },
 
+    getRoles() {
+        getD2().then(d2 => {
+            if (d2.models.userRoles) {
+                const rolesPromise = d2.models.userRoles.list();
+                Observable.fromPromise(rolesPromise).subscribe(res => {
+                    this.listRolesSubject.onNext(res);
+                });
+            }
+        });
+    },
+
+    getGroups() {
+        getD2().then(d2 => {
+            if (d2.models.userGroups) {
+                const groupsPromise = d2.models.userRoles.list();
+                Observable.fromPromise(groupsPromise).subscribe(res => {
+                    this.listGroupsSubject.onNext(res);
+                });
+            }
+        });
+    },
+
     getNextPage() {
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getNextPage()));
     },
@@ -65,30 +89,55 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, searchString, searchBy, canManage, complete, error) {
+    async filter(modelType, searchString, filterByRole, filterByGroup, canManage, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
             }
-
             let modelDefinition;
             if (searchString) {
-
-                if (searchBy === 'name') {
+                if (filterByRole && filterByGroup) {
                     modelDefinition = d2.models[modelType]
                         .filter().on('displayName').ilike(searchString)
-                        .filter().on('userCredentials.username').ilike(searchString);
-                } else if (searchBy === 'role') {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('userCredentials.userRoles.displayName').ilike(searchString);
-                } else {
-                    // Search by group
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('userGroups.displayName').ilike(searchString)
+                        .filter().on('userCredentials.username').ilike(searchString)
+                        .filter().on('userCredentials.userRoles.id').equals(filterByRole)
+                        .filter().on('userGroups.id').equals(filterByGroup);
                 }
+                else if (filterByRole) {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('displayName').ilike(searchString)
+                        .filter().on('userCredentials.username').ilike(searchString)
+                        .filter().on('userCredentials.userRoles.id').equals(filterByRole);
+                } else if (filterByGroup) {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('displayName').ilike(searchString)
+                        .filter().on('userCredentials.username').ilike(searchString)
+                        .filter().on('userGroups.id').equals(filterByGroup);
+                } else {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('displayName').ilike(searchString);
+                }
+
             } else {
-                modelDefinition = d2.models[modelType]
-                    .filter().on('name').notEqual('default');
+                if (filterByRole && filterByGroup) {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('name').notEqual('default')
+                        .filter().on('userCredentials.userRoles.id').equals(filterByRole)
+                        .filter().on('userGroups.id').equals(filterByGroup);
+                }
+                else if (filterByRole) {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('name').notEqual('default')
+                        .filter().on('userCredentials.userRoles.id').equals(filterByRole);
+                } else if (filterByGroup) {
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('name').notEqual('default')
+                        .filter().on('userGroups.id').equals(filterByGroup);
+                } else {
+                    /** No filter */
+                    modelDefinition = d2.models[modelType]
+                        .filter().on('name').notEqual('default');
+                }
             }
 
             const listSearchPromise = modelDefinition

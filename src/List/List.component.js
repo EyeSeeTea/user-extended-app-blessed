@@ -24,7 +24,6 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import Sticky from 'react-stickynode';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -100,7 +99,8 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
-            searchBy: "name",
+            filterByRole: null,
+            filterByGroup: null,
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -172,9 +172,23 @@ const List = React.createClass({
                     dataRows: this.convertListToTableRows(listStoreValue.list),
                     pager: listStoreValue.pager,
                     tableColumns: listStoreValue.tableColumns,
-                    isLoading: false,
+                    isLoading: false
                 });
             });
+
+        /** load select fields data */
+        listActions.loadUserRoles.next();
+        listActions.loadUserGroups.next();
+
+        /** Set user roles list for filter by role */
+        const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
+            this.setState({ userRoles: this.convertRolesToMenuItem(userRoles) });
+        });
+
+        /** Set user groups list for filter by group */
+        const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
+            this.setState({ userGroups: this.convertGroupsToMenuItem(userGroups) });
+        });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
             this.setState({ detailsObject });
@@ -189,6 +203,8 @@ const List = React.createClass({
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
+        this.registerDisposable(rolesStoreDisposable);
+        this.registerDisposable(groupsStoreDisposable);
     },
 
     componentWillReceiveProps(newProps) {
@@ -244,38 +260,84 @@ const List = React.createClass({
         }
     },
 
-    searchList(searchObserver) {
-        const searchListDisposable = searchObserver
+    searchListByName(searchObserver) {
+        const searchListByNameDisposable = searchObserver
             .subscribe((value) => {
                 this.setState({
                     isLoading: true,
-                    searchString: value,
+                    searchString: value
                 });
 
                 listActions.filter({
                     modelType: this.props.params.modelType,
-                    searchString: value,
-                    searchBy: this.state.searchBy,
+                    searchString: this.state.searchString,
+                    filterByRole: this.state.filterByRole,
+                    filterByGroup: this.state.filterByGroup,
                     canManage: !this.state.showAllUsers,
                 }).subscribe(() => { }, (error) => log.error(error));
             });
 
-        this.registerDisposable(searchListDisposable);
+        this.registerDisposable(searchListByNameDisposable);
     },
 
     _onCanManageClick(ev, isChecked) {
         listActions.filter({
             modelType: this.props.params.modelType,
             searchString: this.state.searchString,
-            searchBy: this.state.searchBy,
+            filterByRole: this.state.filterByRole,
+            filterByGroup: this.state.filterByGroup,
             canManage: isChecked,
         });
 
         this.setState({ showAllUsers: !isChecked });
     },
 
-    searchFilter(event, index, value) {
-        this.setState({ searchBy: value });
+    setFilterRole(event, index, value) {
+        listActions.filter({
+            modelType: this.props.params.modelType,
+            searchString:  this.state.searchString,
+            filterByRole: value,
+            filterByGroup: this.state.filterByGroup,
+            canManage: !this.state.showAllUsers,
+        }).subscribe(() => { }, (error) => log.error(error));
+
+        this.setState({ filterByRole: value });
+    },
+
+    setFilterGroup(event, index, value) {
+        listActions.filter({
+            modelType: this.props.params.modelType,
+            searchString:  this.state.searchString,
+            filterByRole: this.state.filterByRole,
+            filterByGroup: value,
+            canManage: !this.state.showAllUsers,
+        }).subscribe(() => { }, (error) => log.error(error));
+
+        this.setState({ filterByGroup: value });
+    },
+
+    convertRolesToMenuItem(roles) {
+        const rolesArr = [];
+
+        if(roles) {
+            roles.valuesContainerMap.forEach((role) => {
+                const roleItem = <MenuItem key={role.id} value={role.id} primaryText={role.displayName} />;
+                rolesArr.push(roleItem);
+            });
+        }
+        return rolesArr;
+    },
+
+    convertGroupsToMenuItem(groups) {
+        const groupsArr = [];
+
+        if(groups) {
+            groups.valuesContainerMap.forEach((group) => {
+                const groupItem = <MenuItem key={group.id} value={group.id} primaryText={group.displayName} />;
+                groupsArr.push(groupItem);
+            });
+        }
+        return groupsArr;
     },
 
     render() {
@@ -318,16 +380,14 @@ const List = React.createClass({
                 marginRight: '1rem',
                 marginBottom: '1rem',
                 opacity: 1,
-                flexGrow: 0
+                flexGrow: 0,
+                minWidth: '350px'
             },
 
             listDetailsWrap: {
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
-            },
-            stickyWrapper: {
-                width: 350
             }
         };
 
@@ -345,25 +405,30 @@ const List = React.createClass({
                 </div>
                 <div className="user-management-controls">
                     <div className="user-management-control">
-                        <SearchBox searchObserverHandler={this.searchList} />
+                        <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
-                    <div className="user-management-control">
-                        <SelectField className="select-filter" floatingLabelText={this.getTranslation('filter_by')}
-                            value={this.state.searchBy}
-                            onChange={this.searchFilter}>
-                            <MenuItem value="name" primaryText={this.getTranslation('name')} />
-                            <MenuItem value="role" primaryText={this.getTranslation('role')} />
-                            <MenuItem value="group" primaryText={this.getTranslation('group')}  />
+                    <div className="user-management-control select-role">
+                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_role')}
+                            value={this.state.filterByRole}
+                            onChange={this.setFilterRole}>
+                            {this.state.userRoles}
+                        </SelectField>
+                    </div>
+                    <div className="user-management-control select-group">
+                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_group')}
+                                     value={this.state.filterByGroup}
+                                     onChange={this.setFilterGroup}>
+                            {this.state.userGroups}
                         </SelectField>
                     </div>
                     <div className="user-management-control">
-                        <Checkbox className="checkbox-managable-users"
+                        <Checkbox className="control-checkbox"
                             label={this.getTranslation('display_only_users_can_manage')}
                             onCheck={this._onCanManageClick}
                             checked={!this.state.showAllUsers}
                         />
                     </div>
-                    <div className="user-management-control fill-space"></div>
+                    <div className="fill-space"></div>
                     <div className="user-management-control">
                         <Pagination {...paginationProps} />
                     </div>
@@ -386,16 +451,12 @@ const List = React.createClass({
                     </div>
                     {
                         this.state.detailsObject ?
-                            <div style={styles.stickyWrapper}>
-                                <Sticky enabled={true} top={56}>
-                                    <DetailsBoxWithScroll
-                                        style={styles.detailsBoxWrap}
-                                        detailsObject={this.state.detailsObject}
-                                        onClose={listActions.hideDetailsBox}
-                                    />
-                                </Sticky>
-                            </div>
-                            : null}
+                            <DetailsBoxWithScroll
+                                style={styles.detailsBoxWrap}
+                                detailsObject={this.state.detailsObject}
+                                onClose={listActions.hideDetailsBox}
+                            />
+                        : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
