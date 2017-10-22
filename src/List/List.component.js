@@ -134,9 +134,9 @@ const List = React.createClass({
             /** Extract organization units items */
             if (item.organisationUnits) {
                 const organisationUnits = [];
-                item.organisationUnits.valuesContainerMap.forEach(ug => {
-                    if (ug.displayName) {
-                        organisationUnits.push(ug.displayName);
+                item.organisationUnits.valuesContainerMap.forEach(ou => {
+                    if (ou.displayName) {
+                        organisationUnits.push(ou.displayName);
                     }
                 });
                 item.organisationUnits = organisationUnits;
