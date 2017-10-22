@@ -118,6 +118,45 @@ const List = React.createClass({
         };
     },
 
+    convertListToTableRows(list) {
+        list.map((item) => {
+            /** Extract user groups items */
+            if (item.userGroups) {
+                const userGroups = [];
+                item.userGroups.valuesContainerMap.forEach(ug => {
+                    if (ug.displayName) {
+                        userGroups.push(ug.displayName);
+                    }
+                });
+                item.userGroups = userGroups;
+            }
+
+            /** Extract organization units items */
+            if (item.organisationUnits) {
+                const organisationUnits = [];
+                item.organisationUnits.valuesContainerMap.forEach(ou => {
+                    if (ou.displayName) {
+                        organisationUnits.push(ou.displayName);
+                    }
+                });
+                item.organisationUnits = organisationUnits;
+
+                /** TODO: replace with OUOuput */
+                item.organisationUnitsOutput = organisationUnits;
+            }
+
+            /** Extract user roles */
+            if (item.userCredentials && item.userCredentials.userRoles) {
+                const roles = [];
+                item.userCredentials.userRoles.forEach(role => {
+                    roles.push(role.displayName);
+                });
+                item.userRoles = roles;
+            }
+        });
+        return list;
+    },
+
     componentWillMount() {
         const sourceStoreDisposable = listStore
             .subscribe(listStoreValue => {
@@ -126,7 +165,7 @@ const List = React.createClass({
                 }
 
                 this.setState({
-                    dataRows: listStoreValue.list,
+                    dataRows: this.convertListToTableRows(listStoreValue.list),
                     pager: listStoreValue.pager,
                     tableColumns: listStoreValue.tableColumns,
                     isLoading: false,
@@ -267,15 +306,17 @@ const List = React.createClass({
                 flex: 1,
                 marginLeft: '1rem',
                 marginRight: '1rem',
+                marginBottom: '1rem',
                 opacity: 1,
                 flexGrow: 0,
+                minWidth: '350px'
             },
 
             listDetailsWrap: {
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
-            },
+            }
         };
 
         const contextMenuIcons = {
@@ -328,7 +369,7 @@ const List = React.createClass({
                                 detailsObject={this.state.detailsObject}
                                 onClose={listActions.hideDetailsBox}
                             />
-                            : null}
+                        : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog

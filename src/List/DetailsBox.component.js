@@ -6,6 +6,7 @@ import FontIcon from 'material-ui/FontIcon/FontIcon';
 import PropTypes from 'prop-types';
 import Translate from 'd2-ui/lib/i18n/Translate.mixin';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
+import Moment from 'react-moment';
 
 export default React.createClass({
     propTypes: {
@@ -29,6 +30,10 @@ export default React.createClass({
                 'lastUpdated',
                 'id',
                 'href',
+                'userRoles',
+                'userGroups',
+                'organisationUnits',
+                'organisationUnitsOutput'
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -57,34 +62,42 @@ export default React.createClass({
     },
 
     getValueToRender(fieldName, value) {
-        const getDateString = dateValue => {
-            const stringifiedDate = new Date(dateValue).toString();
-
-            return stringifiedDate === 'Invalid Date' ? dateValue : stringifiedDate;
-        };
-
-        if (Array.isArray(value) && value.length) {
-            const namesToDisplay = value
-                .map(v => v.displayName ? v.displayName : v.name)
-                .filter(name => name);
-
-            return (
-                <ul>
-                    {namesToDisplay.map(name => <li key={name}>{name}</li>)}
-                </ul>
-            );
+        switch (fieldName) {
+            case 'created':
+            case 'lastUpdated':
+                return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
+            case 'href':
+                // Suffix the url with the .json extension to always get the json representation of the api resource
+                return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
+            case 'name':
+                return value;
+            case 'userRoles':
+                const roles = [];
+                value.map(roleItem => {
+                    roles.push(<div key={roleItem}>{roleItem}</div>)
+                });
+                return <div>{roles}</div>;
+            case 'userGroups':
+                const groups = [];
+                value.map(groupItem => {
+                    groups.push(<div key={groupItem}>{groupItem}</div>)
+                });
+                return <div>{groups}</div>;
+            case 'organisationUnits':
+                const units = [];
+                value.map(unitItem => {
+                    units.push(<div key={unitItem}>{unitItem}</div>)
+                });
+                return <div>{units}</div>;
+            case 'organisationUnitsOutput':
+                const unitsOutput = [];
+                value.map(unitItem => {
+                    unitsOutput.push(<div key={unitItem}>{unitItem}</div>)
+                });
+                return <div>{unitsOutput}</div>;
+            default:
+                return value;
         }
-
-        if (fieldName === 'created' || fieldName === 'lastUpdated') {
-            return getDateString(value);
-        }
-
-        if (fieldName === 'href') {
-            // Suffix the url with the .json extension to always get the json representation of the api resource
-            return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-        }
-
-        return value;
     },
 
     render() {

@@ -4,18 +4,18 @@ import Store from 'd2-ui/lib/store/Store';
 import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery =
-    'displayName|rename(name),shortName,id,userCredentials[username],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level';
+    'displayName|rename(name),shortName,id,userCredentials[username, userRoles[displayName]],lastUpdated,created,' +
+    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
 
 const orderForQuery = (modelName) =>
-    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC'
+    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';
 
 const columnObservable = appState
     .filter(appState => appState.sideBar && appState.sideBar.currentSubSection)
     .map(appState => appState.sideBar.currentSubSection)
     .distinctUntilChanged()
     .map(subSection => {
-        return ['name', 'username', 'lastUpdated'];
+        return ['name', 'username', 'lastUpdated', 'userRoles', 'userGroups', 'organisationUnits', 'organisationUnitsOutput'];
     });
 
 export default Store.create({
