@@ -62,7 +62,7 @@ export default Store.create({
     getRoles() {
         getD2().then(d2 => {
             if (d2.models.userRoles) {
-                const rolesPromise = d2.models.userRoles.list();
+                const rolesPromise = d2.models.userRoles.list({paging: false});
                 Observable.fromPromise(rolesPromise).subscribe(res => {
                     this.listRolesSubject.onNext(res);
                 });
@@ -73,7 +73,7 @@ export default Store.create({
     getGroups() {
         getD2().then(d2 => {
             if (d2.models.userGroups) {
-                const groupsPromise = d2.models.userRoles.list();
+                const groupsPromise = d2.models.userGroups.list({paging: false});
                 Observable.fromPromise(groupsPromise).subscribe(res => {
                     this.listGroupsSubject.onNext(res);
                 });
@@ -143,7 +143,7 @@ export default Store.create({
             const listSearchPromise = modelDefinition
                 .list({
                     fields: fieldFilteringForQuery,
-                    rootJunction: "OR",
+                    // rootJunction: "OR",
                     order: orderForQuery("user"),
                     canManage: canManage,
                 });
