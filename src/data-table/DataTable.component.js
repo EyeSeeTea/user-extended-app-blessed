@@ -12,7 +12,7 @@ const DataTable = React.createClass({
         contextMenuIcons: React.PropTypes.object,
         primaryAction: React.PropTypes.func,
         isContextActionAllowed: React.PropTypes.func,
-        headerClick: React.PropTypes.func,
+        headerClick: React.PropTypes.func
     },
 
     getInitialState() {
@@ -28,11 +28,20 @@ const DataTable = React.createClass({
 
         if (isIterable(props.rows)) {
             dataRows = props.rows instanceof Map ? Array.from(props.rows.values()) : props.rows;
+
+            dataRows.map((rows) => {
+                /** TODO: sort by columnName */
+                // rows.sort((a, b) => {
+                //     // console.log(a.lastUpdated, a.lastUpdated());
+                //     return a.lastUpdated < b.lastUpdated ? -1 : 1;
+                // });
+                return rows;
+            });
         }
 
         return {
             columns: isArrayOfStrings(props.columns) ? props.columns : ['name', 'lastUpdated'],
-            dataRows,
+            dataRows
         };
     },
 
@@ -57,9 +66,23 @@ const DataTable = React.createClass({
         );
     },
 
+    handleHeaderClick(columnName, reverse) {
+        this.setState({
+            sortBy: columnName,
+            reverse: reverse
+        });
+        this.props.headerClick(columnName, reverse);
+    },
+
     renderHeaders() {
         return this.state.columns.map((headerName, index) => (
-            <DataTableHeader key={index} isOdd={Boolean(index % 2)} name={headerName} headerClick={this.props.headerClick}/>
+            <DataTableHeader key={index}
+                             isOdd={Boolean(index % 2)}
+                             name={headerName}
+                             sort={this.state.sortBy === headerName}
+                             reverse={(this.state.sortBy === headerName) ? this.state.reverse : true}
+                             headerClick={this.handleHeaderClick}
+            />
         ));
     },
 

@@ -268,8 +268,8 @@ const List = React.createClass({
         this.setState({ showAllUsers: !isChecked });
     },
 
-    onHeaderClick(e) {
-        console.log('headerClick', e);
+    onHeaderClick(columnName, reverse) {
+        console.log('headerClick', columnName, reverse);
     },
 
     render() {

@@ -29,3 +29,13 @@
     background-color: $html-background-color;
   }
 }
+
+.data-table__headers__header__item {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  span.material-icons {
+    color: unset !important;
+    font-size: 18px !important;
+  }
+}

@@ -1,7 +1,6 @@
 import React, { isValidElement } from 'react';
 import classes from 'classnames';
-import { isObject } from 'lodash/fp';
-import { isString } from 'lodash/fp';
+import { isObject, isString } from 'lodash/fp';
 import IconButton from 'material-ui/IconButton';
 import MoreVert from 'material-ui/svg-icons/navigation/more-vert';
 import addD2Context from 'd2-ui/lib/component-helpers/addD2Context';
