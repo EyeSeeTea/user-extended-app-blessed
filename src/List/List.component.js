@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
-import DataTable from 'd2-ui/lib/data-table/DataTable.component';
+import DataTable from '../data-table/DataTable.component';
 import Pagination from 'd2-ui/lib/pagination/Pagination.component';
 import DetailsBox from './DetailsBox.component';
 import contextActions from './ContextActions';
@@ -67,7 +67,8 @@ class DetailsBoxWithScroll extends Component {
     render() {
         return (
             <div style={this.props.style}>
-                <Paper zDepth={1} rounded={false} style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
+                <Paper zDepth={1} rounded={false}
+                       style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
                     <DetailsBox
                         source={this.props.detailsObject}
                         showDetailBox={!!this.props.detailsObject}
@@ -268,6 +269,10 @@ const List = React.createClass({
         this.setState({ showAllUsers: !isChecked });
     },
 
+    onHeaderClick(e) {
+        console.log('headerClick', e);
+    },
+
     render() {
         const currentlyShown = calculatePageValue(this.state.pager);
 
@@ -333,7 +338,7 @@ const List = React.createClass({
                 </div>
                 <div>
                     <div style={{ float: 'left', width: '30%' }}>
-                        <SearchBox searchObserverHandler={this.searchListByName} />
+                        <SearchBox searchObserverHandler={this.searchListByName}/>
                     </div>
                     <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
                         <Checkbox
@@ -359,6 +364,7 @@ const List = React.createClass({
                             contextMenuIcons={contextMenuIcons}
                             primaryAction={(user, ev) => contextActions.details(user)}
                             isContextActionAllowed={this.isContextActionAllowed}
+                            headerClick={this.onHeaderClick}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
@@ -369,7 +375,7 @@ const List = React.createClass({
                                 detailsObject={this.state.detailsObject}
                                 onClose={listActions.hideDetailsBox}
                             />
-                        : null}
+                            : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
