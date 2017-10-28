@@ -67,8 +67,7 @@ class DetailsBoxWithScroll extends Component {
     render() {
         return (
             <div style={this.props.style}>
-                <Paper zDepth={1} rounded={false}
-                       style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
+                <Paper zDepth={1} rounded={false} style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
                     <DetailsBox
                         source={this.props.detailsObject}
                         showDetailBox={!!this.props.detailsObject}
@@ -338,7 +337,7 @@ const List = React.createClass({
                 </div>
                 <div>
                     <div style={{ float: 'left', width: '30%' }}>
-                        <SearchBox searchObserverHandler={this.searchListByName}/>
+                        <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
                     <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
                         <Checkbox
@@ -375,7 +374,7 @@ const List = React.createClass({
                                 detailsObject={this.state.detailsObject}
                                 onClose={listActions.hideDetailsBox}
                             />
-                            : null}
+                        : null}
                 </div>
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
