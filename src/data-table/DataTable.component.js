@@ -23,20 +23,31 @@ const DataTable = React.createClass({
         this.setState(this.getStateFromProps(newProps));
     },
 
-    getStateFromProps(props) {
+    getStateFromProps(props, sortBy, reverse) {
         let dataRows = [];
 
         if (isIterable(props.rows)) {
             dataRows = props.rows instanceof Map ? Array.from(props.rows.values()) : props.rows;
 
-            dataRows.map((rows) => {
-                /** TODO: sort by columnName */
-                // rows.sort((a, b) => {
-                //     // console.log(a.lastUpdated, a.lastUpdated());
-                //     return a.lastUpdated < b.lastUpdated ? -1 : 1;
-                // });
-                return rows;
-            });
+            if (sortBy) {
+                /** Exclude un-sortable columns */
+                switch(sortBy) {
+                    case 'userRoles':
+                    case 'userGroups':
+                    case 'organisationUnits':
+                    case 'organisationUnitsOutput':
+                        return;
+                    default:
+                        dataRows = dataRows.sort((a, b) => {
+                            const valueA = a[sortBy].toUpperCase();
+                            const valueB = b[sortBy].toUpperCase();
+                            return (valueA < valueB) ? -1 : (valueA > valueB) ? 1 : 0;
+                        });
+                        if (reverse) {
+                            dataRows.reverse();
+                        }
+                }
+            }
         }
 
         return {
@@ -71,6 +82,8 @@ const DataTable = React.createClass({
             sortBy: columnName,
             reverse: reverse
         });
+        /** Sort table on column header click */
+        this.setState(this.getStateFromProps(this.props, columnName, reverse));
         this.props.headerClick(columnName, reverse);
     },
 
