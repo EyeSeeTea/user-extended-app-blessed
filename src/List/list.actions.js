@@ -15,7 +15,7 @@ listActions.loadList.subscribe(action => {
 });
 
 listActions.filter.subscribe(action => {
-    listStore.filter(action.data.modelType, action.data.searchString, action.data.filterByRole, action.data.filterByGroup, action.data.canManage, action.complete, action.error);
+    listStore.filter(action.data.modelType, action.data.searchString, action.data.canManage, action.complete, action.error);
 });
 
 // TODO: For simple action mapping like this we should be able to do something less boiler plate like
@@ -32,12 +32,10 @@ listActions.hideDetailsBox.subscribe(() => {
 });
 
 listActions.loadUserRoles.subscribe(() => {
-    console.log('loadUserRoles TEST');
     listStore.getRoles();
 });
 
 listActions.loadUserGroups.subscribe(() => {
-    console.log('loadUserRoles TEST');
     listStore.getGroups();
 });
 

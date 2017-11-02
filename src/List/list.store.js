@@ -89,55 +89,19 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, searchString, filterByRole, filterByGroup, canManage, complete, error) {
+    async filter(modelType, searchString, canManage, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
             }
             let modelDefinition;
             if (searchString) {
-                if (filterByRole && filterByGroup) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('displayName').ilike(searchString)
-                        .filter().on('userCredentials.username').ilike(searchString)
-                        .filter().on('userCredentials.userRoles.id').equals(filterByRole)
-                        .filter().on('userGroups.id').equals(filterByGroup);
-                }
-                else if (filterByRole) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('displayName').ilike(searchString)
-                        .filter().on('userCredentials.username').ilike(searchString)
-                        .filter().on('userCredentials.userRoles.id').equals(filterByRole);
-                } else if (filterByGroup) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('displayName').ilike(searchString)
-                        .filter().on('userCredentials.username').ilike(searchString)
-                        .filter().on('userGroups.id').equals(filterByGroup);
-                } else {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('displayName').ilike(searchString);
-                }
-
+                modelDefinition = d2.models[modelType]
+                    .filter().on('displayName').ilike(searchString);
             } else {
-                if (filterByRole && filterByGroup) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('name').notEqual('default')
-                        .filter().on('userCredentials.userRoles.id').equals(filterByRole)
-                        .filter().on('userGroups.id').equals(filterByGroup);
-                }
-                else if (filterByRole) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('name').notEqual('default')
-                        .filter().on('userCredentials.userRoles.id').equals(filterByRole);
-                } else if (filterByGroup) {
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('name').notEqual('default')
-                        .filter().on('userGroups.id').equals(filterByGroup);
-                } else {
-                    /** No filter */
-                    modelDefinition = d2.models[modelType]
-                        .filter().on('name').notEqual('default');
-                }
+                /** No filter */
+                modelDefinition = d2.models[modelType]
+                    .filter().on('name').notEqual('default');
             }
 
             const listSearchPromise = modelDefinition

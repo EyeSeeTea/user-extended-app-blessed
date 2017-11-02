@@ -123,7 +123,7 @@ const List = React.createClass({
     },
 
     convertListToTableRows(list) {
-        list.map((item) => {
+        return list.map((item) => {
             /** Extract user groups items */
             if (item.userGroups) {
                 const userGroups = [];
@@ -157,8 +157,12 @@ const List = React.createClass({
                 });
                 item.userRoles = roles;
             }
-        });
-        return list;
+            return item;
+        })
+        .filter((item) => this.state.filterByRole ?
+            item.userRoles.filter(role => role === this.state.filterByRole).length : true)
+        .filter((item) => this.state.filterByGroup ?
+            item.userRoles.filter(group => group === this.state.filterByGroup).length: true);
     },
 
     componentWillMount() {
@@ -271,8 +275,6 @@ const List = React.createClass({
                 listActions.filter({
                     modelType: this.props.params.modelType,
                     searchString: this.state.searchString,
-                    filterByRole: this.state.filterByRole,
-                    filterByGroup: this.state.filterByGroup,
                     canManage: !this.state.showAllUsers,
                 }).subscribe(() => { }, (error) => log.error(error));
             });
@@ -284,8 +286,6 @@ const List = React.createClass({
         listActions.filter({
             modelType: this.props.params.modelType,
             searchString: this.state.searchString,
-            filterByRole: this.state.filterByRole,
-            filterByGroup: this.state.filterByGroup,
             canManage: isChecked,
         });
 
@@ -293,35 +293,31 @@ const List = React.createClass({
     },
 
     setFilterRole(event, index, value) {
+        /** Add role filter then request a new list */
+        this.setState({ filterByRole: value });
         listActions.filter({
             modelType: this.props.params.modelType,
-            searchString:  this.state.searchString,
-            filterByRole: value,
-            filterByGroup: this.state.filterByGroup,
+            searchString: this.state.searchString,
             canManage: !this.state.showAllUsers,
         }).subscribe(() => { }, (error) => log.error(error));
-
-        this.setState({ filterByRole: value });
     },
 
     setFilterGroup(event, index, value) {
+        /** Add group filter then request a new list */
+        this.setState({ filterByGroup: value });
         listActions.filter({
             modelType: this.props.params.modelType,
-            searchString:  this.state.searchString,
-            filterByRole: this.state.filterByRole,
-            filterByGroup: value,
+            searchString: this.state.searchString,
             canManage: !this.state.showAllUsers,
         }).subscribe(() => { }, (error) => log.error(error));
-
-        this.setState({ filterByGroup: value });
     },
 
     convertRolesToMenuItem(roles) {
         const rolesArr = [];
 
-        if(roles) {
+        if (roles) {
             roles.valuesContainerMap.forEach((role) => {
-                const roleItem = <MenuItem key={role.id} value={role.id} primaryText={role.displayName} />;
+                const roleItem = <MenuItem key={role.id} value={role.displayName} primaryText={role.displayName} />;
                 rolesArr.push(roleItem);
             });
         }
@@ -331,9 +327,9 @@ const List = React.createClass({
     convertGroupsToMenuItem(groups) {
         const groupsArr = [];
 
-        if(groups) {
+        if (groups) {
             groups.valuesContainerMap.forEach((group) => {
-                const groupItem = <MenuItem key={group.id} value={group.id} primaryText={group.displayName} />;
+                const groupItem = <MenuItem key={group.id} value={group.displayName} primaryText={group.displayName} />;
                 groupsArr.push(groupItem);
             });
         }
@@ -409,8 +405,8 @@ const List = React.createClass({
                     </div>
                     <div className="user-management-control select-role">
                         <SelectField autoWidth floatingLabelText={this.getTranslation('filter_role')}
-                            value={this.state.filterByRole}
-                            onChange={this.setFilterRole}>
+                                     value={this.state.filterByRole}
+                                     onChange={this.setFilterRole}>
                             {this.state.userRoles}
                         </SelectField>
                     </div>
@@ -423,9 +419,9 @@ const List = React.createClass({
                     </div>
                     <div className="user-management-control">
                         <Checkbox className="control-checkbox"
-                            label={this.getTranslation('display_only_users_can_manage')}
-                            onCheck={this._onCanManageClick}
-                            checked={!this.state.showAllUsers}
+                                  label={this.getTranslation('display_only_users_can_manage')}
+                                  onCheck={this._onCanManageClick}
+                                  checked={!this.state.showAllUsers}
                         />
                     </div>
                     <div className="fill-space"></div>
