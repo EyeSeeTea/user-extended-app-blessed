@@ -65,7 +65,7 @@ export default React.createClass({
         switch (fieldName) {
             case 'created':
             case 'lastUpdated':
-                return (<Moment format='HH:mm A'>{value}</Moment>);
+                return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
             case 'href':
                 // Suffix the url with the .json extension to always get the json representation of the api resource
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;

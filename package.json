@@ -61,7 +61,7 @@
     "loglevel": "^1.4.0",
     "material-ui": "^0.17",
     "mocha": "2.2.5",
-    "moment": "^2.18.1",
+    "moment": "^2.19.1",
     "node-sass": "^3.7.0",
     "phantomjs": "1.9.18",
     "phantomjs-polyfill": "0.0.1",
@@ -90,7 +90,7 @@
     "prop-types": "^15.5.10"
   },
   "manifest.webapp": {
-    "name": "Organisation Unit Assignment app",
+    "name": "User app",
     "icons": {
       "48": "icon.png"
     },
