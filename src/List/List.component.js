@@ -22,6 +22,8 @@ import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
 import { Observable } from 'rx';
 import PropTypes from 'prop-types';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -97,6 +99,8 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
+            filterByRole: null,
+            filterByGroup: null,
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -119,7 +123,7 @@ const List = React.createClass({
     },
 
     convertListToTableRows(list) {
-        list.map((item) => {
+        return list.map((item) => {
             /** Extract user groups items */
             if (item.userGroups) {
                 const userGroups = [];
@@ -153,8 +157,8 @@ const List = React.createClass({
                 });
                 item.userRoles = roles;
             }
+            return item;
         });
-        return list;
     },
 
     componentWillMount() {
@@ -172,6 +176,20 @@ const List = React.createClass({
                 });
             });
 
+        /** load select fields data */
+        listActions.loadUserRoles.next();
+        listActions.loadUserGroups.next();
+
+        /** Set user roles list for filter by role */
+        const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
+            this.setState({ userRoles: this.convertObjsToMenuItems(userRoles) });
+        });
+
+        /** Set user groups list for filter by group */
+        const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
+            this.setState({ userGroups: this.convertObjsToMenuItems(userGroups) });
+        });
+
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
             this.setState({ detailsObject });
         });
@@ -185,6 +203,8 @@ const List = React.createClass({
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
+        this.registerDisposable(rolesStoreDisposable);
+        this.registerDisposable(groupsStoreDisposable);
     },
 
     componentWillReceiveProps(newProps) {
@@ -240,32 +260,47 @@ const List = React.createClass({
         }
     },
 
+    filterList() {
+        listActions.filter({
+            modelType: this.props.params.modelType,
+            canManage: !this.state.showAllUsers,
+            filters: {
+                "displayName": ["ilike", this.state.searchString],
+                "userCredentials.userRoles.id": ["eq", this.state.filterByRole],
+                "userGroups.id": ["eq", this.state.filterByGroup],
+            },
+        }).subscribe(() => {}, error => log.error(error));
+    },
+
     searchListByName(searchObserver) {
         const searchListByNameDisposable = searchObserver
             .subscribe((value) => {
                 this.setState({
                     isLoading: true,
-                    searchString: value,
-                });
-
-                listActions.filter({
-                    modelType: this.props.params.modelType,
-                    searchString: value,
-                    canManage: !this.state.showAllUsers,
-                }).subscribe(() => { }, (error) => log.error(error));
+                    searchString: value
+                }, this.filterList);
             });
 
         this.registerDisposable(searchListByNameDisposable);
     },
 
     _onCanManageClick(ev, isChecked) {
-        listActions.filter({
-            modelType: this.props.params.modelType,
-            searchString: this.state.searchString,
-            canManage: isChecked,
-        });
+        this.setState({showAllUsers: !isChecked}, this.filterList);
+    },
 
-        this.setState({ showAllUsers: !isChecked });
+    setFilterRole(event, index, value) {
+        this.setState({filterByRole: value}, this.filterList);
+    },
+
+    setFilterGroup(event, index, value) {
+        this.setState({filterByGroup: value}, this.filterList);
+    },
+
+    convertObjsToMenuItems(objs) {
+        const emptyEntry = <MenuItem key="_empty_item" value="" primaryText="" />;
+        const entries = objs.toArray()
+            .map(obj => <MenuItem key={obj.id} value={obj.id} primaryText={obj.displayName} />);
+        return [emptyEntry].concat(entries);
     },
 
     render() {
@@ -331,18 +366,33 @@ const List = React.createClass({
                 <div>
                     <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>
                 </div>
-                <div>
-                    <div style={{ float: 'left', width: '30%' }}>
+                <div className="user-management-controls">
+                    <div className="user-management-control">
                         <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
-                    <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
-                        <Checkbox
-                            label={this.getTranslation('display_only_users_can_manage')}
-                            onCheck={this._onCanManageClick}
-                            checked={!this.state.showAllUsers}
+                    <div className="user-management-control select-role">
+                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_role')}
+                                     value={this.state.filterByRole}
+                                     onChange={this.setFilterRole}>
+                            {this.state.userRoles}
+                        </SelectField>
+                    </div>
+                    <div className="user-management-control select-group">
+                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_group')}
+                                     value={this.state.filterByGroup}
+                                     onChange={this.setFilterGroup}>
+                            {this.state.userGroups}
+                        </SelectField>
+                    </div>
+                    <div className="user-management-control">
+                        <Checkbox className="control-checkbox"
+                                  label={this.getTranslation('display_only_users_can_manage')}
+                                  onCheck={this._onCanManageClick}
+                                  checked={!this.state.showAllUsers}
                         />
                     </div>
-                    <div>
+                    <div className="fill-space"></div>
+                    <div className="user-management-control">
                         <Pagination {...paginationProps} />
                     </div>
                 </div>
