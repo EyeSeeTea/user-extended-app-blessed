@@ -172,7 +172,7 @@ const List = React.createClass({
                     dataRows: this.convertListToTableRows(listStoreValue.list),
                     pager: listStoreValue.pager,
                     tableColumns: listStoreValue.tableColumns,
-                    isLoading: false
+                    isLoading: false,
                 });
             });
 
@@ -182,12 +182,12 @@ const List = React.createClass({
 
         /** Set user roles list for filter by role */
         const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
-            this.setState({ userRoles: this.convertRolesToMenuItem(userRoles) });
+            this.setState({ userRoles: this.convertObjsToMenuItems(userRoles) });
         });
 
         /** Set user groups list for filter by group */
         const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
-            this.setState({ userGroups: this.convertGroupsToMenuItem(userGroups) });
+            this.setState({ userGroups: this.convertObjsToMenuItems(userGroups) });
         });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
@@ -296,17 +296,10 @@ const List = React.createClass({
         this.setState({filterByGroup: value}, this.filterList);
     },
 
-    convertRolesToMenuItem(roles) {
-        const emptyEntry = <MenuItem key="empty-role-item" value="" primaryText="" />;
-        const entries = roles.toArray()
-            .map(role => <MenuItem key={role.id} value={role.id} primaryText={role.displayName} />);
-        return [emptyEntry].concat(entries);
-    },
-
-    convertGroupsToMenuItem(groups) {
-        const emptyEntry = <MenuItem key="empty-group-item" value="" primaryText="" />;
-        const entries = groups.toArray()
-            .map(group => <MenuItem key={group.id} value={group.id} primaryText={group.displayName} />);
+    convertObjsToMenuItems(objs) {
+        const emptyEntry = <MenuItem key="_empty_item" value="" primaryText="" />;
+        const entries = objs.toArray()
+            .map(obj => <MenuItem key={obj.id} value={obj.id} primaryText={obj.displayName} />);
         return [emptyEntry].concat(entries);
     },
 
