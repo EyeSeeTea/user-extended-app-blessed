@@ -158,11 +158,7 @@ const List = React.createClass({
                 item.userRoles = roles;
             }
             return item;
-        })
-        .filter((item) => this.state.filterByRole ?
-            item.userRoles.filter(role => role === this.state.filterByRole).length : true)
-        .filter((item) => this.state.filterByGroup ?
-            item.userRoles.filter(group => group === this.state.filterByGroup).length: true);
+        });
     },
 
     componentWillMount() {
@@ -264,76 +260,54 @@ const List = React.createClass({
         }
     },
 
+    filterList() {
+        listActions.filter({
+            modelType: this.props.params.modelType,
+            canManage: !this.state.showAllUsers,
+            filters: {
+                "displayName": ["ilike", this.state.searchString],
+                "userCredentials.userRoles.id": ["eq", this.state.filterByRole],
+                "userGroups.id": ["eq", this.state.filterByGroup],
+            },
+        }).subscribe(() => {}, error => log.error(error));
+    },
+
     searchListByName(searchObserver) {
         const searchListByNameDisposable = searchObserver
             .subscribe((value) => {
                 this.setState({
                     isLoading: true,
                     searchString: value
-                });
-
-                listActions.filter({
-                    modelType: this.props.params.modelType,
-                    searchString: this.state.searchString,
-                    canManage: !this.state.showAllUsers,
-                }).subscribe(() => { }, (error) => log.error(error));
+                }, this.filterList);
             });
 
         this.registerDisposable(searchListByNameDisposable);
     },
 
     _onCanManageClick(ev, isChecked) {
-        listActions.filter({
-            modelType: this.props.params.modelType,
-            searchString: this.state.searchString,
-            canManage: isChecked,
-        });
-
-        this.setState({ showAllUsers: !isChecked });
+        this.setState({showAllUsers: !isChecked}, this.filterList);
     },
 
     setFilterRole(event, index, value) {
-        /** Add role filter then request a new list */
-        this.setState({ filterByRole: value });
-        listActions.filter({
-            modelType: this.props.params.modelType,
-            searchString: this.state.searchString,
-            canManage: !this.state.showAllUsers,
-        }).subscribe(() => { }, (error) => log.error(error));
+        this.setState({filterByRole: value}, this.filterList);
     },
 
     setFilterGroup(event, index, value) {
-        /** Add group filter then request a new list */
-        this.setState({ filterByGroup: value });
-        listActions.filter({
-            modelType: this.props.params.modelType,
-            searchString: this.state.searchString,
-            canManage: !this.state.showAllUsers,
-        }).subscribe(() => { }, (error) => log.error(error));
+        this.setState({filterByGroup: value}, this.filterList);
     },
 
     convertRolesToMenuItem(roles) {
-        const rolesArr = [];
-
-        if (roles) {
-            roles.valuesContainerMap.forEach((role) => {
-                const roleItem = <MenuItem key={role.id} value={role.displayName} primaryText={role.displayName} />;
-                rolesArr.push(roleItem);
-            });
-        }
-        return rolesArr;
+        const emptyEntry = <MenuItem key="empty-role-item" value="" primaryText="" />;
+        const entries = roles.toArray()
+            .map(role => <MenuItem key={role.id} value={role.id} primaryText={role.displayName} />);
+        return [emptyEntry].concat(entries);
     },
 
     convertGroupsToMenuItem(groups) {
-        const groupsArr = [];
-
-        if (groups) {
-            groups.valuesContainerMap.forEach((group) => {
-                const groupItem = <MenuItem key={group.id} value={group.displayName} primaryText={group.displayName} />;
-                groupsArr.push(groupItem);
-            });
-        }
-        return groupsArr;
+        const emptyEntry = <MenuItem key="empty-group-item" value="" primaryText="" />;
+        const entries = groups.toArray()
+            .map(group => <MenuItem key={group.id} value={group.id} primaryText={group.displayName} />);
+        return [emptyEntry].concat(entries);
     },
 
     render() {
