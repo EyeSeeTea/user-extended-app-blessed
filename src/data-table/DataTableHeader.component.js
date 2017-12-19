@@ -21,8 +21,8 @@ const DataTableHeader = React.createClass({
 
     headerIcon() {
         if (this.props.sort) {
-            return (this.props.reverse) ? <FontIcon className={'material-icons'}>arrow_upward</FontIcon>
-                : <FontIcon className={'material-icons'}>arrow_downward</FontIcon>;
+            return (this.props.reverse) ? <FontIcon className={'material-icons'}>arrow_downward</FontIcon>
+                : <FontIcon className={'material-icons'}>arrow_upward</FontIcon>;
         }
         return null;
     },
