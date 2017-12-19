@@ -117,16 +117,16 @@ export default Store.create({
                     })
                     .then(collection => collection.toArray().map(obj => obj.id))
                     .then(ids => `id:in:[${ids.join(",")}]`));
-            const listSearchPromise = Promise.all(preliminarD2Filters$).then(preliminarD2Filters =>
-                 model
-                    .filter().on('name').notEqual('default')
-                    .list({
-                        paging: true,
-                        fields: fieldFilteringForQuery,
-                        order: orderForQuery("user"),
-                        canManage: canManage,
-                        filter: buildD2Filter(normalFilters).concat(preliminarD2Filters),
-                    }));
+            const listSearchPromise = Promise.all(preliminarD2Filters$).then(preliminarD2Filters => {
+                const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
+                return model.list({
+                    paging: true,
+                    fields: fieldFilteringForQuery,
+                    order: orderForQuery("user"),
+                    canManage: canManage,
+                    filter: _(filters).isEmpty() ? undefined : filters,
+                });
+            });
 
             this.listSourceSubject.onNext(Observable.fromPromise(listSearchPromise));
             complete(`${modelType} list with filters '${filters}' is loading`);
