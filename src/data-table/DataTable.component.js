@@ -19,6 +19,12 @@ const DataTable = React.createClass({
         return this.getStateFromProps(this.props);
     },
 
+    getDefaultProps() {
+      return {
+        headerClick: () => {},
+      };
+    },
+
     componentWillReceiveProps(newProps) {
         this.setState(this.getStateFromProps(newProps));
     },

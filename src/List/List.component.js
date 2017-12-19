@@ -303,10 +303,6 @@ const List = React.createClass({
         return [emptyEntry].concat(entries);
     },
 
-    onHeaderClick(columnName, reverse) {
-        console.log('headerClick', columnName, reverse);
-    },
-
     render() {
         const currentlyShown = calculatePageValue(this.state.pager);
 
@@ -413,7 +409,6 @@ const List = React.createClass({
                             contextMenuIcons={contextMenuIcons}
                             primaryAction={(user, ev) => contextActions.details(user)}
                             isContextActionAllowed={this.isContextActionAllowed}
-                            headerClick={this.onHeaderClick}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
