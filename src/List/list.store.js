@@ -10,13 +10,21 @@ export const fieldFilteringForQuery =
 const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';
 
+const columns = [
+    {name: 'name', sortable: true},
+    {name: 'username', sortable: false},
+    {name: 'lastUpdated', sortable: true},
+    {name: 'userRoles', sortable: false},
+    {name: 'userGroups', sortable: false},
+    {name: 'organisationUnits', sortable: false},
+    {name: 'organisationUnitsOutput', sortable: false},
+];
+
 const columnObservable = appState
     .filter(appState => appState.sideBar && appState.sideBar.currentSubSection)
     .map(appState => appState.sideBar.currentSubSection)
     .distinctUntilChanged()
-    .map(subSection => {
-        return ['name', 'username', 'lastUpdated', 'userRoles', 'userGroups', 'organisationUnits', 'organisationUnitsOutput'];
-    });
+    .map(subSection => columns);
 
 export default Store.create({
     listSourceSubject: new Subject(),
@@ -89,18 +97,16 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, canManage, filters, complete, error) {
+    async filter(modelType, canManage, filters, order, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
             }
 
-            /*
-                Filtering over nested fields (table[.table].field) in N-to-N relationships (for
+            /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
                 example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
                 separate calls to the API for those filters and use the returned IDs to build
-                the final, paginated call.
-            */
+                the final, paginated call. */
             const model = d2.models[modelType];
             const buildD2Filter = filters =>
                 _(filters).map(([key, [operator, value]]) => [key, operator, value].join(":")).value();
@@ -122,7 +128,7 @@ export default Store.create({
                 return model.list({
                     paging: true,
                     fields: fieldFilteringForQuery,
-                    order: orderForQuery("user"),
+                    order: order || orderForQuery("user"),
                     canManage: canManage,
                     filter: _(filters).isEmpty() ? undefined : filters,
                 });

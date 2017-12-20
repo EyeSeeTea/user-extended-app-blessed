@@ -12,7 +12,7 @@ function getD2ModelValueType(dataSource, columnName) {
 
 const DataTableRow = addD2Context(React.createClass({
     propTypes: {
-        columns: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+        columns: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         dataSource: React.PropTypes.object,
         isEven: React.PropTypes.bool,
         isOdd: React.PropTypes.bool,
@@ -28,7 +28,7 @@ const DataTableRow = addD2Context(React.createClass({
                 'data-table__rows__row--odd': this.props.isOdd,
             });
 
-        const columns = this.props.columns.map((columnName, index) => {
+        const columns = this.props.columns.map(({name: columnName, sortable}, index) => {
             const valueDetails = {
                 valueType: getD2ModelValueType(this.props.dataSource, columnName),
                 value: this.props.dataSource[columnName],

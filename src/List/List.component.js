@@ -81,6 +81,8 @@ class DetailsBoxWithScroll extends Component {
     }
 }
 
+const initialOrder = ["name", false];
+
 const List = React.createClass({
     propTypes: {
         params: PropTypes.shape({
@@ -92,7 +94,7 @@ const List = React.createClass({
 
     getInitialState() {
         return {
-            dataRows: [],
+            dataRows: null,
             pager: {
                 total: 0,
             },
@@ -101,6 +103,7 @@ const List = React.createClass({
             searchString: "",
             filterByRole: null,
             filterByGroup: null,
+            order: initialOrder,
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -261,15 +264,22 @@ const List = React.createClass({
     },
 
     filterList() {
+        const order = this.state.order ?
+            this.state.order[0] + ":" + (this.state.order[1] ? "idesc" : "iasc") : null;
         listActions.filter({
             modelType: this.props.params.modelType,
             canManage: !this.state.showAllUsers,
+            order: order,
             filters: {
                 "displayName": ["ilike", this.state.searchString],
                 "userCredentials.userRoles.id": ["eq", this.state.filterByRole],
                 "userGroups.id": ["eq", this.state.filterByGroup],
             },
         }).subscribe(() => {}, error => log.error(error));
+    },
+
+    onHeaderClick(columnName, reverse) {
+        this.setState({order: [columnName, reverse]}, this.filterList);
     },
 
     searchListByName(searchObserver) {
@@ -304,6 +314,8 @@ const List = React.createClass({
     },
 
     render() {
+        if (!this.state.dataRows)
+            return null;
         const currentlyShown = calculatePageValue(this.state.pager);
 
         const paginationProps = {
@@ -409,6 +421,8 @@ const List = React.createClass({
                             contextMenuIcons={contextMenuIcons}
                             primaryAction={(user, ev) => contextActions.details(user)}
                             isContextActionAllowed={this.isContextActionAllowed}
+                            headerClick={this.onHeaderClick}
+                            initialOrder={initialOrder}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>

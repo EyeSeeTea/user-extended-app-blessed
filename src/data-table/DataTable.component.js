@@ -16,54 +16,20 @@ const DataTable = React.createClass({
     },
 
     getInitialState() {
-        return this.getStateFromProps(this.props);
-    },
-
-    getDefaultProps() {
-      return {
-        headerClick: () => {},
-      };
-    },
-
-    componentWillReceiveProps(newProps) {
-        this.setState(this.getStateFromProps(newProps));
-    },
-
-    getStateFromProps(props, sortBy, reverse) {
-        let dataRows = [];
-
-        if (isIterable(props.rows)) {
-            dataRows = props.rows instanceof Map ? Array.from(props.rows.values()) : props.rows;
-
-            if (sortBy) {
-                /** Exclude un-sortable columns */
-                switch(sortBy) {
-                    case 'userRoles':
-                    case 'userGroups':
-                    case 'organisationUnits':
-                    case 'organisationUnitsOutput':
-                        return;
-                    default:
-                        dataRows = dataRows.sort((a, b) => {
-                            const valueA = a[sortBy].toUpperCase();
-                            const valueB = b[sortBy].toUpperCase();
-                            return (valueA < valueB) ? -1 : (valueA > valueB) ? 1 : 0;
-                        });
-                        if (reverse) {
-                            dataRows.reverse();
-                        }
-                }
-            }
-        }
+        const [sortBy, sortReverse] = this.props.initialOrder || [null, false];
 
         return {
-            columns: isArrayOfStrings(props.columns) ? props.columns : ['name', 'lastUpdated'],
-            dataRows
+            sortBy: sortBy,
+            sortReverse: sortReverse,
+            activeRow: null,
+            contextMenuTarget: null,
+            showContextMenu: false,
         };
     },
 
     renderContextMenu() {
-        const actionAccessChecker = (this.props.isContextActionAllowed && this.props.isContextActionAllowed.bind(null, this.state.activeRow)) || (() => true);
+        const actionAccessChecker = (this.props.isContextActionAllowed &&
+            this.props.isContextActionAllowed.bind(null, this.state.activeRow)) || (() => true);
 
         const actionsToShow = Object.keys(this.props.contextMenuActions || {})
             .filter(actionAccessChecker)
@@ -83,35 +49,34 @@ const DataTable = React.createClass({
         );
     },
 
-    handleHeaderClick(columnName, reverse) {
+    handleHeaderClick(columnName, sortReverse) {
         this.setState({
             sortBy: columnName,
-            reverse: reverse
+            sortReverse: sortReverse,
         });
-        /** Sort table on column header click */
-        this.setState(this.getStateFromProps(this.props, columnName, reverse));
-        this.props.headerClick(columnName, reverse);
+        if (this.props.headerClick)
+            this.props.headerClick(columnName, sortReverse);
     },
 
     renderHeaders() {
-        return this.state.columns.map((headerName, index) => (
+        return this.props.columns.map(({name, sortable}, index) => (
             <DataTableHeader key={index}
                              isOdd={Boolean(index % 2)}
-                             name={headerName}
-                             sort={this.state.sortBy === headerName}
-                             reverse={(this.state.sortBy === headerName) ? this.state.reverse : true}
-                             headerClick={this.handleHeaderClick}
+                             name={name}
+                             sort={this.state.sortBy === name}
+                             reverse={(this.state.sortBy === name) ? this.state.sortReverse : true}
+                             headerClick={sortable ? this.handleHeaderClick : null}
             />
         ));
     },
 
     renderRows() {
-        return this.state.dataRows
+        return this.props.rows
             .map((dataRowsSource, dataRowsId) => (
                 <DataTableRow
                     key={dataRowsId}
                     dataSource={dataRowsSource}
-                    columns={this.state.columns}
+                    columns={this.props.columns}
                     isActive={this.state.activeRow === dataRowsId}
                     itemClicked={this.handleRowClick}
                     primaryClick={this.props.primaryAction || (() => {})}
@@ -124,7 +89,6 @@ const DataTable = React.createClass({
             <div className="data-table">
                 <div className="data-table__headers">
                     {this.renderHeaders()}
-                    <DataTableHeader/>
                 </div>
                 <div className="data-table__rows">
                     {this.renderRows()}

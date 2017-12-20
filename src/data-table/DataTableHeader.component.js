@@ -16,7 +16,8 @@ const DataTableHeader = React.createClass({
     mixins: [Translate],
 
     handleClick() {
-        this.props.headerClick(this.props.name, !this.props.reverse);
+        if (this.props.headerClick)
+            this.props.headerClick(this.props.name, !this.props.reverse);
     },
 
     headerIcon() {
