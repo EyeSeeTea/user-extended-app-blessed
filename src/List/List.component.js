@@ -126,39 +126,26 @@ const List = React.createClass({
     },
 
     convertListToTableRows(list) {
+        const getCollectionNames = collection =>
+            _(collection.toArray ? collection.toArray() : collection)
+                .map(obj => obj.displayName).sortBy().join(", ");
         return list.map((item) => {
             /** Extract user groups items */
             if (item.userGroups) {
-                const userGroups = [];
-                item.userGroups.valuesContainerMap.forEach(ug => {
-                    if (ug.displayName) {
-                        userGroups.push(ug.displayName);
-                    }
-                });
-                item.userGroups = userGroups;
+                item.userGroups = getCollectionNames(item.userGroups);
             }
 
             /** Extract organization units items */
             if (item.organisationUnits) {
-                const organisationUnits = [];
-                item.organisationUnits.valuesContainerMap.forEach(ou => {
-                    if (ou.displayName) {
-                        organisationUnits.push(ou.displayName);
-                    }
-                });
-                item.organisationUnits = organisationUnits;
+                item.organisationUnits = getCollectionNames(item.organisationUnits);
 
                 /** TODO: replace with OUOuput */
-                item.organisationUnitsOutput = organisationUnits;
+                item.organisationUnitsOutput = item.organisationUnits;
             }
 
             /** Extract user roles */
             if (item.userCredentials && item.userCredentials.userRoles) {
-                const roles = [];
-                item.userCredentials.userRoles.forEach(role => {
-                    roles.push(role.displayName);
-                });
-                item.userRoles = roles;
+                item.userRoles = getCollectionNames(item.userCredentials.userRoles);
             }
             return item;
         });
