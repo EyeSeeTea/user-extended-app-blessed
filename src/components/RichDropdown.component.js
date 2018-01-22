@@ -130,6 +130,7 @@ class RichDropdown extends React.Component {
                         />
                     )}
                     <TextField
+                        ref={input => { input && input.focus(); }} 
                         floatingLabelText='Filter list'
                         onChange={(e, value) => { this.setState({ filterText: value }); }}
                         style={{ marginBottom: 5 }}
