@@ -43,7 +43,7 @@
     "fbjs": "^0.2.1",
     "http-proxy": "git+https://github.com/nicolayr/node-http-proxy.git",
     "istanbul": "0.3.18",
-    "jquery": "^2.2.3",
+    "jquery": "^3.3.1",
     "karma": "0.13.9",
     "karma-babel-preprocessor": "5.2.1",
     "karma-chai": "0.1.0",
@@ -86,7 +86,7 @@
   "dependencies": {
     "babel-polyfill": "^6.8.0",
     "ckeditor": "^4.5.9",
-    "jquery": "^2.2.3",
+    "jquery": "^3.3.1",
     "prop-types": "^15.5.10"
   },
   "manifest.webapp": {
