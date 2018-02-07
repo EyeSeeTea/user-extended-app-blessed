@@ -22,7 +22,7 @@ contextActions.details
         detailsStore.setState(row);
     });
 
-/** Assign user to organization units */
+/** Assign user to organisation units */
 contextActions.assignToOrgUnits
     .subscribe(async ({ data: {model} }) => {
         const d2 = await getD2();
@@ -42,7 +42,7 @@ contextActions.assignToOrgUnits
         });
     });
 
-    /** Assign user to out organization units */
+    /** Assign user to out organisation units */
 contextActions.assignToOrgUnitsOutput
 .subscribe(async ({ data: {model} }) => {
     const d2 = await getD2();
