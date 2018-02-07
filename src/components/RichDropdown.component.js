@@ -62,6 +62,8 @@ class RichDropdown extends React.Component {
     }
 
     openDialog() {
+        if (this.filterList)
+            this.filterList.focus();
         this.setState({ dialogOpen: true, filterText: '' });
     }
 
@@ -130,6 +132,7 @@ class RichDropdown extends React.Component {
                         />
                     )}
                     <TextField
+                        ref={input => { input && input.focus(); }} 
                         floatingLabelText='Filter list'
                         onChange={(e, value) => { this.setState({ filterText: value }); }}
                         style={{ marginBottom: 5 }}
