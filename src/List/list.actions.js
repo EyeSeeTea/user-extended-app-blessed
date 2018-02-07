@@ -24,7 +24,14 @@ listActions.loadList.subscribe(action => {
 });
 
 listActions.filter.subscribe(action => {
-    listStore.filter(action.data.modelType, action.data.canManage, action.data.filters, action.data.order, action.complete, action.error);
+    listStore.filter(
+      action.data.modelType,
+      action.data.canManage,
+      action.data.filters,
+      action.data.order,
+      action.data.page,
+      action.complete,
+      action.error);
 });
 
 // TODO: For simple action mapping like this we should be able to do something less boiler plate like

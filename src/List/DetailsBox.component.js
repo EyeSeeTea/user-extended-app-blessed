@@ -33,7 +33,7 @@ export default React.createClass({
                 'userRoles',
                 'userGroups',
                 'organisationUnits',
-                'organisationUnitsOutput'
+                'dataViewOrganisationUnits'
             ],
             showDetailBox: false,
             onClose: () => { },
@@ -54,8 +54,12 @@ export default React.createClass({
 
                 return (
                     <div key={fieldName} className="detail-field">
-                        <div className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
-                        <div className={`detail-field__value detail-field__${fieldName}`}>{valueToRender}</div>
+                        <div className={`detail-field__label detail-field__${fieldName}-label`}>
+                            {this.getTranslation(camelCaseToUnderscores(fieldName))}
+                        </div>
+                        <div className={`detail-field__value detail-field__${fieldName}`}>
+                            {valueToRender}
+                        </div>
                     </div>
                 );
             });
@@ -69,32 +73,12 @@ export default React.createClass({
             case 'href':
                 // Suffix the url with the .json extension to always get the json representation of the api resource
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-            case 'name':
-                return value;
             case 'userRoles':
-                const roles = [];
-                value.map(roleItem => {
-                    roles.push(<div key={roleItem}>{roleItem}</div>)
-                });
-                return <div>{roles}</div>;
             case 'userGroups':
-                const groups = [];
-                value.map(groupItem => {
-                    groups.push(<div key={groupItem}>{groupItem}</div>)
-                });
-                return <div>{groups}</div>;
             case 'organisationUnits':
-                const units = [];
-                value.map(unitItem => {
-                    units.push(<div key={unitItem}>{unitItem}</div>)
-                });
-                return <div>{units}</div>;
-            case 'organisationUnitsOutput':
-                const unitsOutput = [];
-                value.map(unitItem => {
-                    unitsOutput.push(<div key={unitItem}>{unitItem}</div>)
-                });
-                return <div>{unitsOutput}</div>;
+            case 'dataViewOrganisationUnits':
+                const objs = _(value.toArray()).sortBy("displayName").value();
+                return (<div>{objs.map(obj => <div key={obj.id}>{obj.displayName}</div>)}</div>);
             default:
                 return value;
         }

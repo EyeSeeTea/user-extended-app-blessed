@@ -3,12 +3,26 @@ import { Subject, Observable } from 'rx';
 import Store from 'd2-ui/lib/store/Store';
 import appState from '../App/appStateStore';
 
-export const fieldFilteringForQuery =
-    'displayName|rename(name),shortName,id,userCredentials[username, userRoles[id,displayName]],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level,userGroups[id,displayName,publicAccess],organisationUnits[id,displayName]';
+export const fieldFilteringForQuery = [
+    'displayName|rename(name)',
+    'shortName',
+    'id',
+    'userCredentials[username, userRoles[id,displayName]]',
+    'lastUpdated',
+    'created',
+    'displayDescription',
+    'code',
+    'publicAccess',
+    'access',
+    'href',
+    'level',
+    'userGroups[id,displayName,publicAccess]',
+    'organisationUnits[id,displayName]',
+    'dataViewOrganisationUnits[id,displayName]',
+].join(",");
 
 const orderForQuery = (modelName) =>
-    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC';
+    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'name:iasc';
 
 const columns = [
     {name: 'name', sortable: true},
@@ -17,7 +31,7 @@ const columns = [
     {name: 'userRoles', sortable: false},
     {name: 'userGroups', sortable: false},
     {name: 'organisationUnits', sortable: false},
-    {name: 'organisationUnitsOutput', sortable: false},
+    {name: 'dataViewOrganisationUnits', sortable: false},
 ];
 
 const columnObservable = appState
@@ -97,7 +111,7 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, canManage, filters, order, complete, error) {
+    async filter(modelType, canManage, filters, order, page, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
@@ -127,10 +141,11 @@ export default Store.create({
                 const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
                 return model.list({
                     paging: true,
+                    page: page,
                     fields: fieldFilteringForQuery,
                     order: order || orderForQuery("user"),
                     canManage: canManage,
-                    filter: _(filters).isEmpty() ? undefined : filters,
+                    filter: _(filters).isEmpty() ? "name:ne:default" : filters.join(","),
                 });
             });
 

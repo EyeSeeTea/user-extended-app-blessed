@@ -26,7 +26,7 @@ class OrgUnitDialog extends React.Component {
             searchValue: '',
             originalRoots: this.props.roots,
             rootOrgUnits: this.props.roots,
-            selected: this.props.model.organisationUnits.toArray().map(i => i.path),
+            selected: this.props.field.toArray().map(i => i.path),
             groups: [],
             levels: [],
             loading: false,
@@ -94,14 +94,14 @@ class OrgUnitDialog extends React.Component {
             this.setState({
                 originalRoots: props.roots,
                 rootOrgUnits: props.roots,
-                selected: props.model.organisationUnits.toArray().map(i => i.path),
+                selected: props.field.toArray().map(i => i.path),
             });
         }
     }
 
     setNewSelection(selected) {
         const d2 = this.context.d2;
-        const modelOrgUnits = this.props.model.organisationUnits;
+        const modelOrgUnits = this.props.field;
         const assigned = modelOrgUnits.toArray().map(ou => ou.path);
 
         const additions = selected
@@ -128,12 +128,12 @@ class OrgUnitDialog extends React.Component {
 
     toggleOrgUnit(e, orgUnit) {
         if (this.state.selected.indexOf(orgUnit.path) === -1) {
-            this.props.model.organisationUnits.add(orgUnit);
+            this.props.field.add(orgUnit);
             this.setState(state => ({
                 selected: state.selected.concat(orgUnit.path),
             }));
         } else {
-            this.props.model.organisationUnits.remove(orgUnit);
+            this.props.field.remove(orgUnit);
             this.setState(state => ({
                 selected: state.selected.filter(x => x !== orgUnit.path),
             }));
@@ -155,10 +155,6 @@ class OrgUnitDialog extends React.Component {
 
         // Use same organisation units for <Data output and analysis organisation units>
         const { model } = this.props;
-        const getIds = (collection) => collection.toArray().map(obj => obj.id);
-        if (!isEqual(getIds(model.organisationUnits), getIds(model.dataViewOrganisationUnits))) {
-            model.dataViewOrganisationUnits = model.organisationUnits;
-        }
 
         if (this.props.model.isDirty()) {
             this.setState({ loading: true });
@@ -315,12 +311,13 @@ OrgUnitDialog.propTypes = {
     onRequestClose: PropTypes.func.isRequired,
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,
     model: PropTypes.object.isRequired,
+    field: PropTypes.object.isRequired,
     onOrgUnitAssignmentSaved: PropTypes.func.isRequired,
     onOrgUnitAssignmentError: PropTypes.func.isRequired,
 };
+
 OrgUnitDialog.contextTypes = {
     d2: PropTypes.any,
 };
 
 export default OrgUnitDialog;
-
