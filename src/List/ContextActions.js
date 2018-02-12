@@ -2,6 +2,7 @@ import Action from 'd2-ui/lib/action/Action';
 import detailsStore from './details.store';
 import { config, getInstance as getD2 } from 'd2/lib/d2';
 import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
+import userRolesAssignmentDialogStore from './userRoles.store';
 import appStateStore from '../App/appStateStore';
 
 config.i18n.strings.add('details');
@@ -16,13 +17,11 @@ const contextActions = Action.createActionsFromNames([
     'edit'
 ]);
 
-/** Show user details */
 contextActions.details
     .subscribe(({ data: row }) => {
         detailsStore.setState(row);
     });
 
-/** Assign user to organisation units */
 contextActions.assignToOrgUnits
     .subscribe(async ({ data: {model} }) => {
         const d2 = await getD2();
@@ -42,7 +41,6 @@ contextActions.assignToOrgUnits
         });
     });
 
-    /** Assign user to out organisation units */
 contextActions.assignToOrgUnitsOutput
 .subscribe(async ({ data: {model} }) => {
     const d2 = await getD2();
@@ -62,19 +60,19 @@ contextActions.assignToOrgUnitsOutput
     });
 });
 
-/** Assign roles */
 contextActions.assignRoles
     .subscribe(({ data: {model} }) => {
-        alert('Assign roles');
+        userRolesAssignmentDialogStore.setState({
+            user: model,
+            open: true,
+        });
     });
 
-/** Assign to groups */
 contextActions.assignGroups
     .subscribe(({ data: {model} }) => {
         alert('Assign to groups');
     });
 
-/** Edit user */
 contextActions.edit
     .subscribe(({ data: {model} }) => {
         alert('Edit user');

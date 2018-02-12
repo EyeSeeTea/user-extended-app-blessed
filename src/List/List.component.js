@@ -16,7 +16,9 @@ import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
 import Auth from 'd2-ui/lib/auth/Auth.mixin';
 import orgUnitDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
+import userRolesAssignmentDialogStore from './userRoles.store';
 import OrgUnitDialog from './organisation-unit-dialog/OrgUnitDialog.component';
+import UserRolesDialog from '../components/user-roles-dialog/UserRolesDialog.component';
 import snackActions from '../Snackbar/snack.actions';
 import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
@@ -118,8 +120,8 @@ const List = React.createClass({
                 roots: [],
                 open: false,
             },
-            dataElementOperand: {
-                model: null,
+            assignUserRoles: {
+                user: null,
                 open: false,
             },
         };
@@ -181,11 +183,19 @@ const List = React.createClass({
             }, () => !orgunitassignmentState.open && this.filterList({keepCurrentPage: true}));
         });
 
+        const userRolesAssignmentDialogStoreDisposable = userRolesAssignmentDialogStore.subscribe(assignUserRoles => {
+            this.setState({
+                assignUserRoles,
+                detailsObject: null,
+            }, () => !assignUserRoles.open && this.filterList({keepCurrentPage: true}));
+        });
+
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
         this.registerDisposable(groupsStoreDisposable);
+        this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
     },
 
     componentWillReceiveProps(newProps) {
@@ -353,6 +363,7 @@ const List = React.createClass({
             assignGroups: 'group_add'
         };
         const rows = this.getDataTableRows(this.state.dataRows);
+        const {assignUserRoles} = this.state;
 
         return (
             <div>
@@ -427,6 +438,13 @@ const List = React.createClass({
                     onOrgUnitAssignmentError={this._orgUnitAssignmentError}
                     onRequestClose={this._closeOrgUnitDialog}
                 /> : null}
+
+                {assignUserRoles.open ?
+                    <UserRolesDialog
+                        users={[assignUserRoles.user, {id: "B60oCwCnjIo"}]}
+                        onRequestClose={() => userRolesAssignmentDialogStore.setState({open: false})}
+                    />
+                    : null}
             </div>
         );
     },
