@@ -33,7 +33,8 @@ function configI18n(userSettings) {
     config.i18n.sources.add('./i18n/i18n_module_en.properties');
 }
 
-function startApp() {
+function startApp(d2) {
+    window.d2 = d2;
     render(
         routes,
         document.getElementById('app')

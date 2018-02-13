@@ -87,6 +87,7 @@
   "dependencies": {
     "babel-polyfill": "^6.8.0",
     "ckeditor": "^4.5.9",
+    "immutability-helper": "^2.6.4",
     "jquery": "^3.3.1",
     "prop-types": "^15.5.10"
   },
