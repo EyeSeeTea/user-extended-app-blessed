@@ -14,7 +14,7 @@ snackActions.show.subscribe(actionConfig => {
         .then((d2) => {
             snackStore.setState({
                 message: translate ? d2.i18n.getTranslation(message) : message,
-                action: d2.i18n.getTranslation(action || 'dismiss'),
+                action: d2.i18n.getTranslation(action || 'ok'),
                 autoHideDuration,
                 onActionTouchTap: onActionTouchTap || (() => {
                     snackActions.hide();
