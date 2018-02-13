@@ -60,8 +60,8 @@ function cleanI18nFiles(i18nDirectory, keysToPreserve, {referenceLocale = "en"})
   propertyFiles.forEach(i18nPath => {
     console.debug(`Process: ${i18nPath}`);
     const contents = fs.readFileSync(i18nPath, "utf-8");
-    const newContents = keysToPreserve ?
-      buildTranslationFromKeys(contents, keysToPreserve, referenceTranslations) : contents;
+    const keys = keysToPreserve || _.keys(referenceTranslations);
+    const newContents = buildTranslationFromKeys(contents, keys, referenceTranslations);
     fs.writeFileSync(i18nPath, unicodeUnescape(newContents), "utf-8");
   });
 }
