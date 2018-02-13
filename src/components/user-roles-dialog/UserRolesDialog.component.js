@@ -77,8 +77,8 @@ export default class UserRolesDialog extends React.Component {
         this.props.onRequestClose();
     }
 
-    limitedJoin(strings, maxItems = 5) {
-        const base = _(strings).take(maxItems).join(", ");
+    limitedJoin(strings, maxItems, joinString) {
+        const base = _(strings).take(maxItems).join(joinString);
         return strings.length <= maxItems ? base :
              this.getTranslation("this_and_n_others", {"this": base, "n": strings.length - maxItems});
     }
@@ -91,7 +91,7 @@ export default class UserRolesDialog extends React.Component {
             return (
                 <Toggle
                     label={label}
-                    style={{width: 300, float: "right", marginTop: 10}}
+                    style={{width: 300, float: "right", marginTop: 20, marginRight: 15}}
                     checked={this.state.updateStrategy === "replace"}
                     onToggle={(ev, newValue) => this.setState({updateStrategy: newValue ? "replace" : "merge"})}
                 />
@@ -146,8 +146,8 @@ export default class UserRolesDialog extends React.Component {
     render() {
         const isLoading = this.state.state === "loading";
         const {users, allUserRoles, filterText, selectedIds} = this.state;
-        const usernames = isLoading ? 'Loading...' : users.map(user => user.userCredentials.username).join(", ");
-        const title = this.getTranslation('assignRoles') + ": " + this.limitedJoin(usernames || []);
+        const usernames = isLoading ? 'Loading...' : users.map(user => user.userCredentials.username);
+        const title = this.getTranslation('assignRoles') + ": " + this.limitedJoin(usernames || [], 3, ", ");
         const options = _(allUserRoles || []).sortBy("displayName")
             .map(role => ({value: role.id, text: role.displayName})).value();
 

@@ -35,7 +35,7 @@ export default class UserRolesDialogModel {
 
         return api.post(metadataUrl, payload).then(response => {
             if (response.status !== 'OK') {
-                throw new Error(response.toString());
+                throw new Error(response);
             } else {
                 return response;
             }

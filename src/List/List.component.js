@@ -122,7 +122,7 @@ const List = React.createClass({
                 open: false,
             },
             assignUserRoles: {
-                user: null,
+                users: null,
                 open: false,
             },
         };
@@ -131,7 +131,7 @@ const List = React.createClass({
     getDataTableRows(users) {
         const namesFromCollection = collection =>
             _(collection && collection.toArray ? collection.toArray() : (collection || []))
-                .map(obj => obj.displayName).sortBy().join(", ");
+                .map(obj => obj.displayName).sortBy().join(", ") || "-";
         return users.map(user => ({
             id: user.id,
             name: user.name,
@@ -390,7 +390,7 @@ const List = React.createClass({
 
                 {assignUserRoles.open ?
                     <UserRolesDialog
-                        users={[assignUserRoles.user, {id: "B60oCwCnjIo"}]}
+                        users={assignUserRoles.users}
                         onRequestClose={() => userRolesAssignmentDialogStore.setState({open: false})}
                     />
                     : null}
