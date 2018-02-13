@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
 import DataTable from '../data-table/DataTable.component';
+import MultipleDataTable from '../components/multiple-data-table/MultipleDataTable.component';
 import Pagination from 'd2-ui/lib/pagination/Pagination.component';
 import DetailsBox from './DetailsBox.component';
-import contextActions from './ContextActions';
+import contextActions from './context.actions';
 import detailsStore from './details.store';
 import listStore from './list.store';
 import listActions from './list.actions';
@@ -83,7 +84,7 @@ class DetailsBoxWithScroll extends Component {
     }
 }
 
-const initialOrder = ["name", false];
+const initialSorting = ["name", "asc"];
 
 const List = React.createClass({
     propTypes: {
@@ -105,7 +106,7 @@ const List = React.createClass({
             searchString: "",
             filterByRole: null,
             filterByGroup: null,
-            order: initialOrder,
+            sorting: initialSorting,
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -132,6 +133,7 @@ const List = React.createClass({
             _(collection && collection.toArray ? collection.toArray() : (collection || []))
                 .map(obj => obj.displayName).sortBy().join(", ");
         return users.map(user => ({
+            id: user.id,
             name: user.name,
             username: user.username,
             lastUpdated: user.lastUpdated,
@@ -216,45 +218,9 @@ const List = React.createClass({
         snackActions.show({ message: 'organisation_unit_assignment_save_error', translate: true });
     },
 
-    isContextActionAllowed(row, action) {
-        const model = row && row.model;
-        // Don't allow anything if we can't determine the access
-        if (!model || !model.access) {
-            return false;
-        }
-
-        // TODO: Remove categoryOptionCombo available actions hack when this is sorted through the API
-        if (model.modelDefinition.name === 'categoryOptionCombo') {
-            if (action === 'edit') {
-                return model.access.write;
-            }
-
-            if (action === 'details') {
-                return model.access.read;
-            }
-
-            return false;
-        }
-
-        // Shortcut for access detection where action names match to access properties
-        if (model.access.hasOwnProperty(action)) {
-            return model.access[action];
-        }
-
-        // Switch action for special cases
-        switch (action) {
-            case 'details':
-                return model.access.read;
-            case 'assignToOrgUnits':
-                return model.modelDefinition.name === 'user' && model.access.write;
-            default:
-                return true;
-        }
-    },
-
     filterList({keepCurrentPage = false} = {}) {
-        const order = this.state.order ?
-            this.state.order[0] + ":" + (this.state.order[1] ? "idesc" : "iasc") : null;
+        const order = this.state.sorting ?
+            (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
         listActions.filter({
             modelType: this.props.params.modelType,
             canManage: !this.state.showAllUsers,
@@ -268,8 +234,8 @@ const List = React.createClass({
         }).subscribe(() => {}, error => log.error(error));
     },
 
-    onHeaderClick(columnName, reverse) {
-        this.setState({order: [columnName, reverse]}, this.filterList);
+    onColumnSort(sorting) {
+        this.setState({sorting}, this.filterList);
     },
 
     searchListByName(searchObserver) {
@@ -323,15 +289,6 @@ const List = React.createClass({
             currentlyShown,
         };
 
-        const availableActions = Object.keys(contextActions)
-            .filter(actionsThatRequireCreate, this)
-            .filter(actionsThatRequireDelete, this)
-            .reduce((actions, actionName) => {
-                // TODO: Don't re-assign param?
-                actions[actionName] = contextActions[actionName]; // eslint-disable-line no-param-reassign
-                return actions;
-            }, {});
-
         const styles = {
             dataTableWrap: {
                 display: 'flex',
@@ -356,12 +313,6 @@ const List = React.createClass({
             }
         };
 
-        const contextMenuIcons = {
-            assignToOrgUnits: 'business',
-            assignToOrgUnitsOutput: 'business',
-            assignRoles: 'assignment',
-            assignGroups: 'group_add'
-        };
         const rows = this.getDataTableRows(this.state.dataRows);
         const {assignUserRoles} = this.state;
 
@@ -406,15 +357,13 @@ const List = React.createClass({
                 />
                 <div style={styles.listDetailsWrap}>
                     <div style={styles.dataTableWrap}>
-                        <DataTable
+                        <MultipleDataTable
                             rows={rows}
                             columns={this.state.tableColumns}
-                            contextMenuActions={availableActions}
-                            contextMenuIcons={contextMenuIcons}
-                            primaryAction={(row, ev) => contextActions.details(row)}
-                            isContextActionAllowed={this.isContextActionAllowed}
-                            headerClick={this.onHeaderClick}
-                            initialOrder={initialOrder}
+                            contextActions={contextActions}
+                            onColumnSort={this.onColumnSort}
+                            isMultipleSelectionAllowed={true}
+                            showSelectColumn={true}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
