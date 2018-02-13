@@ -18,7 +18,8 @@
     "build": "rm -rf build && webpack && npm run manifest",
     "postbuild": "cp -rv src/i18n index.html icon.png node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js node_modules/ckeditor ./build/",
     "validate": "npm ls",
-    "manifest": "d2-manifest package.json build/manifest.webapp"
+    "manifest": "d2-manifest package.json build/manifest.webapp",
+    "clean-i18n": "resources/scripts/clean-i18n-translations.js src/i18n/"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
