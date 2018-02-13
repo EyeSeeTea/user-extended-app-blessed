@@ -77,6 +77,7 @@ const MultipleDataTable = React.createClass({
             table: React.PropTypes.object,
             header: React.PropTypes.object,
         }),
+        rows: React.PropTypes.arrayOf(React.PropTypes.shape({id: React.PropTypes.any.isRequired})),
         activeRows: React.PropTypes.arrayOf(React.PropTypes.object),
         onActiveRowsChange: React.PropTypes.func,
         showSelectColumn: React.PropTypes.bool,
@@ -85,7 +86,7 @@ const MultipleDataTable = React.createClass({
     getDefaultProps() {
         return {
             styles: {},
-            activeRows: [],
+            activeRows: null,
             onActiveRowsChange: () => {},
         };
     },
@@ -116,9 +117,13 @@ const MultipleDataTable = React.createClass({
             dataRows = props.rows instanceof Map ? Array.from(props.rows.values()) : props.rows;
         }
 
+        // Keep selections on table redraw unless forced by props
+        const activeRows = props.activeRows ||
+            _(dataRows).intersectionBy(this.state && this.state.activeRows || [], "id").value();
+
         return {
             columns: props.columns,
-            activeRows: props.activeRows,
+            activeRows: activeRows,
             dataRows: dataRows,
             contextActionsData: fromActionsDefinitions(props.contextActions),
         };
