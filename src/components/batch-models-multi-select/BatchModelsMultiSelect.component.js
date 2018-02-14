@@ -5,23 +5,21 @@ import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
 import TextField from 'material-ui/TextField/TextField';
 import MultiSelect from '../MultiSelect.component';
-import UserRolesDialogModel from './UserRolesDialog.model';
 import snackActions from '../../Snackbar/snack.actions';
 import Toggle from 'material-ui/Toggle/Toggle';
 import PropTypes from 'prop-types';
 
-export default class UserRolesDialog extends React.Component {
+export default class BatchModelsMultiSelectComponent extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
-        this.model = new UserRolesDialogModel(context.d2);
         this.state = {
             state: "loading",
-            users: null,
-            allUserRoles: null,
+            parents: null,
+            allChildren: null,
             selectedIds: null,
             filterText: "",
-            updateStrategy: this.props.users.length > 1 ? "merge" : "replace",
+            updateStrategy: this.props.parents.length > 1 ? "merge" : "replace",
         };
     }
 
@@ -56,16 +54,15 @@ export default class UserRolesDialog extends React.Component {
     };
 
     componentDidMount() {
-        const {users} = this.props;
-        const {model} = this;
+        const {parents, model} = this.props;
 
-        return Promise.all([model.getAllUserRoles(), model.getUsers(users)])
-            .then(([allUserRoles, usersLoaded]) =>
+        return Promise.all([model.getAllChildren(), model.getParents(parents)])
+            .then(([allChildren, parentsLoaded]) =>
                 this.setState({
                     state: "ready",
-                    users: usersLoaded,
-                    allUserRoles,
-                    selectedIds: this.model.getSelectedRoles(usersLoaded).map(role => role.id),
+                    parents: parentsLoaded,
+                    allChildren,
+                    selectedIds: this.props.model.getSelectedChildren(parentsLoaded).map(obj => obj.id),
                 }))
             .catch(err =>
                 this.close(this.getTranslation('error_loading_data') + " :" + err.toString()));
@@ -77,14 +74,8 @@ export default class UserRolesDialog extends React.Component {
         this.props.onRequestClose();
     }
 
-    limitedJoin(strings, maxItems, joinString) {
-        const base = _(strings).take(maxItems).join(joinString);
-        return strings.length <= maxItems ? base :
-             this.getTranslation("this_and_n_others", {"this": base, "n": strings.length - maxItems});
-    }
-
     renderStrategyToggle() {
-        if (this.state.users && this.state.users.length > 1) {
+        if (this.state.parents && this.state.parents.length > 1) {
             const label = this.getTranslation('update_strategy') + ": " +
                 this.getTranslation('update_strategy_' + this.state.updateStrategy);
 
@@ -102,9 +93,10 @@ export default class UserRolesDialog extends React.Component {
     }
 
     save() {
-        this.model.save(this.state.users, this.state.selectedIds, this.state.updateStrategy)
-            .then(() => this.close(this.getTranslation('user_roles_assigned')))
-            .catch(err => this.close(this.getTranslation('user_roles_assign_error') + " :" + err.toString()));
+        const {parents, allChildren, selectedIds, updateStrategy} = this.state;
+        this.props.model.save(parents, allChildren, selectedIds, updateStrategy)
+            .then(() => this.close(this.props.onSuccess))
+            .catch(err => this.close(this.props.onError));
     }
 
     onChange(selectedIds) {
@@ -145,11 +137,10 @@ export default class UserRolesDialog extends React.Component {
 
     render() {
         const isLoading = this.state.state === "loading";
-        const {users, allUserRoles, filterText, selectedIds} = this.state;
-        const usernames = isLoading ? 'Loading...' : users.map(user => user.userCredentials.username);
-        const title = this.getTranslation('assignRoles') + ": " + this.limitedJoin(usernames || [], 3, ", ");
-        const options = _(allUserRoles || []).sortBy("displayName")
-            .map(role => ({value: role.id, text: role.displayName})).value();
+        const {parents, allChildren, filterText, selectedIds} = this.state;
+        const title = this.props.getTitle(parents, allChildren);
+        const options = _(allChildren || []).sortBy("name")
+            .map(obj => ({value: obj.id, text: obj.name})).value();
 
         return (
             <Dialog
@@ -184,11 +175,12 @@ export default class UserRolesDialog extends React.Component {
     }
 }
 
-UserRolesDialog.propTypes = {
-    users: PropTypes.arrayOf(PropTypes.object).isRequired,
+BatchModelsMultiSelectComponent.propTypes = {
+    model: PropTypes.object.isRequired,
+    parents: PropTypes.arrayOf(PropTypes.object).isRequired,
     onRequestClose: PropTypes.func.isRequired,
 };
 
-UserRolesDialog.contextTypes = {
+BatchModelsMultiSelectComponent.contextTypes = {
     d2: PropTypes.object.isRequired,
 };
