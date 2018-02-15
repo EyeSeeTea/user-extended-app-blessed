@@ -18,7 +18,7 @@ async function assignToOrgUnits(selectedUser, field, titleKey) {
     orgUnitAssignmentDialogStore.setState({
         model: user,
         field: user[field],
-        title: `${d2.i18n.getTranslation('assignToOrgUnits')}: ${username}`,
+        title: `${d2.i18n.getTranslation(titleKey)}: ${username}`,
         roots: userOrgUnitRoots,
         open: true,
     });
