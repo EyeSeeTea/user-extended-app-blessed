@@ -6,30 +6,25 @@ import { getOwnedPropertyJSON } from 'd2/lib/model/helpers/json';
 import _m from '../utils/lodash-mixins';
 
 function getPayload(allUserGroups, pairs) {
-    // The saving of user groups is more convoluted than the saving of userRoles. That's because we
-    // cannot just save users (as the property useruserGroups is not owned by the User model), we
-    // must save userGroups, so we must invert the relationships.
+    // Saving user groups is more complicated than saving userRoles. That's because we
+    // cannot save users (the property userGroups is not owned by d2.models.User), instead we
+    // have to save user groups, so we must invert the user/groups relationship.
     const allUserGroupsById = _.keyBy(allUserGroups, "id");
-    const users = _(pairs).map(([user, userGroupsForUser]) => user).value();
-    const relations = _(pairs)
-        .map(([user, userGroupsForUser]) =>
-            [user.id, new Set(userGroupsForUser.map(group => group.id))])
+    const usersToSave = _(pairs).map(([user, userGroupsForUser]) => user).value();
+    const groupIdsByUserId = _(pairs)
+        .map(([user, userGroupsForUser]) => [user.id, new Set(userGroupsForUser.map(group => group.id))])
         .fromPairs()
         .value();
-    const updateUsersInGroup = (group) => {
-        // A user is kept in a group if it has no relations (it's not a user we are editing)
-        // or if it's being edited and is included amongst the groups to keep for the edited user.
-        const newUsers = _(group.users.toArray())
-            .concat(users)
-            .filter(user => !relations[user.id] || relations[user.id].has(group.id))
-            .value();
-        return _m.imerge(getOwnedPropertyJSON(group), {users: newUsers.map(u => ({id: u.id}))});
-    };
+    const getUsersForGroup = (group) =>
+        group.users.toArray()
+            .concat(usersToSave)
+            .filter(user => !groupIdsByUserId[user.id] || groupIdsByUserId[user.id].has(group.id))
+            .map(user => ({id: user.id}));
     const userGroups = _(pairs)
         .flatMap(([user, userGroupsForUser]) =>_.concat(user.userGroups.toArray(), userGroupsForUser))
-        .uniqBy(userGroup => userGroup.id)
+        .uniqBy(group => group.id)
         .map(userGroup => allUserGroupsById[userGroup.id])
-        .map(group => updateUsersInGroup(group))
+        .map(group => _m.imerge(getOwnedPropertyJSON(group), {users: getUsersForGroup(group)}))
         .value();
 
     return {userGroups};
@@ -47,9 +42,9 @@ function UserGroupsDialog(props, context) {
 
     const modelOptions = {
         parentModel: d2.models.users,
-        parentFields: ':owner,userGroups[id,name]',
+        parentFields: 'id,displayName,userCredentials[username],userGroups[id,name]',
         childrenModel: d2.models.userGroups,
-        childrenFields: 'id,name,users[id]',
+        childrenFields: ':owner,id,name,users[id]',
         getChildren: user => user.userGroups,
         getPayload: getPayload,
     };
