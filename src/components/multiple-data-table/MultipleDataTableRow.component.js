@@ -11,6 +11,17 @@ import Checkbox from 'material-ui/Checkbox/Checkbox';
 
 import './MultipleDataTableRow.scss';
 
+function SimpleCheckbox({onClick, checked, ...otherProps}) {
+    return (
+        <span onClick={onClick} {...otherProps}>
+            <input type="checkbox" readOnly={true}
+                   checked={checked} className="simple-checkbox">
+            </input>
+            <span></span>
+        </span>
+    );
+}
+
 function valueTypeGuess(valueType, value) {
     switch (valueType) {
     case 'DATE':
@@ -61,7 +72,7 @@ const MultipleDataTableRow = React.createClass({
                 className="data-table__rows__row__column"
                 onClick={ev => onSelectCellClicked && onSelectCellClicked(isActive, !isSelected)}
             >
-                <Checkbox checked={isSelected} iconStyle={{width: 'auto'}} />
+                <SimpleCheckbox checked={isSelected} iconStyle={{width: 'auto'}} />
             </div>
         );
     },
