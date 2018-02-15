@@ -150,6 +150,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
                 autoDetectWindowHeight
                 contentStyle={this.styles.dialog}
                 open={true}
+                onRequestClose={this.props.onRequestClose}
             >
                 <TextField
                     style={{marginLeft: 15, marginTop: 5, marginBottom: -15}}
