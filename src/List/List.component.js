@@ -72,7 +72,7 @@ class DetailsBoxWithScroll extends Component {
             <div style={this.props.style}>
                 <Paper zDepth={1} rounded={false} style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
                     <DetailsBox
-                        source={this.props.detailsObject}
+                        source={this.props.detailsObject.model}
                         showDetailBox={!!this.props.detailsObject}
                         onClose={this.props.onClose}
                     />
@@ -126,30 +126,20 @@ const List = React.createClass({
         };
     },
 
-    convertListToTableRows(list) {
-        const getCollectionNames = collection =>
-            _(collection.toArray ? collection.toArray() : collection)
+    getDataTableRows(users) {
+        const namesFromCollection = collection =>
+            _(collection && collection.toArray ? collection.toArray() : (collection || []))
                 .map(obj => obj.displayName).sortBy().join(", ");
-        return list.map((item) => {
-            /** Extract user groups items */
-            if (item.userGroups) {
-                item.userGroups = getCollectionNames(item.userGroups);
-            }
-
-            /** Extract organization units items */
-            if (item.organisationUnits) {
-                item.organisationUnits = getCollectionNames(item.organisationUnits);
-
-                /** TODO: replace with OUOuput */
-                item.organisationUnitsOutput = item.organisationUnits;
-            }
-
-            /** Extract user roles */
-            if (item.userCredentials && item.userCredentials.userRoles) {
-                item.userRoles = getCollectionNames(item.userCredentials.userRoles);
-            }
-            return item;
-        });
+        return users.map(user => ({
+            name: user.name,
+            username: user.username,
+            lastUpdated: user.lastUpdated,
+            userGroups: namesFromCollection(user.userGroups),
+            organisationUnits: namesFromCollection(user.organisationUnits),
+            dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
+            userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles),
+            model: user,
+        }));
     },
 
     componentWillMount() {
@@ -160,7 +150,7 @@ const List = React.createClass({
                 }
 
                 this.setState({
-                    dataRows: this.convertListToTableRows(listStoreValue.list),
+                    dataRows: listStoreValue.list,
                     pager: listStoreValue.pager,
                     tableColumns: listStoreValue.tableColumns,
                     isLoading: false,
@@ -188,7 +178,8 @@ const List = React.createClass({
         const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
             this.setState({
                 orgunitassignment: orgunitassignmentState,
-            });
+                detailsObject: null,
+            }, () => !orgunitassignmentState.open && this.filterList({keepCurrentPage: true}));
         });
 
         this.registerDisposable(sourceStoreDisposable);
@@ -216,7 +207,8 @@ const List = React.createClass({
         snackActions.show({ message: 'organisation_unit_assignment_save_error', translate: true });
     },
 
-    isContextActionAllowed(model, action) {
+    isContextActionAllowed(row, action) {
+        const model = row && row.model;
         // Don't allow anything if we can't determine the access
         if (!model || !model.access) {
             return false;
@@ -251,18 +243,19 @@ const List = React.createClass({
         }
     },
 
-    filterList() {
+    filterList({keepCurrentPage = false} = {}) {
         const order = this.state.order ?
             this.state.order[0] + ":" + (this.state.order[1] ? "idesc" : "iasc") : null;
         listActions.filter({
             modelType: this.props.params.modelType,
             canManage: !this.state.showAllUsers,
             order: order,
-            filters: {
-                "displayName": ["ilike", this.state.searchString],
-                "userCredentials.userRoles.id": ["eq", this.state.filterByRole],
-                "userGroups.id": ["eq", this.state.filterByGroup],
-            },
+            page: keepCurrentPage ? this.state.pager.page : 1,
+            filters: _.pickBy({
+                "displayName": this.state.searchString && ["ilike", this.state.searchString],
+                "userCredentials.userRoles.id": this.state.filterByRole && ["eq", this.state.filterByRole],
+                "userGroups.id": this.state.filterByGroup && ["eq", this.state.filterByGroup],
+            }),
         }).subscribe(() => {}, error => log.error(error));
     },
 
@@ -360,6 +353,7 @@ const List = React.createClass({
             assignRoles: 'assignment',
             assignGroups: 'group_add'
         };
+        const rows = this.getDataTableRows(this.state.dataRows);
 
         return (
             <div>
@@ -405,11 +399,11 @@ const List = React.createClass({
                 <div style={styles.listDetailsWrap}>
                     <div style={styles.dataTableWrap}>
                         <DataTable
-                            rows={this.state.dataRows}
+                            rows={rows}
                             columns={this.state.tableColumns}
                             contextMenuActions={availableActions}
                             contextMenuIcons={contextMenuIcons}
-                            primaryAction={(user, ev) => contextActions.details(user)}
+                            primaryAction={(row, ev) => contextActions.details(row)}
                             isContextActionAllowed={this.isContextActionAllowed}
                             headerClick={this.onHeaderClick}
                             initialOrder={initialOrder}
@@ -428,6 +422,8 @@ const List = React.createClass({
 
                 {this.state.orgunitassignment.model ? <OrgUnitDialog
                     model={this.state.orgunitassignment.model}
+                    title={this.state.orgunitassignment.title}
+                    field={this.state.orgunitassignment.field}
                     roots={this.state.orgunitassignment.roots}
                     open={this.state.orgunitassignment.open}
                     onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}

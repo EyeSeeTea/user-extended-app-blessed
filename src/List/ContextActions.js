@@ -18,39 +18,45 @@ const contextActions = Action.createActionsFromNames([
 
 /** Show user details */
 contextActions.details
-    .subscribe(({ data: model }) => {
-        detailsStore.setState(model);
+    .subscribe(({ data: row }) => {
+        detailsStore.setState(row);
     });
 
-/** Assign user to organization unit */
+/** Assign user to organisation units */
 contextActions.assignToOrgUnits
-    .subscribe(async ({ data: model }) => {
+    .subscribe(async ({ data: {model} }) => {
         const d2 = await getD2();
         const options = { fields: ":all,organisationUnits[id,path,displayName]" };
         const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+        const username = modelItem.userCredentials.username;
         const userOrgUnitRoots = await appStateStore
             .map(appState => appState.userOrganisationUnits.toArray())
             .first().toPromise();
 
         orgUnitAssignmentDialogStore.setState({
             model: modelItem,
+            field: modelItem.organisationUnits,
+            title: `${d2.i18n.getTranslation('assignToOrgUnits')}: ${username}`,
             roots: userOrgUnitRoots,
             open: true,
         });
     });
 
-    /** Assign user to organization unit */
+    /** Assign user to out organisation units */
 contextActions.assignToOrgUnitsOutput
-.subscribe(async ({ data: model }) => {
+.subscribe(async ({ data: {model} }) => {
     const d2 = await getD2();
-    const options = { fields: ":all,organisationUnits[id,path,displayName]" };
+    const options = { fields: ":all,dataViewOrganisationUnits[id,path,displayName]" };
     const modelItem = await d2.models[model.modelDefinition.name].get(model.id, options);
+    const username = modelItem.userCredentials.username;
     const userOrgUnitRoots = await appStateStore
         .map(appState => appState.userOrganisationUnits.toArray())
         .first().toPromise();
 
     orgUnitAssignmentDialogStore.setState({
         model: modelItem,
+        title: `${d2.i18n.getTranslation('assignToOrgUnitsOutput')}: ${username}`,
+        field: modelItem.dataViewOrganisationUnits,
         roots: userOrgUnitRoots,
         open: true,
     });
@@ -58,19 +64,19 @@ contextActions.assignToOrgUnitsOutput
 
 /** Assign roles */
 contextActions.assignRoles
-    .subscribe(({ data: model }) => {
+    .subscribe(({ data: {model} }) => {
         alert('Assign roles');
     });
 
 /** Assign to groups */
 contextActions.assignGroups
-    .subscribe(({ data: model }) => {
+    .subscribe(({ data: {model} }) => {
         alert('Assign to groups');
     });
 
 /** Edit user */
 contextActions.edit
-    .subscribe(({ data: model }) => {
+    .subscribe(({ data: {model} }) => {
         alert('Edit user');
     });
 
