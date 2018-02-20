@@ -172,6 +172,7 @@ const MultipleDataTable = React.createClass({
 
     renderSelectHeader() {
         const selectedHeaderChecked = (
+            this.state.dataRows.length > 0 &&
             this.state.dataRows.length == this.state.activeRows.length &&
             _(this.state.dataRows).difference(this.state.activeRows).isEmpty()
         );

@@ -2,6 +2,7 @@ import detailsStore from './details.store';
 import { config, getInstance as getD2 } from 'd2/lib/d2';
 import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
 import userRolesAssignmentDialogStore from './userRoles.store';
+import userGroupsAssignmentDialogStore from './userGroups.store';
 import appStateStore from '../App/appStateStore';
 import _ from 'lodash';
 
@@ -17,7 +18,7 @@ async function assignToOrgUnits(selectedUser, field, titleKey) {
     orgUnitAssignmentDialogStore.setState({
         model: user,
         field: user[field],
-        title: `${d2.i18n.getTranslation('assignToOrgUnits')}: ${username}`,
+        title: `${d2.i18n.getTranslation(titleKey)}: ${username}`,
         roots: userOrgUnitRoots,
         open: true,
     });
@@ -63,7 +64,7 @@ const contextActions = [
         name: 'assignGroups',
         icon: "group_add",
         multiple: true,
-        onClick: users => alert("TODO"),
+        onClick: users => userGroupsAssignmentDialogStore.setState({users, open: true}),
         allowed: checkAccess(["update"]),
     },
     {
