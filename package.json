@@ -1,13 +1,14 @@
 {
-  "name": "organisation-unit-assignment-app",
-  "version": "0.1.0",
-  "description": "DHIS2 Organisation Unit Assignment app",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/EyeSeeTea/organisationUnit-User-Assigment.git"
+  "name": "d2-user-app",
+  "version": "0.0.1",
+  "description": "DHIS2 Enhanced User app",
+  "main": "src/index.html",
+  "license": "GPL-3.0",
+  "author": {
+    "name": "EyeSeeTea Team",
+    "email": "hello@eyeseetea.com",
+    "url": "https://github.com/EyeSeeTea/user-app"
   },
-  "license": "BSD-3-Clause",
   "scripts": {
     "prestart": "d2-manifest package.json manifest.webapp",
     "start": "webpack-dev-server",
@@ -92,6 +93,14 @@
     "jquery": "^3.3.1",
     "prop-types": "^15.5.10"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EyeSeeTea/user-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EyeSeeTea/user-app/issues"
+  },
+  "homepage": "https://github.com/EyeSeeTea/user-app",
   "manifest.webapp": {
     "name": "User app",
     "icons": {
@@ -106,5 +115,5 @@
         "href": "*"
       }
     }
-  }
+  }  
 }
