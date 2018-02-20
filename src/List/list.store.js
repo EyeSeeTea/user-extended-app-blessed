@@ -114,6 +114,9 @@ export default Store.create({
                 _(filters).pickBy(([operator, value], field) => value).toPairs().value();
             const [preliminarFilters, normalFilters] =
                 _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
+            // Limit Uids to avoid 413 Request too large
+            // maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
+            const maxUids = (8192 - 1000) / (11 + 3);
             const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
                 model
                     .list({
@@ -122,7 +125,7 @@ export default Store.create({
                         filter: buildD2Filter([preliminarFilter]),
                     })
                     .then(collection => collection.toArray().map(obj => obj.id))
-                    .then(ids => `id:in:[${ids.join(",")}]`));
+                    .then(ids => `id:in:[${_(ids).take(maxUids).join(",")}]`));
             const listSearchPromise = Promise.all(preliminarD2Filters$).then(preliminarD2Filters => {
                 const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
                 return model.list({
