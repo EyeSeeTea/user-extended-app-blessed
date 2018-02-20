@@ -24,6 +24,7 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import RichDropdown from '../components/RichDropdown.component';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -162,12 +163,12 @@ const List = React.createClass({
 
         /** Set user roles list for filter by role */
         const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
-            this.setState({ userRoles: this.convertObjsToMenuItems(userRoles) });
+            this.setState({ userRoles: userRoles.toArray().map(role => ({value: role.id, text: role.displayName})) });
         });
 
         /** Set user groups list for filter by group */
         const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
-            this.setState({ userGroups: this.convertObjsToMenuItems(userGroups) });
+            this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
         });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
@@ -278,12 +279,12 @@ const List = React.createClass({
         this.setState({showAllUsers: !isChecked}, this.filterList);
     },
 
-    setFilterRole(event, index, value) {
-        this.setState({filterByRole: value}, this.filterList);
+    setFilterRole(event) {
+        this.setState({filterByRole: event.target.value}, this.filterList);
     },
 
-    setFilterGroup(event, index, value) {
-        this.setState({filterByGroup: value}, this.filterList);
+    setFilterGroup(event) {
+        this.setState({filterByGroup: event.target.value}, this.filterList);
     },
 
     convertObjsToMenuItems(objs) {
@@ -364,18 +365,20 @@ const List = React.createClass({
                         <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
                     <div className="user-management-control select-role">
-                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_role')}
-                                     value={this.state.filterByRole}
-                                     onChange={this.setFilterRole}>
-                            {this.state.userRoles}
-                        </SelectField>
+                        <RichDropdown
+                            labelText={this.getTranslation('filter_role')}
+                            value={this.state.filterByRole}
+                            options={this.state.userRoles}
+                            onChange={this.setFilterRole}
+                        />
                     </div>
                     <div className="user-management-control select-group">
-                        <SelectField autoWidth floatingLabelText={this.getTranslation('filter_group')}
-                                     value={this.state.filterByGroup}
-                                     onChange={this.setFilterGroup}>
-                            {this.state.userGroups}
-                        </SelectField>
+                    <RichDropdown
+                        labelText={this.getTranslation('filter_group')}
+                        value={this.state.filterByGroup}
+                        options={this.state.userGroups}
+                        onChange={this.setFilterGroup}
+                    />
                     </div>
                     <div className="user-management-control">
                         <Checkbox className="control-checkbox"
