@@ -1,6 +1,7 @@
 import detailsStore from './details.store';
 import { config, getInstance as getD2 } from 'd2/lib/d2';
 import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
+import userRolesAssignmentDialogStore from './userRoles.store';
 import appStateStore from '../App/appStateStore';
 import _ from 'lodash';
 
@@ -22,9 +23,13 @@ async function assignToOrgUnits(selectedUser, field, titleKey) {
     });
 }
 
-const toArray = obj => obj instanceof Array ? obj : [obj];
-const readAccess = rows => _(toArray(rows)).every(row => row.model.access.read);
-const writeAccess = rows => _(toArray(rows)).every(row => row.model.access.write);
+function checkAccess(requiredKeys) {
+    const toArray = obj => obj instanceof Array ? obj : [obj];
+    return (rows) => {
+        return _(toArray(rows)).every(row =>
+            _(requiredKeys).difference(_(row.model.access).pickBy().keys().value()).isEmpty());
+    };
+}
 
 const contextActions = [
     {
@@ -38,34 +43,34 @@ const contextActions = [
         multiple: false,
         icon: "business",
         onClick: user => assignToOrgUnits(user, "organisationUnits", "assignToOrgUnits"),
-        allowed: writeAccess,
+        allowed: checkAccess(["update"]),
     },
     {
         name: 'assignToOrgUnitsOutput',
         multiple: false,
         icon: "business",
         onClick: user => assignToOrgUnits(user, "dataViewOrganisationUnits", "assignToOrgUnitsOutput"),
-        allowed: writeAccess,
+        allowed: checkAccess(["update"]),
     },
     {
         name: 'assignRoles',
         multiple: true,
         icon: "assignment",
-        onClick: user => alert("TODO"),
-        allowed: writeAccess,
+        onClick: users => userRolesAssignmentDialogStore.setState({users, open: true}),
+        allowed: checkAccess(["update"]),
     },
     {
         name: 'assignGroups',
         icon: "group_add",
         multiple: true,
-        onClick: user => alert("TODO"),
-        allowed: writeAccess,
+        onClick: users => alert("TODO"),
+        allowed: checkAccess(["update"]),
     },
     {
         name: 'edit',
         multiple: false,
         onClick: user => alert("TODO"),
-        allowed: writeAccess,
+        allowed: checkAccess(["update"]),
     },
 ];
 
