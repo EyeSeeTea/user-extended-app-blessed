@@ -72,7 +72,7 @@ const MultipleDataTableRow = React.createClass({
                 className="data-table__rows__row__column"
                 onClick={ev => onSelectCellClicked && onSelectCellClicked(isActive, !isSelected)}
             >
-                <SimpleCheckbox checked={isSelected} iconStyle={{width: 'auto'}} />
+                <SimpleCheckbox checked={isSelected} />
             </div>
         );
     },
