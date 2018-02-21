@@ -109,7 +109,7 @@ class App extends AppWithD2 {
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
                     <HeaderBar />
-                    <SinglePanelLayout>
+                    <SinglePanelLayout style={{marginTop: "3.5rem", marginLeft: 10}}>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>}
                     <SnackbarContainer />
