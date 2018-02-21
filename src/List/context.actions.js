@@ -67,12 +67,12 @@ const contextActions = [
         onClick: users => userGroupsAssignmentDialogStore.setState({users, open: true}),
         allowed: checkAccess(["update"]),
     },
-    {
+    /*{
         name: 'edit',
         multiple: false,
         onClick: user => alert("TODO"),
         allowed: checkAccess(["update"]),
-    },
+    },*/
 ];
 
 

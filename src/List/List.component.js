@@ -332,9 +332,6 @@ const List = React.createClass({
 
         return (
             <div>
-                <div>
-                    <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>
-                </div>
                 <div className="user-management-controls">
                     <div className="user-management-control">
                         <SearchBox searchObserverHandler={this.searchListByName} />

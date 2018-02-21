@@ -41,6 +41,7 @@ class App extends AppWithD2 {
 
     componentDidMount() {
         super.componentDidMount();
+        this.setupFeedback();
 
         // The all section is a special section that should not be treated like a normal section as it does not
         // have the sidebar. It is used to display the collection of all meta data objects. The all section will
@@ -75,6 +76,30 @@ class App extends AppWithD2 {
         }
     }
 
+    setupFeedback() {
+        $.feedbackGithub({
+            // https://github.com/settings/tokens -> Developer settings -> Personal access tokens
+            // Create a token with the following scope: repo -> public_repo.
+            token: atob("OTZhMzE0MTlmNTgzNTdmYWI5NWVjODBiNTZhNDNjOWExODY4YjQyOQ=="),
+            issues: {
+                repository: "EyeSeeTea/user-app-blessed",
+                title: "User feedback",
+                renderBody: (body) => {
+                    return [
+                        "## dhis2\n",
+                        "- Username: " + d2.currentUser.username,
+                        body,
+                    ].join("\n");
+                },
+            },
+            snapshots: {
+                repository: "EyeSeeTeaBotTest/snapshots",
+                branch: "master",
+            },
+            feedback: {},
+        });
+    }
+
     render() {
         if (!this.state.d2) {
             return (<LoadingMask />);
@@ -84,7 +109,7 @@ class App extends AppWithD2 {
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
                     <HeaderBar />
-                    <SinglePanelLayout>
+                    <SinglePanelLayout style={{marginTop: "3.5rem", marginLeft: 10}}>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>}
                     <SnackbarContainer />
