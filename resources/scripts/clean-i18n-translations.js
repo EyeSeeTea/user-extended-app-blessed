@@ -62,7 +62,7 @@ function cleanI18nFiles(i18nDirectory, keysToPreserve, {referenceLocale = "en"})
     const contents = fs.readFileSync(i18nPath, "utf-8");
     const keys = keysToPreserve || _.keys(referenceTranslations);
     const newContents = buildTranslationFromKeys(contents, keys, referenceTranslations);
-    fs.writeFileSync(i18nPath, unicodeUnescape(newContents), "utf-8");
+    fs.writeFileSync(i18nPath, unicodeUnescape(newContents) + "\n", "utf-8");
   });
 }
 
