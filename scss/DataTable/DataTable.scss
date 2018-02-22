@@ -1,0 +1,41 @@
+@import '../variables';
+
+//TODO: Distribute
+//list
+.data-table {
+  background-color: $data-table--background-color;
+}
+
+// Needed to override the inline style set by the component
+// scss-lint:disable ImportantRule
+.details-box-wrap .sticky {
+  left: initial !important;
+  margin-right: 2rem;
+  margin-top: 5rem;
+  width: 22%;
+}
+
+.details-box__close-button {
+  cursor: pointer;
+}
+
+.data-table__rows__row__column:not(:first-child) {
+  width: 200px;
+}
+
+.data-table__headers__header--click {
+  cursor: pointer;
+  &:hover {
+    background-color: $html-background-color;
+  }
+}
+
+.data-table__headers__header__item {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  span.material-icons {
+    color: unset !important;
+    font-size: 18px !important;
+  }
+}

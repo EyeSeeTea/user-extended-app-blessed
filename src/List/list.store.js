@@ -3,23 +3,47 @@ import { Subject, Observable } from 'rx';
 import Store from 'd2-ui/lib/store/Store';
 import appState from '../App/appStateStore';
 
-export const fieldFilteringForQuery =
-    'displayName|rename(name),shortName,id,userCredentials[username],lastUpdated,created,' +
-    'displayDescription,code,publicAccess,access,href,level';
+export const fieldFilteringForQuery = [
+    'displayName|rename(name)',
+    'shortName',
+    'id',
+    'userCredentials[username, userRoles[id,displayName]]',
+    'lastUpdated',
+    'created',
+    'displayDescription',
+    'code',
+    'publicAccess',
+    'access',
+    'href',
+    'level',
+    'userGroups[id,displayName,publicAccess]',
+    'organisationUnits[id,displayName]',
+    'dataViewOrganisationUnits[id,displayName]',
+].join(",");
 
 const orderForQuery = (modelName) =>
-    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'displayName:ASC'
+    (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'name:iasc';
+
+const columns = [
+    {name: 'name', sortable: true},
+    {name: 'username', sortable: false},
+    {name: 'lastUpdated', sortable: true},
+    {name: 'userRoles', sortable: false},
+    {name: 'userGroups', sortable: false},
+    {name: 'organisationUnits', sortable: false},
+    {name: 'dataViewOrganisationUnits', sortable: false},
+];
 
 const columnObservable = appState
     .filter(appState => appState.sideBar && appState.sideBar.currentSubSection)
     .map(appState => appState.sideBar.currentSubSection)
     .distinctUntilChanged()
-    .map(subSection => {
-        return ['name', 'username', 'lastUpdated'];
-    });
+    .map(subSection => columns);
 
 export default Store.create({
     listSourceSubject: new Subject(),
+    listRolesSubject: new Subject(),
+    listGroupsSubject: new Subject(),
 
     initialise() {
         this.listSourceSubject
@@ -32,7 +56,7 @@ export default Store.create({
                     list: modelCollection.toArray().map(user => {
                         user.username = user.userCredentials && user.userCredentials.username;
                         return user;
-                    }),
+                    })
                 });
             });
         return this;
@@ -57,6 +81,28 @@ export default Store.create({
         });
     },
 
+    getRoles() {
+        getD2().then(d2 => {
+            if (d2.models.userRoles) {
+                const rolesPromise = d2.models.userRoles.list({paging: false, fields: "id,displayName"});
+                Observable.fromPromise(rolesPromise).subscribe(res => {
+                    this.listRolesSubject.onNext(res);
+                });
+            }
+        });
+    },
+
+    getGroups() {
+        getD2().then(d2 => {
+            if (d2.models.userGroups) {
+                const groupsPromise = d2.models.userGroups.list({paging: false, fields: "id,displayName"});
+                Observable.fromPromise(groupsPromise).subscribe(res => {
+                    this.listGroupsSubject.onNext(res);
+                });
+            }
+        });
+    },
+
     getNextPage() {
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getNextPage()));
     },
@@ -65,34 +111,49 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, searchString, canManage, complete, error) {
+    async filter(modelType, canManage, filters, order, page, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
             }
 
-            let modelDefinition;
-            if (searchString) {
-                modelDefinition = d2.models[modelType]
-                    .filter().on('displayName').ilike(searchString)
-                    .filter().on('userCredentials.username').ilike(searchString);
-            } else {
-                modelDefinition = d2.models[modelType]
-                    .filter().on('name').notEqual('default');
-            }
-
-            const listSearchPromise = modelDefinition
-                .list({
+            /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
+                example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
+                separate calls to the API for those filters and use the returned IDs to build
+                the final, paginated call. */
+            const model = d2.models[modelType];
+            const buildD2Filter = filters =>
+                _(filters).map(([key, [operator, value]]) => [key, operator, value].join(":")).value();
+            const activeFilters =
+                _(filters).pickBy(([operator, value], field) => value).toPairs().value();
+            const [preliminarFilters, normalFilters] =
+                _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
+            // Limit Uids to avoid 413 Request too large
+            // maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
+            const maxUids = (8192 - 1000) / (11 + 3);
+            const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
+                model
+                    .list({
+                        paging: false,
+                        fields: fieldFilteringForQuery,
+                        filter: buildD2Filter([preliminarFilter]),
+                    })
+                    .then(collection => collection.toArray().map(obj => obj.id))
+                    .then(ids => `id:in:[${_(ids).take(maxUids).join(",")}]`));
+            const listSearchPromise = Promise.all(preliminarD2Filters$).then(preliminarD2Filters => {
+                const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
+                return model.list({
+                    paging: true,
+                    page: page,
                     fields: fieldFilteringForQuery,
-                    rootJunction: "OR",
-                    order: orderForQuery("user"),
+                    order: order || orderForQuery("user"),
                     canManage: canManage,
+                    filter: _(filters).isEmpty() ? "name:ne:default" : filters.join(","),
                 });
+            });
 
             this.listSourceSubject.onNext(Observable.fromPromise(listSearchPromise));
-
-            complete(`${modelType} list with search on 'displayName' for '${searchString}' is loading`);
+            complete(`${modelType} list with filters '${filters}' is loading`);
         });
-    
     },
 }).initialise();

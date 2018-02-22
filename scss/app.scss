@@ -3,11 +3,11 @@
 @import '../node_modules/d2-ui/lib/css/Pagination';
 @import '../node_modules/d2-ui/lib/css/HeaderBar';
 
+@import 'variables';
 @import '../scss/List/DetailsBox';
 @import '../scss/List/List';
+@import '../scss/DataTable/DataTable';
 
-$html-background-color: #F3F3F3;
-$data-table--background-color: #FFF;
 
 // Basic for all
 * {
@@ -20,25 +20,3 @@ html {
   font-size: 14px;
 }
 
-//TODO: Distribute
-//list
-.data-table {
-  background-color: $data-table--background-color;
-}
-
-// Needed to override the inline style set by the component
-// scss-lint:disable ImportantRule
-.details-box-wrap .sticky {
-  left: initial !important;
-  margin-right: 2rem;
-  margin-top: 5rem;
-  width: 22%;
-}
-
-.details-box__close-button {
-  cursor: pointer;
-}
-
-.data-table__rows__row__column:not(:first-child) {
-  width: 200px;
-}

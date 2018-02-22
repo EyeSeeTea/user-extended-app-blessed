@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
-import DataTable from 'd2-ui/lib/data-table/DataTable.component';
+import DataTable from '../data-table/DataTable.component';
+import MultipleDataTable from '../components/multiple-data-table/MultipleDataTable.component';
 import Pagination from 'd2-ui/lib/pagination/Pagination.component';
 import DetailsBox from './DetailsBox.component';
-import contextActions from './ContextActions';
+import contextActions from './context.actions';
 import detailsStore from './details.store';
 import listStore from './list.store';
 import listActions from './list.actions';
@@ -16,12 +17,19 @@ import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
 import Auth from 'd2-ui/lib/auth/Auth.mixin';
 import orgUnitDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
+import userRolesAssignmentDialogStore from './userRoles.store';
+import userGroupsAssignmentDialogStore from './userGroups.store';
 import OrgUnitDialog from './organisation-unit-dialog/OrgUnitDialog.component';
+import UserRolesDialog from '../components/UserRolesDialog.component';
+import UserGroupsDialog from '../components/UserGroupsDialog.component';
 import snackActions from '../Snackbar/snack.actions';
 import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
 import { Observable } from 'rx';
 import PropTypes from 'prop-types';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
+import RichDropdown from '../components/RichDropdown.component';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -69,7 +77,7 @@ class DetailsBoxWithScroll extends Component {
             <div style={this.props.style}>
                 <Paper zDepth={1} rounded={false} style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
                     <DetailsBox
-                        source={this.props.detailsObject}
+                        source={this.props.detailsObject.model}
                         showDetailBox={!!this.props.detailsObject}
                         onClose={this.props.onClose}
                     />
@@ -78,6 +86,8 @@ class DetailsBoxWithScroll extends Component {
         );
     }
 }
+
+const initialSorting = ["name", "asc"];
 
 const List = React.createClass({
     propTypes: {
@@ -90,13 +100,16 @@ const List = React.createClass({
 
     getInitialState() {
         return {
-            dataRows: [],
+            dataRows: null,
             pager: {
                 total: 0,
             },
             isLoading: true,
             detailsObject: null,
             searchString: "",
+            filterByRole: null,
+            filterByGroup: null,
+            sorting: initialSorting,
             showAllUsers: true,
             sharing: {
                 model: null,
@@ -107,15 +120,32 @@ const List = React.createClass({
                 open: false,
             },
             orgunitassignment: {
-                model: null,
-                roots: [],
                 open: false,
             },
-            dataElementOperand: {
-                model: null,
+            assignUserRoles: {
+                open: false,
+            },
+            assignUserGroups: {
                 open: false,
             },
         };
+    },
+
+    getDataTableRows(users) {
+        const namesFromCollection = collection =>
+            _(collection && collection.toArray ? collection.toArray() : (collection || []))
+                .map(obj => obj.displayName).sortBy().join(", ") || "-";
+        return users.map(user => ({
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            lastUpdated: user.lastUpdated,
+            userGroups: namesFromCollection(user.userGroups),
+            organisationUnits: namesFromCollection(user.organisationUnits),
+            dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
+            userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles),
+            model: user,
+        }));
     },
 
     componentWillMount() {
@@ -133,19 +163,48 @@ const List = React.createClass({
                 });
             });
 
+        /** load select fields data */
+        listActions.loadUserRoles.next();
+        listActions.loadUserGroups.next();
+
+        /** Set user roles list for filter by role */
+        const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
+            this.setState({ userRoles: userRoles.toArray().map(role => ({value: role.id, text: role.displayName})) });
+        });
+
+        /** Set user groups list for filter by group */
+        const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
+            this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
+        });
+
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
             this.setState({ detailsObject });
         });
 
         const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
-            this.setState({
-                orgunitassignment: orgunitassignmentState,
-            });
+            this.setAssignState("orgunitassignment", orgunitassignmentState);
+        });
+
+        const userRolesAssignmentDialogStoreDisposable = userRolesAssignmentDialogStore.subscribe(assignUserRoles => {
+            this.setAssignState("assignUserRoles", assignUserRoles);
+        });
+
+        const userGroupsAssignmentDialogStoreDisposable = userGroupsAssignmentDialogStore.subscribe(assignUserGroups => {
+            this.setAssignState("assignUserGroups", assignUserGroups);
         });
 
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
+        this.registerDisposable(rolesStoreDisposable);
+        this.registerDisposable(groupsStoreDisposable);
+        this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
+        this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
+    },
+
+    setAssignState(key, value) {
+        this.setState({[key]: value, detailsObject: null},
+            () => !value.open && this.filterList({keepCurrentPage: true}));
     },
 
     componentWillReceiveProps(newProps) {
@@ -166,39 +225,24 @@ const List = React.createClass({
         snackActions.show({ message: 'organisation_unit_assignment_save_error', translate: true });
     },
 
-    isContextActionAllowed(model, action) {
-        // Don't allow anything if we can't determine the access
-        if (!model || !model.access) {
-            return false;
-        }
+    filterList({keepCurrentPage = false} = {}) {
+        const order = this.state.sorting ?
+            (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
+        listActions.filter({
+            modelType: this.props.params.modelType,
+            canManage: !this.state.showAllUsers,
+            order: order,
+            page: keepCurrentPage ? this.state.pager.page : 1,
+            filters: _.pickBy({
+                "displayName": this.state.searchString && ["ilike", this.state.searchString],
+                "userCredentials.userRoles.id": this.state.filterByRole && ["eq", this.state.filterByRole],
+                "userGroups.id": this.state.filterByGroup && ["eq", this.state.filterByGroup],
+            }),
+        }).subscribe(() => {}, error => log.error(error));
+    },
 
-        // TODO: Remove categoryOptionCombo available actions hack when this is sorted through the API
-        if (model.modelDefinition.name === 'categoryOptionCombo') {
-            if (action === 'edit') {
-                return model.access.write;
-            }
-
-            if (action === 'details') {
-                return model.access.read;
-            }
-
-            return false;
-        }
-
-        // Shortcut for access detection where action names match to access properties
-        if (model.access.hasOwnProperty(action)) {
-            return model.access[action];
-        }
-
-        // Switch action for special cases
-        switch (action) {
-        case 'details':
-            return model.access.read;
-        case 'assignToOrgUnits':
-            return model.modelDefinition.name === 'user' && model.access.write;
-        default:
-            return true;
-        }
+    onColumnSort(sorting) {
+        this.setState({sorting}, this.filterList);
     },
 
     searchListByName(searchObserver) {
@@ -206,31 +250,35 @@ const List = React.createClass({
             .subscribe((value) => {
                 this.setState({
                     isLoading: true,
-                    searchString: value,
-                });
-
-                listActions.filter({
-                        modelType: this.props.params.modelType,
-                        searchString: value,
-                        canManage: !this.state.showAllUsers,
-                    })
-                    .subscribe(() => {}, (error) => log.error(error));
+                    searchString: value
+                }, this.filterList);
             });
 
         this.registerDisposable(searchListByNameDisposable);
     },
 
     _onCanManageClick(ev, isChecked) {
-        listActions.filter({
-            modelType: this.props.params.modelType,
-            searchString: this.state.searchString,
-            canManage: isChecked,
-        });
+        this.setState({showAllUsers: !isChecked}, this.filterList);
+    },
 
-        this.setState({showAllUsers: !isChecked});
+    setFilterRole(event) {
+        this.setState({filterByRole: event.target.value}, this.filterList);
+    },
+
+    setFilterGroup(event) {
+        this.setState({filterByGroup: event.target.value}, this.filterList);
+    },
+
+    convertObjsToMenuItems(objs) {
+        const emptyEntry = <MenuItem key="_empty_item" value="" primaryText="" />;
+        const entries = objs.toArray()
+            .map(obj => <MenuItem key={obj.id} value={obj.id} primaryText={obj.displayName} />);
+        return [emptyEntry].concat(entries);
     },
 
     render() {
+        if (!this.state.dataRows)
+            return null;
         const currentlyShown = calculatePageValue(this.state.pager);
 
         const paginationProps = {
@@ -248,15 +296,6 @@ const List = React.createClass({
             currentlyShown,
         };
 
-        const availableActions = Object.keys(contextActions)
-            .filter(actionsThatRequireCreate, this)
-            .filter(actionsThatRequireDelete, this)
-            .reduce((actions, actionName) => {
-                // TODO: Don't re-assign param?
-                actions[actionName] = contextActions[actionName]; // eslint-disable-line no-param-reassign
-                return actions;
-            }, {});
-
         const styles = {
             dataTableWrap: {
                 display: 'flex',
@@ -268,38 +307,53 @@ const List = React.createClass({
                 flex: 1,
                 marginLeft: '1rem',
                 marginRight: '1rem',
+                marginBottom: '1rem',
                 opacity: 1,
                 flexGrow: 0,
+                minWidth: '350px'
             },
 
             listDetailsWrap: {
                 flex: 1,
                 display: 'flex',
                 flexOrientation: 'row',
-            },
+            }
         };
 
-        const contextMenuIcons = {
-            assignToOrgUnits: 'business',
-        };
+        const rows = this.getDataTableRows(this.state.dataRows);
+        const {assignUserRoles, assignUserGroups} = this.state;
 
         return (
             <div>
-                <div>
-                    <Heading>{this.getTranslation(`${camelCaseToUnderscores(this.props.params.modelType)}_management`)}</Heading>                    
-                </div>
-                <div>
-                    <div style={{ float: 'left', width: '30%' }}>
-                        <SearchBox searchObserverHandler={this.searchListByName}/>
+                <div className="user-management-controls">
+                    <div className="user-management-control">
+                        <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
-                    <div style={{ float: 'left', width: '30%', marginTop: 10, marginLeft: 5 }}>
-                        <Checkbox
-                            label={this.getTranslation('display_only_users_can_manage')}
-                            onCheck={this._onCanManageClick}
-                            checked={!this.state.showAllUsers}
+                    <div className="user-management-control select-role">
+                        <RichDropdown
+                            labelText={this.getTranslation('filter_role')}
+                            value={this.state.filterByRole}
+                            options={this.state.userRoles}
+                            onChange={this.setFilterRole}
                         />
                     </div>
-                    <div>
+                    <div className="user-management-control select-group">
+                    <RichDropdown
+                        labelText={this.getTranslation('filter_group')}
+                        value={this.state.filterByGroup}
+                        options={this.state.userGroups}
+                        onChange={this.setFilterGroup}
+                    />
+                    </div>
+                    <div className="user-management-control">
+                        <Checkbox className="control-checkbox"
+                                  label={this.getTranslation('display_only_users_can_manage')}
+                                  onCheck={this._onCanManageClick}
+                                  checked={!this.state.showAllUsers}
+                        />
+                    </div>
+                    <div className="fill-space"></div>
+                    <div className="user-management-control">
                         <Pagination {...paginationProps} />
                     </div>
                 </div>
@@ -309,13 +363,13 @@ const List = React.createClass({
                 />
                 <div style={styles.listDetailsWrap}>
                     <div style={styles.dataTableWrap}>
-                        <DataTable
-                            rows={this.state.dataRows}
+                        <MultipleDataTable
+                            rows={rows}
                             columns={this.state.tableColumns}
-                            contextMenuActions={availableActions}
-                            contextMenuIcons={contextMenuIcons}
-                            primaryAction={(user, ev) => availableActions.assignToOrgUnits(user)}
-                            isContextActionAllowed={this.isContextActionAllowed}
+                            contextActions={contextActions}
+                            onColumnSort={this.onColumnSort}
+                            isMultipleSelectionAllowed={true}
+                            showSelectColumn={true}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
@@ -329,14 +383,30 @@ const List = React.createClass({
                         : null}
                 </div>
 
-                {this.state.orgunitassignment.model ? <OrgUnitDialog
-                    model={this.state.orgunitassignment.model}
-                    roots={this.state.orgunitassignment.roots}
-                    open={this.state.orgunitassignment.open}
-                    onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
-                    onOrgUnitAssignmentError={this._orgUnitAssignmentError}
-                    onRequestClose={this._closeOrgUnitDialog}
-                /> : null }
+                {this.state.orgunitassignment.open ? <OrgUnitDialog
+                     models={this.state.orgunitassignment.users}
+                     open={true}
+                     onRequestClose={this._closeOrgUnitDialog}
+                     title={this.state.orgunitassignment.title}
+                     field={this.state.orgunitassignment.field}
+                     roots={this.state.orgunitassignment.roots}
+                     onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
+                     onOrgUnitAssignmentError={this._orgUnitAssignmentError}
+                 /> : null }
+
+                {assignUserRoles.open ?
+                    <UserRolesDialog
+                        users={assignUserRoles.users}
+                        onRequestClose={() => userRolesAssignmentDialogStore.setState({open: false})}
+                    />
+                    : null}
+
+                {assignUserGroups.open ?
+                    <UserGroupsDialog
+                        users={assignUserGroups.users}
+                        onRequestClose={() => userGroupsAssignmentDialogStore.setState({open: false})}
+                    />
+                    : null}
             </div>
         );
     },

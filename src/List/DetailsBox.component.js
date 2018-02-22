@@ -6,6 +6,7 @@ import FontIcon from 'material-ui/FontIcon/FontIcon';
 import PropTypes from 'prop-types';
 import Translate from 'd2-ui/lib/i18n/Translate.mixin';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
+import Moment from 'react-moment';
 
 export default React.createClass({
     propTypes: {
@@ -29,9 +30,13 @@ export default React.createClass({
                 'lastUpdated',
                 'id',
                 'href',
+                'userRoles',
+                'userGroups',
+                'organisationUnits',
+                'dataViewOrganisationUnits'
             ],
             showDetailBox: false,
-            onClose: () => {},
+            onClose: () => { },
         };
     },
 
@@ -49,42 +54,34 @@ export default React.createClass({
 
                 return (
                     <div key={fieldName} className="detail-field">
-                        <div className={`detail-field__label detail-field__${fieldName}-label`}>{this.getTranslation(camelCaseToUnderscores(fieldName))}</div>
-                        <div className={`detail-field__value detail-field__${fieldName}`}>{valueToRender}</div>
+                        <div className={`detail-field__label detail-field__${fieldName}-label`}>
+                            {this.getTranslation(camelCaseToUnderscores(fieldName))}
+                        </div>
+                        <div className={`detail-field__value detail-field__${fieldName}`}>
+                            {valueToRender}
+                        </div>
                     </div>
                 );
             });
     },
 
     getValueToRender(fieldName, value) {
-        const getDateString = dateValue => {
-            const stringifiedDate = new Date(dateValue).toString();
-
-            return stringifiedDate === 'Invalid Date' ? dateValue : stringifiedDate;
-        };
-
-        if (Array.isArray(value) && value.length) {
-            const namesToDisplay = value
-                .map(v => v.displayName ? v.displayName : v.name)
-                .filter(name => name);
-
-            return (
-                <ul>
-                    {namesToDisplay.map(name => <li key={name}>{name}</li>)}
-                </ul>
-            );
+        switch (fieldName) {
+            case 'created':
+            case 'lastUpdated':
+                return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
+            case 'href':
+                // Suffix the url with the .json extension to always get the json representation of the api resource
+                return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
+            case 'userRoles':
+            case 'userGroups':
+            case 'organisationUnits':
+            case 'dataViewOrganisationUnits':
+                const objs = _(value.toArray()).sortBy("displayName").value();
+                return (<div>{objs.map(obj => <div key={obj.id}>{obj.displayName}</div>)}</div>);
+            default:
+                return value;
         }
-
-        if (fieldName === 'created' || fieldName === 'lastUpdated') {
-            return getDateString(value);
-        }
-
-        if (fieldName === 'href') {
-            // Suffix the url with the .json extension to always get the json representation of the api resource
-            return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-        }
-
-        return value;
     },
 
     render() {

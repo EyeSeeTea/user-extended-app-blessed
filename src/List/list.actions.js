@@ -4,7 +4,16 @@ import detailsStore from './details.store';
 import { getInstance } from 'd2/lib/d2';
 import { Observable } from 'rx';
 
-const listActions = Action.createActionsFromNames(['loadList', 'setListSource', 'filter', 'getNextPage', 'getPreviousPage', 'hideDetailsBox']);
+const listActions = Action.createActionsFromNames([
+  'loadList',
+  'setListSource',
+  'filter',
+  'loadUserRoles',
+  'loadUserGroups',
+  'getNextPage',
+  'getPreviousPage',
+  'hideDetailsBox',
+]);
 
 listActions.setListSource.subscribe((action) => {
     listStore.listSourceSubject.onNext(Observable.just(action.data));
@@ -15,7 +24,14 @@ listActions.loadList.subscribe(action => {
 });
 
 listActions.filter.subscribe(action => {
-    listStore.filter(action.data.modelType, action.data.searchString, action.data.canManage, action.complete, action.error);
+    listStore.filter(
+      action.data.modelType,
+      action.data.canManage,
+      action.data.filters,
+      action.data.order,
+      action.data.page,
+      action.complete,
+      action.error);
 });
 
 // TODO: For simple action mapping like this we should be able to do something less boiler plate like
@@ -29,6 +45,14 @@ listActions.getPreviousPage.subscribe(() => {
 
 listActions.hideDetailsBox.subscribe(() => {
     detailsStore.setState(null);
+});
+
+listActions.loadUserRoles.subscribe(() => {
+    listStore.getRoles();
+});
+
+listActions.loadUserGroups.subscribe(() => {
+    listStore.getGroups();
 });
 
 export default listActions;
