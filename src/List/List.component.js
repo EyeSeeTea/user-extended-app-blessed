@@ -119,16 +119,12 @@ const List = React.createClass({
                 open: false,
             },
             orgunitassignment: {
-                model: null,
-                roots: [],
                 open: false,
             },
             assignUserRoles: {
-                users: null,
                 open: false,
             },
             assignUserGroups: {
-                users: null,
                 open: false,
             },
         };
@@ -185,10 +181,7 @@ const List = React.createClass({
         });
 
         const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
-            this.setState({
-                orgunitassignment: orgunitassignmentState,
-                detailsObject: null,
-            }, () => !orgunitassignmentState.open && this.filterList({keepCurrentPage: true}));
+            this.setAssignState("orgunitassignment", orgunitassignmentState);
         });
 
         const userRolesAssignmentDialogStoreDisposable = userRolesAssignmentDialogStore.subscribe(assignUserRoles => {
@@ -390,16 +383,16 @@ const List = React.createClass({
                         : null}
                 </div>
 
-                {this.state.orgunitassignment.model ? <OrgUnitDialog
-                    model={this.state.orgunitassignment.model}
-                    title={this.state.orgunitassignment.title}
-                    field={this.state.orgunitassignment.field}
-                    roots={this.state.orgunitassignment.roots}
-                    open={this.state.orgunitassignment.open}
-                    onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
-                    onOrgUnitAssignmentError={this._orgUnitAssignmentError}
-                    onRequestClose={this._closeOrgUnitDialog}
-                /> : null}
+                {this.state.orgunitassignment.open ? <OrgUnitDialog
+                     models={this.state.orgunitassignment.users}
+                     open={true}
+                     onRequestClose={this._closeOrgUnitDialog}
+                     title={this.state.orgunitassignment.title}
+                     field={this.state.orgunitassignment.field}
+                     roots={this.state.orgunitassignment.roots}
+                     onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
+                     onOrgUnitAssignmentError={this._orgUnitAssignmentError}
+                 /> : null }
 
                 {assignUserRoles.open ?
                     <UserRolesDialog

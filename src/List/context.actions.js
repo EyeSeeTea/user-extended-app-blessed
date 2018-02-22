@@ -4,21 +4,27 @@ import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisatio
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
 import appStateStore from '../App/appStateStore';
-import _ from 'lodash';
+import _m from '../utils/lodash-mixins';
 
-async function assignToOrgUnits(selectedUser, field, titleKey) {
+async function assignToOrgUnits(selectedUsers, field, titleKey) {
     const d2 = await getD2();
-    const options = {fields: `:all,${field}[id,path,displayName]`};
-    const user = await d2.models.user.get(selectedUser.model.id, options);
-    const username = user.userCredentials.username;
+    const userIds = selectedUsers.map(u => u.model.id);
+    const listOptions = {
+        paging: false,
+        fields: `:owner,${field}[id,path,displayName]`,
+        filter: `id:in:[${userIds.join(',')}]`,
+    };
+    const users = (await d2.models.users.list(listOptions)).toArray();
+    const usernames = users.map(user => user.userCredentials.username);
+    const info = _m.joinString(d2.i18n.getTranslation.bind(d2.i18n), usernames, 3, ", ");
     const userOrgUnitRoots = await appStateStore
         .map(appState => appState.userOrganisationUnits.toArray())
         .first().toPromise();
 
     orgUnitAssignmentDialogStore.setState({
-        model: user,
-        field: user[field],
-        title: `${d2.i18n.getTranslation(titleKey)}: ${username}`,
+        users: users,
+        field: field,
+        title: `${d2.i18n.getTranslation(titleKey)}: ${info}`,
         roots: userOrgUnitRoots,
         open: true,
     });
@@ -41,16 +47,16 @@ const contextActions = [
     },
     {
         name: 'assignToOrgUnits',
-        multiple: false,
+        multiple: true,
         icon: "business",
-        onClick: user => assignToOrgUnits(user, "organisationUnits", "assignToOrgUnits"),
+        onClick: users => assignToOrgUnits(users, "organisationUnits", "assignToOrgUnits"),
         allowed: checkAccess(["update"]),
     },
     {
         name: 'assignToOrgUnitsOutput',
-        multiple: false,
+        multiple: true,
         icon: "business",
-        onClick: user => assignToOrgUnits(user, "dataViewOrganisationUnits", "assignToOrgUnitsOutput"),
+        onClick: users => assignToOrgUnits(users, "dataViewOrganisationUnits", "assignToOrgUnitsOutput"),
         allowed: checkAccess(["update"]),
     },
     {

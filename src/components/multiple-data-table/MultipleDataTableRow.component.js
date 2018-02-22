@@ -13,7 +13,7 @@ import './MultipleDataTableRow.scss';
 
 function SimpleCheckbox({onClick, checked, ...otherProps}) {
     return (
-        <span onClick={onClick} {...otherProps}>
+        <span onClick={onClick}>
             <input type="checkbox" readOnly={true}
                    checked={checked} className="simple-checkbox">
             </input>

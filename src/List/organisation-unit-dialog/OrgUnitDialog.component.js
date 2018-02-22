@@ -1,11 +1,9 @@
 import React from 'react';
-
 import isEqual from 'lodash.isequal';
-
 import Dialog from 'material-ui/Dialog/Dialog';
 import FlatButton from 'material-ui/FlatButton/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-
+import Toggle from 'material-ui/Toggle/Toggle';
 import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
 import TextField from 'material-ui/TextField/TextField';
 import Action from 'd2-ui/lib/action/Action';
@@ -14,22 +12,41 @@ import OrgUnitTree from 'd2-ui/lib/org-unit-tree/OrgUnitTree.component';
 import OrgUnitSelectByLevel from 'd2-ui/lib/org-unit-select/OrgUnitSelectByLevel.component';
 import OrgUnitSelectByGroup from 'd2-ui/lib/org-unit-select/OrgUnitSelectByGroup.component';
 import OrgUnitSelectAll from 'd2-ui/lib/org-unit-select/OrgUnitSelectAll.component';
-
+import BatchModelsMultiSelectModel from '../../components/batch-models-multi-select/BatchModelsMultiSelect.model';
+import { getOwnedPropertyJSON } from 'd2/lib/model/helpers/json';
 import snackbarActions from '../../Snackbar/snack.actions';
 import PropTypes from 'prop-types';
+import _m from '../../utils/lodash-mixins';
 
 class OrgUnitDialog extends React.Component {
     constructor(props, context) {
         super(props, context);
 
+        const modelOptions = {
+            parentModel: d2.models.users,
+            childrenModel: d2.models.organisationUnits,
+            getChildren: user => user[props.field],
+            getPayload: (allOrgUnits, pairs) => ({
+                users: pairs.map(([user, orgUnitsForUser]) =>
+                    _m(getOwnedPropertyJSON(user))
+                        .omit("userCredentials")
+                        .imerge({[props.field]: orgUnitsForUser.map(ou => ({id: ou.id}))})
+                        .value()
+                ),
+            }),
+        };
+        this.model = new BatchModelsMultiSelectModel(this.context.d2, modelOptions);
+        const selected = this.getCommonOrgUnits(props.models, props.field);
+
         this.state = {
             searchValue: '',
             originalRoots: this.props.roots,
             rootOrgUnits: this.props.roots,
-            selected: this.props.field.toArray().map(i => i.path),
+            selected: selected.map(ou => ou.path),
             groups: [],
             levels: [],
             loading: false,
+            updateStrategy: props.models.length > 1 ? "merge" : "replace",
         };
 
         this._searchOrganisationUnits = Action.create('searchOrganisationUnits');
@@ -37,6 +54,32 @@ class OrgUnitDialog extends React.Component {
         this.toggleOrgUnit = this.toggleOrgUnit.bind(this);
         this.setNewSelection = this.setNewSelection.bind(this);
         this.save = this.save.bind(this);
+    }
+
+    getCommonOrgUnits(objects, orgUnitField) {
+        return _.intersectionBy(...objects.map(obj => obj[orgUnitField].toArray()), "id");
+    }
+
+    _renderStrategyToggle() {
+        const {models} = this.props;
+        const {updateStrategy} = this.state;
+
+        if (models && models.length > 1) {
+            const getTranslation = this.context.d2.i18n.getTranslation.bind(this.context.d2.i18n);
+            const label = getTranslation('update_strategy') + ": " +
+                getTranslation('update_strategy_' + updateStrategy);
+
+            return (
+                <Toggle
+                    label={label}
+                    checked={updateStrategy === "replace"}
+                    onToggle={(ev, newValue) => this.setState({updateStrategy: newValue ? "replace" : "merge"})}
+                    style={{width: 300, float: "right", marginTop: 20, marginRight: 15, marginBottom: -50}}
+                />
+            );
+        } else {
+            return null;
+        }
     }
 
     componentWillMount() {
@@ -86,54 +129,30 @@ class OrgUnitDialog extends React.Component {
     }
 
     componentWillUnmount() {
-        this.disposable && this.disposable.dispose();
+        this.disposable && this.disposable.unsubscribe();
     }
 
     componentWillReceiveProps(props) {
-        if (props.model) {
+        if (props.models) {
+            const selected = this.getCommonOrgUnits(props.models, props.field);
             this.setState({
                 originalRoots: props.roots,
                 rootOrgUnits: props.roots,
-                selected: props.field.toArray().map(i => i.path),
+                selected: selected.map(ou => ou.path),
             });
         }
     }
 
     setNewSelection(selected) {
-        const d2 = this.context.d2;
-        const modelOrgUnits = this.props.field;
-        const assigned = modelOrgUnits.toArray().map(ou => ou.path);
-
-        const additions = selected
-            // Filter out already assigned ids
-            .filter(path => assigned.indexOf(path) === -1)
-            // Add the rest
-            .map(path => d2.models.organisationUnits.create({ id: _.last(path.split("/")), path }));
-
-        const deletions = assigned
-            // Filter out ids that should be left in
-            .filter(path => selected.indexOf(path) === -1)
-            // Add the rest
-            .map(path => d2.models.organisationUnits.create({ id: _.last(path.split("/")), path }));
-
-        additions.forEach(ou => {
-            modelOrgUnits.add(ou);
-        });
-        deletions.forEach(ou => {
-            modelOrgUnits.remove(ou);
-        });
-
         this.setState({ selected });
     }
 
     toggleOrgUnit(e, orgUnit) {
         if (this.state.selected.indexOf(orgUnit.path) === -1) {
-            this.props.field.add(orgUnit);
             this.setState(state => ({
                 selected: state.selected.concat(orgUnit.path),
             }));
         } else {
-            this.props.field.remove(orgUnit);
             this.setState(state => ({
                 selected: state.selected.filter(x => x !== orgUnit.path),
             }));
@@ -141,39 +160,20 @@ class OrgUnitDialog extends React.Component {
     }
 
     save() {
-        // d2-ui@27.x.y sends user.userCredentials[id], to which a 2.25 server responds
-        // <400 - BadRequest - Missing required property username>. 
-        // Solution: Clear user.userCredentials
-        this.props.model.userCredentials = undefined;
+        const selected = this.state.selected.map(path => ({id: _.last(path.split("/"))}));
 
-        // On a model save, the property userGroups is not sent on the request because the flag
-        // owner is set to false (see d2/helpers/json.js, getOwnedPropertyJSON). That's ok, the
-        // problem is that the server, not receiving this field, clears all the user groups
-        // for that user. It looks like a bug on the 2.25 API (it works on 2.26)
-        // Simple (if hacky) solution: set the owner flag so the field is sent.
-        this.props.model.modelDefinition.modelValidations.userGroups.owner = true;
-
-        // Use same organisation units for <Data output and analysis organisation units>
-        const { model } = this.props;
-
-        if (this.props.model.isDirty()) {
-            this.setState({ loading: true });
-            this.props.model
-                .save()
-                .then(() => {
-                    this.setState({ loading: false });
-                    this.props.onOrgUnitAssignmentSaved();
-                    this.props.onRequestClose();
-                })
-                .catch(err => {
-                    this.setState({ loading: false });
-                    this.props.onOrgUnitAssignmentError(err);
-                    this.props.onRequestClose();
-                });
-        } else {
-            snackbarActions.show({ message: this.getTranslation('no_changes_to_be_saved'), action: 'ok' });
-            this.props.onRequestClose();
-        }
+        this.setState({loading: true});
+        this.model.save(this.props.models, selected, selected.map(ou => ou.id), this.state.updateStrategy)
+            .then(() => {
+                this.setState({loading: false});
+                this.props.onOrgUnitAssignmentSaved();
+                this.props.onRequestClose();
+            })
+            .catch(err => {
+                this.setState({loading: false});
+                this.props.onOrgUnitAssignmentError(err);
+                this.props.onRequestClose();
+            });
     }
 
     renderRoots() {
@@ -204,10 +204,7 @@ class OrgUnitDialog extends React.Component {
             return (<div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>);
         }
 
-        const {
-            root,
-        } = { ...this.props };
-
+        const {root, title, models} = this.props;
         const styles = {
             dialog: {
                 minWidth: 875, maxWidth: '100%',
@@ -252,10 +249,6 @@ class OrgUnitDialog extends React.Component {
             />,
         ];
 
-        const user = this.props.model;
-        const username = user.userCredentials ? user.userCredentials.username : '-';
-        const title = `${user.displayName} (${username}) ${this.getTranslation('org_unit_assignment')}`
-
         return (
             <Dialog
                 title={title}
@@ -265,6 +258,8 @@ class OrgUnitDialog extends React.Component {
                 contentStyle={styles.dialog}
                 {...this.props}
             >
+                {this._renderStrategyToggle()}
+
                 <div style={styles.wrapper}>
                     {this.state.loading ? (
                         <div style={styles.loadingMask}>
@@ -310,8 +305,9 @@ class OrgUnitDialog extends React.Component {
 OrgUnitDialog.propTypes = {
     onRequestClose: PropTypes.func.isRequired,
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,
-    model: PropTypes.object.isRequired,
-    field: PropTypes.object.isRequired,
+    models: PropTypes.arrayOf(PropTypes.object).isRequired,
+    field: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
     onOrgUnitAssignmentSaved: PropTypes.func.isRequired,
     onOrgUnitAssignmentError: PropTypes.func.isRequired,
 };
