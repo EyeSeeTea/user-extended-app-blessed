@@ -30,6 +30,13 @@ async function assignToOrgUnits(selectedUsers, field, titleKey) {
     });
 }
 
+async function goToUserEditPage(user) {
+    const d2 = await getD2();
+    const baseUrl = d2.system.systemInfo.contextPath;
+    const url = `${baseUrl}/dhis-web-maintenance-user/alluser.action?key=${user.username}`;
+    window.open(url, '_blank');
+}
+
 function checkAccess(requiredKeys) {
     const toArray = obj => obj instanceof Array ? obj : [obj];
     return (rows) => {
@@ -73,12 +80,12 @@ const contextActions = [
         onClick: users => userGroupsAssignmentDialogStore.setState({users, open: true}),
         allowed: checkAccess(["update"]),
     },
-    /*{
+    {
         name: 'edit',
         multiple: false,
-        onClick: user => alert("TODO"),
+        onClick: user => goToUserEditPage(user),
         allowed: checkAccess(["update"]),
-    },*/
+    },
 ];
 
 
