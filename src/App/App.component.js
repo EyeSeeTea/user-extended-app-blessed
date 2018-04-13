@@ -108,7 +108,7 @@ class App extends AppWithD2 {
         return (
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
-                    <HeaderBar />
+                    <HeaderBar showAppTitle="user-app" styles={{background: '#3c3c3c'}} />
                     <SinglePanelLayout style={{marginTop: "3.5rem", marginLeft: 10}}>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>}
