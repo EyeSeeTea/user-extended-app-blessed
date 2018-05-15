@@ -2,6 +2,8 @@
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -19,6 +21,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         s(r[o]);
     }return s;
 })({ 1: [function (require, module, exports) {
+        module.exports = "# Global\nsend_feedback=Send Feedback\ntitle=Feedback\nsubmit=Submit\nok=OK\nnext=Next\nback=Back\ndescription=Description\nscreenshot=Screenshot\n\n# highlighter template\nhighlighter_click_and_drag_on_page=Click and drag on the page to help us better understand your feedback. You can move this dialog if it's in the way\nhighlighter_highlight=Highlight\nhighlighter_identify_areas=Highlight areas relevant to your feedback\nhighlighter_blackout=Black out\nhighlighter_blackout_information=Black out any personal information\n\n# overview template\noverview_title=Title\noverview_additional=Additional info\noverview_additional_none=None\noverview_additional_browser=Browser Info\noverview_additional_page_info=Page Info\noverview_additional_page_structure=Page Structure\noverview_enter_fields=Please enter a title and description\n\n# submitError template\nsubmit_error_message=Sadly an error occured while sending your feedback. Please try again\n\n# submitSuccess template\nsubmit_success_message=Thank you for your feedback\n";
+    }, {}], 2: [function (require, module, exports) {
         (function (global) {
             /*
               html2canvas 0.5.0-beta4 <http://html2canvas.hertzen.com>
@@ -3519,7 +3523,43 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     }, {}] }, {}, [4])(4);
             });
         }).call(this, typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
-    }, {}], 2: [function (require, module, exports) {
+    }, {}], 3: [function (require, module, exports) {
+        var nargs = /\{([0-9a-zA-Z_]+)\}/g;
+
+        module.exports = template;
+
+        function template(string) {
+            var args;
+
+            if (arguments.length === 2 && _typeof(arguments[1]) === "object") {
+                args = arguments[1];
+            } else {
+                args = new Array(arguments.length - 1);
+                for (var i = 1; i < arguments.length; ++i) {
+                    args[i - 1] = arguments[i];
+                }
+            }
+
+            if (!args || !args.hasOwnProperty) {
+                args = {};
+            }
+
+            return string.replace(nargs, function replaceArg(match, i, index) {
+                var result;
+
+                if (string[index - 1] === "{" && string[index + match.length] === "}") {
+                    return i;
+                } else {
+                    result = args.hasOwnProperty(i) ? args[i] : null;
+                    if (result === null || result === undefined) {
+                        return "";
+                    }
+
+                    return result;
+                }
+            });
+        }
+    }, {}], 4: [function (require, module, exports) {
         // feedback.js
         // 2013, Kázmér Rapavi, https://github.com/ivoviz/feedback
         // Licensed under the MIT license.
@@ -3527,11 +3567,48 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
         var html2canvas = require('html2canvas/dist/html2canvas');
         var utility = require('./utility');
+        var format = require("string-template");
         var EventHandler = utility.EventHandler;
+        var defaultI18nProperties = require('../i18n/en.properties');
 
         (function ($) {
+            var templates = {
+                highlighter: require('../templates/highlighter.html'),
+                overview: require('../templates/overview.html'),
+                submitSuccess: require('../templates/submitSuccess.html'),
+                submitError: require('../templates/submitError.html')
+            };
+
+            var parseI18nProperties = function parseI18nProperties(i18nProperties) {
+                return i18nProperties.split(/\r?\n/).filter(function (line) {
+                    return line && !line.startsWith("#");
+                }).map(function (line) {
+                    return line.split("=");
+                }).map(function (fields) {
+                    return [fields[0], fields.slice(1).join("=")];
+                }).reduce(function (acc, _ref) {
+                    var _ref2 = _slicedToArray(_ref, 2),
+                        key = _ref2[0],
+                        value = _ref2[1];
+
+                    acc[key] = value;return acc;
+                }, {});
+            };
+
+            var renderTemplate = function renderTemplate(template, namespace) {
+                return format(template, namespace);
+            };
+
+            var showSpinner = function showSpinner() {
+                $("body").prepend($("<div />", { class: "feedback-spinner" }));
+            };
+
+            var hideSpinner = function hideSpinner() {
+                $(".feedback-spinner").remove();
+            };
 
             $.feedback = function (options) {
+                var i18n = parseI18nProperties(options.i18nProperties || defaultI18nProperties);
 
                 var settings = $.extend({
                     ajaxURL: '',
@@ -3540,7 +3617,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     postURL: true,
                     proxy: undefined,
                     letterRendering: false,
-                    initButtonText: 'Send Feedback',
+                    initButtonText: i18n.send_feedback,
                     strokeStyle: 'black',
                     shadowColor: 'black',
                     shadowOffsetX: 1,
@@ -3549,20 +3626,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     lineJoin: 'bevel',
                     lineWidth: 3,
                     feedbackButton: '.feedback-btn',
-                    showDescriptionModal: true,
                     isDraggable: true,
                     onScreenshotTaken: function onScreenshotTaken() {},
                     tpl: {
-                        description: require('../templates/description.html'),
-                        highlighter: require('../templates/highlighter.html'),
-                        overview: require('../templates/overview.html'),
-                        submitSuccess: require('../templates/submitSuccess.html'),
-                        submitError: require('../templates/submitError.html')
+                        highlighter: renderTemplate(templates.highlighter, i18n),
+                        overview: renderTemplate(templates.overview, i18n),
+                        submitSuccess: renderTemplate(templates.submitSuccess, i18n),
+                        submitError: renderTemplate(templates.submitError, i18n)
                     },
                     onClose: function onClose() {},
                     screenshotStroke: true,
-                    highlightElement: true,
-                    initialBox: false
+                    highlightElement: true
                 }, options);
                 var supportedBrowser = !!window.HTMLCanvasElement;
                 var isFeedbackButtonNative = settings.feedbackButton == '.feedback-btn';
@@ -3597,10 +3671,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                             w = $(document).width(),
                             tpl = '<div id="feedback-module">';
 
-                        if (settings.initialBox) {
-                            tpl += settings.tpl.description;
-                        }
-
                         tpl += settings.tpl.highlighter + settings.tpl.overview + '<canvas id="feedback-canvas"></canvas><div id="feedback-helpers"></div><input id="feedback-note" name="feedback-note" type="hidden"></div>';
 
                         $('body').append(tpl);
@@ -3621,14 +3691,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                         $('#feedback-module').css(moduleStyle);
                         $('#feedback-canvas').attr(canvasAttr).css('z-index', '30000');
 
-                        if (!settings.initialBox) {
-                            $('#feedback-highlighter-back').remove();
-                            canDraw = true;
-                            $('#feedback-canvas').css('cursor', 'crosshair');
-                            $('#feedback-helpers').show();
-                            $('#feedback-welcome').hide();
-                            $('#feedback-highlighter').show();
-                        }
+                        $('#feedback-highlighter-back').remove();
+                        canDraw = true;
+                        $('#feedback-canvas').css('cursor', 'crosshair');
+                        $('#feedback-helpers').show();
+                        $('#feedback-welcome').hide();
+                        $('#feedback-highlighter').show();
 
                         if (settings.isDraggable) {
                             var feedback_highlighter_move_handler = null;
@@ -3971,11 +4039,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                 dh = $(window).height();
                             $('#feedback-helpers').hide();
                             $('#feedback-highlighter').hide();
+                            showSpinner();
                             if (!settings.screenshotStroke) {
                                 redraw(ctx, false);
                             }
                             html2canvas($('body'), {
                                 onrendered: function onrendered(canvas) {
+                                    hideSpinner();
                                     if (!settings.screenshotStroke) {
                                         redraw(ctx);
                                     }
@@ -3986,25 +4056,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                     $(document).scrollTop(sy);
                                     post.img = img;
                                     settings.onScreenshotTaken(post.img);
-                                    if (settings.showDescriptionModal) {
-                                        $('#feedback-canvas-tmp').remove();
-                                        $('#feedback-overview').show();
-                                        if (!utility.isMobile) {
-                                            $('#feedback-overview').toggleClass('feedback-desktop', true);
-                                            $('#feedback-overview').toggleClass('feedback-mobile', false);
-                                        } else {
-                                            $('#feedback-overview').toggleClass('feedback-desktop', false);
-                                            $('#feedback-overview').toggleClass('feedback-mobile', true);
-                                        }
-                                        $('#feedback-overview-description-text>textarea').remove();
-                                        $('#feedback-overview-screenshot>img').remove();
-                                        $('<textarea id="feedback-overview-note">' + $('#feedback-note').val() + '</textarea>').insertAfter('#feedback-overview-description-text h3:eq(0)');
-                                        $('#feedback-overview-screenshot').append('<img class="feedback-screenshot" src="' + img + '" />');
+                                    $('#feedback-canvas-tmp').remove();
+                                    $('#feedback-overview').show();
+                                    if (!utility.isMobile) {
+                                        $('#feedback-overview').toggleClass('feedback-desktop', true);
+                                        $('#feedback-overview').toggleClass('feedback-mobile', false);
                                     } else {
-                                        $('#feedback-module').remove();
-                                        close();
-                                        _canvas.remove();
+                                        $('#feedback-overview').toggleClass('feedback-desktop', false);
+                                        $('#feedback-overview').toggleClass('feedback-mobile', true);
                                     }
+                                    $('#feedback-overview-screenshot>img').remove();
+                                    $('#feedback-overview-screenshot').append('<img class="feedback-screenshot" src="' + img + '" />');
                                 },
                                 proxy: settings.proxy,
                                 letterRendering: settings.letterRendering
@@ -4020,26 +4082,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                             $('#feedback-overview-error').hide();
                         });
 
-                        $(document).on('keyup', '#feedback-note-tmp,#feedback-overview-note', function (e) {
-                            var tx;
-                            if (e.target.id === 'feedback-note-tmp') tx = $('#feedback-note-tmp').val();else {
-                                tx = $('#feedback-overview-note').val();
-                                $('#feedback-note-tmp').val(tx);
-                            }
-
-                            $('#feedback-note').val(tx);
-                        });
-
                         $(document).on('click', '#feedback-submit', function () {
                             canDraw = false;
 
-                            if ($('#feedback-note').val().length > 0) {
+                            if ($('#feedback-title').val().length > 0 && $('#feedback-note').val().length > 0) {
                                 $('#feedback-submit-success,#feedback-submit-error').remove();
                                 $('#feedback-overview').hide();
 
                                 post.img = img;
+                                post.title = $('#feedback-title').val();
                                 post.note = $('#feedback-note').val();
                                 var data = { feedback: JSON.stringify(post) };
+                                showSpinner();
                                 (settings.postFunction || $.ajax)({
                                     url: settings.ajaxURL,
                                     dataType: 'json',
@@ -4047,9 +4101,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                     data: data,
                                     post: post,
                                     success: function success() {
+                                        hideSpinner();
                                         $('#feedback-module').append(settings.tpl.submitSuccess);
                                     },
                                     error: function error() {
+                                        hideSpinner();
                                         $('#feedback-module').append(settings.tpl.submitError);
                                     }
                                 });
@@ -4126,7 +4182,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 }
             };
         })(jQuery);
-    }, { "../templates/description.html": 4, "../templates/highlighter.html": 5, "../templates/overview.html": 6, "../templates/submitError.html": 7, "../templates/submitSuccess.html": 8, "./utility": 3, "html2canvas/dist/html2canvas": 1 }], 3: [function (require, module, exports) {
+    }, { "../i18n/en.properties": 1, "../templates/highlighter.html": 6, "../templates/overview.html": 7, "../templates/submitError.html": 8, "../templates/submitSuccess.html": 9, "./utility": 5, "html2canvas/dist/html2canvas": 2, "string-template": 3 }], 5: [function (require, module, exports) {
         var pointer_down_events = ['touchstart', 'pointerdown', 'MSPointerDown', 'mousedown'];
         var pointer_move_events = ['touchmove', 'pointermove', 'MSPointerMove', 'mousemove'];
         var pointer_up_events = ['touchend', 'pointerup', 'MSPointerUp', 'mouseup', 'touchcancel', 'pointercancel', 'MSPointerCancel', 'mousecancel'];
@@ -4360,14 +4416,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 }
             }()
         };
-    }, {}], 4: [function (require, module, exports) {
-        module.exports = "<div id=feedback-welcome><div class=feedback-logo>Feedback</div><p>Feedback lets you send us suggestions about our products. We welcome problem reports, feature ideas and general comments.</p><p>Start by writing a brief description:</p><textarea id=feedback-note-tmp></textarea><p>Next we'll let you identify areas of the page related to your description.</p><button id=feedback-welcome-next class=\"feedback-next-btn feedback-btn-gray\">Next</button><div id=feedback-welcome-error>Please enter a description.</div><div class=feedback-wizard-close></div></div>";
-    }, {}], 5: [function (require, module, exports) {
-        module.exports = "<div id=feedback-highlighter><div class=feedback-logo>Feedback</div><p>Click and drag on the page to help us better understand your feedback. You can move this dialog if it's in the way.</p><button class=\"feedback-sethighlight feedback-active\"><div class=ico></div><span>Highlight</span></button><label>Highlight areas relevant to your feedback.</label><button class=feedback-setblackout><div class=ico></div><span>Black out</span></button><label class=lower>Black out any personal information.</label><div class=feedback-buttons><button id=feedback-highlighter-next class=\"feedback-next-btn feedback-btn-gray\">Next</button> <button id=feedback-highlighter-back class=\"feedback-back-btn feedback-btn-gray\">Back</button></div><div class=feedback-wizard-close></div></div>";
     }, {}], 6: [function (require, module, exports) {
-        module.exports = "<div id=feedback-overview><div class=feedback-logo>Feedback</div><div id=feedback-overview-description><div id=feedback-overview-description-text><h3>Description</h3></div></div><div id=feedback-overview-screenshot><h3>Screenshot</h3></div><div class=feedback-buttons><button id=feedback-submit class=\"feedback-submit-btn feedback-btn-gray\">Submit</button> <button id=feedback-overview-back class=\"feedback-back-btn feedback-btn-gray\">Back</button></div><div id=feedback-overview-error>Please enter a description.</div><div class=feedback-wizard-close></div></div>";
+        module.exports = "<div id=feedback-highlighter><div class=feedback-logo>{title}</div><p>{highlighter_click_and_drag_on_page}.</p><button class=\"feedback-sethighlight feedback-active\"><div class=ico></div><span>{highlighter_highlight}</span></button><label>{highlighter_identify_areas}.</label><button class=feedback-setblackout><div class=ico></div><span>{highlighter_blackout}</span></button><label class=lower>{highlighter_blackout_information}.</label><div class=feedback-buttons><button id=feedback-highlighter-next class=\"feedback-next-btn feedback-btn-gray\">{next}</button> <button id=feedback-highlighter-back class=\"feedback-back-btn feedback-btn-gray\">{back}</button></div><div class=feedback-wizard-close></div></div>";
     }, {}], 7: [function (require, module, exports) {
-        module.exports = "<div id=feedback-submit-error><div class=feedback-logo>Feedback</div><p>Sadly an error occured while sending your feedback. Please try again.</p><button class=\"feedback-close-btn feedback-btn-gray\">OK</button><div class=feedback-wizard-close></div></div>";
+        module.exports = "<div id=feedback-overview><div class=feedback-logo>{title}</div><div id=feedback-overview-description><div id=feedback-overview-description-text><h3>{overview_title}</h3><input type=text id=feedback-title><h3>{description}</h3><textarea id=feedback-note></textarea><div id=feedback-additional><h3 class=feedback-additional>{overview_additional}</h3><div id=feedback-additional-none><span>{overview_additional_none}</span></div><div id=feedback-browser-info><span>{overview_additional_browser}</span></div><div id=feedback-page-info><span>{overview_additional_page_info}</span></div><div id=feedback-page-structure><span>{overview_additional_page_structure}</span></div></div></div></div><div id=feedback-overview-screenshot><h3>{screenshot}</h3></div><div class=feedback-buttons><button id=feedback-submit class=\"feedback-submit-btn feedback-btn-gray\">{submit}</button> <button id=feedback-overview-back class=\"feedback-back-btn feedback-btn-gray\">{back}</button></div><div id=feedback-overview-error>{overview_enter_fields}.</div><div class=feedback-wizard-close></div></div>";
     }, {}], 8: [function (require, module, exports) {
-        module.exports = "<div id=feedback-submit-success><div class=feedback-logo>Feedback</div><p>Thank you for your feedback.</p><button class=\"feedback-close-btn feedback-btn-gray\">OK</button><div class=feedback-wizard-close></div></div>";
-    }, {}] }, {}, [2]);
+        module.exports = "<div id=feedback-submit-error><div class=feedback-logo>{title}</div><p>{submit_error_message}.</p><button class=\"feedback-close-btn feedback-btn-gray\">{ok}</button><div class=feedback-wizard-close></div></div>";
+    }, {}], 9: [function (require, module, exports) {
+        module.exports = "<div id=feedback-submit-success><div class=feedback-logo>{title}</div><p>{submit_success_message}.</p><button class=\"feedback-close-btn feedback-btn-gray\">{ok}</button><div class=feedback-wizard-close></div></div>";
+    }, {}] }, {}, [4]);
