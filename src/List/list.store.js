@@ -148,7 +148,7 @@ export default Store.create({
                     fields: fieldFilteringForQuery,
                     order: order || orderForQuery("user"),
                     canManage: canManage,
-                    filter: _(filters).isEmpty() ? "name:ne:default" : filters.join(","),
+                    filter: _(filters).isEmpty() ? "name:ne:default" : filters,
                 });
             });
 

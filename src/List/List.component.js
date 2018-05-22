@@ -27,9 +27,8 @@ import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
 import { Observable } from 'rx';
 import PropTypes from 'prop-types';
-import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import RichDropdown from '../components/RichDropdown.component';
+import MultipleFilter from '../components/MultipleFilter.component';
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -107,8 +106,8 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
-            filterByRole: null,
-            filterByGroup: null,
+            filterByRoles: [],
+            filterByGroups: [],
             sorting: initialSorting,
             showAllUsers: true,
             sharing: {
@@ -228,15 +227,20 @@ const List = React.createClass({
     filterList({keepCurrentPage = false} = {}) {
         const order = this.state.sorting ?
             (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
+        const { filterByRoles, filterByGroups, showAllUsers, pager, searchString } = this.state;
+
         listActions.filter({
             modelType: this.props.params.modelType,
-            canManage: !this.state.showAllUsers,
+            canManage: !showAllUsers,
             order: order,
-            page: keepCurrentPage ? this.state.pager.page : 1,
+            page: keepCurrentPage ? pager.page : 1,
             filters: _.pickBy({
-                "displayName": this.state.searchString && ["ilike", this.state.searchString],
-                "userCredentials.userRoles.id": this.state.filterByRole && ["eq", this.state.filterByRole],
-                "userGroups.id": this.state.filterByGroup && ["eq", this.state.filterByGroup],
+                "displayName":
+                    searchString ? ["ilike", searchString] : null,
+                "userCredentials.userRoles.id":
+                    _(filterByRoles).isEmpty() ? null : ["in", `[${filterByRoles.join(',')}]`],
+                "userGroups.id":
+                    _(filterByGroups).isEmpty() ? null : ["in", `[${filterByGroups.join(',')}]`],
             }),
         }).subscribe(() => {}, error => log.error(error));
     },
@@ -261,12 +265,12 @@ const List = React.createClass({
         this.setState({showAllUsers: !isChecked}, this.filterList);
     },
 
-    setFilterRole(event) {
-        this.setState({filterByRole: event.target.value}, this.filterList);
+    setFilterRoles(roles) {
+        this.setState({filterByRoles: roles}, this.filterList);
     },
 
-    setFilterGroup(event) {
-        this.setState({filterByGroup: event.target.value}, this.filterList);
+    setFilterGroups(groups) {
+        this.setState({filterByGroups: groups}, this.filterList);
     },
 
     convertObjsToMenuItems(objs) {
@@ -330,19 +334,19 @@ const List = React.createClass({
                         <SearchBox searchObserverHandler={this.searchListByName} />
                     </div>
                     <div className="user-management-control select-role">
-                        <RichDropdown
-                            labelText={this.getTranslation('filter_role')}
-                            value={this.state.filterByRole}
+                        <MultipleFilter
+                            title={this.getTranslation('filter_role')}
                             options={this.state.userRoles}
-                            onChange={this.setFilterRole}
+                            selected={this.state.filterByRoles}
+                            onChange={this.setFilterRoles}
                         />
                     </div>
                     <div className="user-management-control select-group">
-                    <RichDropdown
-                        labelText={this.getTranslation('filter_group')}
-                        value={this.state.filterByGroup}
+                    <MultipleFilter
+                        title={this.getTranslation('filter_group')}
                         options={this.state.userGroups}
-                        onChange={this.setFilterGroup}
+                        selected={this.state.filterByGroups}
+                        onChange={this.setFilterGroups}
                     />
                     </div>
                     <div className="user-management-control">
