@@ -1,6 +1,6 @@
 {
   "name": "d2-user-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "DHIS2 Enhanced User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
