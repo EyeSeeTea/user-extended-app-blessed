@@ -54,7 +54,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                             feedbackOptions: { i18nProperties: i18nProperties }
                         }));
                     };
-                    fetch("includes/feedback-tool/i18n/" + locale + ".properties").then(function (res) {
+
+                    fetch("includes/feedback-tool/i18n/" + locale + ".properties", { credentials: 'same-origin' }).then(function (res) {
                         return res.status.toString().match(/^2..$/) ? res : throwError("Cannot find locale");
                     }).then(function (res) {
                         return res.text();
