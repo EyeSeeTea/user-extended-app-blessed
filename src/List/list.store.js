@@ -111,7 +111,7 @@ export default Store.create({
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
-    async filter(modelType, canManage, filters, order, page, complete, error) {
+    async filter(modelType, canManage, filters, order, page, pageSize, complete, error) {
         getD2().then(d2 => {
             if (!d2.models[modelType]) {
                 error(`${modelType} is not a valid schema name`);
@@ -144,6 +144,7 @@ export default Store.create({
                 const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
                 return model.list({
                     paging: true,
+                    pageSize: pageSize,
                     page: page,
                     fields: fieldFilteringForQuery,
                     order: order || orderForQuery("user"),
