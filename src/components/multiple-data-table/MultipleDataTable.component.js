@@ -268,9 +268,7 @@ const MultipleDataTable = React.createClass({
     handleRowClick(event, rowSource) {
         //Update activeRows according to click|ctlr+click
         var newActiveRows;
-        if(event.isIconMenuClick){
-            newActiveRows = [rowSource];
-        }else if (this.isEventCtrlClick(event) || this.isRowActive(rowSource)){
+        if (this.isEventCtrlClick(event) || this.isRowActive(rowSource)){
             //Remain selection + rowSource if not already selected
             newActiveRows = this.updateContextSelection(rowSource);
         }else{
