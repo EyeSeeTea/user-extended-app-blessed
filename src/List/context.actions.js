@@ -3,6 +3,7 @@ import { config, getInstance as getD2 } from 'd2/lib/d2';
 import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
+import replicateUserStore from './replicateUser.store';
 import appStateStore from '../App/appStateStore';
 import _m from '../utils/lodash-mixins';
 
@@ -45,6 +46,15 @@ function checkAccess(requiredKeys) {
     };
 }
 
+function isAdmin(rows) {
+    if (rows && rows.length > 0) {
+        const { authorities } = rows[0].d2.currentUser;
+        return authorities.has("ALL");
+    } else {
+        return false;
+    }
+}
+
 const contextActions = [
     {
         name: 'details',
@@ -85,6 +95,13 @@ const contextActions = [
         multiple: false,
         onClick: user => goToUserEditPage(user),
         allowed: checkAccess(["update"]),
+    },
+    {
+        name: 'replicateUser',
+        icon: "person_add",
+        multiple: false,
+        onClick: user => replicateUserStore.setState({user, open: true}),
+        allowed: isAdmin,
     },
 ];
 
