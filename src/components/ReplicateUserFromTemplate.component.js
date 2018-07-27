@@ -6,7 +6,6 @@ import FlatButton from 'material-ui/FlatButton/FlatButton';
 import TextField from 'material-ui/TextField/TextField';
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 import FormBuilder from 'd2-ui/lib/forms/FormBuilder.component';
-import LoadingMask from '../loading-mask/LoadingMask.component';
 import Validators from 'd2-ui/lib/forms/Validators';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores'
 
@@ -15,27 +14,17 @@ import User from '../models/user';
 import { getFromTemplate } from '../utils/template';
 import snackActions from '../Snackbar/snack.actions';
 import InfoDialog from './InfoDialog';
+import LoadingMask from '../loading-mask/LoadingMask.component';
 
 const styles = {
     dialog: {
         minWidth: 600,
         maxWidth: 800,
     },
-    loadingStatusMask: {
-        left: '45%',
-        position: 'fixed',
-        top: '45%',
-    },
-    infoDialog: {
-        width: "100%",
-        height: "100%",
-    },
-    infoDialogContents: {
-        fontSize: "0.7em",
-    },
 };
 
-class ReplicateUserDialog extends React.Component {
+class ReplicateUserFromTemplate extends React.Component {
+    maxUsers = 100;
     defaultPassword = "District123_$index";
 
     constructor(props, context) {
@@ -49,7 +38,7 @@ class ReplicateUserDialog extends React.Component {
             usersToCreate: 1,
             username: "",
             password: "",
-            existingUsernames: null,
+            invalidUsernames: null,
             validate: false,
             infoDialog: null,
         };
@@ -57,15 +46,15 @@ class ReplicateUserDialog extends React.Component {
 
     async componentDidMount() {
         const { userToReplicateId } = this.props;
-        const existingUsernames = await User.getExistingUsernames(d2);
+        const invalidUsernames = await User.getExistingUsernamesAndCodes(d2);
         const userToReplicate = await User.getById(d2, userToReplicateId);
         const username = `${userToReplicate.username}_$index`;
         this.setState({
-            existingUsernames,
+            invalidUsernames,
             userToReplicate,
             username,
             password: this.defaultPassword,
-            validate: true
+            validate: true,
         });
     }
 
@@ -95,7 +84,7 @@ class ReplicateUserDialog extends React.Component {
             isValidUsername: toBuilderValidator(
                 usernameTemplate => validateValues(
                     getFromTemplate(usernameTemplate, parseInt(this.state.usersToCreate) || 1),
-                    username => validateUsername(this.state.existingUsernames, username),
+                    username => validateUsername(this.state.invalidUsernames, username),
                 ),
                 (username, error) => this.getTranslation(`username_${error}`, { username }),
             ),
@@ -126,26 +115,15 @@ class ReplicateUserDialog extends React.Component {
     onSave = async () => {
         const { onRequestClose } = this.props;
         const { userToReplicate, usersToCreate, username, password } = this.state;
-        const result = await userToReplicate.replicateFromTemplate(usersToCreate, username, password);
+        const response = await userToReplicate.replicateFromTemplate(usersToCreate, username, password);
 
-        if (result.success) {
+        if (response.success) {
             const message = this.getTranslation("replicate_successful",
                 { user: userToReplicate.displayName, n: usersToCreate });
             snackActions.show({ message });
             onRequestClose();
         } else {
-            const prettyJson = obj => JSON.stringify(obj, null, 2);
-            const details = _([
-                this.getTranslation("replicate_error_description"),
-                result.error.message || "Unknown error",
-                prettyJson(result.payload),
-                prettyJson(result.response),
-            ]).compact().join("\n\n");
-            const infoDialog = {
-                title: this.getTranslation("replicate_error"),
-                body: (<pre style={styles.infoDialogContents}>{details}</pre>),
-            };
-            this.setState({ infoDialog });
+            this.setState({ infoDialog: { response } });
         }
     }
 
@@ -154,7 +132,7 @@ class ReplicateUserDialog extends React.Component {
         const {
             infoDialog,
             userToReplicate,
-            existingUsernames,
+            invalidUsernames,
             usersToCreate,
             username,
             password,
@@ -162,17 +140,17 @@ class ReplicateUserDialog extends React.Component {
             validate,
         } = this.state;
         const title = this.getTranslation("replicate_user",
-            {user: userToReplicate ? userToReplicate.displayName : ""});
+            {user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : ""});
         const t = this.getTranslation;
 
         const actions = [
             <RaisedButton primary={true} label={t('replicate')} disabled={!isValid} onClick={this.onSave} />,
-            <FlatButton label={this.getTranslation('cancel')} onClick={onRequestClose} />,
+            <FlatButton label={this.getTranslation('close')} onClick={onRequestClose} />,
         ];
 
         const fields = [
             this.getTextField("usersToCreate", "number", usersToCreate, {
-                "validators": [this.validators.isRequired, this.validators.withinInterval(1, 50)],
+                "validators": [this.validators.isRequired, this.validators.withinInterval(1, this.maxUsers)],
             }),
             this.getTextField("username", "string", username, {
                 "validators": [this.validators.isValidUsername],
@@ -192,17 +170,15 @@ class ReplicateUserDialog extends React.Component {
                 contentStyle={styles.dialog}
                 onRequestClose={onRequestClose}
             >
-                {!userToReplicate ? <LoadingMask style={styles.loadingStatusMask} /> : null}
+                {!userToReplicate ? <LoadingMask /> : null}
 
                 {infoDialog ?
                     <InfoDialog
-                        title={infoDialog.title}
-                        closeLabel={this.getTranslation("ok")}
+                        t={this.getTranslation}
+                        title={this.getTranslation("replicate_error")}
                         onClose={this.closeInfoDialog}
-                        style={styles.infoDialog}
-                    >
-                        {infoDialog.body}
-                    </InfoDialog> : null}
+                        response={infoDialog.response}
+                    /> : null}
 
                 <FormBuilder
                     fields={fields}
@@ -216,13 +192,13 @@ class ReplicateUserDialog extends React.Component {
     }
 }
 
-ReplicateUserDialog.contextTypes = {
+ReplicateUserFromTemplate.contextTypes = {
     d2: PropTypes.object.isRequired,
 };
 
-ReplicateUserDialog.propTypes = {
+ReplicateUserFromTemplate.propTypes = {
     userToReplicateId: PropTypes.string.isRequired,
     onRequestClose: PropTypes.func.isRequired,
 };
 
-export default ReplicateUserDialog;
+export default ReplicateUserFromTemplate;

@@ -27,7 +27,7 @@ class User {
                 .map(typeReport => toArray(typeReport.objectReports)
                     .map(objectReport => objectReport.errorReports
                         .map(errorReport => [errorReport.mainKlass, errorReport.message].join(" - "))));
-            const error = { message: uniq(flatten(flatten(errors))).join("\n") };
+            const error = uniq(flatten(flatten(errors))).join("\n");
             return { success: false, response, error, payload };
         } else {
             return { success: true };
@@ -35,20 +35,34 @@ class User {
     }
 
     replicateFromTemplate(count, usernameTemplate, passwordTemplate) {
+        const userIds = times(() => generateUid(), count);
         const usernames = getFromTemplate(usernameTemplate, count);
         const passwords = getFromTemplate(passwordTemplate, count);
-        const userIds = times(() => generateUid(), count);
-        const values = [usernames, passwords, userIds];
-        const newUsersAttributes = unzip(values).map(([username, password, userId]) => ({
-            id: userId,
+        const values = [userIds, usernames, passwords];
+        const newUserFields = unzip(values).map(([id, username, password]) =>
+            ({ id, username, password }));
+
+        return this.replicateFromPlainFields(newUserFields);
+    }
+
+    // newUserFields: [{id, username, password, name, email}]
+    replicateFromPlainFields(newUserFields) {
+        const optional = (value) => value || undefined;
+        const nullable = (value) => value || null;
+
+        const newUsersAttributes = newUserFields.map(userFields => ({
+            id: userFields.id,
+            email: optional(userFields.email),
+            firstName: optional(userFields.firstName),
+            surname: optional(userFields.surname),
             userCredentials: {
               id: generateUid(),
-              openId: null,
-              ldapId: null,
-              userInfo: { id: userId },
-              code: username,
-              username: username,
-              password: password,
+              openId: nullable(userFields.openId),
+              ldapId: nullable(userFields.ldapId),
+              userInfo: { id: userFields.id },
+              code: userFields.username,
+              username: userFields.username,
+              password: userFields.password,
             },
         }));
 
@@ -60,11 +74,17 @@ class User {
         const userJson = pick(ownedProperties, this.attributes);
         const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
 
-        // NOTE: The property `userGroups` is not owned by the model User. That means that entries
-        // users[].userGroup inside the metadata request are simply ignored. Therefore, we must add
-        // our new users to the related userGroups and post them in the same request to the metadata.
-        // Note that including userGroups in individual PUT /api/users/ID requests does work, but
-        // unfortunately not when using the metadata endpoint.
+        /*
+        NOTE: `userGroups` is not owned property by the model User. That means that values
+        users[].userGroup of the metadata request are simply ignored. Therefore, we must
+        send the related userGroups -with the updated users- in the same request to the metadata.
+
+        Pros: Performs the whole operation in a single request, within a transaction.
+        Cons: Requires the current user to be able to edit those user groups.
+        Alternatives: We could us `/api/users/ID` or `users/ID/replica` (this copies user settings),
+        but that would require one request by each new user.
+        */
+
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
         const { userGroups } = await this.api.get("/userGroups", {
             filter: "id:in:[" + userGroupIds.join(",") + "]",
@@ -89,13 +109,16 @@ class User {
         return new User(d2, userAttributes);
     }
 
-    static async getExistingUsernames(d2) {
+    static async getExistingUsernamesAndCodes(d2) {
         const api = d2.Api.getApi();
         const { users } = await api.get('/users', {
-            fields: "id, userCredentials[username]",
+            fields: "id,code,userCredentials[username]",
             paging: false,
         });
-        const usernames = users.map(user => user.userCredentials.username);
+        const usernames = _(users)
+            .flatMap(user => [user.userCredentials.username, user.userCredentials.code])
+            .uniq()
+            .value();
         return new Set(usernames);
     }
 }
