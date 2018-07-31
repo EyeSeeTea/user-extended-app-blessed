@@ -93,10 +93,23 @@ class ReplicateUserDialog extends React.Component {
                 message: this.getTranslation("validate_interval_error_message", { min, max }),
             }),
             isValidUsername: toBuilderValidator(
-                usernameTemplate => validateValues(
-                    getFromTemplate(usernameTemplate, parseInt(this.state.usersToCreate) || 1),
-                    username => validateUsername(this.state.existingUsernames, username),
-                ),
+                usernameTemplate => {
+                    const { existingUsernames, usersToCreate } = this.state;
+                    const usernamesFromTemplate = getFromTemplate(usernameTemplate, parseInt(usersToCreate) || 1);
+                    const getInvalid = (username) => {
+                        const index = _(usernamesFromTemplate).indexOf(username);
+                        return new Set([
+                            ..._(existingUsernames).toArray(),
+                            ...usernamesFromTemplate.slice(0, index),
+                            ...usernamesFromTemplate.slice(index + 1),
+                        ]);
+                    };
+
+                    return validateValues(
+                        usernamesFromTemplate,
+                        username => validateUsername(getInvalid(username), username),
+                    );
+                },
                 (username, error) => this.getTranslation(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
