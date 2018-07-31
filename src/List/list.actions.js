@@ -30,6 +30,7 @@ listActions.filter.subscribe(action => {
       action.data.filters,
       action.data.order,
       action.data.page,
+      action.data.pageSize,
       action.complete,
       action.error);
 });

@@ -32,6 +32,8 @@ import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
 
+const pageSize = 50;
+
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
     if ((action !== 'edit' && action !== 'clone') || this.getCurrentUser().canUpdate(this.getModelDefinitionByName(this.props.params.modelType))) {
@@ -50,7 +52,6 @@ function actionsThatRequireDelete(action) {
 
 // TODO: Move this somewhere as a utility function, probably on the Pagination component (as a separate export) in d2-ui?
 export function calculatePageValue(pager) {
-    const pageSize = 50; // TODO: Make the page size dynamic
     const { total, pageCount, page } = pager;
     const pageCalculationValue = total - (total - ((pageCount - (pageCount - page)) * pageSize));
     const startItem = 1 + pageCalculationValue - pageSize;
@@ -217,7 +218,7 @@ const List = React.createClass({
 
     setAssignState(key, value) {
         this.setState({[key]: value, detailsObject: null},
-            () => !value.open && this.filterList({keepCurrentPage: true}));
+            () => !value.open && this.filterList({ page: this.state.pager.page }));
     },
 
     componentWillReceiveProps(newProps) {
@@ -238,7 +239,7 @@ const List = React.createClass({
         snackActions.show({ message: 'organisation_unit_assignment_save_error', translate: true });
     },
 
-    filterList({keepCurrentPage = false} = {}) {
+    filterList({page = 1} = {}) {
         const order = this.state.sorting ?
             (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
         const { filterByRoles, filterByGroups, showAllUsers, pager, searchString } = this.state;
@@ -247,7 +248,8 @@ const List = React.createClass({
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
-            page: keepCurrentPage ? pager.page : 1,
+            page: page,
+            pageSize: pageSize,
             filters: _.pickBy({
                 "displayName":
                     searchString ? ["ilike", searchString] : null,
@@ -298,17 +300,16 @@ const List = React.createClass({
         if (!this.state.dataRows)
             return null;
         const currentlyShown = calculatePageValue(this.state.pager);
+        const { pager } = this.state;
 
         const paginationProps = {
             hasNextPage: () => Boolean(this.state.pager.hasNextPage) && this.state.pager.hasNextPage(),
             hasPreviousPage: () => Boolean(this.state.pager.hasPreviousPage) && this.state.pager.hasPreviousPage(),
             onNextPageClick: () => {
-                this.setState({ isLoading: true });
-                listActions.getNextPage();
+                this.setState({ isLoading: true }, () => this.filterList({page: pager.page + 1}));
             },
             onPreviousPageClick: () => {
-                this.setState({ isLoading: true });
-                listActions.getPreviousPage();
+                this.setState({ isLoading: true }, () => this.filterList({page: pager.page - 1}));
             },
             total: this.state.pager.total,
             currentlyShown,
