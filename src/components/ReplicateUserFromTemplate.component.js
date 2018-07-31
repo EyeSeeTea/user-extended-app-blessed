@@ -38,7 +38,7 @@ class ReplicateUserFromTemplate extends React.Component {
             usersToCreate: 1,
             username: "",
             password: "",
-            invalidUsernames: null,
+            existingUsernames: null,
             validate: false,
             infoDialog: null,
         };
@@ -46,11 +46,11 @@ class ReplicateUserFromTemplate extends React.Component {
 
     async componentDidMount() {
         const { userToReplicateId } = this.props;
-        const invalidUsernames = await User.getExistingUsernamesAndCodes(d2);
+        const existingUsernames = await User.getExistingUsernames(d2);
         const userToReplicate = await User.getById(d2, userToReplicateId);
         const username = `${userToReplicate.username}_$index`;
         this.setState({
-            invalidUsernames,
+            existingUsernames,
             userToReplicate,
             username,
             password: this.defaultPassword,
@@ -71,6 +71,12 @@ class ReplicateUserFromTemplate extends React.Component {
         this.setState({ infoDialog: null });
     }
 
+    getValuesFromTemplate(template) {
+        const { usersToCreate } = this.state;
+        const n = Math.min(parseInt(usersToCreate) || 1, this.maxUsers);
+        return getFromTemplate(template, n);
+    };
+
     getValidators() {
         return {
             isRequired: {
@@ -82,15 +88,27 @@ class ReplicateUserFromTemplate extends React.Component {
                 message: this.getTranslation("validate_interval_error_message", { min, max }),
             }),
             isValidUsername: toBuilderValidator(
-                usernameTemplate => validateValues(
-                    getFromTemplate(usernameTemplate, parseInt(this.state.usersToCreate) || 1),
-                    username => validateUsername(this.state.invalidUsernames, username),
-                ),
+                usernameTemplate => {
+                    const { existingUsernames, usersToCreate } = this.state;
+                    const usernamesFromTemplate = this.getValuesFromTemplate(usernameTemplate);
+                    const getOthersInTemplate = (username) => {
+                        const index = _(usernamesFromTemplate).indexOf(username);
+                        return new Set([
+                            ...usernamesFromTemplate.slice(0, index),
+                            ...usernamesFromTemplate.slice(index + 1),
+                        ]);
+                    };
+
+                    return validateValues(
+                        usernamesFromTemplate,
+                        username => validateUsername(existingUsernames, getOthersInTemplate(username), username),
+                    );
+                },
                 (username, error) => this.getTranslation(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
                 passwordTemplate => validateValues(
-                    getFromTemplate(passwordTemplate, parseInt(this.state.usersToCreate) || 1),
+                    this.getValuesFromTemplate(passwordTemplate),
                     password => validatePassword(password),
                 ),
                 (password, error) => this.getTranslation(`password_${error}`),
@@ -98,7 +116,7 @@ class ReplicateUserFromTemplate extends React.Component {
         };
     }
 
-    getTextField(name, type, value, { validators }) {
+    getTextField(name, type, value, { label, validators }) {
         return {
             component: TextField,
             name,
@@ -106,7 +124,7 @@ class ReplicateUserFromTemplate extends React.Component {
             props: {
                 type,
                 style: { width: "100%" },
-                floatingLabelText: this.getTranslation(camelCaseToUnderscores(name)),
+                floatingLabelText: label || this.getTranslation(camelCaseToUnderscores(name)),
             },
             validators,
         };
@@ -144,8 +162,8 @@ class ReplicateUserFromTemplate extends React.Component {
         const t = this.getTranslation;
 
         const actions = [
+            <FlatButton label={this.getTranslation('close')} onClick={onRequestClose} style={{marginRight: 16}} />,
             <RaisedButton primary={true} label={t('replicate')} disabled={!isValid} onClick={this.onSave} />,
-            <FlatButton label={this.getTranslation('close')} onClick={onRequestClose} />,
         ];
 
         const fields = [
@@ -154,6 +172,7 @@ class ReplicateUserFromTemplate extends React.Component {
             }),
             this.getTextField("username", "string", username, {
                 "validators": [this.validators.isValidUsername],
+                "label": this.getTranslation("username_replicate_field"),
             }),
             this.getTextField("password", "string", password, {
                 "validators": [this.validators.isValidPassword],

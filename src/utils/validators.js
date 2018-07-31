@@ -29,7 +29,7 @@ export const validatePassword = (password) => {
 };
 
 /* Return { isValid: true } if username is valid, { isValid: false, error: "some_key"} otherwise */
-export const validateUsername = (existingUsernames, username) => {
+export const validateUsername = (existingUsernames, usedUsernames, username) => {
     if (!username) {
         return error('is_required');
     } else if (username.length < 2) {
@@ -38,6 +38,8 @@ export const validateUsername = (existingUsernames, username) => {
         return error('no_longer_than_140_chars');
     } else if (existingUsernames.has(username)) {
         return error('already_exists');
+    } else if (usedUsernames.has(username)) {
+        return error('duplicated');
     } else {
         return valid();
     }
