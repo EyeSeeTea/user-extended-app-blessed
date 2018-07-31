@@ -109,16 +109,13 @@ class User {
         return new User(d2, userAttributes);
     }
 
-    static async getExistingUsernamesAndCodes(d2) {
+    static async getExistingUsernames(d2) {
         const api = d2.Api.getApi();
         const { users } = await api.get('/users', {
-            fields: "id,code,userCredentials[username]",
+            fields: "id, userCredentials[username]",
             paging: false,
         });
-        const usernames = _(users)
-            .flatMap(user => [user.userCredentials.username, user.userCredentials.code])
-            .uniq()
-            .value();
+        const usernames = users.map(user => user.userCredentials.username);
         return new Set(usernames);
     }
 }

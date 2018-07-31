@@ -70,7 +70,7 @@ class ReplicateUserFromTable extends React.Component {
 
     async componentDidMount() {
         const { userToReplicateId } = this.props;
-        const invalidUsernames = await User.getExistingUsernamesAndCodes(d2);
+        const invalidUsernames = await User.getExistingUsernames(d2);
         const userToReplicate = await User.getById(d2, userToReplicateId);
         this.setState({ invalidUsernames, userToReplicate });
     }
@@ -92,10 +92,13 @@ class ReplicateUserFromTable extends React.Component {
         this.setState({ infoDialog: null });
     }
 
+    getInvalidUsernamesInTable(){
+        const { users } = this.state;
+        return _(users.toJS()).map("username").compact().value();
+    }
+
     getInvalidUsernames() {
-        const { users, invalidUsernames } = this.state;
-        const usernamesInTable = _(users.toJS()).map("username").compact().value();
-        return new Set(Array.from(invalidUsernames).concat(usernamesInTable));
+        return new Set(Array.from(this.state.invalidUsernames).concat(this.getInvalidUsernamesInTable()));
     }
 
     getValidators() {
@@ -109,7 +112,9 @@ class ReplicateUserFromTable extends React.Component {
                 message: this.t(Validators.isEmail.message),
             },
             isValidUsername: toBuilderValidator(
-                username => validateUsername(this.getInvalidUsernames(), username),
+                username => {
+                    return validateUsername(new Set(Array.from(this.state.invalidUsernames)), new Set(this.getInvalidUsernamesInTable()), username);
+                },
                 (username, error) => this.t(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
