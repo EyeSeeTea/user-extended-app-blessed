@@ -19,9 +19,11 @@ import Auth from 'd2-ui/lib/auth/Auth.mixin';
 import orgUnitDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
+import replicateUserStore from './replicateUser.store';
 import OrgUnitDialog from './organisation-unit-dialog/OrgUnitDialog.component';
 import UserRolesDialog from '../components/UserRolesDialog.component';
 import UserGroupsDialog from '../components/UserGroupsDialog.component';
+import ReplicateUserDialog from '../components/ReplicateUserDialog.component';
 import snackActions from '../Snackbar/snack.actions';
 import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
@@ -128,6 +130,9 @@ const List = React.createClass({
             assignUserGroups: {
                 open: false,
             },
+            replicateUser: {
+                open: false,
+            }
         };
     },
 
@@ -145,6 +150,7 @@ const List = React.createClass({
             dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
             userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles),
             model: user,
+            d2: this.context.d2,
         }));
     },
 
@@ -193,6 +199,11 @@ const List = React.createClass({
             this.setAssignState("assignUserGroups", assignUserGroups);
         });
 
+        const replicateUserDialogStoreDisposable = replicateUserStore.subscribe(replicateUser => {
+            this.setAssignState("replicateUser", replicateUser);
+        });
+
+
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
@@ -200,6 +211,7 @@ const List = React.createClass({
         this.registerDisposable(groupsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
+        this.registerDisposable(replicateUserDialogStoreDisposable);
 
         this.filterList();
     },
@@ -328,7 +340,7 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        const {assignUserRoles, assignUserGroups} = this.state;
+        const {assignUserRoles, assignUserGroups, replicateUser} = this.state;
 
         return (
             <div>
@@ -339,7 +351,7 @@ const List = React.createClass({
                     <div className="user-management-control select-role">
                         <MultipleFilter
                             title={this.getTranslation('filter_role')}
-                            options={this.state.userRoles}
+                            options={this.state.userRoles || []}
                             selected={this.state.filterByRoles}
                             onChange={this.setFilterRoles}
                         />
@@ -347,7 +359,7 @@ const List = React.createClass({
                     <div className="user-management-control select-group">
                     <MultipleFilter
                         title={this.getTranslation('filter_group')}
-                        options={this.state.userGroups}
+                        options={this.state.userGroups || []}
                         selected={this.state.filterByGroups}
                         onChange={this.setFilterGroups}
                     />
@@ -414,6 +426,13 @@ const List = React.createClass({
                         onRequestClose={() => userGroupsAssignmentDialogStore.setState({open: false})}
                     />
                     : null}
+
+                {replicateUser.open ?
+                    <ReplicateUserDialog
+                        userToReplicateId={replicateUser.user.id}
+                        onRequestClose={() => replicateUserStore.setState({open: false})}
+                    />
+                    : null}
             </div>
         );
     },
@@ -425,5 +444,10 @@ const List = React.createClass({
     },
 
 });
+
+List.contextTypes = {
+    d2: PropTypes.object.isRequired,
+};
+
 
 export default List;

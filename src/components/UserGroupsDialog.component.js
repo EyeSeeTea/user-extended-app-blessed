@@ -24,6 +24,7 @@ function getPayload(allUserGroups, pairs) {
         .flatMap(([user, userGroupsForUser]) =>_.concat(user.userGroups.toArray(), userGroupsForUser))
         .uniqBy(group => group.id)
         .map(userGroup => allUserGroupsById[userGroup.id])
+        .compact()
         .map(group => _m.imerge(getOwnedPropertyJSON(group), {users: getUsersForGroup(group)}))
         .value();
 
