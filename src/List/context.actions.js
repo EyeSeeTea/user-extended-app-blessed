@@ -98,7 +98,7 @@ const contextActions = [
     },
     {
         name: 'replicateUser',
-        icon: "person_add",
+        icon: "content_copy",
         multiple: false,
         onClick: user => replicateUserStore.setState({user, open: true}),
         allowed: isAdmin,
