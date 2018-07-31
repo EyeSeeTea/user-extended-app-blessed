@@ -21,6 +21,9 @@ const styles = {
         minWidth: 600,
         maxWidth: 800,
     },
+    cancelButton: {
+        marginRight: 16,
+    },
 };
 
 class ReplicateUserFromTemplate extends React.Component {
@@ -162,7 +165,7 @@ class ReplicateUserFromTemplate extends React.Component {
         const t = this.getTranslation;
 
         const actions = [
-            <FlatButton label={this.getTranslation('close')} onClick={onRequestClose} style={{marginRight: 16}} />,
+            <FlatButton label={this.getTranslation('close')} onClick={onRequestClose} style={styles.cancelButton} />,
             <RaisedButton primary={true} label={t('replicate')} disabled={!isValid} onClick={this.onSave} />,
         ];
 

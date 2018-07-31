@@ -11,9 +11,11 @@ import FormBuilder from 'd2-ui/lib/forms/FormBuilder.component';
 import { generateUid } from 'd2/lib/uid';
 import { List } from 'immutable';
 import _ from 'lodash';
+import FontIcon from 'material-ui/FontIcon';
+import IconButton from 'material-ui/IconButton';
 
-import { toBuilderValidator, validateValues, validateUsername, validatePassword } from '../utils/validators';
-import { getFromTemplate } from '../utils/template';
+
+import { toBuilderValidator, validateUsername, validatePassword } from '../utils/validators';
 import User from '../models/user';
 import snackActions from '../Snackbar/snack.actions';
 import LoadingMask from '../loading-mask/LoadingMask.component';
@@ -23,6 +25,9 @@ const styles = {
     dialog: {
         width: '95%',
         maxWidth: 'none',
+    },
+    dialogBody: {
+        paddingTop: '10px',
     },
     addRowButton: {
         marginTop: 20,
@@ -36,7 +41,13 @@ const styles = {
         width: 75,
     },
     actionsHeader: {
-        width: 125,
+        width: 50,
+        paddingLeft: '10px',
+        paddingRight: '10px',
+        overflow: 'visible',
+    },
+    cancelButton: {
+        marginRight: 16,
     },
 };
                                 
@@ -186,11 +197,13 @@ class ReplicateUserFromTable extends React.Component {
             {children}
 
             <TableRowColumn style={styles.actionsHeader}>
-                <RaisedButton
-                    primary={true}
-                    label={this.t('remove')}
-                    onClick={() => this.removeRow(index)}
-                />
+                <IconButton
+                    style={{cursor: 'pointer'}}
+                    tooltip={this.t('remove_user')}
+                    tooltipPosition="bottom-left"
+                    onClick={() => this.removeRow(index)}>
+                    <FontIcon className="material-icons">delete</FontIcon>
+                </IconButton>
             </TableRowColumn>
         </TableRow>
     );
@@ -207,7 +220,7 @@ class ReplicateUserFromTable extends React.Component {
 
         return (
             <div>
-                <Table fixedHeader={true}>
+                <Table fixedHeader={true} style={{marginBottom: '30px'}}>
                     <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
                             <TableHeaderColumn style={styles.indexHeader}>#</TableHeaderColumn>
@@ -237,7 +250,6 @@ class ReplicateUserFromTable extends React.Component {
 
                 <div style={styles.addRowButton}>
                     <RaisedButton
-                        primary={true}
                         disabled={!canAddNewUser}
                         label={this.t('add_user')}
                         onClick={this.addRow}
@@ -254,15 +266,16 @@ class ReplicateUserFromTable extends React.Component {
             {user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : ""});
 
         const actions = [
+            <FlatButton
+                label={this.t('close')}
+                onClick={onRequestClose}
+                style={styles.cancelButton}
+            />,
             <RaisedButton
                 primary={true}
                 label={this.t('replicate')}
                 disabled={!this.areUsersValid()}
                 onClick={this.onSave}
-            />,
-            <FlatButton
-                label={this.t('close')}
-                onClick={onRequestClose}
             />,
         ];
 
@@ -274,6 +287,7 @@ class ReplicateUserFromTable extends React.Component {
                 autoScrollBodyContent={true}
                 autoDetectWindowHeight={true}
                 contentStyle={styles.dialog}
+                bodyStyle={styles.dialogBody}
                 onRequestClose={onRequestClose}
             >
                 {!userToReplicate ? <LoadingMask /> : null}
