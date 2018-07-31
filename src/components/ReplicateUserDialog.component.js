@@ -96,10 +96,9 @@ class ReplicateUserDialog extends React.Component {
                 usernameTemplate => {
                     const { existingUsernames, usersToCreate } = this.state;
                     const usernamesFromTemplate = getFromTemplate(usernameTemplate, parseInt(usersToCreate) || 1);
-                    const getInvalid = (username) => {
+                    const getOthersInTemplate = (username) => {
                         const index = _(usernamesFromTemplate).indexOf(username);
                         return new Set([
-                            ..._(existingUsernames).toArray(),
                             ...usernamesFromTemplate.slice(0, index),
                             ...usernamesFromTemplate.slice(index + 1),
                         ]);
@@ -107,7 +106,7 @@ class ReplicateUserDialog extends React.Component {
 
                     return validateValues(
                         usernamesFromTemplate,
-                        username => validateUsername(getInvalid(username), username),
+                        username => validateUsername(existingUsernames, getOthersInTemplate(username), username),
                     );
                 },
                 (username, error) => this.getTranslation(`username_${error}`, { username }),
@@ -122,7 +121,7 @@ class ReplicateUserDialog extends React.Component {
         };
     }
 
-    getTextField(name, type, value, { validators }) {
+    getTextField(name, type, value, { label, validators }) {
         return {
             component: TextField,
             name,
@@ -130,7 +129,7 @@ class ReplicateUserDialog extends React.Component {
             props: {
                 type,
                 style: { width: "100%" },
-                floatingLabelText: this.getTranslation(camelCaseToUnderscores(name)),
+                floatingLabelText: label || this.getTranslation(camelCaseToUnderscores(name)),
             },
             validators,
         };
@@ -189,6 +188,7 @@ class ReplicateUserDialog extends React.Component {
             }),
             this.getTextField("username", "string", username, {
                 "validators": [this.validators.isValidUsername],
+                "label": this.getTranslation("username_replicate_field"),
             }),
             this.getTextField("password", "string", password, {
                 "validators": [this.validators.isValidPassword],
