@@ -166,8 +166,8 @@ class ReplicateUserDialog extends React.Component {
         const t = this.getTranslation;
 
         const actions = [
+            <FlatButton label={this.getTranslation('cancel')} onClick={onRequestClose} style={{marginRight: 16}}/>,
             <RaisedButton primary={true} label={t('replicate')} disabled={!isValid} onClick={this.onSave} />,
-            <FlatButton label={this.getTranslation('cancel')} onClick={onRequestClose} />,
         ];
 
         const fields = [
