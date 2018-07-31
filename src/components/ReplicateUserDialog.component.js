@@ -36,6 +36,7 @@ const styles = {
 };
 
 class ReplicateUserDialog extends React.Component {
+    maxUsers = 100;
     defaultPassword = "District123_$index";
 
     constructor(props, context) {
@@ -82,6 +83,12 @@ class ReplicateUserDialog extends React.Component {
         this.setState({ infoDialog: null });
     }
 
+    getValuesFromTemplate(template) {
+        const { usersToCreate } = this.state;
+        const n = Math.min(parseInt(usersToCreate) || 1, this.maxUsers);
+        return getFromTemplate(template, n);
+    };
+
     getValidators() {
         return {
             isRequired: {
@@ -95,7 +102,7 @@ class ReplicateUserDialog extends React.Component {
             isValidUsername: toBuilderValidator(
                 usernameTemplate => {
                     const { existingUsernames, usersToCreate } = this.state;
-                    const usernamesFromTemplate = getFromTemplate(usernameTemplate, parseInt(usersToCreate) || 1);
+                    const usernamesFromTemplate = this.getValuesFromTemplate(usernameTemplate);
                     const getOthersInTemplate = (username) => {
                         const index = _(usernamesFromTemplate).indexOf(username);
                         return new Set([
@@ -113,7 +120,7 @@ class ReplicateUserDialog extends React.Component {
             ),
             isValidPassword: toBuilderValidator(
                 passwordTemplate => validateValues(
-                    getFromTemplate(passwordTemplate, parseInt(this.state.usersToCreate) || 1),
+                    this.getValuesFromTemplate(passwordTemplate),
                     password => validatePassword(password),
                 ),
                 (password, error) => this.getTranslation(`password_${error}`),
@@ -184,7 +191,7 @@ class ReplicateUserDialog extends React.Component {
 
         const fields = [
             this.getTextField("usersToCreate", "number", usersToCreate, {
-                "validators": [this.validators.isRequired, this.validators.withinInterval(1, 50)],
+                "validators": [this.validators.isRequired, this.validators.withinInterval(1, this.maxUsers)],
             }),
             this.getTextField("username", "string", username, {
                 "validators": [this.validators.isValidUsername],
