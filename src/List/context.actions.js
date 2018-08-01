@@ -100,8 +100,17 @@ const contextActions = [
         name: 'replicateUser',
         icon: "content_copy",
         multiple: false,
-        onClick: user => replicateUserStore.setState({user, open: true}),
         allowed: isAdmin,
+        items: [
+            {
+                name: 'replicate_user_from_template',
+                onClick: users => replicateUserStore.setState({open: true, user: users[0], type: "template"}),
+            },
+            {
+                name: 'replicate_user_from_table',
+                onClick: users => replicateUserStore.setState({open: true, user: users[0], type: "table"}),
+            },
+        ]
     },
 ];
 

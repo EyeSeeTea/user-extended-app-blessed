@@ -43,6 +43,8 @@ export function fromActionsDefinitions(actions) {
     const primaryActionDefinition = actions.find(action => action.primary)
     const primaryAction = primaryActionDefinition ? contextActions[primaryActionDefinition.name] : null;
 
+    const subactions = _(actions).map(action => [action.name, action.items]).fromPairs().value();
+
     const isContextActionAllowed = function(selection, actionName) {
         const action = actionsByName[actionName];
 
@@ -64,7 +66,7 @@ export function fromActionsDefinitions(actions) {
         });
     });
 
-    return {contextActions, contextMenuIcons, isContextActionAllowed, primaryAction};
+    return {contextActions, contextMenuIcons, isContextActionAllowed, primaryAction, subactions};
 };
 
 const MultipleDataTable = React.createClass({
@@ -130,7 +132,7 @@ const MultipleDataTable = React.createClass({
     },
 
     renderContextMenu() {
-        const {contextActions, contextMenuIcons, isContextActionAllowed} =
+        const {contextActions, contextMenuIcons, isContextActionAllowed, subactions} =
             this.state.contextActionsData;
         const actionAccessChecker = isContextActionAllowed ?
             isContextActionAllowed.bind(null, this.state.activeRows) : () => true;
@@ -147,6 +149,7 @@ const MultipleDataTable = React.createClass({
                     target={this.state.contextMenuTarget}
                     onRequestClose={this._hideContextMenu}
                     actions={actionsToShow}
+                    subactions={subactions}
                     activeItems={this.state.activeRows}
                     showContextMenu={this.state.showContextMenu}
                     icons={contextMenuIcons}

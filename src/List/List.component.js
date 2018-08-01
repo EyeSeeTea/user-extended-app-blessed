@@ -23,7 +23,8 @@ import replicateUserStore from './replicateUser.store';
 import OrgUnitDialog from './organisation-unit-dialog/OrgUnitDialog.component';
 import UserRolesDialog from '../components/UserRolesDialog.component';
 import UserGroupsDialog from '../components/UserGroupsDialog.component';
-import ReplicateUserDialog from '../components/ReplicateUserDialog.component';
+import ReplicateUserFromTemplate from '../components/ReplicateUserFromTemplate.component';
+import ReplicateUserFromTable from '../components/ReplicateUserFromTable.component';
 import snackActions from '../Snackbar/snack.actions';
 import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
@@ -296,6 +297,29 @@ const List = React.createClass({
         return [emptyEntry].concat(entries);
     },
 
+    onReplicateDialogClose() {
+        replicateUserStore.setState({open: false});
+    },
+
+    getReplicateDialog(info) {
+        const componentsByType = {
+            template: ReplicateUserFromTemplate,
+            table: ReplicateUserFromTable,
+        };
+        const ReplicateComponent = componentsByType[info.type];
+
+        if (ReplicateComponent) {
+            return (
+                <ReplicateComponent
+                    userToReplicateId={info.user.id}
+                    onRequestClose={this.onReplicateDialogClose}
+                />
+            );
+        } else {
+            throw new Error(`Unknown replicate dialog type: ${info.type}`);
+        }
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
@@ -427,12 +451,7 @@ const List = React.createClass({
                     />
                     : null}
 
-                {replicateUser.open ?
-                    <ReplicateUserDialog
-                        userToReplicateId={replicateUser.user.id}
-                        onRequestClose={() => replicateUserStore.setState({open: false})}
-                    />
-                    : null}
+                {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
             </div>
         );
     },
