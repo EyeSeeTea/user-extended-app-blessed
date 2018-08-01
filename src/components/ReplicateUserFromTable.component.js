@@ -61,7 +61,7 @@ class ReplicateUserFromTable extends React.Component {
         this.validators = this.getValidators();
 
         this.state = {
-            invalidUsernames: null, // Set()
+            existingUsernames: null, // Set()
             infoDialog: null, // {title, body}
             usersValidation: {}, // {USER_ID: true | false}
             users: new List([]),
@@ -70,9 +70,9 @@ class ReplicateUserFromTable extends React.Component {
 
     async componentDidMount() {
         const { userToReplicateId } = this.props;
-        const invalidUsernames = await User.getExistingUsernames(d2);
+        const existingUsernames = await User.getExistingUsernames(d2);
         const userToReplicate = await User.getById(d2, userToReplicateId);
-        this.setState({ invalidUsernames, userToReplicate });
+        this.setState({ existingUsernames, userToReplicate });
     }
 
     onUpdateField(index, name, value) {
@@ -92,13 +92,15 @@ class ReplicateUserFromTable extends React.Component {
         this.setState({ infoDialog: null });
     }
 
-    getInvalidUsernamesInTable(){
+    getUsernamesInTable() {
         const { users } = this.state;
-        return _(users.toJS()).map("username").compact().value();
+        return new Set(_(users.toJS()).map("username").compact().value());
     }
 
     getInvalidUsernames() {
-        return new Set(Array.from(this.state.invalidUsernames).concat(this.getInvalidUsernamesInTable()));
+        return new Set(
+            Array.from(this.state.existingUsernames).concat(Array.from(this.getUsernamesInTable()))
+        );
     }
 
     getValidators() {
@@ -113,7 +115,7 @@ class ReplicateUserFromTable extends React.Component {
             },
             isValidUsername: toBuilderValidator(
                 username => {
-                    return validateUsername(new Set(Array.from(this.state.invalidUsernames)), new Set(this.getInvalidUsernamesInTable()), username);
+                    return validateUsername(this.state.existingUsernames, this.getUsernamesInTable(), username);
                 },
                 (username, error) => this.t(`username_${error}`, { username }),
             ),
@@ -266,7 +268,7 @@ class ReplicateUserFromTable extends React.Component {
 
     render() {
         const { onRequestClose } = this.props;
-        const { infoDialog, userToReplicate, invalidUsernames, users } = this.state;
+        const { infoDialog, userToReplicate, users } = this.state;
         const title = this.t("replicate_user",
             {user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : ""});
 
