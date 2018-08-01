@@ -59,8 +59,8 @@ class User {
               id: generateUid(),
               openId: nullable(userFields.openId),
               ldapId: nullable(userFields.ldapId),
+              code: nullable(userFields.code),
               userInfo: { id: userFields.id },
-              code: userFields.username,
               username: userFields.username,
               password: userFields.password,
             },
@@ -112,7 +112,7 @@ class User {
     static async getExistingUsernames(d2) {
         const api = d2.Api.getApi();
         const { users } = await api.get('/users', {
-            fields: "id, userCredentials[username]",
+            fields: "id,userCredentials[username]",
             paging: false,
         });
         const usernames = users.map(user => user.userCredentials.username);
