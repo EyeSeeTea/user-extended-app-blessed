@@ -19,9 +19,12 @@ import Auth from 'd2-ui/lib/auth/Auth.mixin';
 import orgUnitDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
+import replicateUserStore from './replicateUser.store';
 import OrgUnitDialog from './organisation-unit-dialog/OrgUnitDialog.component';
 import UserRolesDialog from '../components/UserRolesDialog.component';
 import UserGroupsDialog from '../components/UserGroupsDialog.component';
+import ReplicateUserFromTemplate from '../components/ReplicateUserFromTemplate.component';
+import ReplicateUserFromTable from '../components/ReplicateUserFromTable.component';
 import snackActions from '../Snackbar/snack.actions';
 import Heading from 'd2-ui/lib/headings/Heading.component';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
@@ -29,6 +32,8 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
+
+const pageSize = 50;
 
 // Filters out any actions `edit`, `clone` when the user can not update/edit this modelType
 function actionsThatRequireCreate(action) {
@@ -48,7 +53,6 @@ function actionsThatRequireDelete(action) {
 
 // TODO: Move this somewhere as a utility function, probably on the Pagination component (as a separate export) in d2-ui?
 export function calculatePageValue(pager) {
-    const pageSize = 50; // TODO: Make the page size dynamic
     const { total, pageCount, page } = pager;
     const pageCalculationValue = total - (total - ((pageCount - (pageCount - page)) * pageSize));
     const startItem = 1 + pageCalculationValue - pageSize;
@@ -127,6 +131,9 @@ const List = React.createClass({
             assignUserGroups: {
                 open: false,
             },
+            replicateUser: {
+                open: false,
+            }
         };
     },
 
@@ -144,6 +151,7 @@ const List = React.createClass({
             dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
             userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles),
             model: user,
+            d2: this.context.d2,
         }));
     },
 
@@ -192,6 +200,11 @@ const List = React.createClass({
             this.setAssignState("assignUserGroups", assignUserGroups);
         });
 
+        const replicateUserDialogStoreDisposable = replicateUserStore.subscribe(replicateUser => {
+            this.setAssignState("replicateUser", replicateUser);
+        });
+
+
         this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
@@ -199,11 +212,14 @@ const List = React.createClass({
         this.registerDisposable(groupsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
+        this.registerDisposable(replicateUserDialogStoreDisposable);
+
+        this.filterList();
     },
 
     setAssignState(key, value) {
         this.setState({[key]: value, detailsObject: null},
-            () => !value.open && this.filterList({keepCurrentPage: true}));
+            () => !value.open && this.filterList({ page: this.state.pager.page }));
     },
 
     componentWillReceiveProps(newProps) {
@@ -224,7 +240,7 @@ const List = React.createClass({
         snackActions.show({ message: 'organisation_unit_assignment_save_error', translate: true });
     },
 
-    filterList({keepCurrentPage = false} = {}) {
+    filterList({page = 1} = {}) {
         const order = this.state.sorting ?
             (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
         const { filterByRoles, filterByGroups, showAllUsers, pager, searchString } = this.state;
@@ -233,7 +249,8 @@ const List = React.createClass({
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
-            page: keepCurrentPage ? pager.page : 1,
+            page: page,
+            pageSize: pageSize,
             filters: _.pickBy({
                 "displayName":
                     searchString ? ["ilike", searchString] : null,
@@ -280,21 +297,43 @@ const List = React.createClass({
         return [emptyEntry].concat(entries);
     },
 
+    onReplicateDialogClose() {
+        replicateUserStore.setState({open: false});
+    },
+
+    getReplicateDialog(info) {
+        const componentsByType = {
+            template: ReplicateUserFromTemplate,
+            table: ReplicateUserFromTable,
+        };
+        const ReplicateComponent = componentsByType[info.type];
+
+        if (ReplicateComponent) {
+            return (
+                <ReplicateComponent
+                    userToReplicateId={info.user.id}
+                    onRequestClose={this.onReplicateDialogClose}
+                />
+            );
+        } else {
+            throw new Error(`Unknown replicate dialog type: ${info.type}`);
+        }
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
         const currentlyShown = calculatePageValue(this.state.pager);
+        const { pager } = this.state;
 
         const paginationProps = {
             hasNextPage: () => Boolean(this.state.pager.hasNextPage) && this.state.pager.hasNextPage(),
             hasPreviousPage: () => Boolean(this.state.pager.hasPreviousPage) && this.state.pager.hasPreviousPage(),
             onNextPageClick: () => {
-                this.setState({ isLoading: true });
-                listActions.getNextPage();
+                this.setState({ isLoading: true }, () => this.filterList({page: pager.page + 1}));
             },
             onPreviousPageClick: () => {
-                this.setState({ isLoading: true });
-                listActions.getPreviousPage();
+                this.setState({ isLoading: true }, () => this.filterList({page: pager.page - 1}));
             },
             total: this.state.pager.total,
             currentlyShown,
@@ -325,7 +364,7 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        const {assignUserRoles, assignUserGroups} = this.state;
+        const {assignUserRoles, assignUserGroups, replicateUser} = this.state;
 
         return (
             <div>
@@ -336,7 +375,7 @@ const List = React.createClass({
                     <div className="user-management-control select-role">
                         <MultipleFilter
                             title={this.getTranslation('filter_role')}
-                            options={this.state.userRoles}
+                            options={this.state.userRoles || []}
                             selected={this.state.filterByRoles}
                             onChange={this.setFilterRoles}
                         />
@@ -344,7 +383,7 @@ const List = React.createClass({
                     <div className="user-management-control select-group">
                     <MultipleFilter
                         title={this.getTranslation('filter_group')}
-                        options={this.state.userGroups}
+                        options={this.state.userGroups || []}
                         selected={this.state.filterByGroups}
                         onChange={this.setFilterGroups}
                     />
@@ -411,6 +450,8 @@ const List = React.createClass({
                         onRequestClose={() => userGroupsAssignmentDialogStore.setState({open: false})}
                     />
                     : null}
+
+                {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
             </div>
         );
     },
@@ -422,5 +463,10 @@ const List = React.createClass({
     },
 
 });
+
+List.contextTypes = {
+    d2: PropTypes.object.isRequired,
+};
+
 
 export default List;
