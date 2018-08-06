@@ -1,6 +1,6 @@
 {
   "name": "d2-user-app",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "DHIS2 Enhanced User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
@@ -74,6 +74,7 @@
     "react-dom": "15.4.2",
     "react-moment": "^0.6.5",
     "react-router": "^2.5.2",
+    "react-style-proptype": "^3.2.1",
     "react-tap-event-plugin": "^2.0.1",
     "rx": "^4.1.0",
     "rxjs": "^5.2.0",
@@ -90,8 +91,10 @@
     "babel-polyfill": "^6.8.0",
     "ckeditor": "^4.5.9",
     "immutability-helper": "^2.6.4",
+    "immutable": "^3.8.2",
     "jquery": "^3.3.1",
-    "prop-types": "^15.5.10"
+    "prop-types": "^15.5.10",
+    "react-copy-to-clipboard": "^5.0.1"
   },
   "repository": {
     "type": "git",
@@ -115,5 +118,5 @@
         "href": "*"
       }
     }
-  }  
+  }
 }

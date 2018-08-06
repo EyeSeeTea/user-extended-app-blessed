@@ -33,7 +33,7 @@ export default class BatchModelsMultiSelectModel {
 
     save(parents, allChildren, selectedIds, updateStrategy) {
         const api = this.d2.Api.getApi();
-        const selectedChildren = _(allChildren).keyBy("id").at(...selectedIds).value();
+        const selectedChildren = _(allChildren).keyBy("id").at(...selectedIds).compact().value();
         const childrenForParents = this.getNewChildren(parents, selectedChildren, updateStrategy);
         const payload = this.getPayload(allChildren, _.zip(parents, childrenForParents));
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=MERGE";
