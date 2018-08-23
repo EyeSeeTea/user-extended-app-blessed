@@ -78,8 +78,7 @@ const webpackConfig = {
             { path: '/css/**', target: 'http://localhost:8081/src', bypass },
             { path: '/i18n/**', target: 'http://localhost:8081/src', bypass },
             { path: '/jquery.min.js', target: 'http://localhost:8081/node_modules/jquery/dist', bypass },
-            { path: '/polyfill.min.js', target: 'http://localhost:8081/node_modules/babel-polyfill/dist', bypass },
-            { path: '/ckeditor/**', target: 'http://localhost:8081/node_modules', bypass },
+            { path: '/polyfill.min.js', target: 'http://localhost:8081/node_modules/babel-polyfill/dist', bypass }
         ],
     },
 };
