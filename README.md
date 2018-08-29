@@ -12,11 +12,18 @@ User App is a Dhis2 Web Application that provides an easy and integrated way to 
 - Assign to groups: Implemented for single and multiple selections* allows assigning the user groups for a user/s.
 - Shortcut to regular dhis2 user management app
 
-*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected entities to the current values each user had, no values will b
+\*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected organisation units to the current values each user had, no values will be removed. Replace on the other hand overwrites any previous values and keep only those selected in this dialog.
 
 ## Installation
 
 Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-app/releases) and install it in your Dhis2 instance using the App management application.
+
+## Build
+
+```
+$ cp app-config/app-config-[ORG].json app-config.json
+$ yarn build
+```
 
 ## Feedback
 

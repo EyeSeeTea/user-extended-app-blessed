@@ -39,13 +39,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Usage:
     
       $.feedbackGithub({
-        token: "PERSONAL_TOKEN",
+        token: "PERSONAL_TOKEN" | ["PERSONAL_", "TOKEN"],
         createIssue: true,
         postFunction: ({title, body}) => { },
+        username: "USERNAME",
         issues: {
           repository: "ORG/PROJECT_WHERE_ISSUES_WILL_BE_CREATED",
-          renderTitle: title => `[User feedback] ${title}`,
-          renderBody: body => ["## Some report", "", body].join("\n"),
+          title: "[User feedback] {title}",
+          body: "## Some report\n{body}",
         },
         snapshots: {
           repository: "ORG2/PROJECT_WHERE_SNAPSHOTS_WILL_BE_UPLOADED_TO",
@@ -55,11 +56,19 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       });
     */
 
+    function interpolate(template, namespace) {
+      return template.replace(/{([^{}]*)}/g, function (a, b) {
+        var r = namespace[b];
+        return typeof r === 'string' || typeof r === 'number' ? r : a;
+      });
+    };
+
     var FeedBackToolGithub = function () {
       function FeedBackToolGithub(options) {
         _classCallCheck(this, FeedBackToolGithub);
 
         this.options = options;
+        this.token = typeof options.token === "string" ? options.token : options.token.join("");
       }
 
       _createClass(FeedBackToolGithub, [{
@@ -72,7 +81,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       }, {
         key: "_setAuthHeader",
         value: function _setAuthHeader(xhr) {
-          xhr.setRequestHeader("Authorization", "token " + this.options.token);
+          xhr.setRequestHeader("Authorization", "token " + this.token);
         }
       }, {
         key: "_sendReport",
@@ -119,10 +128,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var info = data.post;
           var browser = info.browser;
           var body = ["## Browser", "- Name: " + browser.appCodeName, "- Version: " + browser.appVersion, "- Platform: " + browser.platform, "", "## User report", "URL: " + info.url, "", info.note, "", "![See screenshot here]( " + screenshotUrl + " )"].join("\n");
+          var bodyNamespace = { body: body, username: this.options.username };
 
           return {
-            "title": this.options.issues.renderTitle(info.title),
-            "body": this.options.issues.renderBody ? this.options.issues.renderBody(body) : body
+            "title": interpolate(this.options.issues.title, { title: info.title }),
+            "body": this.options.issues.body ? interpolate(this.options.issues.body, bodyNamespace) : body
           };
         }
       }, {
