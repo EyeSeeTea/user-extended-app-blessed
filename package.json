@@ -1,7 +1,7 @@
 {
   "name": "d2-user-extended-app",
   "version": "0.1.1",
-  "description": "DHIS2 Enhanced User app",
+  "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
   "author": {
@@ -104,7 +104,7 @@
   },
   "homepage": "https://github.com/EyeSeeTea/user-extended-app",
   "manifest.webapp": {
-    "name": "User extended app",
+    "name": "User Extended App",
     "icons": {
       "48": "icon.png"
     },
