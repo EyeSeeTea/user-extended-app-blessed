@@ -16,7 +16,7 @@ User App is a Dhis2 Web Application that provides an easy and integrated way to 
 
 ## Installation
 
-Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-app/releases) and install it in your Dhis2 instance using the App management application.
+Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-extended-app/releases) and install it in your Dhis2 instance using the App management application.
 
 ## Build
 

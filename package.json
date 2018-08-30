@@ -1,5 +1,5 @@
 {
-  "name": "d2-user-app",
+  "name": "d2-user-extended-app",
   "version": "0.1.1",
   "description": "DHIS2 Enhanced User app",
   "main": "src/index.html",
@@ -7,7 +7,7 @@
   "author": {
     "name": "EyeSeeTea Team",
     "email": "hello@eyeseetea.com",
-    "url": "https://github.com/EyeSeeTea/user-app"
+    "url": "https://github.com/EyeSeeTea/user-extended-app"
   },
   "scripts": {
     "prestart": "d2-manifest package.json manifest.webapp",
@@ -36,7 +36,7 @@
     "css-loader": "^0.23.1",
     "d2": "27.0.0-8",
     "d2-manifest": "^1.0.0-2",
-    "d2-ui": "github:EyeSeeTea/d2-ui#user-app",
+    "d2-ui": "github:EyeSeeTea/d2-ui#user-extended-app",
     "d2-utilizr": "0.2.9",
     "d3-color": "1.0.2",
     "eslint": "^3.6.0",
@@ -97,14 +97,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EyeSeeTea/user-app.git"
+    "url": "git+https://github.com/EyeSeeTea/user-extended-app.git"
   },
   "bugs": {
-    "url": "https://github.com/EyeSeeTea/user-app/issues"
+    "url": "https://github.com/EyeSeeTea/user-extended-app/issues"
   },
-  "homepage": "https://github.com/EyeSeeTea/user-app",
+  "homepage": "https://github.com/EyeSeeTea/user-extended-app",
   "manifest.webapp": {
-    "name": "User app",
+    "name": "User extended app",
     "icons": {
       "48": "icon.png"
     },
