@@ -83,7 +83,7 @@ class MultipleFilter extends React.Component {
     }
 
     render() {
-        const { title, options } = this.props;
+        const { title, options, styles } = this.props;
         const { dialogOpen, selected } = this.state;
         
         return (
@@ -110,6 +110,7 @@ class MultipleFilter extends React.Component {
                     onClick={this.openDialog}
                     onChange={this.openDialog}
                     floatingLabelText={title}
+                    style={styles.textField}
                     inputStyle={{ cursor: 'pointer' }}
                 />
             </div>
@@ -122,6 +123,7 @@ MultipleFilter.propTypes = {
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     onChange: PropTypes.func.isRequired,
     selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+    styles: PropTypes.object,
 };
 
 MultipleFilter.contextTypes = {

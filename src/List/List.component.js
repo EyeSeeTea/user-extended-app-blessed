@@ -32,6 +32,9 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
+import IconButton from 'material-ui/IconButton';
+import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
+import AnimateHeight from 'react-animate-height';
 
 const pageSize = 50;
 
@@ -114,6 +117,7 @@ const List = React.createClass({
             filterByGroups: [],
             sorting: initialSorting,
             showAllUsers: true,
+            showExtendedFilters: false,            
             sharing: {
                 model: null,
                 open: false,
@@ -133,7 +137,7 @@ const List = React.createClass({
             },
             replicateUser: {
                 open: false,
-            }
+            },
         };
     },
 
@@ -320,6 +324,10 @@ const List = React.createClass({
         }
     },
 
+    _toggleExtendedFilters() {
+        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
@@ -364,42 +372,65 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        const {assignUserRoles, assignUserGroups, replicateUser} = this.state;
+        const {assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters} = this.state;
+        const { showAllUsers, filterByGroups, filterByRoles } = this.state;
+        const isFiltering = !showAllUsers || !_(filterByGroups).isEmpty() || !_(filterByRoles).isEmpty();
+        const filterIconColor = isFiltering ? "#1c1" : undefined;
 
         return (
             <div>
-                <div className="user-management-controls">
-                    <div className="user-management-control">
-                        <SearchBox searchObserverHandler={this.searchListByName} />
+                <div className="controls-wrapper">
+                    <div className="user-management-controls">
+                        <div className="user-management-control search-box">
+                            <SearchBox searchObserverHandler={this.searchListByName} />
+
+                            <span>
+                                <IconButton onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")}>
+                                    <FilterListIcon color={filterIconColor} />
+                                </IconButton>
+                            </span>
+                        </div>
+
+                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0}>
+                            <div>
+                                <div className="user-management-control">
+                                    <Checkbox className="control-checkbox"
+                                              label={this.getTranslation('display_only_users_can_manage')}
+                                              onCheck={this._onCanManageClick}
+                                              checked={!this.state.showAllUsers}
+                                    />
+                                </div>
+
+                                <div className="control-row">
+                                    <div className="user-management-control select-role">
+                                        <MultipleFilter
+                                            title={this.getTranslation('filter_role')}
+                                            options={this.state.userRoles || []}
+                                            selected={this.state.filterByRoles}
+                                            onChange={this.setFilterRoles}
+                                            styles={{textField: {width: "90%"}}}
+                                        />
+                                    </div>
+
+                                    <div className="user-management-control select-group">
+                                        <MultipleFilter
+                                            title={this.getTranslation('filter_group')}
+                                            options={this.state.userGroups || []}
+                                            selected={this.state.filterByGroups}
+                                            onChange={this.setFilterGroups}
+                                            styles={{textField: {width: "90%"}}}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </AnimateHeight>
                     </div>
-                    <div className="user-management-control select-role">
-                        <MultipleFilter
-                            title={this.getTranslation('filter_role')}
-                            options={this.state.userRoles || []}
-                            selected={this.state.filterByRoles}
-                            onChange={this.setFilterRoles}
-                        />
-                    </div>
-                    <div className="user-management-control select-group">
-                    <MultipleFilter
-                        title={this.getTranslation('filter_group')}
-                        options={this.state.userGroups || []}
-                        selected={this.state.filterByGroups}
-                        onChange={this.setFilterGroups}
-                    />
-                    </div>
-                    <div className="user-management-control">
-                        <Checkbox className="control-checkbox"
-                                  label={this.getTranslation('display_only_users_can_manage')}
-                                  onCheck={this._onCanManageClick}
-                                  checked={!this.state.showAllUsers}
-                        />
-                    </div>
-                    <div className="fill-space"></div>
-                    <div className="user-management-control">
+
+                    <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
                     </div>
                 </div>
+
                 <LoadingStatus
                     loadingText={['Loading', this.props.params.modelType, 'list...'].join(' ')}
                     isLoading={this.state.isLoading}

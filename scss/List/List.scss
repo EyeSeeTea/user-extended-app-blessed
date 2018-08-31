@@ -20,41 +20,59 @@
   display: none;
 }
 
-// Align user management controls
 .user-management-controls {
-  display: flex;
-  align-items: center;
+  padding: 10px;
+  flex: 5;
+}
+
+.user-management-control.pagination {
+  flex: 1;
+  position: relative;
 }
 
 .user-management-control {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: flex-end;
-  height: 72px;
-  margin-bottom: 2em;
-  padding: 0 1em;
-  &:first-child {
-    padding-left: 0;
-  }
-  &:last-child {
-    padding-right: 0;
-  }
-  >* {
-    flex: 1;
-  }
 }
 
-.select-role, .select-group,.fill-space {
+.search-list-items {
+  float: left;
+  width: 300px;
+}
+
+.search-box {
+  display: flex;
+}
+
+.select-role {
+  flex: 1;
+}
+
+.controls-wrapper {
+  display: flex;
+}
+
+.control-row {
+  display: flex;
+  margin-top: -25px;
+}
+
+.select-group {
   flex: 1;
 }
 
 .control-checkbox {
   margin-bottom: 1em;
+  margin-top: 10px;
 }
 
 .control-select-role, .control-select-group {
   width: unset !important;
   max-width: 250px;
+}
+
+.data-table-pager {
+  position: absolute;
+  bottom: 0;
+  right: 10px;
 }
 
 .data-table-pager--buttons {
