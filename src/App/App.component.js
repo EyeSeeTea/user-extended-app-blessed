@@ -28,7 +28,6 @@ import appState, { setAppState } from './appStateStore';
 import { goToRoute } from '../router';
 
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
-import feedbackOptions from '../config/feedback';
 
 const withMuiContext = Object.assign(AppWithD2.childContextTypes,
     { muiTheme: PropTypes.object });
@@ -42,7 +41,10 @@ class App extends AppWithD2 {
 
     componentDidMount() {
         super.componentDidMount();
-        $.feedbackDhis2(d2, "user-app", feedbackOptions);
+        const { appConfig } = this.props;
+
+        if (appConfig && appConfig.feedback)
+            $.feedbackDhis2(d2, "user-app", appConfig.feedback);
 
         // The all section is a special section that should not be treated like a normal section as it does not
         // have the sidebar. It is used to display the collection of all meta data objects. The all section will
@@ -96,9 +98,15 @@ class App extends AppWithD2 {
     }
 }
 
+App.propTypes = {
+    d2: PropTypes.object,
+    appConfig: PropTypes.object,
+}
+
 App.defaultProps = {
     d2: getInstance(),
 };
+
 App.childContextTypes = withMuiContext;
 
 export default App;
