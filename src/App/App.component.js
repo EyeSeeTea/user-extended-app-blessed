@@ -16,6 +16,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import logo from '../images/logo-eyeseetea.png';
+import Share from '../components/Share.component'
 
 log.setLevel(log.levels.INFO);
 
@@ -96,6 +97,7 @@ class App extends AppWithD2 {
         const appConfig = _(this.props.appConfig || {});
         const headerBarStyles = appConfig.get('appearance.header.styles');
         const showAppTitle = appConfig.get('appearance.header.showTitle') ? appConfig.get('appKey') : undefined;
+        const showShareButton = appConfig.get('appearance.showShareButton');
 
         return (
             <MuiThemeProvider muiTheme={appTheme}>
@@ -104,9 +106,8 @@ class App extends AppWithD2 {
                     <SinglePanelLayout style={{marginTop: "3.5rem", marginLeft: 10}}>
                         <MainContent>{this.props.children}</MainContent>
                     </SinglePanelLayout>
-                    <a href="http://www.eyeseetea.com/" style={logoStyle} target="_blank">
-                        <img src={logo} width="90" alt="EyeeSeeTea" />
-                    </a>
+                    
+                    {showShareButton && <Share/>}
                     <SnackbarContainer />
                 </div>
             </MuiThemeProvider>
