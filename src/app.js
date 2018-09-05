@@ -13,6 +13,7 @@ import LoadingMask from './loading-mask/LoadingMask.component';
 import routes from './router';
 import appTheme from './App/app.theme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import Api from 'd2/lib/api/Api';
 import '../scss/app.scss';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -33,12 +34,17 @@ function configI18n(userSettings) {
     config.i18n.sources.add('./i18n/i18n_module_en.properties');
 }
 
-function startApp(d2) {
-    window.d2 = d2;
-    render(
-        routes,
-        document.getElementById('app')
-    );
+function getAppConfig(d2) {
+    const api = new Api().setBaseUrl('');
+    return api.get('app-config.json')
+        .then(appConfig => ({d2, appConfig}))
+        .catch(err => ({d2}));
+}
+
+function startApp(options) {
+    const { d2, appConfig } = options;
+    window.d2 = d2; // Make d2 available in the console
+    render(routes({appConfig}), document.getElementById('app'));
 }
 
 render(<MuiThemeProvider muiTheme={appTheme}><LoadingMask /></MuiThemeProvider>,
@@ -54,5 +60,6 @@ getManifest('./manifest.webapp')
     .then(getUserSettings)
     .then(configI18n)
     .then(init)
+    .then(getAppConfig)
     .then(startApp)
     .catch(log.error.bind(log));

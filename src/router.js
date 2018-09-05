@@ -42,9 +42,9 @@ function loadList({ params }, replace, callback) {
         );
 }
 
-const routes = (
+const routes = props => (
     <Router history={hashHistory}>
-        <Route path="/" component={App}>
+        <Route path="/" component={_props => <App {...props}>{_props.children}</App>}>
             <IndexRedirect to="list/userSection/user" />
             <Route path="list/:groupName">
                 <Route

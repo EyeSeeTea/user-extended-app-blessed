@@ -51,7 +51,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     var init = function init(i18nProperties) {
                         $.feedbackGithub(Object.assign({}, _this.options, {
                             postFunction: _this.sendFeedbackToUserGroups.bind(_this),
-                            feedbackOptions: { i18nProperties: i18nProperties }
+                            feedbackOptions: { i18nProperties: i18nProperties },
+                            username: _this.d2.currentUser.username
                         }));
                     };
 
@@ -69,6 +70,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     var _this2 = this;
 
                     var userGroupNames = this.options.sendToDhis2UserGroups;
+                    if (userGroupNames.length === 0) return Promise.resolve();
+
                     var title = payload.title,
                         body = payload.body;
 
