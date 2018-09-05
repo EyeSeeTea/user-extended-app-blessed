@@ -14,7 +14,7 @@
         "createIssue": false,
         "sendToDhis2UserGroups": ["GL_GlobalAdministrator", "GL_LocalindicatorAdmin"],
         "issues": {
-            "repository": "EyeSeeTea/user-app-blessed",
+            "repository": "EyeSeeTea/user-extended-app-blessed",
             "title": "[User feedback] {title}",
             "body": "## dhis2\n\nUsername: {username}\n\n{body}"
         },
