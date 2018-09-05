@@ -42,10 +42,6 @@
   display: flex;
 }
 
-.select-role {
-  flex: 1;
-}
-
 .controls-wrapper {
   display: flex;
 }
@@ -53,9 +49,10 @@
 .control-row {
   display: flex;
   margin-top: -25px;
+  margin-bottom: 25px;
 }
 
-.select-group {
+.user-management-control {
   flex: 1;
 }
 

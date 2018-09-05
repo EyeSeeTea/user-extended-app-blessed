@@ -4,10 +4,13 @@ import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
+import last from 'lodash/fp/last';
 
 import FilteredMultiSelect from '../components/FilteredMultiSelect.component';
+import {getOrgUnitsRoots} from '../utils/orgUnits';
+import OrgUnitForm from './OrgUnitForm';
 
-class MultipleFilter extends React.Component {
+class OrgUnitsFilter extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
@@ -15,10 +18,11 @@ class MultipleFilter extends React.Component {
         this.closeDialog = this.closeDialog.bind(this);
         this.onChange = this.onChange.bind(this);
         this.applyAndClose = this.applyAndClose.bind(this);
-        this.fieldValue = this.getCompactFieldValue(props.options, props.selected);
+        this.fieldValue = this.getCompactFieldValue(props.orgUnits, props.selected);
         this.state = {
             dialogOpen: false,
             selected: props.selected,
+            roots: [],
         };
     }
 
@@ -30,11 +34,22 @@ class MultipleFilter extends React.Component {
         cancelButton: {
             marginRight: 16,
         },
+        wrapper: {
+            width: 'inherit',
+            position: 'relative',
+        },
+        inputStyle: {
+            cursor: 'pointer',
+        }
     };
 
+    componentDidMount() {
+        return getOrgUnitsRoots().then(roots => this.setState({roots}));
+    }
+
     componentWillReceiveProps(newProps) {
-        if (newProps.options !== this.props.options || newProps.selected !== this.props.selected)
-            this.fieldValue = this.getCompactFieldValue(newProps.options, newProps.selected);
+        if (newProps.selected !== this.props.selected)
+            this.fieldValue = this.getCompactFieldValue(this.props.orgUnits, newProps.selected);
     }
 
     openDialog() {
@@ -69,8 +84,9 @@ class MultipleFilter extends React.Component {
         ];
     }
 
-    getCompactFieldValue(options, selected, limit = 3) {
-        const names = _(options).keyBy("value").at(selected).map("text").value();
+    getCompactFieldValue(orgUnits, selected, limit = 3) {
+        const selectedIds = selected.map(path => last(path.split("/")));
+        const names = _(orgUnits).keyBy("id").at(selectedIds).map("displayName").value();
 
         if (names.length <= limit) {
             return names.join(', ');
@@ -83,11 +99,11 @@ class MultipleFilter extends React.Component {
     }
 
     render() {
-        const { title, options, styles } = this.props;
+        const { title, styles } = this.props;
         const { dialogOpen, selected } = this.state;
         
         return (
-            <div style={{ width: 'inherit', position: 'relative' }}>
+            <div style={this.styles.wrapper}>
                 <Dialog
                     title={title}
                     actions={this.getDialogButtons()}
@@ -97,11 +113,12 @@ class MultipleFilter extends React.Component {
                     open={dialogOpen}
                     onRequestClose={this.closeDialog}
                 >
-                    <FilteredMultiSelect
-                        options={options}
-                        selected={selected}
+                    <OrgUnitForm
                         onRequestClose={this.closeDialog}
                         onChange={this.onChange}
+                        roots={this.state.roots}
+                        selected={this.state.selected}
+                        intersectionPolicy={false}
                     />
                 </Dialog>
 
@@ -111,23 +128,23 @@ class MultipleFilter extends React.Component {
                     onChange={this.openDialog}
                     floatingLabelText={title}
                     style={styles.textField}
-                    inputStyle={{ cursor: 'pointer' }}
+                    inputStyle={this.styles.inputStyle}
                 />
             </div>
         );
     }
 }
 
-MultipleFilter.propTypes = {
+OrgUnitsFilter.propTypes = {
     title: PropTypes.string.isRequired,
-    options: PropTypes.arrayOf(PropTypes.object).isRequired,
     onChange: PropTypes.func.isRequired,
+    orgUnits: PropTypes.arrayOf(PropTypes.object).isRequired,
     selected: PropTypes.arrayOf(PropTypes.string).isRequired,
     styles: PropTypes.object,
 };
 
-MultipleFilter.contextTypes = {
+OrgUnitsFilter.contextTypes = {
     d2: React.PropTypes.any,
 };
 
-export default MultipleFilter;
+export default OrgUnitsFilter;
