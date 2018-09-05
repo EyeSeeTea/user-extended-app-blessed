@@ -4,15 +4,15 @@
         "header": {
             "showTitle": true,
             "styles": {
-                "background": "#3c3c3c"
+                "background": "#276696"
             }
         },
         "showShareButton": false
     },
     "feedback": {
         "token": ["03242fc6b0c5a48582", "2e6b8d3e8337b5a0b95fe2"],
-        "createIssue": false,
-        "sendToDhis2UserGroups": ["GL_GlobalAdministrator", "GL_LocalindicatorAdmin"],
+        "createIssue": true,
+        "sendToDhis2UserGroups": [],
         "issues": {
             "repository": "EyeSeeTea/user-app-blessed",
             "title": "[User feedback] {title}",

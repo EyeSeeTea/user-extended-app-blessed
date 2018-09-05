@@ -14,6 +14,9 @@ import { Observable } from 'rx';
 import SinglePanelLayout from 'd2-ui/lib/layout/SinglePanel.component';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
+import logo from '../images/logo-eyeseetea.png';
+import Share from '../components/Share.component'
 
 log.setLevel(log.levels.INFO);
 
@@ -32,6 +35,12 @@ const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 const withMuiContext = Object.assign(AppWithD2.childContextTypes,
     { muiTheme: PropTypes.object });
 
+const logoStyle = {
+    position: "fixed",
+    bottom: -3,
+    right: 60,
+};
+
 class App extends AppWithD2 {
     getChildContext() {
         return Object.assign({}, super.getChildContext(), {
@@ -42,9 +51,10 @@ class App extends AppWithD2 {
     componentDidMount() {
         super.componentDidMount();
         const { appConfig } = this.props;
+        const appKey = _(this.props.appConfig).get('appKey');
 
         if (appConfig && appConfig.feedback)
-            $.feedbackDhis2(d2, "user-app", appConfig.feedback);
+            $.feedbackDhis2(d2, appKey, appConfig.feedback);
 
         // The all section is a special section that should not be treated like a normal section as it does not
         // have the sidebar. It is used to display the collection of all meta data objects. The all section will
@@ -84,13 +94,20 @@ class App extends AppWithD2 {
             return (<LoadingMask />);
         }
 
+        const appConfig = _(this.props.appConfig || {});
+        const headerBarStyles = appConfig.get('appearance.header.styles');
+        const showAppTitle = appConfig.get('appearance.header.showTitle') ? appConfig.get('appKey') : undefined;
+        const showShareButton = appConfig.get('appearance.showShareButton');
+
         return (
             <MuiThemeProvider muiTheme={appTheme}>
                 <div>
-                    <HeaderBar showAppTitle="user-app" styles={{background: '#3c3c3c'}} />
+                    <HeaderBar showAppTitle={showAppTitle} styles={headerBarStyles} />
                     <SinglePanelLayout style={{marginTop: "3.5rem", marginLeft: 10}}>
                         <MainContent>{this.props.children}</MainContent>
-                    </SinglePanelLayout>}
+                    </SinglePanelLayout>
+                    
+                    {showShareButton && <Share/>}
                     <SnackbarContainer />
                 </div>
             </MuiThemeProvider>
