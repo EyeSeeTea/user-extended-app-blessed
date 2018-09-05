@@ -54,7 +54,7 @@ class Share extends React.Component {
             borderRadius: '0px',
             color: 'white',
             width: '65px',
-            height: '35px',
+            height: '38.5px',
             border: '0px',
             cursor: 'pointer',
             border: '1px solid rgba(0, 0, 0, 0.1)',
