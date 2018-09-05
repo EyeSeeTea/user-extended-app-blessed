@@ -13,11 +13,11 @@ User App is a Dhis2 Web Application that provides an easy and integrated way to 
 - Shortcut to regular dhis2 user management app
 - Replicate user: Implemented for single mode allows creating multiple users using a single users as starting point. Currently, two modes are available: 'From Template' and 'From table'.
 
-*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected organisation units to the current values each user had, no values will be removed. Replace on the other hand overwrites any previous values and keep only those selected in this dialog.
+\*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected entities (organisation units, roles, etc) to the current values each user had, no values will be removed. Replace on the other hand overwrites any previous values and keep only those selected in this dialog.
 
 ## Installation
 
-Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-app/releases) and install it in your Dhis2 instance using the App management application.
+Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-extended-app/releases) and install it in your Dhis2 instance using the App management application.
 
 ## Documentation
 

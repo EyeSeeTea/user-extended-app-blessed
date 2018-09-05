@@ -1,13 +1,13 @@
 {
-  "name": "d2-user-app",
-  "version": "0.1.1",
-  "description": "DHIS2 Enhanced User app",
+  "name": "d2-user-extended-app",
+  "version": "0.1.2",
+  "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
   "author": {
     "name": "EyeSeeTea Team",
     "email": "hello@eyeseetea.com",
-    "url": "https://github.com/EyeSeeTea/user-app"
+    "url": "https://github.com/EyeSeeTea/user-extended-app"
   },
   "scripts": {
     "prestart": "d2-manifest package.json manifest.webapp",
@@ -17,7 +17,7 @@
     "lint": "eslint src && eslint --env node,mocha --global expect,sinon --rule 'no-unused-expressions: 0' test && scss-lint",
     "__prebuild": "npm test && npm run lint",
     "build": "rm -rf build && webpack && npm run manifest",
-    "postbuild": "cp -rv src/i18n index.html includes icon.png app-favicon.ico node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js ./build/",
+    "postbuild": "cp -rv app-config.json src/i18n index.html includes icon.png app-favicon.ico node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js ./build/",
     "validate": "npm ls",
     "manifest": "d2-manifest package.json build/manifest.webapp",
     "clean-i18n": "resources/scripts/clean-i18n-translations.js src/i18n/"
@@ -36,7 +36,7 @@
     "css-loader": "^0.23.1",
     "d2": "27.0.0-8",
     "d2-manifest": "^1.0.0-2",
-    "d2-ui": "github:EyeSeeTea/d2-ui#user-app",
+    "d2-ui": "github:EyeSeeTea/d2-ui#user-extended-app",
     "d2-utilizr": "0.2.9",
     "d3-color": "1.0.2",
     "eslint": "^3.6.0",
@@ -93,18 +93,19 @@
     "immutable": "^3.8.2",
     "jquery": "^3.3.1",
     "prop-types": "^15.5.10",
-    "react-copy-to-clipboard": "^5.0.1"
+    "react-copy-to-clipboard": "^5.0.1",
+    "url-loader": "^1.1.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EyeSeeTea/user-app.git"
+    "url": "git+https://github.com/EyeSeeTea/user-extended-app.git"
   },
   "bugs": {
-    "url": "https://github.com/EyeSeeTea/user-app/issues"
+    "url": "https://github.com/EyeSeeTea/user-extended-app/issues"
   },
-  "homepage": "https://github.com/EyeSeeTea/user-app",
+  "homepage": "https://github.com/EyeSeeTea/user-extended-app",
   "manifest.webapp": {
-    "name": "User app",
+    "name": "User Extended App",
     "icons": {
       "48": "icon.png"
     },
