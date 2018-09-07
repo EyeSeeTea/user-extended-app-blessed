@@ -2,15 +2,30 @@ import React from 'react';
 import Store from 'd2-ui/lib/store/Store';
 import Translate from 'd2-ui/lib/i18n/Translate.mixin';
 import GroupEditor from 'd2-ui/lib/group-editor/GroupEditor.component';
+import GroupEditorWithOrdering from 'd2-ui/lib/group-editor/GroupEditorWithOrdering.component';
 
 const MultiSelect = React.createClass({
     propTypes: {
+        onChange: React.PropTypes.func.isRequired,
         options: React.PropTypes.arrayOf(React.PropTypes.object),
         selected: React.PropTypes.arrayOf(React.PropTypes.string),
-        onChange: React.PropTypes.func.isRequired,
         label: React.PropTypes.string,
         errors: React.PropTypes.arrayOf(React.PropTypes.string),
         isLoading: React.PropTypes.bool,
+        sortable: React.PropTypes.bool,
+        height: React.PropTypes.number,
+    },
+
+    getDefaultProps() {
+        return {
+            options: [],
+            selected: [],
+            label: "",
+            errors: [],
+            isLoading: false,
+            sortable: false,
+            height: 300,
+        };
     },
 
     getInitialState() {
@@ -24,10 +39,6 @@ const MultiSelect = React.createClass({
     componentWillReceiveProps(nextProps) {
         this.state.availableStore.setState(nextProps.options);
         this.state.assignedStore.setState(nextProps.selected);
-    },
-
-    getDefaultProps() {
-        return {height: 300, options: [], selected: []};
     },
 
     _onItemAssigned(newItems) {
@@ -44,7 +55,15 @@ const MultiSelect = React.createClass({
         return Promise.resolve();
     },
 
+    _onOrderChanged(assigned) {
+        this.state.assignedStore.setState(assigned);
+        this.props.onChange(assigned);
+        return Promise.resolve();
+    },
+
     render() {
+        const { errors, label, sortable, height } = this.props;
+
         const styles = {
             labelStyle: {
                 display: 'block',
@@ -58,7 +77,8 @@ const MultiSelect = React.createClass({
                 color: "red",
             },
         };
-        const {errors, label, ...otherProps} = this.props;
+
+        const SelectedGroupEditor = sortable ? GroupEditorWithOrdering : GroupEditor;
 
         return (
             <div>
@@ -67,15 +87,18 @@ const MultiSelect = React.createClass({
                 </label>
 
                 <div>
-                    {(errors || []).map((error, idx) => <p key={idx} style={styles.errorStyle}>{error}</p>)}
+                    {errors.map((error, idx) =>
+                        <p key={idx} style={styles.errorStyle}>{error}</p>
+                    )}
                 </div>
 
-                <GroupEditor
+                <SelectedGroupEditor
                     itemStore={this.state.availableStore}
                     assignedItemStore={this.state.assignedStore}
                     onAssignItems={this._onItemAssigned}
                     onRemoveItems={this._onItemRemoved}
-                    {...otherProps}
+                    onOrderChanged={sortable ? this._onOrderChanged : undefined}
+                    height={height}
                 />
             </div>
         );
