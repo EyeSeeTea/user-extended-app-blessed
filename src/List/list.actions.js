@@ -20,10 +20,6 @@ listActions.setListSource.subscribe((action) => {
     listStore.listSourceSubject.onNext(Observable.just(action.data));
 });
 
-listActions.loadList.subscribe(action => {
-    listStore.getListFor(action.data, action.complete, action.error);
-});
-
 listActions.filter.subscribe(action => {
     listStore.filter(
       action.data.modelType,

@@ -63,25 +63,6 @@ export default Store.create({
         return this;
     },
 
-    getListFor(modelName, complete, error) {
-        getD2().then(d2 => {
-            if (d2.models[modelName]) {
-                const listPromise = d2.models[modelName]
-                    .filter().on('name').notEqual('default')
-                    .list({
-                        fields: fieldFilteringForQuery,
-                        order: orderForQuery(modelName),
-                    });
-
-                this.listSourceSubject.onNext(Observable.fromPromise(listPromise));
-
-                complete(`${modelName} list loading`);
-            } else {
-                error(`${modelName} is not a valid schema name`);
-            }
-        });
-    },
-
     getRoles() {
         getD2().then(d2 => {
             if (d2.models.userRoles) {
