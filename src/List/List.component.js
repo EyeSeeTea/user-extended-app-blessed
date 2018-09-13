@@ -33,6 +33,7 @@ import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
 import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
@@ -138,6 +139,7 @@ const List = React.createClass({
 
     getInitialState() {
         return {
+            listFilterOptions: {},
             dataRows: null,
             pager: {
                 total: 0,
@@ -293,13 +295,11 @@ const List = React.createClass({
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { showAllUsers, pager, searchString } = this.state;
 
-        listActions.filter({
+        const options = {
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
-            page: page,
-            pageSize: pageSize,
-            filters: _.pickBy({
+            filters: {
                 "displayName":
                     searchString ? ["ilike", searchString] : null,
                 "userCredentials.userRoles.id":
@@ -310,8 +310,18 @@ const List = React.createClass({
                     _(filterByOrgUnits).isEmpty() ? null : ["in", filterByOrgUnits.map(path => last(path.split("/")))],
                 "dataViewOrganisationUnits.id":
                     _(filterByOrgUnitsOutput).isEmpty() ? null : ["in", filterByOrgUnitsOutput.map(path => last(path.split("/")))],
-            }),
-        }).subscribe(() => {}, error => log.error(error));
+            },
+        };
+
+        const paginatedOptions = {
+            ...options,
+            paging: true,
+            page: page,
+            pageSize: pageSize,
+        };
+
+        listActions.filter(paginatedOptions).subscribe(() => {}, error => log.error(error));
+        this.setState({ listFilterOptions: options });
     },
 
     onColumnSort(sorting) {
@@ -389,6 +399,7 @@ const List = React.createClass({
             return null;
         const currentlyShown = calculatePageValue(this.state.pager);
         const { pager } = this.state;
+        const { d2 } = this.context;
 
         const paginationProps = {
             hasNextPage: () => Boolean(this.state.pager.hasNextPage) && this.state.pager.hasNextPage(),
@@ -403,8 +414,10 @@ const List = React.createClass({
             currentlyShown,
         };
 
+        const visibleColumns = ["name", "username", "lastUpdated", "userRoles", "userGroups",
+            "organisationUnits", "dataViewOrganisationUnits"];
         const rows = this.getDataTableRows(this.state.dataRows);
-        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters } = this.state;
+        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const isFiltering = !showAllUsers ||
             _([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).some(filter => !_(filter).isEmpty());
@@ -485,6 +498,8 @@ const List = React.createClass({
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
                     </div>
+
+                    <ImportExport d2={d2} columns={visibleColumns} filterOptions={listFilterOptions} />
                 </div>
 
                 <LoadingStatus
