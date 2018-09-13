@@ -5,8 +5,12 @@ import Papa from 'papaparse';
 const queryFields = [
     'displayName|rename(name)',
     'shortName',
+    'firstName',
+    'surname',
+    'created',
+    'email',
     'id',
-    'userCredentials[username, userRoles[id,displayName]]',
+    'userCredentials[username, userRoles[id,displayName],lastLogin]',
     'lastUpdated',
     'created',
     'displayDescription',
@@ -29,6 +33,9 @@ const maxUids = (8192 - 1000) / (11 + 3);
 const ColumnNameFromPropertyMapping = {
     id: "ID",
     name: "Name",
+    firstName: "First name",
+    surname: "Surname",
+    email: "Email",
     username: "Username",
     userRoles: "Roles",
     lastUpdated: "Updated",
@@ -54,7 +61,7 @@ function date(stringDate) {
 
 function namesFromCollection(collection) {
     return (collection.toArray ? collection.toArray() : collection)
-        .map(m => m.displayName)
+        .map(model => model.displayName)
         .join(", ");
 }
 
@@ -64,8 +71,12 @@ function getPlainUser(user) {
     return {
         id: user.id,
         name: user.name,
+        firstName: user.firstName,
+        surname: user.surname,
+        email: user.email,
         username: userCredentials.username,
         lastUpdated: date(user.lastUpdated),
+        lastLogin: date(userCredentials.lastLogin),
         created: date(user.created),
         userRoles: namesFromCollection(userCredentials.userRoles),
         userGroups: namesFromCollection(user.userGroups),

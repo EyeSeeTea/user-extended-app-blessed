@@ -35,7 +35,7 @@ class ImportExport extends React.Component {
         const { d2, columns, filterOptions } = this.props;
         const csvString = await exportToCsv(d2, columns, filterOptions);
         const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
-        const datetime = moment().format("YYYY-DD-MM_HH-MM-SS");
+        const datetime = moment().format("YYYY-MM-DD_hh-mm-ss");
         FileSaver.saveAs(blob, `users-${datetime}.csv`);
         this.closeMenu();
     }
@@ -52,7 +52,7 @@ class ImportExport extends React.Component {
 
         return (
             <div>
-                <IconButton onTouchTap={this.openMenu} tooltip={t("import_export")}>
+                <IconButton onTouchTap={this.openMenu} tooltipPosition="bottom-left" tooltip={t("import_export")}>
                     <ImportExportIcon />
                 </IconButton>
 
