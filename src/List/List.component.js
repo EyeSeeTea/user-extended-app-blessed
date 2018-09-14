@@ -426,6 +426,10 @@ const List = React.createClass({
         });
     },
 
+    _openImportTable(users) {
+        console.log("Open table", users);
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
@@ -540,7 +544,12 @@ const List = React.createClass({
                         <Pagination {...paginationProps} />
                     </div>
 
-                    <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
+                    <ImportExport
+                        d2={d2}
+                        columns={settings.getVisibleTableColumns()}
+                        filterOptions={listFilterOptions}
+                        onImport={this._openImportTable}
+                    />
                 </div>
 
                 <LoadingStatus

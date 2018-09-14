@@ -7,16 +7,20 @@ import MenuItem from 'material-ui/MenuItem/MenuItem';
 import ImportExportIcon from 'material-ui/svg-icons/communication/import-export';
 import FileSaver from 'file-saver';
 import moment from 'moment';
-import { exportToCsv } from '../models/userHelpers';
+import fileDialog from 'file-dialog';
+
+import { exportToCsv, importFromCsv } from '../models/userHelpers';
+import snackActions from '../Snackbar/snack.actions';
 
 class ImportExport extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
         filterOptions: PropTypes.object.isRequired,
+        onImport: PropTypes.func.isRequired,
     }
 
-    state = { isMenuOpen: false, anchorEl: null }
+    state = { isMenuOpen: true, anchorEl: null }
 
     popoverConfig = {
         anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -41,7 +45,12 @@ class ImportExport extends React.Component {
     }
 
     importFromCsv = () => {
-        alert("TODO");
+        const { onImport } = this.props;
+
+        fileDialog({ accept: ".csv" })
+            .then(files => importFromCsv(d2, files[0]))
+            .then(res => onImport(res.users))
+            .catch(err => snackActions.show({ message: err.toString() }));
     }
 
     render() {

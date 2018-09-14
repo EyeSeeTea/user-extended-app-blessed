@@ -14,7 +14,6 @@ import _ from 'lodash';
 import FontIcon from 'material-ui/FontIcon';
 import IconButton from 'material-ui/IconButton';
 
-
 import { toBuilderValidator, validateUsername, validatePassword } from '../utils/validators';
 import User from '../models/user';
 import snackActions from '../Snackbar/snack.actions';
