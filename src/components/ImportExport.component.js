@@ -20,7 +20,7 @@ class ImportExport extends React.Component {
         onImport: PropTypes.func.isRequired,
     }
 
-    state = { isMenuOpen: true, anchorEl: null }
+    state = { isMenuOpen: false, anchorEl: null }
 
     popoverConfig = {
         anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -31,7 +31,7 @@ class ImportExport extends React.Component {
         this.setState({ isMenuOpen: true, anchorEl: ev.currentTarget });
     }
 
-    closeMenu = (ev) => {
+    closeMenu = () => {
         this.setState({ isMenuOpen: false, anchorEl: null });
     }
 
@@ -49,7 +49,8 @@ class ImportExport extends React.Component {
 
         fileDialog({ accept: ".csv" })
             .then(files => importFromCsv(d2, files[0]))
-            .then(res => onImport(res.users))
+            .then(onImport)
+            .then(this.closeMenu)
             .catch(err => snackActions.show({ message: err.toString() }));
     }
 

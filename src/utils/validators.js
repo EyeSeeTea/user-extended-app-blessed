@@ -50,8 +50,8 @@ export const validateUsername = (existingUsernames, usedUsernames, username) => 
 /* Transform validators of this module to the format required by d2-ui component FormBuilder */
 export const toBuilderValidator = (customValidator, getErrorMessage) => {
     return {
-        validator: value => {
-            const result = customValidator(value);
+        validator: (value, ...args) => {
+            const result = customValidator(value, ...args);
             if (result.isValid) {
                 return true;
             } else {

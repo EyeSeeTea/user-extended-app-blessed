@@ -30,6 +30,10 @@ const queryFields = [
 */
 const maxUids = (8192 - 1000) / (11 + 3);
 
+const requiredPropertiesOnImport = ["username"];
+
+const propertiesIgnoredInImport = ["created", "lastUpdated", "lastLogin"];
+
 const columnNameFromPropertyMapping = {
     id: "ID",
     name: "Name",
@@ -104,7 +108,7 @@ function getPlainUserFromRow(columnProperties, row) {
         .fromPairs()
         .value();
 
-    return _.omitBy(user, value => _(value).isUndefined());
+    return _(user).omit(propertiesIgnoredInImport).omitBy(value => _(value).isUndefined()).value();
 }
 
 function getUsersFromCsv(d2, file, csv) {
@@ -126,15 +130,16 @@ function getUsersFromCsv(d2, file, csv) {
         .compact()
         .value();
 
-    const warnings = _.compact([
-        _(unknownColumns).isEmpty() ? undefined : `Unknown columns: ${unknownColumns.join(", ")}`,
-    ]);
+    const missingProperties = _.difference(requiredPropertiesOnImport, columnProperties);
 
-    if (!_(columnProperties).some()) {
-        return {success: false, errors: [`No known columns found in file: ${file.name}`]};
+    if (!_(missingProperties).isEmpty()) {
+        return {success: false, errors: [`Missing compulsory properties: ${missingProperties.join(", ")}`]};
     } else {
+        const warnings = _.compact([
+            _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
+        ]);
         const users = rows.map(row => getPlainUserFromRow(columnProperties, row));
-        return {success: true, users, warnings};
+        return {success: true, users, columns: columnProperties, warnings};
     }
 }
 

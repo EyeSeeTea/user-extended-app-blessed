@@ -41,6 +41,7 @@ import last from 'lodash/fp/last';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
+import ImportTable from '../components/ImportTable.component';
 
 const pageSize = 50;
 
@@ -179,7 +180,19 @@ const List = React.createClass({
                 open: false,
             },
             replicateUser: {
+                /* DEBUG: TODO */
                 open: false,
+                user: {id: "DXyJmlo9rge"},
+                type: "table",
+            },
+            importUsers: {
+                open: true,
+                users: [
+                    {"username":"someone","password": "Test123$", "firstName":"Bombali","surname":"District","email":"","userRoles":"M and E Officer","userGroups":"_DATASET_M and E Officer","organisationUnits":"Bo","dataViewOrganisationUnits":"Bo"},
+                    {"username":"traore123","firstName":"Alain","surname":"Traore","email":"","userRoles":"Facility tracker","userGroups":"_DATASET_Superuser, Partner for Health International, World Health Program, _PROGRAM_Superuser","organisationUnits":"Bo, Kailahun","dataViewOrganisationUnits":"Bo, Bonthe"},
+                    {"username":"bombali","firstName":"Bombali","surname":"District","email":"","userRoles":"M and E Officer","userGroups":"_DATASET_M and E Officer","organisationUnits":"Bo","dataViewOrganisationUnits":"Bo"},
+                ],
+                columns: ["username", "password", "firstName", "surname", "email", "userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"],
             },
         };
     },
@@ -426,8 +439,16 @@ const List = React.createClass({
         });
     },
 
-    _openImportTable(users) {
-        console.log("Open table", users);
+    _openImportTable(importResult) {
+        this.setState({ importUsers: { open: true, users: importResult.users, columns: importResult.columns }});
+    },
+
+    _importUsers(users) {
+        console.log("Import users", users);
+    },
+
+    _closeImportUsers() {
+        this.setState({ importUsers: { open: false }});
     },
 
     render() {
@@ -453,6 +474,8 @@ const List = React.createClass({
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { importUsers } = this.state;
+
         const isFiltering = !showAllUsers ||
             _([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).some(filter => !_(filter).isEmpty());
         const filterIconColor = isFiltering ? "#1c1" : undefined;
@@ -614,6 +637,17 @@ const List = React.createClass({
                 }
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
+
+                {!importUsers.open ? null :
+                    <ImportTable
+                        title={this.getTranslation("import")}
+                        onSave={this._importUsers}
+                        onRequestClose={this._closeImportUsers}
+                        users={importUsers.users}
+                        columns={importUsers.columns}
+                        maxUsers={200}
+                    />
+                }
             </div>
         );
     },
