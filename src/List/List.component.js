@@ -405,9 +405,8 @@ const List = React.createClass({
 
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters } = this.state;
-        const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
-        const isFiltering = !showAllUsers ||
-            _([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).some(filter => !_(filter).isEmpty());
+        const { filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
