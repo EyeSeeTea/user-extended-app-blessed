@@ -1,14 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
+import { Dialog, FlatButton, RaisedButton } from 'material-ui';
 
 import MultiSelect from '../components/MultiSelect.component';
+import snackActions from '../Snackbar/snack.actions';
 
 class TableLayout extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
+        this.initialSelected = props.selected;
     }
 
     styles = {
@@ -22,12 +23,13 @@ class TableLayout extends React.Component {
         body: {
             marginBottom: 15,
         },
-        closeButton: {
+        cancelButton: {
             marginRight: 16,
         },
     };
 
-    close = () => {
+    cancel = () => {
+        this.onChange(this.initialSelected);
         this.props.onClose();
     }
 
@@ -35,12 +37,27 @@ class TableLayout extends React.Component {
         this.props.onChange(selected);
     }
 
+    save = () => {
+        const { selected } = this.props;
+        
+        if (_(selected).isEmpty()) {
+            snackActions.show({ message: this.getTranslation('table_layout_at_least_one_column') });
+        } else {
+            this.props.onSave();
+        }
+    }
+
     getDialogButtons() {
         return [
             <FlatButton
-                label={this.getTranslation('close')}
-                onClick={this.close}
-                style={this.styles.closeButton}
+                label={this.getTranslation('cancel')}
+                onClick={this.cancel}
+                style={this.styles.cancelButton}
+            />,
+            <RaisedButton
+                primary={true}
+                label={this.getTranslation('save')}
+                onClick={this.save}
             />
         ];
     }
@@ -59,12 +76,13 @@ class TableLayout extends React.Component {
                     contentStyle={this.styles.dialog}
                     open={true}
                     bodyStyle={this.styles.body}
-                    onRequestClose={this.close}
+                    onRequestClose={this.cancel}
                 >
                     <MultiSelect
+                        height={230}
                         options={options}
                         selected={selected}
-                        onRequestClose={this.onClose}
+                        onRequestClose={this.cancel}
                         onChange={this.onChange}
                         sortable={true}
                     />
@@ -79,6 +97,7 @@ TableLayout.propTypes = {
     options: PropTypes.arrayOf(PropTypes.object).isRequired,
     onChange: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
+    onSave: PropTypes.func.isRequired,
 };
 
 TableLayout.contextTypes = {

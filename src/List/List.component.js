@@ -32,15 +32,15 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
-import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
-import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
-import AnimateHeight from 'react-animate-height';
-import last from 'lodash/fp/last';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
+import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
+import AnimateHeight from 'react-animate-height';
+import last from 'lodash/fp/last';
 
 const pageSize = 50;
 
@@ -398,10 +398,6 @@ const List = React.createClass({
         }
     },
 
-    _toggleExtendedFilters() {
-        this.setState({ showExtendedFilters: !this.state.showExtendedFilters });
-    },
-
     _getTableActions() {
         return (
             <div>
@@ -421,9 +417,16 @@ const List = React.createClass({
     },
 
     _setLayoutSettings(selectedColumns) {
-        this.state.settings.setVisibleTableColumns(selectedColumns).then(newSettings => {
-            this.setState({ settings: newSettings });
-        });
+        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        this.setState({ settings: newSettings });
+    },
+
+    _saveLayoutSettings() {
+        this.state.settings.save().then(this._closeLayoutSettings);
+    },
+
+    _toggleExtendedFilters() {
+        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
     },
 
     render() {
@@ -454,6 +457,10 @@ const List = React.createClass({
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
+        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
+        const filterIconColor = isFiltering ? "#ff9800" : undefined;
+        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
+        const { styles } = this;
 
         const allColumns = tableColumns.map(c => ({
             text: this.getTranslation(camelCaseToUnderscores(c.name)),
@@ -601,6 +608,7 @@ const List = React.createClass({
                         options={allColumns}
                         selected={settings.getVisibleTableColumns()}
                         onChange={this._setLayoutSettings}
+                        onSave={this._saveLayoutSettings}
                         onClose={this._closeLayoutSettings}
                     />
                 }
