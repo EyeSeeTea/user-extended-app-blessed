@@ -471,7 +471,7 @@ const List = React.createClass({
         return (
             <div>
                 <div className="controls-wrapper">
-                    <div className="user-management-controls">
+                    <div className="user-management-controls" style={{flex: 'unset'}}>
                         <div className="user-management-control search-box">
                             <SearchBox searchObserverHandler={this.searchListByName} />
 
@@ -489,9 +489,9 @@ const List = React.createClass({
                             </span>
                         </div>
 
-                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0} >
+                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0} style={showExtendedFilters ? { width: 850 }: { width: 0 }}>
 
-                            <Paper zDepth={1} rounded={false} style={{ width: 850, paddingLeft: 20,height: 160, marginTop: 40 }}>
+                            <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
                                 <div className="control-row">
                                     <div className="user-management-control select-role">
                                         <MultipleFilter
@@ -542,9 +542,9 @@ const List = React.createClass({
 
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
+                        <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
                     </div>
 
-                    <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
                 </div>
 
                 <LoadingStatus

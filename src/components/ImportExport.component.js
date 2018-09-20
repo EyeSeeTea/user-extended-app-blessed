@@ -51,7 +51,7 @@ class ImportExport extends React.Component {
         const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave } = this;
 
         return (
-            <div>
+            <div className="data-table-import-export">
                 <IconButton onTouchTap={this.openMenu} tooltipPosition="bottom-left" tooltip={t("import_export")}>
                     <ImportExportIcon />
                 </IconButton>
