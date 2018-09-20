@@ -15,7 +15,6 @@ import SinglePanelLayout from 'd2-ui/lib/layout/SinglePanel.component';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import logo from '../images/logo-eyeseetea.png';
 import Share from '../components/Share.component'
 
 log.setLevel(log.levels.INFO);
@@ -34,12 +33,6 @@ const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
 const withMuiContext = Object.assign(AppWithD2.childContextTypes,
     { muiTheme: PropTypes.object });
-
-const logoStyle = {
-    position: "fixed",
-    bottom: -3,
-    right: 60,
-};
 
 class App extends AppWithD2 {
     getChildContext() {
