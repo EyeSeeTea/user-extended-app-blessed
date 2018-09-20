@@ -54,6 +54,7 @@ export default Store.create({
     listSourceSubject: new Subject(),
     listRolesSubject: new Subject(),
     listGroupsSubject: new Subject(),
+    listOrgUnitsSubject: new Subject(),
 
     initialise() {
         this.listSourceSubject
@@ -113,6 +114,17 @@ export default Store.create({
         });
     },
 
+    getOrgUnits() {
+        getD2().then(d2 => {
+            if (d2.models.organisationUnits) {
+                const orgUnitsPromise = d2.models.organisationUnits.list({paging: false, fields: "id,displayName"});
+                Observable.fromPromise(orgUnitsPromise).subscribe(res => {
+                    this.listOrgUnitsSubject.onNext(res);
+                });
+            }
+        });
+    },
+
     getNextPage() {
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getNextPage()));
     },
@@ -131,16 +143,19 @@ export default Store.create({
                 example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
                 separate calls to the API for those filters and use the returned IDs to build
                 the final, paginated call. */
+
+            // Limit Uids to avoid 413 Request too large
+            // maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
+            const maxUids = (8192 - 1000) / (11 + 3);
+
             const model = d2.models[modelType];
             const buildD2Filter = filters =>
-                _(filters).map(([key, [operator, value]]) => [key, operator, value].join(":")).value();
+                _(filters).map(([key, [operator, value]]) =>
+                    [key, operator, _.isArray(value) ? `[${_(value).take(maxUids).join(",")}]` : value].join(":")).value();
             const activeFilters =
                 _(filters).pickBy(([operator, value], field) => value).toPairs().value();
             const [preliminarFilters, normalFilters] =
                 _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
-            // Limit Uids to avoid 413 Request too large
-            // maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
-            const maxUids = (8192 - 1000) / (11 + 3);
             const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
                 model
                     .list({

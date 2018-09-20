@@ -4,8 +4,8 @@ import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisatio
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
 import replicateUserStore from './replicateUser.store';
-import appStateStore from '../App/appStateStore';
 import _m from '../utils/lodash-mixins';
+import { getOrgUnitsRoots } from '../utils/orgUnits';
 
 async function assignToOrgUnits(selectedUsers, field, titleKey) {
     const d2 = await getD2();
@@ -18,9 +18,7 @@ async function assignToOrgUnits(selectedUsers, field, titleKey) {
     const users = (await d2.models.users.list(listOptions)).toArray();
     const usernames = users.map(user => user.userCredentials.username);
     const info = _m.joinString(d2.i18n.getTranslation.bind(d2.i18n), usernames, 3, ", ");
-    const userOrgUnitRoots = await appStateStore
-        .map(appState => appState.userOrganisationUnits.toArray())
-        .first().toPromise();
+    const userOrgUnitRoots = await getOrgUnitsRoots();
 
     orgUnitAssignmentDialogStore.setState({
         users: users,

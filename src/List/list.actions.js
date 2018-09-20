@@ -10,6 +10,7 @@ const listActions = Action.createActionsFromNames([
   'filter',
   'loadUserRoles',
   'loadUserGroups',
+  'loadOrgUnits',
   'getNextPage',
   'getPreviousPage',
   'hideDetailsBox',
@@ -54,6 +55,10 @@ listActions.loadUserRoles.subscribe(() => {
 
 listActions.loadUserGroups.subscribe(() => {
     listStore.getGroups();
+});
+
+listActions.loadOrgUnits.subscribe(() => {
+    listStore.getOrgUnits();
 });
 
 export default listActions;
