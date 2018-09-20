@@ -407,9 +407,12 @@ const List = React.createClass({
     },
 
     _setLayoutSettings(selectedColumns) {
-        this.state.settings.setVisibleTableColumns(selectedColumns).then(newSettings => {
-            this.setState({ settings: newSettings });
-        });
+        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        this.setState({ settings: newSettings });
+    },
+
+    _saveLayoutSettings() {
+        this.state.settings.save().then(this._closeLayoutSettings);
     },
 
     _toggleExtendedFilters() {
@@ -588,6 +591,7 @@ const List = React.createClass({
                         options={allColumns}
                         selected={settings.getVisibleTableColumns()}
                         onChange={this._setLayoutSettings}
+                        onSave={this._saveLayoutSettings}
                         onClose={this._closeLayoutSettings}
                     />
                 }
