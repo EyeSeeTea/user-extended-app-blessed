@@ -449,9 +449,9 @@ const List = React.createClass({
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
-        const isFiltering = !showAllUsers ||
-            _([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).some(filter => !_(filter).isEmpty());
-        const filterIconColor = isFiltering ? "#1c1" : undefined;
+        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
+        const filterIconColor = isFiltering ? "#ff9800" : undefined;
+        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
 
@@ -472,23 +472,23 @@ const List = React.createClass({
                         <div className="user-management-control search-box">
                             <SearchBox searchObserverHandler={this.searchListByName} />
 
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_users_can_manage')}
+                                onCheck={this._onCanManageClick}
+                                checked={!showAllUsers}
+                            />
+
                             <span>
-                                <IconButton onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")}>
+                                <IconButton className="expand-filters" onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")} style={filterButtonColor}>
                                     <FilterListIcon color={filterIconColor} />
                                 </IconButton>
                             </span>
                         </div>
 
-                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0}>
-                            <div>
-                                <div className="user-management-control">
-                                    <Checkbox className="control-checkbox"
-                                              label={this.getTranslation('display_only_users_can_manage')}
-                                              onCheck={this._onCanManageClick}
-                                              checked={!this.state.showAllUsers}
-                                    />
-                                </div>
+                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0} >
 
+                            <Paper zDepth={1} rounded={false} style={{ width: 850, paddingLeft: 20,height: 160, marginTop: 40 }}>
                                 <div className="control-row">
                                     <div className="user-management-control select-role">
                                         <MultipleFilter
@@ -532,7 +532,8 @@ const List = React.createClass({
                                         />
                                     </div>
                                 </div>
-                            </div>
+                                </Paper>
+                            
                         </AnimateHeight>
                     </div>
 
