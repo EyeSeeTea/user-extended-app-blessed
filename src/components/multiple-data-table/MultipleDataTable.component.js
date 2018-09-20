@@ -71,6 +71,7 @@ export function fromActionsDefinitions(actions) {
 
 const MultipleDataTable = React.createClass({
     propTypes: {
+        contextActions: React.PropTypes.arrayOf(React.PropTypes.object),
         isMultipleSelectionAllowed: React.PropTypes.bool,
         columns: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         hideRowsActionsIcon: React.PropTypes.bool,
@@ -83,6 +84,7 @@ const MultipleDataTable = React.createClass({
         activeRows: React.PropTypes.arrayOf(React.PropTypes.object),
         onActiveRowsChange: React.PropTypes.func,
         showSelectColumn: React.PropTypes.bool,
+        tableActions: React.PropTypes.object,
     },
 
     getDefaultProps() {
@@ -127,7 +129,7 @@ const MultipleDataTable = React.createClass({
             columns: props.columns,
             activeRows: activeRows,
             dataRows: dataRows,
-            contextActionsData: fromActionsDefinitions(props.contextActions),
+            contextActionsData: fromActionsDefinitions(props.contextActions || []),
         };
     },
 
@@ -243,7 +245,10 @@ const MultipleDataTable = React.createClass({
            <div className="data-table" style={styles.table}>
                <div className="data-table__headers">
                     {this.renderHeaders()}
-                    <DataTableHeader />
+                    <DataTableHeader
+                        key="actions"
+                        contents={this.props.tableActions ? this.props.tableActions : null}
+                    />
                </div>
                <div className="data-table__rows">
                    {this.renderRows()}

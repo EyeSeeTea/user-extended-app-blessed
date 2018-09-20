@@ -32,8 +32,11 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
-import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import IconButton from 'material-ui/IconButton';
+import SettingsIcon from 'material-ui/svg-icons/action/settings';
+import TableLayout from '../components/TableLayout.component';
+import Settings from '../models/settings';
+import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
 import last from 'lodash/fp/last';
@@ -153,6 +156,7 @@ const List = React.createClass({
             filterByOrgUnits: [],
             filterByOrgUnitsOutput: [],
             sorting: initialSorting,
+            layoutSettingsVisible: false,
             showAllUsers: true,
             showExtendedFilters: false,
             sharing: {
@@ -179,14 +183,16 @@ const List = React.createClass({
     },
 
     getDataTableRows(users) {
-        const namesFromCollection = collection =>
-            _(collection && collection.toArray ? collection.toArray() : (collection || []))
-                .map(obj => obj.displayName).sortBy().join(", ") || "-";
+        const namesFromCollection = collection => {
+            return _(collection && collection.toArray ? collection.toArray() : (collection || []))
+                .map("displayName")
+                .sortBy()
+                .join(", ") || "-";
+        };
+
         return users.map(user => ({
-            id: user.id,
-            name: user.name,
-            username: user.username,
-            lastUpdated: user.lastUpdated,
+            ...user,
+            lastLogin: user.userCredentials.lastLogin,
             userGroups: namesFromCollection(user.userGroups),
             organisationUnits: namesFromCollection(user.organisationUnits),
             dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
@@ -197,19 +203,23 @@ const List = React.createClass({
     },
 
     componentWillMount() {
-        const sourceStoreDisposable = listStore
-            .subscribe(listStoreValue => {
-                if (!isIterable(listStoreValue.list)) {
-                    return; // Received value is not iterable, keep waiting
-                }
+        Settings.build(this.context.d2).then(settings => {
+            const sourceStoreDisposable = listStore
+                .subscribe(listStoreValue => {
+                    if (!isIterable(listStoreValue.list)) {
+                        return; // Received value is not iterable, keep waiting
+                    }
 
-                this.setState({
-                    dataRows: listStoreValue.list,
-                    pager: listStoreValue.pager,
-                    tableColumns: listStoreValue.tableColumns,
-                    isLoading: false,
+                    this.setState({
+                        dataRows: listStoreValue.list,
+                        pager: listStoreValue.pager,
+                        tableColumns: listStoreValue.tableColumns,
+                        settings: this.state.settings || settings,
+                        isLoading: false,
+                    });
                 });
-            });
+            this.registerDisposable(sourceStoreDisposable);
+        });
 
         /** load select fields data */
         listActions.loadUserRoles.next();
@@ -250,8 +260,6 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
-
-        this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
@@ -380,6 +388,33 @@ const List = React.createClass({
         }
     },
 
+    _getTableActions() {
+        return (
+            <div>
+                <IconButton onTouchTap={this._openLayoutSettings} tooltip={this.getTranslation("layout_settings")}>
+                  <SettingsIcon />
+                </IconButton>
+            </div>
+        );
+    },
+
+    _openLayoutSettings() {
+        this.setState({ layoutSettingsVisible: true });
+    },
+
+    _closeLayoutSettings() {
+        this.setState({ layoutSettingsVisible: false });
+    },
+
+    _setLayoutSettings(selectedColumns) {
+        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        this.setState({ settings: newSettings });
+    },
+
+    _saveLayoutSettings() {
+        this.state.settings.save().then(this._closeLayoutSettings);
+    },
+
     _toggleExtendedFilters() {
         this.setState({showExtendedFilters: !this.state.showExtendedFilters});
     },
@@ -404,12 +439,24 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
+        
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters } = this.state;
         const { filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { settings, layoutSettingsVisible, tableColumns } = this.state;
         const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
+
+        const allColumns = tableColumns.map(c => ({
+            text: this.getTranslation(camelCaseToUnderscores(c.name)),
+            value: c.name,
+        }));
+
+        const visibleColumns = _(tableColumns)
+            .keyBy("name")
+            .at(settings.getVisibleTableColumns())
+            .value();
 
         return (
             <div>
@@ -495,11 +542,12 @@ const List = React.createClass({
                     <div style={styles.dataTableWrap}>
                         <MultipleDataTable
                             rows={rows}
-                            columns={this.state.tableColumns}
+                            columns={visibleColumns}
                             contextActions={contextActions}
                             onColumnSort={this.onColumnSort}
                             isMultipleSelectionAllowed={true}
                             showSelectColumn={true}
+                            tableActions={this._getTableActions()}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
@@ -537,6 +585,16 @@ const List = React.createClass({
                         onRequestClose={() => userGroupsAssignmentDialogStore.setState({open: false})}
                     />
                     : null}
+
+                {layoutSettingsVisible &&
+                    <TableLayout
+                        options={allColumns}
+                        selected={settings.getVisibleTableColumns()}
+                        onChange={this._setLayoutSettings}
+                        onSave={this._saveLayoutSettings}
+                        onClose={this._closeLayoutSettings}
+                    />
+                }
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
             </div>
