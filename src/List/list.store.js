@@ -1,13 +1,19 @@
 import { getInstance as getD2 } from 'd2/lib/d2';
 import { Subject, Observable } from 'rx';
 import Store from 'd2-ui/lib/store/Store';
+import _ from 'lodash';
+
 import appState from '../App/appStateStore';
 
 export const fieldFilteringForQuery = [
     'displayName|rename(name)',
     'shortName',
+    'firstName',
+    'surname',
+    'created',
+    'email',
     'id',
-    'userCredentials[username, userRoles[id,displayName]]',
+    'userCredentials[username, userRoles[id,displayName],lastLogin]',
     'lastUpdated',
     'created',
     'displayDescription',
@@ -25,13 +31,17 @@ const orderForQuery = (modelName) =>
     (modelName === 'organisationUnitLevel') ? 'level:ASC' : 'name:iasc';
 
 const columns = [
-    {name: 'name', sortable: true},
     {name: 'username', sortable: false},
+    {name: 'firstName', sortable: true},
+    {name: 'surname', sortable: true},
+    {name: 'email', sortable: false},
     {name: 'lastUpdated', sortable: true},
+    {name: 'created', sortable: true},
     {name: 'userRoles', sortable: false},
     {name: 'userGroups', sortable: false},
     {name: 'organisationUnits', sortable: false},
     {name: 'dataViewOrganisationUnits', sortable: false},
+    {name: 'lastLogin', sortable: false},
 ];
 
 const columnObservable = appState
