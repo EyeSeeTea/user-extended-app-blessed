@@ -79,6 +79,7 @@ class TableLayout extends React.Component {
                     onRequestClose={this.cancel}
                 >
                     <MultiSelect
+                        height={230}
                         options={options}
                         selected={selected}
                         onRequestClose={this.cancel}
