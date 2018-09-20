@@ -21,7 +21,7 @@
 }
 
 .user-management-controls {
-  padding: 10px;
+  padding: 10px 0px 10px;
   flex: 5;
 }
 
@@ -40,6 +40,7 @@
 
 .search-box {
   display: flex;
+  height: 40px;
 }
 
 .controls-wrapper {
@@ -50,6 +51,7 @@
   display: flex;
   margin-top: -25px;
   margin-bottom: 25px;
+  padding-bottom: 5px;
 }
 
 .user-management-control {
@@ -59,6 +61,8 @@
 .control-checkbox {
   margin-bottom: 1em;
   margin-top: 10px;
+  margin-left: 20px;
+  width: 270px !important;
 }
 
 .control-select-role, .control-select-group {
@@ -74,4 +78,13 @@
 
 .data-table-pager--buttons {
   margin: 0 !important;
+}
+
+.expand-filters{
+  border: 1px solid #cdcdcd !important;
+  border-radius: 5px;
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0px !important;
+  margin-top: 5px !important;
 }
