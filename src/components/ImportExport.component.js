@@ -17,9 +17,24 @@ class ImportExport extends React.Component {
         filterOptions: PropTypes.object.isRequired,
     };
 
-    t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
-
     state = { isExporting: false };
+
+    styles = {
+        loadingMask: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            paddingTop: '15%',
+            width: '100%',
+            height: '100%',
+            zIndex: 1000,
+            backgroundColor: '#000000',
+            opacity: 0.5,
+            textAlign: 'center',
+        },
+    };
+
+    t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
 
     exportToCsvAndSave = async () => {
         const { d2, columns, filterOptions } = this.props;
@@ -53,7 +68,7 @@ class ImportExport extends React.Component {
                     <ImportExportIcon />
                 </IconButton>
 
-                {isExporting && <LoadingMask />}
+                {isExporting && <LoadingMask style={this.styles.loadingMask} />}
             </div>
         );
     }
