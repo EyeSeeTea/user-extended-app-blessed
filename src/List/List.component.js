@@ -32,6 +32,7 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
+import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
@@ -137,10 +138,17 @@ const List = React.createClass({
                 width: "90%",
             },
         },
+        animationVisible: {
+            width: 850,
+        },
+        animationHidden: {
+            width: 0,
+        },
     },
 
     getInitialState() {
         return {
+            listFilterOptions: {},
             dataRows: null,
             pager: {
                 total: 0,
@@ -301,13 +309,11 @@ const List = React.createClass({
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { showAllUsers, pager, searchString } = this.state;
 
-        listActions.filter({
+        const options = {
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
-            page: page,
-            pageSize: pageSize,
-            filters: _.pickBy({
+            filters: {
                 "displayName":
                     searchString ? ["ilike", searchString] : null,
                 "userCredentials.userRoles.id":
@@ -318,8 +324,18 @@ const List = React.createClass({
                     _(filterByOrgUnits).isEmpty() ? null : ["in", filterByOrgUnits.map(path => last(path.split("/")))],
                 "dataViewOrganisationUnits.id":
                     _(filterByOrgUnitsOutput).isEmpty() ? null : ["in", filterByOrgUnitsOutput.map(path => last(path.split("/")))],
-            }),
-        }).subscribe(() => {}, error => log.error(error));
+            },
+        };
+
+        const paginatedOptions = {
+            ...options,
+            paging: true,
+            page: page,
+            pageSize: pageSize,
+        };
+
+        listActions.filter(paginatedOptions).subscribe(() => {}, error => log.error(error));
+        this.setState({ listFilterOptions: options });
     },
 
     onColumnSort(sorting) {
@@ -424,6 +440,7 @@ const List = React.createClass({
             return null;
         const currentlyShown = calculatePageValue(this.state.pager);
         const { pager } = this.state;
+        const { d2 } = this.context;
 
         const paginationProps = {
             hasNextPage: () => Boolean(this.state.pager.hasNextPage) && this.state.pager.hasNextPage(),
@@ -439,9 +456,8 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        
-        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters } = this.state;
-        const { filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
+        const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
         const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
@@ -461,14 +477,15 @@ const List = React.createClass({
         return (
             <div>
                 <div className="controls-wrapper">
-                    <div className="user-management-controls">
+                    <div className="user-management-controls" style={{flex: 'unset'}}>
                         <div className="user-management-control search-box">
                             <SearchBox searchObserverHandler={this.searchListByName} />
 
-                            <Checkbox className="control-checkbox"
-                                        label={this.getTranslation('display_only_users_can_manage')}
-                                        onCheck={this._onCanManageClick}
-                                        checked={!this.state.showAllUsers}
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_users_can_manage')}
+                                onCheck={this._onCanManageClick}
+                                checked={!showAllUsers}
                             />
 
                             <span>
@@ -478,9 +495,12 @@ const List = React.createClass({
                             </span>
                         </div>
 
-                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0} >
-
-                            <Paper zDepth={1} rounded={false} style={{ width: 850, paddingLeft: 20,height: 160, marginTop: 40 }}>
+                        <AnimateHeight
+                            duration={400}
+                            height={showExtendedFilters ? 'auto' : 0}
+                            style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
+                        >
+                            <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
                                 <div className="control-row">
                                     <div className="user-management-control select-role">
                                         <MultipleFilter
@@ -531,7 +551,9 @@ const List = React.createClass({
 
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
+                        <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
                     </div>
+
                 </div>
 
                 <LoadingStatus
