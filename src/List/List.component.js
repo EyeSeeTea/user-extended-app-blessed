@@ -138,6 +138,12 @@ const List = React.createClass({
                 width: "90%",
             },
         },
+        animationVisible: {
+            width: 850,
+        },
+        animationHidden: {
+            width: 0,
+        },
     },
 
     getInitialState() {
@@ -489,8 +495,11 @@ const List = React.createClass({
                             </span>
                         </div>
 
-                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0} style={showExtendedFilters ? { width: 850 }: { width: 0 }}>
-
+                        <AnimateHeight
+                            duration={400}
+                            height={showExtendedFilters ? 'auto' : 0}
+                            style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
+                        >
                             <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
                                 <div className="control-row">
                                     <div className="user-management-control select-role">
