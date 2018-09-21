@@ -20,36 +20,49 @@
   display: none;
 }
 
-// Align user management controls
 .user-management-controls {
-  display: flex;
-  align-items: center;
+  padding: 10px 0px 10px;
+  flex: 5;
+}
+
+.user-management-control.pagination {
+  flex: 1;
+  position: relative;
 }
 
 .user-management-control {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: flex-end;
-  height: 72px;
-  margin-bottom: 2em;
-  padding: 0 1em;
-  &:first-child {
-    padding-left: 0;
-  }
-  &:last-child {
-    padding-right: 0;
-  }
-  >* {
-    flex: 1;
-  }
 }
 
-.select-role, .select-group,.fill-space {
+.search-list-items {
+  float: left;
+  width: 300px;
+}
+
+.search-box {
+  display: flex;
+  height: 40px;
+}
+
+.controls-wrapper {
+  display: flex;
+}
+
+.control-row {
+  display: flex;
+  margin-top: -25px;
+  margin-bottom: 25px;
+  padding-bottom: 5px;
+}
+
+.user-management-control {
   flex: 1;
 }
 
 .control-checkbox {
   margin-bottom: 1em;
+  margin-top: 10px;
+  margin-left: 20px;
+  width: 270px !important;
 }
 
 .control-select-role, .control-select-group {
@@ -57,6 +70,27 @@
   max-width: 250px;
 }
 
+.data-table-pager {
+  position: absolute;
+  bottom: 0;
+  right: 50px;
+  margin-right: 20px;
+}
+
 .data-table-pager--buttons {
   margin: 0 !important;
+}
+
+.data-table-import-export{
+  position: absolute;
+  bottom: 0;
+  right: 5px;
+}
+
+.expand-filters{
+  border-radius: 5px;
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0px !important;
+  margin-top: 3px !important;
 }

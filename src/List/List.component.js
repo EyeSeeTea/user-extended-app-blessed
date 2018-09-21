@@ -32,6 +32,15 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
+import ImportExport from '../components/ImportExport.component';
+import IconButton from 'material-ui/IconButton';
+import SettingsIcon from 'material-ui/svg-icons/action/settings';
+import TableLayout from '../components/TableLayout.component';
+import Settings from '../models/settings';
+import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
+import AnimateHeight from 'react-animate-height';
+import last from 'lodash/fp/last';
 
 const pageSize = 50;
 
@@ -101,8 +110,45 @@ const List = React.createClass({
 
     mixins: [ObserverRegistry, Translate, Auth],
 
+    styles: {
+        dataTableWrap: {
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 2,
+        },
+
+        detailsBoxWrap: {
+            flex: 1,
+            marginLeft: '1rem',
+            marginRight: '1rem',
+            marginBottom: '1rem',
+            opacity: 1,
+            flexGrow: 0,
+            minWidth: '350px'
+        },
+
+        listDetailsWrap: {
+            flex: 1,
+            display: 'flex',
+            flexOrientation: 'row',
+        },
+
+        filterStyles: {
+            textField: {
+                width: "90%",
+            },
+        },
+        animationVisible: {
+            width: 850,
+        },
+        animationHidden: {
+            width: 0,
+        },
+    },
+
     getInitialState() {
         return {
+            listFilterOptions: {},
             dataRows: null,
             pager: {
                 total: 0,
@@ -110,10 +156,17 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
+            userGroups: [],
+            userRoles: [],
+            orgUnits: [],
             filterByRoles: [],
             filterByGroups: [],
+            filterByOrgUnits: [],
+            filterByOrgUnitsOutput: [],
             sorting: initialSorting,
+            layoutSettingsVisible: false,
             showAllUsers: true,
+            showExtendedFilters: false,
             sharing: {
                 model: null,
                 open: false,
@@ -133,19 +186,21 @@ const List = React.createClass({
             },
             replicateUser: {
                 open: false,
-            }
+            },
         };
     },
 
     getDataTableRows(users) {
-        const namesFromCollection = collection =>
-            _(collection && collection.toArray ? collection.toArray() : (collection || []))
-                .map(obj => obj.displayName).sortBy().join(", ") || "-";
+        const namesFromCollection = collection => {
+            return _(collection && collection.toArray ? collection.toArray() : (collection || []))
+                .map("displayName")
+                .sortBy()
+                .join(", ") || "-";
+        };
+
         return users.map(user => ({
-            id: user.id,
-            name: user.name,
-            username: user.username,
-            lastUpdated: user.lastUpdated,
+            ...user,
+            lastLogin: user.userCredentials.lastLogin,
             userGroups: namesFromCollection(user.userGroups),
             organisationUnits: namesFromCollection(user.organisationUnits),
             dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
@@ -156,23 +211,28 @@ const List = React.createClass({
     },
 
     componentWillMount() {
-        const sourceStoreDisposable = listStore
-            .subscribe(listStoreValue => {
-                if (!isIterable(listStoreValue.list)) {
-                    return; // Received value is not iterable, keep waiting
-                }
+        Settings.build(this.context.d2).then(settings => {
+            const sourceStoreDisposable = listStore
+                .subscribe(listStoreValue => {
+                    if (!isIterable(listStoreValue.list)) {
+                        return; // Received value is not iterable, keep waiting
+                    }
 
-                this.setState({
-                    dataRows: listStoreValue.list,
-                    pager: listStoreValue.pager,
-                    tableColumns: listStoreValue.tableColumns,
-                    isLoading: false,
+                    this.setState({
+                        dataRows: listStoreValue.list,
+                        pager: listStoreValue.pager,
+                        tableColumns: listStoreValue.tableColumns,
+                        settings: this.state.settings || settings,
+                        isLoading: false,
+                    });
                 });
-            });
+            this.registerDisposable(sourceStoreDisposable);
+        });
 
         /** load select fields data */
         listActions.loadUserRoles.next();
         listActions.loadUserGroups.next();
+        listActions.loadOrgUnits.next();
 
         /** Set user roles list for filter by role */
         const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
@@ -182,6 +242,10 @@ const List = React.createClass({
         /** Set user groups list for filter by group */
         const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
             this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
+        });
+
+        const orgUnitsStoreDisposable = listStore.listOrgUnitsSubject.subscribe(orgUnits => {
+            this.setState({ orgUnits: orgUnits.toArray().map(ou => ({ id: ou.id, displayName: ou.displayName })) });
         });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
@@ -204,12 +268,11 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
-
-        this.registerDisposable(sourceStoreDisposable);
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
         this.registerDisposable(groupsStoreDisposable);
+        this.registerDisposable(orgUnitsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
@@ -243,23 +306,36 @@ const List = React.createClass({
     filterList({page = 1} = {}) {
         const order = this.state.sorting ?
             (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
-        const { filterByRoles, filterByGroups, showAllUsers, pager, searchString } = this.state;
+        const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { showAllUsers, pager, searchString } = this.state;
 
-        listActions.filter({
+        const options = {
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
-            page: page,
-            pageSize: pageSize,
-            filters: _.pickBy({
+            filters: {
                 "displayName":
                     searchString ? ["ilike", searchString] : null,
                 "userCredentials.userRoles.id":
-                    _(filterByRoles).isEmpty() ? null : ["in", `[${filterByRoles.join(',')}]`],
+                    _(filterByRoles).isEmpty() ? null : ["in", filterByRoles],
                 "userGroups.id":
-                    _(filterByGroups).isEmpty() ? null : ["in", `[${filterByGroups.join(',')}]`],
-            }),
-        }).subscribe(() => {}, error => log.error(error));
+                    _(filterByGroups).isEmpty() ? null : ["in", filterByGroups],
+                "organisationUnits.id":
+                    _(filterByOrgUnits).isEmpty() ? null : ["in", filterByOrgUnits.map(path => last(path.split("/")))],
+                "dataViewOrganisationUnits.id":
+                    _(filterByOrgUnitsOutput).isEmpty() ? null : ["in", filterByOrgUnitsOutput.map(path => last(path.split("/")))],
+            },
+        };
+
+        const paginatedOptions = {
+            ...options,
+            paging: true,
+            page: page,
+            pageSize: pageSize,
+        };
+
+        listActions.filter(paginatedOptions).subscribe(() => {}, error => log.error(error));
+        this.setState({ listFilterOptions: options });
     },
 
     onColumnSort(sorting) {
@@ -288,6 +364,14 @@ const List = React.createClass({
 
     setFilterGroups(groups) {
         this.setState({filterByGroups: groups}, this.filterList);
+    },
+
+    setFilterOrgUnits(orgUnits) {
+        this.setState({filterByOrgUnits: orgUnits}, this.filterList);
+    },
+
+    setFilterOrgUnitsOutput(orgUnits) {
+        this.setState({filterByOrgUnitsOutput: orgUnits}, this.filterList);
     },
 
     convertObjsToMenuItems(objs) {
@@ -320,11 +404,43 @@ const List = React.createClass({
         }
     },
 
+    _getTableActions() {
+        return (
+            <div>
+                <IconButton onTouchTap={this._openLayoutSettings} tooltip={this.getTranslation("layout_settings")}>
+                  <SettingsIcon />
+                </IconButton>
+            </div>
+        );
+    },
+
+    _openLayoutSettings() {
+        this.setState({ layoutSettingsVisible: true });
+    },
+
+    _closeLayoutSettings() {
+        this.setState({ layoutSettingsVisible: false });
+    },
+
+    _setLayoutSettings(selectedColumns) {
+        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        this.setState({ settings: newSettings });
+    },
+
+    _saveLayoutSettings() {
+        this.state.settings.save().then(this._closeLayoutSettings);
+    },
+
+    _toggleExtendedFilters() {
+        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
         const currentlyShown = calculatePageValue(this.state.pager);
         const { pager } = this.state;
+        const { d2 } = this.context;
 
         const paginationProps = {
             hasNextPage: () => Boolean(this.state.pager.hasNextPage) && this.state.pager.hasNextPage(),
@@ -339,67 +455,107 @@ const List = React.createClass({
             currentlyShown,
         };
 
-        const styles = {
-            dataTableWrap: {
-                display: 'flex',
-                flexDirection: 'column',
-                flex: 2,
-            },
-
-            detailsBoxWrap: {
-                flex: 1,
-                marginLeft: '1rem',
-                marginRight: '1rem',
-                marginBottom: '1rem',
-                opacity: 1,
-                flexGrow: 0,
-                minWidth: '350px'
-            },
-
-            listDetailsWrap: {
-                flex: 1,
-                display: 'flex',
-                flexOrientation: 'row',
-            }
-        };
-
         const rows = this.getDataTableRows(this.state.dataRows);
-        const {assignUserRoles, assignUserGroups, replicateUser} = this.state;
+        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
+        const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { settings, layoutSettingsVisible, tableColumns } = this.state;
+        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
+        const filterIconColor = isFiltering ? "#ff9800" : undefined;
+        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
+        const { styles } = this;
+
+        const allColumns = tableColumns.map(c => ({
+            text: this.getTranslation(camelCaseToUnderscores(c.name)),
+            value: c.name,
+        }));
+
+        const visibleColumns = _(tableColumns)
+            .keyBy("name")
+            .at(settings.getVisibleTableColumns())
+            .value();
 
         return (
             <div>
-                <div className="user-management-controls">
-                    <div className="user-management-control">
-                        <SearchBox searchObserverHandler={this.searchListByName} />
+                <div className="controls-wrapper">
+                    <div className="user-management-controls" style={{flex: 'unset'}}>
+                        <div className="user-management-control search-box">
+                            <SearchBox searchObserverHandler={this.searchListByName} />
+
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_users_can_manage')}
+                                onCheck={this._onCanManageClick}
+                                checked={!showAllUsers}
+                            />
+
+                            <span>
+                                <IconButton className="expand-filters" onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")} style={filterButtonColor}>
+                                    <FilterListIcon color={filterIconColor} />
+                                </IconButton>
+                            </span>
+                        </div>
+
+                        <AnimateHeight
+                            duration={400}
+                            height={showExtendedFilters ? 'auto' : 0}
+                            style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
+                        >
+                            <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
+                                <div className="control-row">
+                                    <div className="user-management-control select-role">
+                                        <MultipleFilter
+                                            title={this.getTranslation('filter_role')}
+                                            options={this.state.userRoles || []}
+                                            selected={this.state.filterByRoles}
+                                            onChange={this.setFilterRoles}
+                                            styles={styles.filterStyles}
+                                        />
+                                    </div>
+
+                                    <div className="user-management-control select-group">
+                                        <MultipleFilter
+                                            title={this.getTranslation('filter_group')}
+                                            options={this.state.userGroups || []}
+                                            selected={this.state.filterByGroups}
+                                            onChange={this.setFilterGroups}
+                                            styles={styles.filterStyles}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="control-row">
+                                    <div className="user-management-control select-organisation-unit">
+                                        <OrgUnitsFilter
+                                            title={this.getTranslation('filter_by_organisation_units')}
+                                            orgUnits={this.state.orgUnits}
+                                            selected={this.state.filterByOrgUnits}
+                                            onChange={this.setFilterOrgUnits}
+                                            styles={styles.filterStyles}
+                                        />
+                                    </div>
+
+                                    <div className="user-management-control select-organisation-unit-output">
+                                        <OrgUnitsFilter
+                                            title={this.getTranslation('filter_by_organisation_units_output')}
+                                            orgUnits={this.state.orgUnits}
+                                            selected={this.state.filterByOrgUnitsOutput}
+                                            onChange={this.setFilterOrgUnitsOutput}
+                                            styles={styles.filterStyles}
+                                        />
+                                    </div>
+                                </div>
+                                </Paper>
+                            
+                        </AnimateHeight>
                     </div>
-                    <div className="user-management-control select-role">
-                        <MultipleFilter
-                            title={this.getTranslation('filter_role')}
-                            options={this.state.userRoles || []}
-                            selected={this.state.filterByRoles}
-                            onChange={this.setFilterRoles}
-                        />
-                    </div>
-                    <div className="user-management-control select-group">
-                    <MultipleFilter
-                        title={this.getTranslation('filter_group')}
-                        options={this.state.userGroups || []}
-                        selected={this.state.filterByGroups}
-                        onChange={this.setFilterGroups}
-                    />
-                    </div>
-                    <div className="user-management-control">
-                        <Checkbox className="control-checkbox"
-                                  label={this.getTranslation('display_only_users_can_manage')}
-                                  onCheck={this._onCanManageClick}
-                                  checked={!this.state.showAllUsers}
-                        />
-                    </div>
-                    <div className="fill-space"></div>
-                    <div className="user-management-control">
+
+                    <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
+                        <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
                     </div>
+
                 </div>
+
                 <LoadingStatus
                     loadingText={['Loading', this.props.params.modelType, 'list...'].join(' ')}
                     isLoading={this.state.isLoading}
@@ -408,11 +564,12 @@ const List = React.createClass({
                     <div style={styles.dataTableWrap}>
                         <MultipleDataTable
                             rows={rows}
-                            columns={this.state.tableColumns}
+                            columns={visibleColumns}
                             contextActions={contextActions}
                             onColumnSort={this.onColumnSort}
                             isMultipleSelectionAllowed={true}
                             showSelectColumn={true}
+                            tableActions={this._getTableActions()}
                         />
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
@@ -450,6 +607,16 @@ const List = React.createClass({
                         onRequestClose={() => userGroupsAssignmentDialogStore.setState({open: false})}
                     />
                     : null}
+
+                {layoutSettingsVisible &&
+                    <TableLayout
+                        options={allColumns}
+                        selected={settings.getVisibleTableColumns()}
+                        onChange={this._setLayoutSettings}
+                        onSave={this._saveLayoutSettings}
+                        onClose={this._closeLayoutSettings}
+                    />
+                }
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
             </div>

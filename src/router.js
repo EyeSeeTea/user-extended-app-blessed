@@ -17,29 +17,8 @@ function initState({ params }) {
 }
 
 function loadList({ params }, replace, callback) {
-
     initState({ params });
-    return listActions.loadList(params.modelType)
-        .subscribe(
-        (message) => {
-            log.debug(message);
-            callback();
-        },
-        (message) => {
-            if (/^.+s$/.test(params.modelType)) {
-                const nonPluralAttempt = params.modelType.substring(0, params.modelType.length - 1);
-                log.warn(`Could not find requested model type '${params.modelType}' attempting to redirect to '${nonPluralAttempt}'`);
-                replace(`list/${nonPluralAttempt}`);
-                callback();
-            } else {
-                log.error('No clue where', params.modelType, 'comes from... Redirecting to app root');
-                log.error(message);
-
-                replace('/');
-                callback();
-            }
-        }
-        );
+    callback();
 }
 
 const routes = props => (
