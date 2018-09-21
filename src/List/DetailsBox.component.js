@@ -70,6 +70,7 @@ export default React.createClass({
         switch (fieldName) {
             case 'created':
             case 'lastUpdated':
+            case 'lastLogin':
                 return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
             case 'href':
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
