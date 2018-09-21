@@ -43,10 +43,14 @@ export default Store.create({
                 this.setState({
                     tableColumns: columns,
                     pager: modelCollection.pager,
-                    list: modelCollection.toArray().map(user => {
-                        user.username = user.userCredentials && user.userCredentials.username;
-                        return user;
-                    })
+                    list: modelCollection.toArray().map(user => ({
+                        ...user,
+                        ...(!user.userCredentials ? {} : {
+                            username: user.userCredentials.username,
+                            lastLogin: user.userCredentials.lastLogin,
+                            userRoles: user.userCredentials.userRoles,
+                        }),
+                    }))
                 });
             });
         return this;

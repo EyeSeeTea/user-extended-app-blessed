@@ -28,6 +28,7 @@ export default React.createClass({
                 'displayDescription',
                 'created',
                 'lastUpdated',
+                'lastLogin',
                 'id',
                 'href',
                 'userRoles',
@@ -69,16 +70,19 @@ export default React.createClass({
         switch (fieldName) {
             case 'created':
             case 'lastUpdated':
+            case 'lastLogin':
                 return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
             case 'href':
-                // Suffix the url with the .json extension to always get the json representation of the api resource
                 return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
             case 'userRoles':
             case 'userGroups':
             case 'organisationUnits':
             case 'dataViewOrganisationUnits':
-                const objs = _(value.toArray()).sortBy("displayName").value();
-                return (<div>{objs.map(obj => <div key={obj.id}>{obj.displayName}</div>)}</div>);
+                const objs = _(value.toArray ? value.toArray() : value).sortBy("displayName").value();
+                const contents = _(objs).isEmpty()
+                    ? <div><i>{this.getTranslation('no_value')}</i></div>
+                    : objs.map(obj => <div key={obj.id}>{obj.displayName}</div>);
+                return (<div>{contents}</div>);
             default:
                 return value;
         }
