@@ -24,7 +24,7 @@ class ImportExport extends React.Component {
             position: 'fixed',
             top: 0,
             left: 0,
-            paddingTop: '15%',
+            paddingTop: '35%',
             width: '100%',
             height: '100%',
             zIndex: 1000,
