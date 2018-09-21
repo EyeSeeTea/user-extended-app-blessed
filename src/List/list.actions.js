@@ -10,6 +10,7 @@ const listActions = Action.createActionsFromNames([
   'filter',
   'loadUserRoles',
   'loadUserGroups',
+  'loadOrgUnits',
   'getNextPage',
   'getPreviousPage',
   'hideDetailsBox',
@@ -19,20 +20,8 @@ listActions.setListSource.subscribe((action) => {
     listStore.listSourceSubject.onNext(Observable.just(action.data));
 });
 
-listActions.loadList.subscribe(action => {
-    listStore.getListFor(action.data, action.complete, action.error);
-});
-
 listActions.filter.subscribe(action => {
-    listStore.filter(
-      action.data.modelType,
-      action.data.canManage,
-      action.data.filters,
-      action.data.order,
-      action.data.page,
-      action.data.pageSize,
-      action.complete,
-      action.error);
+    listStore.filter(action.data, action.complete, action.error);
 });
 
 // TODO: For simple action mapping like this we should be able to do something less boiler plate like
@@ -54,6 +43,10 @@ listActions.loadUserRoles.subscribe(() => {
 
 listActions.loadUserGroups.subscribe(() => {
     listStore.getGroups();
+});
+
+listActions.loadOrgUnits.subscribe(() => {
+    listStore.getOrgUnits();
 });
 
 export default listActions;
