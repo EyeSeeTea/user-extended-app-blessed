@@ -7,7 +7,7 @@ import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
 import last from 'lodash/fp/last';
 
 import FilteredMultiSelect from '../components/FilteredMultiSelect.component';
-import {getOrgUnitsRoots} from '../utils/orgUnits';
+import { getOrgUnitsRoots } from '../utils/dhis2Helpers';
 import OrgUnitForm from './OrgUnitForm';
 
 class OrgUnitsFilter extends React.Component {
@@ -44,7 +44,7 @@ class OrgUnitsFilter extends React.Component {
     };
 
     componentDidMount() {
-        return getOrgUnitsRoots().then(roots => this.setState({roots}));
+        return getOrgUnitsRoots().then(roots => this.setState({ roots }));
     }
 
     componentWillReceiveProps(newProps) {

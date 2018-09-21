@@ -22,6 +22,10 @@ import User from '../models/user';
 import snackActions from '../Snackbar/snack.actions';
 import LoadingMask from '../loading-mask/LoadingMask.component';
 import InfoDialog from './InfoDialog';
+import MultipleSelector from './MultipleSelector.component';
+import { getModelValuesByField } from '../utils/dhis2Helpers';
+import { getCompactTextForModels } from '../utils/i18n';
+import { getOrgUnitsRoots } from '../utils/dhis2Helpers';
 
 const styles = {
     dialog: {
@@ -81,6 +85,7 @@ class ImportTable extends React.Component {
         this.getOnUpdateField = memoize(userId => (...args) => this.onUpdateField(userId, ...args));
         this.getOnUpdateFormStatus = memoize(userId => (...args) => this.onUpdateFormStatus(userId, ...args));
         this.getActionsByState = memoize(this.getActionsByState.bind(this));
+        this.getOnTextFieldClicked = memoize((...args) => (ev) => this.onTextFieldClicked(...args));
 
         this.fieldsInfo = this.getFieldsInfo();
         this.usersValidation = {} // {USER_ID: true | false}
@@ -93,13 +98,20 @@ class ImportTable extends React.Component {
             users: new OrderedMap(),
             areUsersValid: false,
             allowOverwrite: false,
+            multipleSelector: null,
+            modelValuesByField: null,
         };
     }
 
     async componentDidMount() {
-        const { users: propUsers } = this.props;
+        const { d2 } = this.context;
+        const { users: usersArray, columns } = this.props;
+
+        const modelValuesByField = await getModelValuesByField(columns);
+        const orgUnitRoots = await getOrgUnitsRoots();
         const existingUsernames = await User.getExistingUsernames(d2);
-        const usersById = _(propUsers)
+
+        const usersById = _(usersArray)
             .sortBy(user => !existingUsernames.has(user.username))
             .map(user => ({ id: generateUid(), ...user }))
             .map(user => [user.id, user])
@@ -109,11 +121,12 @@ class ImportTable extends React.Component {
             isLoading: false,
             existingUsernames,
             users: new OrderedMap(usersById),
+            modelValuesByField,
+            orgUnitRoots,
         });
     }
 
     getActionsByState(allowOverwrite, showOverwriteToggle, showReplicateButton) {
-        console.log({allowOverwrite, showOverwriteToggle, showReplicateButton})
         const { onRequestClose } = this.props;
 
         return _.compact([
@@ -138,9 +151,20 @@ class ImportTable extends React.Component {
         ]);
     }
 
-    onUpdateField(userId, name, value) {
+    getUser(userId) {
         const { users } = this.state;
         const user = users.get(userId);
+        
+        if (user) {
+            return user;
+        } else {
+            throw new Error("Cannot get user with ID: " + userId);
+        }
+    }
+
+    onUpdateField(userId, name, value) {
+        const { users } = this.state;
+        const user = this.getUser(userId);
         const newUsers = users.set(userId, { ...user, [name]: value });
         this.setState({ users: newUsers });
     }
@@ -149,7 +173,6 @@ class ImportTable extends React.Component {
         const { users } = this.state;
         const { usersValidation } = this;
         const isValid = !formStatus.asyncValidating && formStatus.valid;
-        //console.log("onUpdateFormStatus", userId, isValid);
         const newUsersValidation = { ...usersValidation, [userId]: isValid };
         this.usersValidation = newUsersValidation;
         const areUsersValid = users.keySeq().every(userId => newUsersValidation[userId]);
@@ -157,11 +180,7 @@ class ImportTable extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const keysToIgnore = [];
-        return (
-            this.props !== nextProps ||
-            !_.isEqual(_.omit(this.state, keysToIgnore), _.omit(nextState, keysToIgnore))
-        );
+        return (this.props !== nextProps || !_.isEqual(this.state, nextState));
     }
 
     closeInfoDialog = () => {
@@ -195,8 +214,9 @@ class ImportTable extends React.Component {
             },
             isUsernameNonExisting: toBuilderValidator(
                 (username, userId) =>
-                    this.state.allowOverwrite ? { isValid: true } :
-                        validateUsername(this.state.existingUsernames, this.getUsernamesInTable({skipId: userId}), username),
+                    this.state.allowOverwrite
+                        ? { isValid: true }
+                        : validateUsername(this.state.existingUsernames, this.getUsernamesInTable({skipId: userId}), username),
                 (username, error) => this.t(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
@@ -213,16 +233,6 @@ class ImportTable extends React.Component {
         };
     }
 
-    getTextField(name, type, value, { validators }) {
-        return {
-            component: TextField,
-            props: { name, type, style: { width: "100%" } },
-            name: name,
-            value: value || "",
-            validators: validators,
-        };
-    }
-
     getColumns() {
         const { columns } = this.props;
         const requiredColumns = ["username", "password"];
@@ -230,12 +240,58 @@ class ImportTable extends React.Component {
         return _(requiredColumns).difference(columns).concat(columns).value();
     }
 
+    onTextFieldClicked = (userId, field) => {
+        const { users, modelValuesByField } = this.state;
+        const options = modelValuesByField[field];
+        const user = this.getUser(userId);
+        const selected = user[field].map(model => model.id);
+
+        this.setState({
+            multipleSelector: { user, field, selected, options },
+        });
+    }
+
+    getTextField(name, value, { validators, component }) {
+        return {
+            name,
+            value: value || "",
+            component: component || TextField,
+            props: { name, type: "string", style: { width: "100%" } },
+            validators,
+        };
+    }
+
     getFields(user) {
-        return this.getColumns().map(column =>
-            this.getTextField(column, "string", user[column], {
-                validators: (this.fieldsInfo[column] || this.fieldsInfo._default).validators,
-            })
-        );
+        const relationshipFields = [
+            "userRoles",
+            "userGroups",
+            "organisationUnits",
+            "dataViewOrganisationUnits",
+        ];
+
+        return this.getColumns().map(field => {
+            const value = user[field];
+            const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
+            const isRelationship = relationshipFields.includes(field);
+
+            if (isRelationship) {
+                const compactValue = getCompactTextForModels(this.context.d2, value, { limit: 1 });
+                const hoverText = _(value).map("displayName").join(", ");
+                return this.getTextField(field, compactValue, {
+                    validators,
+                    component: (props) =>
+                        <TextField
+                            {...props}
+                            value={compactValue}
+                            title={hoverText}
+                            onClick={this.getOnTextFieldClicked(user.id, field)}
+                            onChange={this.getOnTextFieldClicked(user.id, field)}
+                        />,
+                });
+            } else {
+                return this.getTextField(field, value, { component: TextField, validators });
+            }
+        });
     }
 
     addRow = () => {
@@ -275,10 +331,7 @@ class ImportTable extends React.Component {
 
     renderTableRow = ({ id: userId, children }) => {
         const { users, existingUsernames } = this.state;
-        const user = users.get(userId);
-        if (!user)
-            return null;
-
+        const user = this.getUser(userId);
         const index = users._map.get(userId);
         const rowStyles = existingUsernames.has(user.username) ? styles.rowExistingUser : styles.row;
 
@@ -306,7 +359,7 @@ class ImportTable extends React.Component {
 
     componentDidUpdate() {
         // After a render, unset validateOnRender to avoid infinite loops of FormBuilder render/validation
-        this.validateOnRender = false;
+        this.validateOnRender = this.state.isLoading;
     }
 
     renderTable() {
@@ -376,9 +429,21 @@ class ImportTable extends React.Component {
         this.validateOnRender = true;
     }
 
+    onMultipleSelectorClose = () => {
+        this.setState({ multipleSelector: null });
+    }
+
+    onMultipleSelectorChange = (selectedIds, field, { user }) => {
+        const { multipleSelector: { options } } = this.state;
+        const selectedObjects = _(options).keyBy("id").at(selectedIds).compact().value();
+        this.onUpdateField(user.id, field, selectedObjects);
+        this.setState({ multipleSelector: null });
+    }
+
     render() {
         const { onRequestClose, onSave, title } = this.props;
         const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid } = this.state;
+        const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
         const duplicatedUsernamesExist = users.valueSeq().some(user => existingUsernames.has(user.username));
         const showReplicateButton = !users.isEmpty() && areUsersValid;
@@ -396,6 +461,18 @@ class ImportTable extends React.Component {
                 onRequestClose={onRequestClose}
             >
                 {isLoading ? <LoadingMask /> : this.renderTable()}
+
+                {multipleSelector &&
+                    <MultipleSelector
+                        field={multipleSelector.field}
+                        selected={multipleSelector.selected}
+                        options={multipleSelector.options}
+                        onClose={this.onMultipleSelectorClose}
+                        onChange={this.onMultipleSelectorChange}
+                        data={{user: multipleSelector.user}}
+                        orgUnitRoots={orgUnitRoots}
+                    />
+                }
 
                 {infoDialog &&
                     <InfoDialog

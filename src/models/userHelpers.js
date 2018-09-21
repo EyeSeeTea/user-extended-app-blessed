@@ -101,6 +101,7 @@ function getPlainUser(user) {
 }
 
 function getPlainUserFromRow(columnProperties, row) {
+    // TODO: Use collectionFromNames("organisationUnits", names) -> {id, displayName}
     const user = _(columnProperties)
         .zip(row)
         .map(([property, value]) => property ? [property, value] : undefined)

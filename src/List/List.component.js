@@ -188,9 +188,9 @@ const List = React.createClass({
             importUsers: {
                 open: true,
                 users: [
-                    {"username":"someone","password": "Test123$", "firstName":"Bombali","surname":"District","email":"","userRoles":"M and E Officer","userGroups":"_DATASET_M and E Officer","organisationUnits":"Bo","dataViewOrganisationUnits":"Bo"},
-                    {"username":"traore123","firstName":"Alain","surname":"Traore","email":"","userRoles":"Facility tracker","userGroups":"_DATASET_Superuser, Partner for Health International, World Health Program, _PROGRAM_Superuser","organisationUnits":"Bo, Kailahun","dataViewOrganisationUnits":"Bo, Bonthe"},
-                    {"username":"bombali","firstName":"Bombali","surname":"District","email":"","userRoles":"M and E Officer","userGroups":"_DATASET_M and E Officer","organisationUnits":"Bo","dataViewOrganisationUnits":"Bo"},
+                    {"username":"someone","password": "Test123$", "firstName":"Someone","surname":"District","email":"","userRoles":[{id: "UYXOT4A7JMI", displayName: "Antenatal care program"}, {id: "A0gMhuIKvKW", displayName: "Basic tracker access"}],"userGroups":[{id: "wl5cDMuUhmF", displayName: "Administrators"}],"organisationUnits":[{id: "Rp268JB6Ne4", displayName: "Adonkia CHP"}],"dataViewOrganisationUnits":[{id: "cDw53Ej8rju", displayName: "Afro Arab Clinic"}]},
+                    {"username":"traore123","firstName":"Alain","surname":"Traore","email":"","userRoles":[],"userGroups":[],"organisationUnits":[],"dataViewOrganisationUnits":[]},
+                    {"username":"bombali","firstName":"Bombali","surname":"District","email":"","userRoles":[],"userGroups":[],"organisationUnits":[],"dataViewOrganisationUnits":[]},
                 ],
                 columns: ["username", "password", "firstName", "surname", "email", "userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"],
             },
