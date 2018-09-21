@@ -39,6 +39,7 @@ const ColumnNameFromPropertyMapping = {
     username: "Username",
     userRoles: "Roles",
     lastUpdated: "Updated",
+    lastLogin: "Last login",
     created: "Created",
     userGroups: "Groups",
     organisationUnits: "OUOutput",
