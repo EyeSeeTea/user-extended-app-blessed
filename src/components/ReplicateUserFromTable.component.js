@@ -32,14 +32,13 @@ class ReplicateUserFromTable extends React.Component {
     }
 
     replicateUsers = async (users) => {
-        const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
-        const response = await userToReplicate.replicateFromPlainFields(users.toJS());
+        const response = await userToReplicate.replicateFromPlainFields(users);
 
         if (response.success) {
             const message = this.t("replicate_successful", {
                 user: userToReplicate.displayName,
-                n: users.size,
+                n: users.length,
             });
             snackActions.show({ message });
             return null;
@@ -61,6 +60,7 @@ class ReplicateUserFromTable extends React.Component {
                 onSave={this.replicateUsers}
                 maxUsers={100}
                 newUsername={userToReplicate.username}
+                actionText={this.t('replicate')}
                 onRequestClose={onRequestClose}
                 columns={this.columns}
             />

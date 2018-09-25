@@ -11,7 +11,7 @@ import listStore from './list.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
 import Paper from 'material-ui/Paper/Paper';
-import Translate from 'd2-ui/lib/i18n/Translate.mixin';
+import Translate from '../utils/Translate.mixin';
 import SearchBox from './SearchBox.component';
 import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
@@ -42,6 +42,8 @@ import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
 import ImportTable from '../components/ImportTable.component';
+import User from '../models/user';
+import { saveUsers } from '../models/userHelpers';
 
 const pageSize = 50;
 
@@ -180,19 +182,10 @@ const List = React.createClass({
                 open: false,
             },
             replicateUser: {
-                /* DEBUG: TODO */
                 open: false,
-                user: {id: "DXyJmlo9rge"},
-                type: "table",
             },
             importUsers: {
-                open: true,
-                users: [
-                    {"username":"someone","password": "Test123$", "firstName":"Someone","surname":"District","email":"","userRoles":[{id: "UYXOT4A7JMI", displayName: "Antenatal care program"}, {id: "A0gMhuIKvKW", displayName: "Basic tracker access"}],"userGroups":[{id: "wl5cDMuUhmF", displayName: "Administrators"}],"organisationUnits":[{id: "Rp268JB6Ne4", displayName: "Adonkia CHP"}],"dataViewOrganisationUnits":[{id: "cDw53Ej8rju", displayName: "Afro Arab Clinic"}]},
-                    {"username":"traore123","firstName":"Alain","surname":"Traore","email":"","userRoles":[],"userGroups":[],"organisationUnits":[],"dataViewOrganisationUnits":[]},
-                    {"username":"bombali","firstName":"Bombali","surname":"District","email":"","userRoles":[],"userGroups":[],"organisationUnits":[],"dataViewOrganisationUnits":[]},
-                ],
-                columns: ["username", "password", "firstName", "surname", "email", "userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"],
+                open: false,
             },
         };
     },
@@ -440,11 +433,20 @@ const List = React.createClass({
     },
 
     _openImportTable(importResult) {
-        this.setState({ importUsers: { open: true, users: importResult.users, columns: importResult.columns }});
+        this.setState({ importUsers: { open: true, ...importResult }});
     },
 
-    _importUsers(users) {
-        console.log("Import users", users);
+    async _importUsers(users) {
+        const response = await saveUsers(this.context.d2, users);
+
+        if (response.success) {
+            const message = this.getTranslation("import_successful", { n: users.length });
+            snackActions.show({ message });
+            this.filterList();
+            return null;
+        } else {
+            return response;
+        }
     },
 
     _closeImportUsers() {
@@ -643,8 +645,10 @@ const List = React.createClass({
                         title={this.getTranslation("import")}
                         onSave={this._importUsers}
                         onRequestClose={this._closeImportUsers}
+                        actionText={this.getTranslation('import')}
                         users={importUsers.users}
                         columns={importUsers.columns}
+                        warnings={importUsers.warnings}
                         maxUsers={200}
                     />
                 }

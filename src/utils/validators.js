@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 const error = (errorKey) => ({ isValid: false, error: errorKey });
 const valid = () => ({ isValid: true });
 

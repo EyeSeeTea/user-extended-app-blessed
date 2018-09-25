@@ -19,6 +19,7 @@ import IconButton from 'material-ui/IconButton';
 
 import { toBuilderValidator, validateUsername, validatePassword } from '../utils/validators';
 import User from '../models/user';
+import { getExistingUsers } from '../models/userHelpers'
 import snackActions from '../Snackbar/snack.actions';
 import LoadingMask from '../loading-mask/LoadingMask.component';
 import InfoDialog from './InfoDialog';
@@ -52,6 +53,11 @@ const styles = {
     },
     removeIcon: {
         cursor: 'pointer',
+    },
+    warningsInfo: {
+        textAlign: "left",
+        float: "left",
+        marginLeft: "20px",
     },
     overwriteToggle: {
         float: "left",
@@ -107,9 +113,11 @@ class ImportTable extends React.Component {
         const { d2 } = this.context;
         const { users: usersArray, columns } = this.props;
 
-        const modelValuesByField = await getModelValuesByField(columns);
+        const modelValuesByField = await getModelValuesByField(d2, columns);
         const orgUnitRoots = await getOrgUnitsRoots();
-        const existingUsernames = await User.getExistingUsernames(d2);
+        const existingUsers = await getExistingUsers(d2);
+        const getUsername = user => user.userCredentials.username;
+        const existingUsernames = new Set(existingUsers.map(getUsername));
 
         const usersById = _(usersArray)
             .sortBy(user => !existingUsernames.has(user.username))
@@ -126,17 +134,23 @@ class ImportTable extends React.Component {
         });
     }
 
-    getActionsByState(allowOverwrite, showOverwriteToggle, showReplicateButton) {
-        const { onRequestClose } = this.props;
+    getActionsByState(allowOverwrite, showOverwriteToggle, showProcessButton) {
+        const { onRequestClose, warnings, actionText } = this.props;
 
         return _.compact([
-            showOverwriteToggle && <Toggle
-                label={this.t('overwrite_existing_users')}
-                labelPosition="right"
-                toggled={allowOverwrite}
-                onToggle={this.toggleAllowOverwrite}
-                style={styles.overwriteToggle}
-            />,
+            warnings.length > 0 && (
+                <span style={styles.warningsInfo} title={warnings.join("\n")}>
+                    {warnings.length} {this.t('warnings')}
+                </span>
+            ),
+            showOverwriteToggle && (<Toggle
+                    label={this.t('overwrite_existing_users')}
+                    labelPosition="right"
+                    toggled={allowOverwrite}
+                    onToggle={this.toggleAllowOverwrite}
+                    style={styles.overwriteToggle}
+                />
+            ),
             <FlatButton
                 label={this.t('close')}
                 onClick={onRequestClose}
@@ -144,8 +158,8 @@ class ImportTable extends React.Component {
             />,
             <RaisedButton
                 primary={true}
-                label={this.t('replicate')}
-                disabled={!showReplicateButton}
+                label={actionText}
+                disabled={!showProcessButton}
                 onClick={this.onSave}
             />,
         ]);
@@ -154,7 +168,7 @@ class ImportTable extends React.Component {
     getUser(userId) {
         const { users } = this.state;
         const user = users.get(userId);
-        
+
         if (user) {
             return user;
         } else {
@@ -213,10 +227,11 @@ class ImportTable extends React.Component {
                 message: this.t(Validators.isEmail.message),
             },
             isUsernameNonExisting: toBuilderValidator(
-                (username, userId) =>
-                    this.state.allowOverwrite
-                        ? { isValid: true }
-                        : validateUsername(this.state.existingUsernames, this.getUsernamesInTable({skipId: userId}), username),
+                (username, userId) => validateUsername(
+                    this.state.allowOverwrite ? new Set() : this.state.existingUsernames,
+                    this.getUsernamesInTable({skipId: userId}),
+                    username
+                ),
                 (username, error) => this.t(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
@@ -275,8 +290,11 @@ class ImportTable extends React.Component {
             const isRelationship = relationshipFields.includes(field);
 
             if (isRelationship) {
-                const compactValue = getCompactTextForModels(this.context.d2, value, { limit: 1 });
+                const compactValue = `[${value.length}] ` +
+                    getCompactTextForModels(this.context.d2, value, { limit: 1 });
                 const hoverText = _(value).map("displayName").join(", ");
+                const onClick = this.getOnTextFieldClicked(user.id, field);
+
                 return this.getTextField(field, compactValue, {
                     validators,
                     component: (props) =>
@@ -284,8 +302,8 @@ class ImportTable extends React.Component {
                             {...props}
                             value={compactValue}
                             title={hoverText}
-                            onClick={this.getOnTextFieldClicked(user.id, field)}
-                            onChange={this.getOnTextFieldClicked(user.id, field)}
+                            onClick={onClick}
+                            onChange={onClick}
                         />,
                 });
             } else {
@@ -446,12 +464,13 @@ class ImportTable extends React.Component {
         const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
         const duplicatedUsernamesExist = users.valueSeq().some(user => existingUsernames.has(user.username));
-        const showReplicateButton = !users.isEmpty() && areUsersValid;
-        const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showReplicateButton);
+        const showProcessButton = !users.isEmpty() && areUsersValid;
+        const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
 
         return (
             <Dialog
                 open={true}
+                modal={true}
                 title={title}
                 actions={actions}
                 autoScrollBodyContent={true}
@@ -477,7 +496,7 @@ class ImportTable extends React.Component {
                 {infoDialog &&
                     <InfoDialog
                         t={this.t}
-                        title={this.t("replicate_error")}
+                        title={this.t("metadata_error")}
                         onClose={this.closeInfoDialog}
                         response={infoDialog.response}
                     />
@@ -498,13 +517,16 @@ ImportTable.propTypes = {
     onRequestClose: PropTypes.func.isRequired,
     newUsername: PropTypes.string,
     maxUsers: PropTypes.number,
+    actionText: PropTypes.string.isRequired,
     columns: PropTypes.arrayOf(PropTypes.string).isRequired,
+    warnings: PropTypes.arrayOf(PropTypes.string),
 };
 
 ImportTable.defaultProps = {
     initialUsers: [],
     newUsername: null,
     maxUsers: null,
+    warnings: [],
 };
 
 export default ImportTable;

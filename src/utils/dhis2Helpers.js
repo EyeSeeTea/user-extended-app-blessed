@@ -15,34 +15,37 @@ function mapPromise(items, mapper) {
   return items.reduce(reducer, Promise.resolve([]));
 }
 
-function getBasicFields(model, fields = ['id', 'displayName', 'path']) {
+function getObjects(model, fields) {
     return model
         .list({ paging: false, fields: fields.join(",") })
         .then(collection => collection.toArray())
         .then(models => models.map(model => _.pick(model, fields)));
 }
 
-async function getModelValuesByField(fields) {
-    const modelByField = {
-        userRoles: d2.models.userRoles,
-        userGroups: d2.models.userGroups,
-        organisationUnits: d2.models.organisationUnits,
-        dataViewOrganisationUnits: d2.models.organisationUnits,
-    };
-    const models = _(modelByField).at(fields).compact().uniqBy().value();
-    const valuesList = await mapPromise(models, getBasicFields);
+const queryInfoByField = {
+    userRoles: { model: "userRoles", queryFields: ["id", "displayName"] },
+    userGroups: { model: "userGroups", queryFields: ["id", "displayName"] },
+    organisationUnits: { model: "organisationUnits", queryFields: ["id", "path", "displayName"] },
+    dataViewOrganisationUnits: { model: "organisationUnits", queryFields: ["id", "path", "displayName"] },
+};
+        
+/* Return object {Field: [Object]}.
 
-    return _(models)
-        .zip(valuesList)
-        .flatMap(([model, values]) =>
-            _(modelByField)
-                .toPairs()
-                .map(([_field, _model]) => _model === model ? [_field, values] : null)
-                .compact()
-                .value()
+    Supported models: userRoles, userGroups, organisationUnits,  dataViewOrganisationUnits.
+*/
+async function getModelValuesByField(d2, fields) {
+    const queryInfoUniqueModels = _(queryInfoByField).at(fields).compact().uniqBy("model").value();
+    const objectsByModel = _.fromPairs(
+        await mapPromise(queryInfoUniqueModels, async ({ model, queryFields }) =>
+            [model, await getObjects(d2.models[model], queryFields)]
         )
+    );
+
+    return _(fields)
+        .intersection(_.keys(queryInfoByField))
+        .map(field => [field, objectsByModel[queryInfoByField[field].model]])
         .fromPairs()
         .value();
 }
 
-export { getOrgUnitsRoots, mapPromise, getBasicFields, getModelValuesByField };
+export { getOrgUnitsRoots, mapPromise, getModelValuesByField };
