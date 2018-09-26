@@ -59,7 +59,7 @@ class ReplicateUserFromTable extends React.Component {
                 title={title}
                 onSave={this.replicateUsers}
                 maxUsers={100}
-                newUsername={userToReplicate.username}
+                templateUser={userToReplicate}
                 actionText={this.t('replicate')}
                 onRequestClose={onRequestClose}
                 columns={this.columns}

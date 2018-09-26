@@ -33,7 +33,7 @@ const queryFields = [
 */
 const maxUids = (8192 - 1000) / (11 + 3);
 
-const requiredPropertiesOnImport = ["username", "password"];
+const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
 
 const propertiesIgnoredOnImport = ["created", "lastUpdated", "lastLogin"];
 
@@ -171,7 +171,7 @@ async function getUsersFromCsv(d2, file, csv) {
     if (!_(missingProperties).isEmpty()) {
         return {
             success: false,
-            errors: [`Missing compulsory properties: ${missingProperties.join(", ")}`],
+            errors: [`Missing required properties: ${missingProperties.join(", ")}`],
         };
     } else {
         const baseWarnings = _.compact([
@@ -254,7 +254,7 @@ but that would require one request by each new user.
 
 async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
     const userGroupsByUsername = _(usersToSave)
-        .map(user => [user.userCredentials.username, user.userGroups.map(ug => ug.id)])
+        .map(user => [user.userCredentials.username, (user.userGroups || []).map(ug => ug.id)])
         .fromPairs()
         .value();
     const allUsers = await getExistingUsers(d2, { fields: "id,userGroups[id],userCredentials[username]" });

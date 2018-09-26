@@ -36,13 +36,25 @@ const styles = {
     dialogBody: {
         paddingTop: '10px',
     },
+    table: {
+        marginBottom: 5,
+        overflowX: "auto",
+    },
+    tableBody: {
+        overflow: "visible",
+    },
     addRowButton: {
         marginTop: 20,
         textAlign: "center",
     },
     header: {
+        width: 150,
         fontWeight: "bold",
         fontSize: "1.2em",
+        overflow: "hidden",
+    },
+    cell: {
+        width: 150,
     },
     row: {
         border: "none",
@@ -66,7 +78,7 @@ const styles = {
         marginLeft: "20px",
     },
     tableColumn: {
-        width: 75,
+        width: 70,
     },
     actionsHeader: {
         width: 50,
@@ -266,6 +278,8 @@ class ImportTable extends React.Component {
         return {
             username: { validators:[validators.isUsernameNonExisting] },
             password: { validators: [validators.isValidPassword] },
+            firstName: { validators: [validators.isRequired] },
+            surname: { validators: [validators.isRequired] },
             email: { validators: [validators.isValidEmail] },
             _default: { validators: [] },
         };
@@ -279,7 +293,7 @@ class ImportTable extends React.Component {
         const { users, modelValuesByField } = this.state;
         const options = modelValuesByField[field];
         const user = this.getUser(userId);
-        const selected = user[field].map(model => model.id);
+        const selected = (user[field] || []).map(model => model.id);
 
         this.setState({
             multipleSelector: { user, field, selected, options },
@@ -334,18 +348,20 @@ class ImportTable extends React.Component {
     }
 
     addRow = () => {
-        const { newUsername } = this.props;
+        const { templateUser } = this.props;
         const { users } = this.state;
         const { usersValidation } = this;
         let newUser;
 
-        if (newUsername) {
+        if (templateUser) {
             const invalidUsernames = this.getInvalidUsernames();
-            const index = _.range(1, 1000).find(i => !invalidUsernames.has(`${newUsername}_${i}`));
+            const index = _.range(1, 1000).find(i => !invalidUsernames.has(`${templateUser.username}_${i}`));
             newUser = {
                 id: generateUid(),
-                username: `${newUsername}_${index}`,
+                username: `${templateUser.username}_${index}`,
                 password: `District123_${index}`,
+                firstName: templateUser.attributes.firstName,
+                surname: templateUser.attributes.surname,
             };
         } else {
             newUser = {
@@ -401,6 +417,10 @@ class ImportTable extends React.Component {
         this.validateOnNextRender(this.state.isLoading);
     }
 
+    renderTableRowColumn({ children }) {
+        return <TableRowColumn style={styles.cell}>{children}</TableRowColumn>
+    }
+
     renderTable() {
         const { users } = this.state;
         const { maxUsers } = this.props;
@@ -409,7 +429,7 @@ class ImportTable extends React.Component {
 
         return (
             <div>
-                <Table fixedHeader={true} style={{marginBottom: '30px'}}>
+                <Table fixedHeader={true} style={styles.table} bodyStyle={styles.tableBody}>
                     <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
                             <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
@@ -434,7 +454,7 @@ class ImportTable extends React.Component {
                                 validateFullFormOnChanges={true}
                                 validateOnInitialRender={true}
                                 mainWrapper={this.renderTableRow}
-                                fieldWrapper={TableRowColumn}
+                                fieldWrapper={this.renderTableRowColumn}
                             />
                         )}
                     </TableBody>
@@ -474,7 +494,7 @@ class ImportTable extends React.Component {
         this.setState({ multipleSelector: null });
     }
 
-    onMultipleSelectorChange = (selectedIds, field, { user }) => {
+    onMultipleSelectorChange = (selectedIds, field, user) => {
         const { multipleSelector: { options } } = this.state;
         const selectedObjects = _(options).keyBy("id").at(selectedIds).compact().value();
         this.onUpdateField(user.id, field, selectedObjects);
@@ -511,7 +531,7 @@ class ImportTable extends React.Component {
                         options={multipleSelector.options}
                         onClose={this.onMultipleSelectorClose}
                         onChange={this.onMultipleSelectorChange}
-                        data={{user: multipleSelector.user}}
+                        data={multipleSelector.user}
                         orgUnitRoots={orgUnitRoots}
                     />
                 }
@@ -538,7 +558,7 @@ ImportTable.propTypes = {
     initialUsers: PropTypes.arrayOf(PropTypes.object),
     onSave: PropTypes.func.isRequired,
     onRequestClose: PropTypes.func.isRequired,
-    newUsername: PropTypes.string,
+    templateUser: PropTypes.object,
     maxUsers: PropTypes.number,
     actionText: PropTypes.string.isRequired,
     columns: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -547,7 +567,7 @@ ImportTable.propTypes = {
 
 ImportTable.defaultProps = {
     initialUsers: [],
-    newUsername: null,
+    templateUser: null,
     maxUsers: null,
     warnings: [],
 };
