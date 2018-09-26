@@ -83,7 +83,7 @@ function namesFromCollection(collection) {
 }
 
 function collectionFromNames(rowIndex, modelName, objectsByName, namesString) {
-    const names = namesString.split(",").map(_.trim).filter(s => s);
+    const names = (namesString || "").split(",").map(_.trim).filter(s => s);
     const missingValues = _.difference(names, _.keys(objectsByName));
     const warnings = missingValues
         .map(missingValue => `Value not found: ${missingValue} [row=${rowIndex} column=${modelName}]`);

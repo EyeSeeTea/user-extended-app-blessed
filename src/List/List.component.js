@@ -41,6 +41,7 @@ import ImportTable from '../components/ImportTable.component';
 import User from '../models/user';
 import { saveUsers } from '../models/userHelpers';
 import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
 import last from 'lodash/fp/last';
@@ -157,6 +158,7 @@ const List = React.createClass({
                 total: 0,
             },
             isLoading: true,
+            isImporting: false,
             detailsObject: null,
             searchString: "",
             userGroups: [],
@@ -446,15 +448,21 @@ const List = React.createClass({
     },
 
     async _importUsers(users) {
-        const response = await saveUsers(this.context.d2, users);
+        this.setState({ isImporting: true });
 
-        if (response.success) {
-            const message = this.getTranslation("import_successful", { n: users.length });
-            snackActions.show({ message });
-            this.filterList();
-            return null;
-        } else {
-            return response;
+        try {
+            const response = await saveUsers(this.context.d2, users);
+
+            if (response.success) {
+                const message = this.getTranslation("import_successful", { n: users.length });
+                snackActions.show({ message });
+                this.filterList();
+                return null;
+            } else {
+                return response;
+            }
+        } finally {
+            this.setState({ isImporting: false });
         }
     },
 
@@ -485,7 +493,7 @@ const List = React.createClass({
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
-        const { importUsers } = this.state;
+        const { importUsers, isImporting } = this.state;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
         const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
@@ -504,6 +512,8 @@ const List = React.createClass({
 
         return (
             <div>
+                {isImporting && <ModalLoadingMask />}
+
                 <div className="controls-wrapper">
                     <div className="user-management-controls" style={{flex: 'unset'}}>
                         <div className="user-management-control search-box">

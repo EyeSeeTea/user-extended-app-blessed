@@ -11,7 +11,7 @@ import fileDialog from 'file-dialog';
 
 import { exportToCsv, importFromCsv } from '../models/userHelpers';
 import snackActions from '../Snackbar/snack.actions';
-import LoadingMask from '../loading-mask/LoadingMask.component';
+import ModalLoadingMask from './ModalLoadingMask.component';
 
 class ImportExport extends React.Component {
     static propTypes = {
@@ -50,7 +50,7 @@ class ImportExport extends React.Component {
     }
 
     closeMenu = () => {
-        this.setState({ isMenuOpen: false, anchorEl: null });
+        this.setState({ isMenuOpen: false });
     }
 
     exportToCsvAndSave = async () => {
@@ -65,6 +65,7 @@ class ImportExport extends React.Component {
             FileSaver.saveAs(blob, filename);
             snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
         } finally {
+            this.closeMenu();
             this.setState({ isExporting : false });
         }
     }
@@ -75,8 +76,8 @@ class ImportExport extends React.Component {
         fileDialog({ accept: ".csv" })
             .then(files => importFromCsv(d2, files[0]))
             .then(onImport)
-            .then(this.closeMenu)
-            .catch(err => snackActions.show({ message: err.toString() }));
+            .catch(err => snackActions.show({ message: err.toString() }))
+            .then(this.closeMenu);
     }
 
     render() {
@@ -86,12 +87,12 @@ class ImportExport extends React.Component {
         const { t } = this;
 
         return (
-            <div>
+            <div className="data-table-import-export">
                 <IconButton onTouchTap={this.openMenu} tooltipPosition="bottom-left" tooltip={t("import_export")}>
                     <ImportExportIcon />
                 </IconButton>
 
-                {isExporting && <LoadingMask style={this.styles.loadingMask} />}
+                {isExporting && <ModalLoadingMask />}
 
                 <Popover
                     open={isMenuOpen}
