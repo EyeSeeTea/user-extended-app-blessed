@@ -113,6 +113,7 @@ class ImportTable extends React.Component {
             existingUsernames: null, // Set()
             infoDialog: null, // {title, body}
             isLoading: true,
+            isImporting: false,
             users: new OrderedMap(),
             areUsersValid: false,
             allowOverwrite: false,
@@ -475,11 +476,17 @@ class ImportTable extends React.Component {
         const { users } = this.state;
         const { onRequestClose, onSave } = this.props;
 
-        const errorResponse = await onSave(users.valueSeq().toJS());
-        if (errorResponse) {
-            this.setState({ infoDialog: { response: errorResponse } });
-        } else {
-            onRequestClose();
+        this.setState({ isImporting: true });
+
+        try {
+            const errorResponse = await onSave(users.valueSeq().toJS());
+            if (errorResponse) {
+                this.setState({ isImporting: false, infoDialog: { response: errorResponse } });
+            } else {
+                onRequestClose();
+            }
+        } catch(err) {
+            this.setState({ isImporting: false });
         }
     }
 
@@ -503,7 +510,7 @@ class ImportTable extends React.Component {
 
     render() {
         const { onRequestClose, onSave, title } = this.props;
-        const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid } = this.state;
+        const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } = this.state;
         const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
         const duplicatedUsernamesExist = users.valueSeq().some(user => existingUsernames.has(user.username));
@@ -522,6 +529,8 @@ class ImportTable extends React.Component {
                 bodyStyle={styles.dialogBody}
                 onRequestClose={onRequestClose}
             >
+                {isImporting && <LoadingMask /> }
+
                 {isLoading ? <LoadingMask /> : this.renderTable()}
 
                 {multipleSelector &&
