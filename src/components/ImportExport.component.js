@@ -39,7 +39,7 @@ class ImportExport extends React.Component {
         const { d2, columns, filterOptions } = this.props;
         const csvString = await exportToCsv(d2, columns, filterOptions);
         const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
-        const datetime = moment().format("YYYY-MM-DD_hh-mm-ss");
+        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
         FileSaver.saveAs(blob, `users-${datetime}.csv`);
         this.closeMenu();
     }

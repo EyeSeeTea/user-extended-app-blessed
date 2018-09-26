@@ -23,7 +23,7 @@ function prettyJson(obj) {
 
 const InfoDialog = ({ t, title, style, onClose, response, children }) => {
     const details = _([
-        title,
+        t("metadata_error_description"),
         response.error || "Unknown error",
         prettyJson(response.payload),
         prettyJson(response.response),

@@ -95,7 +95,7 @@ class ImportTable extends React.Component {
 
         this.fieldsInfo = this.getFieldsInfo();
         this.usersValidation = {} // {USER_ID: true | false}
-        this.validateOnRender = true;
+        this.validateOnNextRender();
 
         this.state = {
             existingUsernames: null, // Set()
@@ -176,11 +176,29 @@ class ImportTable extends React.Component {
         }
     }
 
+    // FormBuilder usually validates only the current field, which is faster, but sometimes we
+    // need to validate the form builder (i.e. checking uniqueness of fields). Call this method
+    // whenever you want to fully validate the form.
+    validateOnNextRender(toValidate = true) {
+        this.validateOnRender = toValidate;
+    }
+
+    shouldValidateOnNextRender() {
+        return this.validateOnRender;
+    }
+
     onUpdateField(userId, name, value) {
         const { users } = this.state;
         const user = this.getUser(userId);
         const newUsers = users.set(userId, { ...user, [name]: value });
         this.setState({ users: newUsers });
+
+        // Force a full validation when a username changed:
+        //   1) to check uniqueness across the table
+        //   2) to disable password validation on existing user
+        if (name === "username") {
+            this.validateOnNextRender();
+        };
     }
 
     onUpdateFormStatus(userId, formStatus) {
@@ -235,7 +253,12 @@ class ImportTable extends React.Component {
                 (username, error) => this.t(`username_${error}`, { username }),
             ),
             isValidPassword: toBuilderValidator(
-                password => validatePassword(password),
+                (password, userId) => {
+                    // Existing users can have an empty password (so the current one is kept)
+                    const { users, existingUsernames } = this.state;
+                    const allowEmptyPassword = existingUsernames.has(users.get(userId).username);
+                    return validatePassword(password, { allowEmpty: allowEmptyPassword });
+                },
                 (password, error) => this.t(`password_${error}`),
             ),
         };
@@ -249,10 +272,7 @@ class ImportTable extends React.Component {
     }
 
     getColumns() {
-        const { columns } = this.props;
-        const requiredColumns = ["username", "password"];
-
-        return _(requiredColumns).difference(columns).concat(columns).value();
+        return this.props.columns;
     }
 
     onTextFieldClicked = (userId, field) => {
@@ -287,12 +307,13 @@ class ImportTable extends React.Component {
         return this.getColumns().map(field => {
             const value = user[field];
             const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
-            const isRelationship = relationshipFields.includes(field);
+            const isMultipleValue = relationshipFields.includes(field);
 
-            if (isRelationship) {
-                const compactValue = `[${value.length}] ` +
-                    getCompactTextForModels(this.context.d2, value, { limit: 1 });
-                const hoverText = _(value).map("displayName").join(", ");
+            if (isMultipleValue) {
+                const values = value || [];
+                const compactValue = `[${values.length}] ` +
+                    getCompactTextForModels(this.context.d2, values, { limit: 1 });
+                const hoverText = _(values).map("displayName").join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
                 return this.getTextField(field, compactValue, {
@@ -335,7 +356,7 @@ class ImportTable extends React.Component {
         }
 
         this.setState({  users: users.set(newUser.id, newUser) });
-        this.validateOnRender = true;
+        this.validateOnNextRender();
     }
 
     removeRow = (userId) => {
@@ -344,7 +365,7 @@ class ImportTable extends React.Component {
 
         this.setState({ users: users.remove(userId) });
         this.usersValidation = _(usersValidation).omit(userId).value();
-        this.validateOnRender = true;
+        this.validateOnNextRender();
     }
 
     renderTableRow = ({ id: userId, children }) => {
@@ -377,7 +398,7 @@ class ImportTable extends React.Component {
 
     componentDidUpdate() {
         // After a render, unset validateOnRender to avoid infinite loops of FormBuilder render/validation
-        this.validateOnRender = this.state.isLoading;
+        this.validateOnNextRender(this.state.isLoading);
     }
 
     renderTable() {
@@ -409,7 +430,9 @@ class ImportTable extends React.Component {
                                 fields={this.getFields(user)}
                                 onUpdateField={this.getOnUpdateField(user.id)}
                                 onUpdateFormStatus={this.getOnUpdateFormStatus(user.id)}
-                                validateOnRender={this.validateOnRender}
+                                validateOnRender={this.shouldValidateOnNextRender()}
+                                validateFullFormOnChanges={true}
+                                validateOnInitialRender={true}
                                 mainWrapper={this.renderTableRow}
                                 fieldWrapper={TableRowColumn}
                             />
@@ -444,7 +467,7 @@ class ImportTable extends React.Component {
         this.setState({
             allowOverwrite: !this.state.allowOverwrite,
         });
-        this.validateOnRender = true;
+        this.validateOnNextRender();
     }
 
     onMultipleSelectorClose = () => {

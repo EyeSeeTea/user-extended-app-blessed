@@ -33,28 +33,27 @@ const queryFields = [
 */
 const maxUids = (8192 - 1000) / (11 + 3);
 
-const requiredPropertiesOnImport = ["username"];
+const requiredPropertiesOnImport = ["username", "password"];
 
 const propertiesIgnoredOnImport = ["created", "lastUpdated", "lastLogin"];
 
+const userCredentialsFields = ["username", "password", "userRoles"];
+
 const columnNameFromPropertyMapping = {
     id: "ID",
+    username: "Username",
+    password: "Password",
     name: "Name",
     firstName: "First name",
     surname: "Surname",
     email: "Email",
-    username: "Username",
-    userRoles: "Roles",
     lastUpdated: "Updated",
     lastLogin: "Last login",
     created: "Created",
+    userRoles: "Roles",
     userGroups: "Groups",
     organisationUnits: "OUOutput",
     dataViewOrganisationUnits: "OUCapture",
-    password: "Password",
-    name: "Name",
-    favorite: "Favorite",
-    subscribed: "Subscribed",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -85,9 +84,9 @@ function namesFromCollection(collection) {
 
 function collectionFromNames(rowIndex, modelName, objectsByName, namesString) {
     const names = namesString.split(",").map(_.trim).filter(s => s);
-    const missing = _.difference(names, _.keys(objectsByName));
-    const warnings = _(missing).isEmpty() ? [] :
-        [`[row ${rowIndex}, column ${modelName}] entries not found: ${missing.join(', ')}`];
+    const missingValues = _.difference(names, _.keys(objectsByName));
+    const warnings = missingValues
+        .map(missingValue => `Value not found: ${missingValue} [row=${rowIndex} column=${modelName}]`);
     const objects = _(objectsByName).at(names).compact().value();
     return { objects, warnings };
 }
@@ -147,9 +146,20 @@ async function getUsersFromCsv(d2, file, csv) {
         ])
         .fromPairs()
         .value();
-    const columnProperties = _(columnMapping).values().value();
-    const validColumnProperties = _(columnProperties).without(...propertiesIgnoredOnImport).value();
-    const modelValuesByField = await getModelValuesByField(d2, columnProperties);
+    const csvColumnProperties = _(columnMapping).values().value();
+    const modelValuesByField = await getModelValuesByField(d2, csvColumnProperties);
+
+    // Insert password column after username if not found
+    const usernameIdx = csvColumnProperties.indexOf("username");
+    const columnProperties = !csvColumnProperties.includes("password") && usernameIdx >= 0
+        ? [...csvColumnProperties.slice(0, usernameIdx + 1), "password", ...csvColumnProperties.slice(usernameIdx + 1)]
+        : csvColumnProperties;
+
+    const validColumnProperties = _(columnProperties)
+        .intersection(_.keys(columnNameFromPropertyMapping))
+        .difference(propertiesIgnoredOnImport)
+        .value();
+
     const unknownColumns = _(columnMapping)
         .toPairs()
         .map(([columnName, property]) => !property ? columnName : undefined)
@@ -167,7 +177,8 @@ async function getUsersFromCsv(d2, file, csv) {
         const baseWarnings = _.compact([
             _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
         ]);
-        const data = rows.map((row, rowIndex) => getPlainUserFromRow(modelValuesByField, columnProperties, row, rowIndex + 2));
+        const data = rows.map((row, rowIndex) =>
+            getPlainUserFromRow(modelValuesByField, csvColumnProperties, row, rowIndex + 2));
         const users = data.map(o => o.user);
         const userWarnings = _(data).flatMap(o => o.warnings).value();
         const warnings = [...baseWarnings, ...userWarnings]
@@ -181,17 +192,6 @@ async function getUsersFromCsv(d2, file, csv) {
     }
 }
 
-/*
-NOTE: `userGroups` is not owned property by the model User. That means that values
-users[].userGroup of the metadata request are simply ignored. Therefore, we must
-send the related userGroups -with the updated users- in the same request to the metadata.
-
-Pros: Performs the whole operation in a single request, within a transaction.
-Cons: Requires the current user to be able to edit those user groups.
-Alternatives: We could us `/api/users/ID` or `users/ID/replica` (this copies user settings),
-but that would require one request by each new user.
-*/
-
 function parseResponse(response, payload) {
     if (!response) {
         return { success: false };
@@ -201,7 +201,7 @@ function parseResponse(response, payload) {
             .map(typeReport => toArray(typeReport.objectReports)
                 .map(objectReport => objectReport.errorReports
                     .map(errorReport => [errorReport.mainKlass, errorReport.message].join(" - "))));
-        const error = uniq(flatten(flatten(errors))).join("\n");
+        const error = _(errors).flatten().flatten().uniq().join("\n");
         return { success: false, response, error, payload };
     } else {
         return { success: true };
@@ -209,11 +209,11 @@ function parseResponse(response, payload) {
 }
 
 function getUserPayloadFromPlainAttributes(baseUser, userFields) {
-    const userCredentialsFields = ["username", "password", "userRoles"];
+    const clean = obj => _.omitBy(obj, value => !value);
 
     const userRoot = {
         ...baseUser,
-        ..._(userFields).omit(userCredentialsFields).value(),
+        ...clean(_(userFields).omit(userCredentialsFields).value()),
         id: baseUser.id || userFields.id,
     };
 
@@ -221,7 +221,7 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
         ...userRoot,
         userCredentials: {
             ...baseUser.userCredentials,
-            ..._(userFields).pick(userCredentialsFields).value(),
+            ...clean(_(userFields).pick(userCredentialsFields).value()),
             id: baseUser.userCredentials && baseUser.userCredentials.id || generateUid(),
             userInfo: { id: userRoot.id },
         },
@@ -241,9 +241,20 @@ function getUsersToSave(users, existingUsersToUpdate) {
     return usersToCreate.concat(usersToUpdate);
 }
 
-async function getUserGroupsToSave(api, users, usersToSave, existingUsersToUpdate) {
-    const userGroupsByUsername = _(users)
-        .map(user => [user.username, user.userGroups.map(ug => ug.id)])
+/*
+NOTE: `userGroups` is not owned property by the model User. That means that values
+users[].userGroup of the metadata request are simply ignored. Therefore, we must
+send the related userGroups -with the updated users- in the same request to the metadata.
+
+Pros: Performs the whole operation in a single request, within a transaction.
+Cons: Requires the current user to be able to edit those user groups.
+Alternatives: We could us `/api/users/ID` or `users/ID/replica` (this copies user settings),
+but that would require one request by each new user.
+*/
+
+async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
+    const userGroupsByUsername = _(usersToSave)
+        .map(user => [user.userCredentials.username, user.userGroups.map(ug => ug.id)])
         .fromPairs()
         .value();
     const allUsers = await getExistingUsers(d2, { fields: "id,userGroups[id],userCredentials[username]" });
@@ -268,12 +279,16 @@ async function getUserGroupsToSave(api, users, usersToSave, existingUsersToUpdat
         fields: ":owner",
         paging: false,
     });
+
     return userGroups.map(userGroup => ({
         ...userGroup,
         users: usersByGroupId[userGroup.id].map(user => ({ id: user.id })),
     }));
 }
+
 /* Public interface */
+
+/* Save array of users (plain attributes), updating existing one, creating new ones */
 
 async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
@@ -282,8 +297,9 @@ async function saveUsers(d2, users) {
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    const userGroupsToSave = await getUserGroupsToSave(api, users, usersToSave, existingUsersToUpdate);
+    const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
+    //const payload = { users: [{id: "34345"}]};
 
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
