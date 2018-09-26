@@ -32,18 +32,18 @@ import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
-import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
-import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
-import AnimateHeight from 'react-animate-height';
-import last from 'lodash/fp/last';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
 import ImportTable from '../components/ImportTable.component';
 import User from '../models/user';
 import { saveUsers } from '../models/userHelpers';
+import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
+import AnimateHeight from 'react-animate-height';
+import last from 'lodash/fp/last';
 
 const pageSize = 50;
 
@@ -140,6 +140,12 @@ const List = React.createClass({
             textField: {
                 width: "90%",
             },
+        },
+        animationVisible: {
+            width: 850,
+        },
+        animationHidden: {
+            width: 0,
         },
     },
 
@@ -404,10 +410,6 @@ const List = React.createClass({
         }
     },
 
-    _toggleExtendedFilters() {
-        this.setState({ showExtendedFilters: !this.state.showExtendedFilters });
-    },
-
     _getTableActions() {
         return (
             <div>
@@ -427,9 +429,16 @@ const List = React.createClass({
     },
 
     _setLayoutSettings(selectedColumns) {
-        this.state.settings.setVisibleTableColumns(selectedColumns).then(newSettings => {
-            this.setState({ settings: newSettings });
-        });
+        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        this.setState({ settings: newSettings });
+    },
+
+    _saveLayoutSettings() {
+        this.state.settings.save().then(this._closeLayoutSettings);
+    },
+
+    _toggleExtendedFilters() {
+        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
     },
 
     _openImportTable(importResult) {
@@ -477,12 +486,11 @@ const List = React.createClass({
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { importUsers } = this.state;
-
-        const isFiltering = !showAllUsers ||
-            _([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).some(filter => !_(filter).isEmpty());
-        const filterIconColor = isFiltering ? "#1c1" : undefined;
-        const { styles } = this;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
+        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
+        const filterIconColor = isFiltering ? "#ff9800" : undefined;
+        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
+        const { styles } = this;
 
         const allColumns = tableColumns.map(c => ({
             text: this.getTranslation(camelCaseToUnderscores(c.name)),
@@ -497,27 +505,30 @@ const List = React.createClass({
         return (
             <div>
                 <div className="controls-wrapper">
-                    <div className="user-management-controls">
+                    <div className="user-management-controls" style={{flex: 'unset'}}>
                         <div className="user-management-control search-box">
                             <SearchBox searchObserverHandler={this.searchListByName} />
 
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_users_can_manage')}
+                                onCheck={this._onCanManageClick}
+                                checked={!showAllUsers}
+                            />
+
                             <span>
-                                <IconButton onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")}>
+                                <IconButton className="expand-filters" onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")} style={filterButtonColor}>
                                     <FilterListIcon color={filterIconColor} />
                                 </IconButton>
                             </span>
                         </div>
 
-                        <AnimateHeight duration={400} height={showExtendedFilters ? 'auto' : 0}>
-                            <div>
-                                <div className="user-management-control">
-                                    <Checkbox className="control-checkbox"
-                                              label={this.getTranslation('display_only_users_can_manage')}
-                                              onCheck={this._onCanManageClick}
-                                              checked={!this.state.showAllUsers}
-                                    />
-                                </div>
-
+                        <AnimateHeight
+                            duration={400}
+                            height={showExtendedFilters ? 'auto' : 0}
+                            style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
+                        >
+                            <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
                                 <div className="control-row">
                                     <div className="user-management-control select-role">
                                         <MultipleFilter
@@ -561,20 +572,21 @@ const List = React.createClass({
                                         />
                                     </div>
                                 </div>
-                            </div>
+                                </Paper>
+                            
                         </AnimateHeight>
                     </div>
 
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
-                    </div>
 
-                    <ImportExport
-                        d2={d2}
-                        columns={settings.getVisibleTableColumns()}
-                        filterOptions={listFilterOptions}
-                        onImport={this._openImportTable}
-                    />
+                        <ImportExport
+                            d2={d2}
+                            columns={settings.getVisibleTableColumns()}
+                            filterOptions={listFilterOptions}
+                            onImport={this._openImportTable}
+                        />
+                    </div>
                 </div>
 
                 <LoadingStatus
@@ -634,6 +646,7 @@ const List = React.createClass({
                         options={allColumns}
                         selected={settings.getVisibleTableColumns()}
                         onChange={this._setLayoutSettings}
+                        onSave={this._saveLayoutSettings}
                         onClose={this._closeLayoutSettings}
                     />
                 }

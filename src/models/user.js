@@ -71,7 +71,7 @@ class User {
         const payload = { users: newUsers, userGroups: userGroupsWithNewUsers };
 
         return this.api
-            .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=MERGE", payload)
+            .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
             .then(res => parseResponse(res, payload))
             .catch(error => ({ success: false, error }));
     }

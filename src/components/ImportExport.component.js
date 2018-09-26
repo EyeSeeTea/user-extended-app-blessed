@@ -11,6 +11,7 @@ import fileDialog from 'file-dialog';
 
 import { exportToCsv, importFromCsv } from '../models/userHelpers';
 import snackActions from '../Snackbar/snack.actions';
+import LoadingMask from '../loading-mask/LoadingMask.component';
 
 class ImportExport extends React.Component {
     static propTypes = {
@@ -20,7 +21,24 @@ class ImportExport extends React.Component {
         onImport: PropTypes.func.isRequired,
     }
 
-    state = { isMenuOpen: false, anchorEl: null }
+    state = { isMenuOpen: false, anchorEl: null, isExporting: false };
+
+    t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
+
+    styles = {
+        loadingMask: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            paddingTop: '200px',
+            width: '100%',
+            height: '100%',
+            zIndex: 1000,
+            backgroundColor: '#000000',
+            opacity: 0.5,
+            textAlign: 'center',
+        },
+    };
 
     popoverConfig = {
         anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -37,11 +55,18 @@ class ImportExport extends React.Component {
 
     exportToCsvAndSave = async () => {
         const { d2, columns, filterOptions } = this.props;
-        const csvString = await exportToCsv(d2, columns, filterOptions);
-        const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
-        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-        FileSaver.saveAs(blob, `users-${datetime}.csv`);
-        this.closeMenu();
+        this.setState({ isExporting : true });
+
+        try {
+            const csvString = await exportToCsv(d2, columns, filterOptions);
+            const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
+            const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
+            const filename = `users-${datetime}.csv`
+            FileSaver.saveAs(blob, filename);
+            snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
+        } finally {
+            this.setState({ isExporting : false });
+        }
     }
 
     importFromCsv = () => {
@@ -56,15 +81,17 @@ class ImportExport extends React.Component {
 
     render() {
         const { d2 } = this.props;
-        const t = d2.i18n.getTranslation.bind(d2.i18n);
-        const { isMenuOpen, anchorEl } = this.state;
+        const { isMenuOpen, anchorEl, isExporting } = this.state;
         const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave } = this;
+        const { t } = this;
 
         return (
             <div>
                 <IconButton onTouchTap={this.openMenu} tooltipPosition="bottom-left" tooltip={t("import_export")}>
                     <ImportExportIcon />
                 </IconButton>
+
+                {isExporting && <LoadingMask style={this.styles.loadingMask} />}
 
                 <Popover
                     open={isMenuOpen}

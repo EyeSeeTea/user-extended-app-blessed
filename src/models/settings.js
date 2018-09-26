@@ -34,21 +34,25 @@ class Settings {
             .then(values =>
                 new Settings(api, values))
             .catch(res =>
-                res.httpStatusCode === 404 ? new Settings(api).save(defaultSettings) : throwExc(res));
+                res.httpStatusCode === 404 ? new Settings(api).set(defaultSettings).save() : throwExc(res));
     }
 
-    async save(partialUpdate) {
+    set(partialUpdate) {
+        const newValues = { ...this.values, ...partialUpdate };
+        return new Settings(this.api, newValues);
+    }
+
+    async save() {
         const { values, api } = this;
-        const newValues = { ...values, ...partialUpdate };
         const namespaces = await api.get(`${endpoint}`);
         const keys = _(namespaces).includes(storeNamespace)
             ? await api.get(`${endpoint}/${storeNamespace}`)
             : [];
         const method = _(keys).includes(storeKey) ? "update" : "post";
 
-        await api[method](`${endpoint}/${storeNamespace}/${storeKey}`, newValues);
+        await api[method](`${endpoint}/${storeNamespace}/${storeKey}`, values);
 
-        return new Settings(api, newValues)
+        return this;
     }
 
     getVisibleTableColumns() {
@@ -56,7 +60,7 @@ class Settings {
     }
 
     setVisibleTableColumns(visibleTableColumns) {
-        return this.save({ visibleTableColumns });
+        return this.set({ visibleTableColumns });
     }
 }
 
