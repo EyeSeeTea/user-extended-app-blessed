@@ -63,6 +63,9 @@ const styles = {
       border: "none",
       backgroundColor: "#FDD",
     },
+    chipExistingUser: {
+      backgroundColor: "#FAA",
+    },
     removeIcon: {
         cursor: 'pointer',
     },
@@ -110,6 +113,7 @@ class ImportTable extends React.Component {
         this.validateOnNextRender();
 
         this.state = {
+            existingUsers: null, // Array
             existingUsernames: null, // Set()
             infoDialog: null, // {title, body}
             isLoading: true,
@@ -140,6 +144,7 @@ class ImportTable extends React.Component {
 
         this.setState({
             isLoading: false,
+            existingUsers: _.keyBy(existingUsers, getUsername),
             existingUsernames,
             users: new OrderedMap(usersById),
             modelValuesByField,
@@ -386,15 +391,21 @@ class ImportTable extends React.Component {
     }
 
     renderTableRow = ({ id: userId, children }) => {
-        const { users, existingUsernames } = this.state;
+        const { users, existingUsers, existingUsernames, allowOverwrite } = this.state;
         const user = this.getUser(userId);
         const index = users._map.get(userId);
-        const rowStyles = existingUsernames.has(user.username) ? styles.rowExistingUser : styles.row;
+        const existingUser = existingUsers[user.username];
+        const rowStyles = !allowOverwrite && existingUser ? styles.rowExistingUser : styles.row;
+        const chipStyle = existingUser ? styles.chipExistingUser : undefined;
+        const chipTitle = existingUser ? this.t("user_exists", { id: existingUser.id }) : undefined;
+        const chipText = (index + 1).toString() + (existingUser ? "-E" : "");
 
         return (
             <TableRow style={rowStyles}>
                 <TableRowColumn style={styles.tableColumn}>
-                    <Chip>{index + 1}</Chip>
+                    <Chip title={chipTitle} style={chipStyle}>
+                        {chipText}
+                    </Chip>
                 </TableRowColumn>
 
                 {children}
