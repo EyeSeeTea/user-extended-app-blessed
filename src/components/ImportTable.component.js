@@ -21,6 +21,7 @@ import { toBuilderValidator, validateUsername, validatePassword } from '../utils
 import User from '../models/user';
 import { getExistingUsers } from '../models/userHelpers'
 import snackActions from '../Snackbar/snack.actions';
+import ModalLoadingMask from './ModalLoadingMask.component';
 import LoadingMask from '../loading-mask/LoadingMask.component';
 import InfoDialog from './InfoDialog';
 import MultipleSelector from './MultipleSelector.component';
@@ -540,7 +541,7 @@ class ImportTable extends React.Component {
                 bodyStyle={styles.dialogBody}
                 onRequestClose={onRequestClose}
             >
-                {isImporting && <LoadingMask /> }
+                {isImporting && <ModalLoadingMask /> }
 
                 {isLoading ? <LoadingMask /> : this.renderTable()}
 
