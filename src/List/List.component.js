@@ -8,6 +8,7 @@ import DetailsBox from './DetailsBox.component';
 import contextActions from './context.actions';
 import detailsStore from './details.store';
 import listStore from './list.store';
+import deleteUserStore from './deleteUser.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
 import Paper from 'material-ui/Paper/Paper';
@@ -268,6 +269,8 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
+
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
@@ -276,6 +279,7 @@ const List = React.createClass({
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
+        this.registerDisposable(deleteUserStoreDisposable);
 
         this.filterList();
     },
