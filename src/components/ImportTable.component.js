@@ -165,10 +165,11 @@ class ImportTable extends React.Component {
     }
 
     getActionsByState(allowOverwrite, showOverwriteToggle, showProcessButton) {
-        const { onRequestClose, actionText } = this.props;
+        const { onRequestClose, actionText, templateUser } = this.props;
 
         return _.compact([
-            showOverwriteToggle && (<Toggle
+            showOverwriteToggle && !templateUser && (
+                <Toggle
                     label={this.t('overwrite_existing_users')}
                     labelPosition="right"
                     toggled={allowOverwrite}
