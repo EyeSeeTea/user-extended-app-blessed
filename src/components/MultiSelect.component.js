@@ -14,6 +14,7 @@ const MultiSelect = React.createClass({
         isLoading: React.PropTypes.bool,
         sortable: React.PropTypes.bool,
         height: React.PropTypes.number,
+        filterText: React.PropTypes.string,
     },
 
     getDefaultProps() {
@@ -62,7 +63,7 @@ const MultiSelect = React.createClass({
     },
 
     render() {
-        const { errors, label, sortable, height } = this.props;
+        const { errors, label, sortable, height, filterText } = this.props;
 
         const styles = {
             labelStyle: {
@@ -99,6 +100,7 @@ const MultiSelect = React.createClass({
                     onRemoveItems={this._onItemRemoved}
                     onOrderChanged={sortable ? this._onOrderChanged : undefined}
                     height={height}
+                    filterText={filterText}
                 />
             </div>
         );
