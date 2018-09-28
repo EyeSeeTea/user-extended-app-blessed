@@ -39,7 +39,7 @@ async function goToUserEditPage(user) {
     const d2 = await getD2();
     const baseUrl = d2.system.systemInfo.contextPath;
     const { major, minor } = d2.system.version;
-    // DHIS" >= 2.30 uses a new React user-app
+    // DHIS2 >= 2.30 uses a new React user-app
     const url = lexicographicalCompare([major, minor], [2, 30]) >= 0
         ? `${baseUrl}/dhis-web-user/index.html#/users/edit/${user.id}`
         : `${baseUrl}/dhis-web-maintenance-user/alluser.action?key=${user.username}`;
