@@ -35,7 +35,7 @@ const maxUids = (8192 - 1000) / (11 + 3);
 
 const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
 
-const propertiesIgnoredOnImport = ["created", "lastUpdated", "lastLogin"];
+const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
 const userCredentialsFields = ["username", "password", "userRoles"];
 
