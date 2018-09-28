@@ -48,6 +48,17 @@ const styles = {
         marginTop: 20,
         textAlign: "center",
     },
+    dialogIcons: {
+        float: "right",
+    },
+    dialogTitle: {
+        margin: "0px 0px -1px",
+        padding: "24px 24px 20px",
+        fontSize: 24,
+        fontWeight: '400',
+        lineHeight: '32px',
+        display: "inline",
+    },
     header: {
         width: 150,
         fontWeight: "bold",
@@ -120,7 +131,7 @@ class ImportTable extends React.Component {
             isLoading: true,
             isImporting: false,
             users: new OrderedMap(),
-            areUsersValid: false,
+            areUsersValid: null,
             allowOverwrite: false,
             multipleSelector: null,
             modelValuesByField: null,
@@ -154,14 +165,9 @@ class ImportTable extends React.Component {
     }
 
     getActionsByState(allowOverwrite, showOverwriteToggle, showProcessButton) {
-        const { onRequestClose, warnings, actionText } = this.props;
+        const { onRequestClose, actionText } = this.props;
 
         return _.compact([
-            warnings.length > 0 && (
-                <span style={styles.warningsInfo} title={warnings.join("\n")}>
-                    {warnings.length} {this.t('warnings')}
-                </span>
-            ),
             showOverwriteToggle && (<Toggle
                     label={this.t('overwrite_existing_users')}
                     labelPosition="right"
@@ -332,8 +338,8 @@ class ImportTable extends React.Component {
 
             if (isMultipleValue) {
                 const values = value || [];
-                const compactValue = `[${values.length}] ` +
-                    getCompactTextForModels(this.context.d2, values, { limit: 1 });
+                const compactValue = _(values).isEmpty() ? "-" :
+                    `[${values.length}] ` + getCompactTextForModels(this.context.d2, values, { limit: 1 });
                 const hoverText = _(values).map("displayName").join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
@@ -520,20 +526,49 @@ class ImportTable extends React.Component {
         this.setState({ multipleSelector: null });
     }
 
+    renderDialogTitle() {
+        const { title, warnings } = this.props;
+        const errorsCount = _(this.usersValidation).values().sumBy(isValid => isValid ? 0 : 1);
+        const errorText = errorsCount === 0 ? null : this.t('errors_on_table', { n: errorsCount });
+
+        const warningText = warnings.length === 0 ? null : [
+            `${warnings.length} ${this.t('warnings')}:`,
+            "",
+            ...warnings.map((line, idx) => `${idx+1}. ${line}`),
+        ].join("\n");
+
+        return (
+            <div>
+                <h3 style={styles.dialogTitle}>{title}</h3>
+                {errorText &&
+                    <span title={errorText} style={styles.dialogIcons}>
+                        <FontIcon className="material-icons">error</FontIcon>
+                    </span>
+                }
+                {warningText &&
+                    <span title={warningText} style={styles.dialogIcons}>
+                        <FontIcon className="material-icons">warning</FontIcon>
+                    </span>
+                }
+            </div>
+        );
+    }
+
     render() {
-        const { onRequestClose, onSave, title } = this.props;
+        const { onRequestClose, onSave } = this.props;
         const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } = this.state;
         const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
         const duplicatedUsernamesExist = users.valueSeq().some(user => existingUsernames.has(user.username));
         const showProcessButton = !users.isEmpty() && areUsersValid;
         const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
+        const dialogTitle = this.renderDialogTitle();
 
         return (
             <Dialog
                 open={true}
                 modal={true}
-                title={title}
+                title={dialogTitle}
                 actions={actions}
                 autoScrollBodyContent={true}
                 autoDetectWindowHeight={true}
