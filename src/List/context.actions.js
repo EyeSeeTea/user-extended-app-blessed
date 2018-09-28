@@ -4,6 +4,7 @@ import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisatio
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
 import replicateUserStore from './replicateUser.store';
+import deleteUserStore from './deleteUser.store';
 import _m from '../utils/lodash-mixins';
 import { getOrgUnitsRoots } from '../utils/orgUnits';
 
@@ -104,6 +105,13 @@ const contextActions = [
         multiple: false,
         onClick: user => goToUserEditPage(user),
         allowed: checkAccess(["update"]),
+    },
+    {
+        name: 'remove',
+        icon: 'delete',
+        multiple: true,
+        allowed: checkAccess(["delete"]),
+        onClick: datasets => deleteUserStore.delete(datasets),
     },
     {
         name: 'replicateUser',
