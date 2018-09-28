@@ -127,7 +127,7 @@ class OrgUnitDialog extends React.Component {
                     onChange={this.onChange}
                     roots={this.props.roots}
                     selected={this.state.selected}
-                    intersectionPolicy={false}
+                    intersectionPolicy={true}
                 />
             </Dialog>
         );
