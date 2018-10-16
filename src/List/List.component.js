@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
 import DataTable from '../data-table/DataTable.component';
@@ -8,6 +9,7 @@ import DetailsBox from './DetailsBox.component';
 import contextActions from './context.actions';
 import detailsStore from './details.store';
 import listStore from './list.store';
+import deleteUserStore from './deleteUser.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
 import Paper from 'material-ui/Paper/Paper';
@@ -44,7 +46,6 @@ import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
-import last from 'lodash/fp/last';
 
 const pageSize = 50;
 
@@ -275,6 +276,8 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
+
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
@@ -283,6 +286,7 @@ const List = React.createClass({
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
+        this.registerDisposable(deleteUserStoreDisposable);
 
         this.filterList();
     },
@@ -311,29 +315,27 @@ const List = React.createClass({
     },
 
     filterList({page = 1} = {}) {
-        const order = this.state.sorting ?
-            (this.state.sorting[0] + ":i" + this.state.sorting[1]) : null;
+        const order = this.state.sorting
+            ? (this.state.sorting[0] + ":i" + this.state.sorting[1])
+            : null;
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { showAllUsers, pager, searchString } = this.state;
+        const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
+        const getIdFromPath = path => _.last(path.split("/"));
 
         const options = {
             modelType: this.props.params.modelType,
             canManage: !showAllUsers,
             order: order,
+            query: searchString,
             filters: {
-                "displayName":
-                    searchString ? ["ilike", searchString] : null,
-                "userCredentials.userRoles.id":
-                    _(filterByRoles).isEmpty() ? null : ["in", filterByRoles],
-                "userGroups.id":
-                    _(filterByGroups).isEmpty() ? null : ["in", filterByGroups],
-                "organisationUnits.id":
-                    _(filterByOrgUnits).isEmpty() ? null : ["in", filterByOrgUnits.map(path => last(path.split("/")))],
-                "dataViewOrganisationUnits.id":
-                    _(filterByOrgUnitsOutput).isEmpty() ? null : ["in", filterByOrgUnitsOutput.map(path => last(path.split("/")))],
+                "userCredentials.userRoles.id": inFilter(filterByRoles),
+                "userGroups.id": inFilter(filterByGroups),
+                "organisationUnits.id": inFilter(filterByOrgUnits.map(getIdFromPath)),
+                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(getIdFromPath)),
             },
         };
-
+        
         const paginatedOptions = {
             ...options,
             paging: true,

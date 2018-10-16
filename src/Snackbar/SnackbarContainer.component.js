@@ -44,16 +44,19 @@ const SnackBarContainer = React.createClass({
             return null;
         }
 
+        const { message, action, autoHideDuration, onActionTouchTap } = this.state.snack;
+
         return (
             <Snackbar
-                style={{ maxWidth: 'auto', zIndex: 1000000 }}
-                bodyStyle={{ maxWidth: 'auto' }}
+                style={{ whiteSpace: 'nowrap', zIndex: 1000000 }}
+                bodyStyle={{ maxWidth: '100%' }}
+                contentStyle={{ display: 'flex' }}
                 ref="snackbar"
-                message={this.state.snack.message}
-                action={this.state.snack.action}
-                autoHideDuration={0}
+                message={message}
+                action={action}
+                autoHideDuration={autoHideDuration === undefined ? 6000 : autoHideDuration}
                 open={this.state.show}
-                onActionTouchTap={this.state.snack.onActionTouchTap}
+                onActionTouchTap={onActionTouchTap}
                 onRequestClose={this._closeSnackbar}
             />
         );

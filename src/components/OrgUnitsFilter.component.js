@@ -118,7 +118,7 @@ class OrgUnitsFilter extends React.Component {
                         onChange={this.onChange}
                         roots={this.state.roots}
                         selected={this.state.selected}
-                        intersectionPolicy={false}
+                        intersectionPolicy={true}
                     />
                 </Dialog>
 

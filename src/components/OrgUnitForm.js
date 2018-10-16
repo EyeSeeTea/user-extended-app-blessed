@@ -136,7 +136,7 @@ class OrgUnitForm extends React.Component {
             controls: {
                 position: 'fixed',
                 top: 156, right: 24,
-                width: 475,
+                width: 575,
                 zIndex: 1,
                 background: 'white',
             },
