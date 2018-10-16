@@ -5,6 +5,8 @@ import Popover from 'material-ui/Popover/Popover';
 import Menu from 'material-ui/Menu/Menu';
 import MenuItem from 'material-ui/MenuItem/MenuItem';
 import ImportExportIcon from 'material-ui/svg-icons/communication/import-export';
+import ExportIcon from 'material-ui/svg-icons/navigation/arrow-upward';
+import ImportIcon from 'material-ui/svg-icons/navigation/arrow-downward';
 import FileSaver from 'file-saver';
 import moment from 'moment';
 import fileDialog from 'file-dialog';
@@ -41,8 +43,8 @@ class ImportExport extends React.Component {
     };
 
     popoverConfig = {
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        targetOrigin: { vertical: "top", horizontal: "left"},
+        anchorOrigin: { vertical: "center", horizontal: "middle" },
+        targetOrigin: { vertical: "top", horizontal: "right"},
     }
 
     openMenu = (ev) => {
@@ -102,8 +104,8 @@ class ImportExport extends React.Component {
                     onRequestClose={closeMenu}
                 >
                     <Menu>
-                        <MenuItem primaryText={t("export")} onClick={exportToCsvAndSave} />
-                        <MenuItem primaryText={t("import")} onClick={importFromCsv} />
+                        <MenuItem leftIcon={<ExportIcon/>} primaryText={t("export")} onClick={exportToCsvAndSave} />
+                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("import")} onClick={importFromCsv} />
                     </Menu>
                 </Popover>
             </div>
