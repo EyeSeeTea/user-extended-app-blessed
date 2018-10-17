@@ -238,7 +238,24 @@ class ImportTable extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return (this.props !== nextProps || !_.isEqual(this.state, nextState));
+        /*
+            Problem: Without a custom shouldComponentUpdate, any change of a form field
+            issues a re-render of the whole table.
+
+            Solution: Prevent an update if the only change comes from an update of already existing
+            nextState.users. This works because a FormBuilder renders values from its inner state,
+            so it's not necessary to pass down the new values (through props) to see the changes.
+        */
+        const changedStateKeys = _(this.state)
+            .map((value, key) => nextState[key] !== value ? key : null)
+            .compact()
+            .value();
+        const updateFromProps = (this.props !== nextProps);
+        const updateFromState = !(
+            _(changedStateKeys).isEqual(["users"]) &&
+            this.state.users.keySeq().equals(nextState.users.keySeq())
+        );
+        return (updateFromProps || updateFromState);
     }
 
     closeInfoDialog = () => {
