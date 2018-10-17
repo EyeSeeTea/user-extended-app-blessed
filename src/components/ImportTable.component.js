@@ -385,7 +385,7 @@ class ImportTable extends React.Component {
             };
         }
 
-        this.setState({  users: users.set(newUser.id, newUser) });
+        this.setState({ users: users.set(newUser.id, newUser) });
         this.validateOnNextRender();
     }
 
@@ -421,8 +421,7 @@ class ImportTable extends React.Component {
                 <TableRowColumn style={styles.actionsHeader}>
                     <IconButton
                         style={styles.removeIcon}
-                        tooltip={this.t('remove_user')}
-                        tooltipPosition="bottom-left"
+                        title={this.t('remove_user')}
                         onClick={this.getRemoveRowHandler(userId)}
                     >
                         <FontIcon className="material-icons">delete</FontIcon>
