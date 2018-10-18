@@ -439,7 +439,7 @@ class ImportTable extends React.Component {
     renderTableRow = ({ id: userId, children }) => {
         const { users, existingUsers, existingUsernames, allowOverwrite } = this.state;
         const user = this.getUser(userId);
-        const index = users._map.get(userId);
+        const index = users.keySeq().findIndex(_userId => _userId === userId);
         const existingUser = existingUsers[user.username];
         const rowStyles = !allowOverwrite && existingUser ? styles.rowExistingUser : styles.row;
         const chipStyle = existingUser ? styles.chipExistingUser : undefined;
