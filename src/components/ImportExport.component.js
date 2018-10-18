@@ -1,23 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import IconButton from 'material-ui/IconButton/IconButton';
+import Popover from 'material-ui/Popover/Popover';
 import Menu from 'material-ui/Menu/Menu';
+import MenuItem from 'material-ui/MenuItem/MenuItem';
 import ImportExportIcon from 'material-ui/svg-icons/communication/import-export';
+import ExportIcon from 'material-ui/svg-icons/navigation/arrow-upward';
+import ImportIcon from 'material-ui/svg-icons/navigation/arrow-downward';
 import FileSaver from 'file-saver';
 import moment from 'moment';
-import LoadingMask from '../loading-mask/LoadingMask.component';
+import fileDialog from 'file-dialog';
 
-import { exportToCsv } from '../models/userHelpers';
+import { exportToCsv, importFromCsv } from '../models/userHelpers';
 import snackActions from '../Snackbar/snack.actions';
+import ModalLoadingMask from './ModalLoadingMask.component';
 
 class ImportExport extends React.Component {
     static propTypes = {
         d2: PropTypes.object.isRequired,
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
         filterOptions: PropTypes.object.isRequired,
-    };
+        onImport: PropTypes.func.isRequired,
+    }
 
-    state = { isExporting: false };
+    state = { isMenuOpen: false, anchorEl: null, isExporting: false };
+
+    t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
 
     styles = {
         loadingMask: {
@@ -34,7 +42,18 @@ class ImportExport extends React.Component {
         },
     };
 
-    t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
+    popoverConfig = {
+        anchorOrigin: { vertical: "center", horizontal: "middle" },
+        targetOrigin: { vertical: "top", horizontal: "right"},
+    }
+
+    openMenu = (ev) => {
+        this.setState({ isMenuOpen: true, anchorEl: ev.currentTarget });
+    }
+
+    closeMenu = () => {
+        this.setState({ isMenuOpen: false });
+    }
 
     exportToCsvAndSave = async () => {
         const { d2, columns, filterOptions } = this.props;
@@ -43,32 +62,52 @@ class ImportExport extends React.Component {
         try {
             const csvString = await exportToCsv(d2, columns, filterOptions);
             const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
-            const datetime = moment().format("YYYY-MM-DD_hh-mm-ss");
+            const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
             const filename = `users-${datetime}.csv`
             FileSaver.saveAs(blob, filename);
             snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
         } finally {
+            this.closeMenu();
             this.setState({ isExporting : false });
         }
     }
 
+    importFromCsv = () => {
+        const { onImport } = this.props;
+
+        fileDialog({ accept: ".csv" })
+            .then(files => importFromCsv(d2, files[0]))
+            .then(onImport)
+            .catch(err => snackActions.show({ message: err.toString() }))
+            .then(this.closeMenu);
+    }
+
     render() {
         const { d2 } = this.props;
-        const { isExporting } = this.state;
-        const { t, exportToCsvAndSave } = this;
+        const { isMenuOpen, anchorEl, isExporting } = this.state;
+        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave } = this;
+        const { t } = this;
 
         return (
             <div className="data-table-import-export">
-                <IconButton
-                    disabled={isExporting}
-                    onTouchTap={exportToCsvAndSave}
-                    tooltipPosition="bottom-left"
-                    tooltip={t("export")}
-                >
+                <IconButton onTouchTap={this.openMenu} tooltipPosition="bottom-left" tooltip={t("import_export")}>
                     <ImportExportIcon />
                 </IconButton>
 
-                {isExporting && <LoadingMask style={this.styles.loadingMask} />}
+                {isExporting && <ModalLoadingMask />}
+
+                <Popover
+                    open={isMenuOpen}
+                    anchorEl={anchorEl}
+                    anchorOrigin={popoverConfig.anchorOrigin}
+                    targetOrigin={popoverConfig.targetOrigin}
+                    onRequestClose={closeMenu}
+                >
+                    <Menu>
+                        <MenuItem leftIcon={<ExportIcon/>} primaryText={t("export")} onClick={exportToCsvAndSave} />
+                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("import")} onClick={importFromCsv} />
+                    </Menu>
+                </Popover>
             </div>
         );
     }

@@ -13,7 +13,7 @@ import deleteUserStore from './deleteUser.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
 import Paper from 'material-ui/Paper/Paper';
-import Translate from 'd2-ui/lib/i18n/Translate.mixin';
+import Translate from '../utils/Translate.mixin';
 import SearchBox from './SearchBox.component';
 import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
@@ -39,7 +39,11 @@ import IconButton from 'material-ui/IconButton';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
+import ImportTable from '../components/ImportTable.component';
+import User from '../models/user';
+import { saveUsers } from '../models/userHelpers';
 import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
 
@@ -186,6 +190,9 @@ const List = React.createClass({
                 open: false,
             },
             replicateUser: {
+                open: false,
+            },
+            importUsers: {
                 open: false,
             },
         };
@@ -437,6 +444,27 @@ const List = React.createClass({
         this.setState({showExtendedFilters: !this.state.showExtendedFilters});
     },
 
+    _openImportTable(importResult) {
+        this.setState({ importUsers: { open: true, ...importResult }});
+    },
+
+    async _importUsers(users) {
+        const response = await saveUsers(this.context.d2, users);
+
+        if (response.success) {
+            const message = this.getTranslation("import_successful", { n: users.length });
+            snackActions.show({ message });
+            this.filterList();
+            return null;
+        } else {
+            return response;
+        }
+    },
+
+    _closeImportUsers() {
+        this.setState({ importUsers: { open: false }});
+    },
+
     render() {
         if (!this.state.dataRows)
             return null;
@@ -460,6 +488,7 @@ const List = React.createClass({
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { importUsers } = this.state;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
         const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
@@ -553,9 +582,14 @@ const List = React.createClass({
 
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
-                        <ImportExport d2={d2} columns={settings.getVisibleTableColumns()} filterOptions={listFilterOptions} />
-                    </div>
 
+                        <ImportExport
+                            d2={d2}
+                            columns={settings.getVisibleTableColumns()}
+                            filterOptions={listFilterOptions}
+                            onImport={this._openImportTable}
+                        />
+                    </div>
                 </div>
 
                 <LoadingStatus
@@ -621,6 +655,19 @@ const List = React.createClass({
                 }
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
+
+                {!importUsers.open ? null :
+                    <ImportTable
+                        title={this.getTranslation("import")}
+                        onSave={this._importUsers}
+                        onRequestClose={this._closeImportUsers}
+                        actionText={this.getTranslation('import')}
+                        users={importUsers.users}
+                        columns={importUsers.columns}
+                        warnings={importUsers.warnings}
+                        maxUsers={200}
+                    />
+                }
             </div>
         );
     },

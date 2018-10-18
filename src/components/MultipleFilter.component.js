@@ -16,6 +16,8 @@ class MultipleFilter extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.applyAndClose = this.applyAndClose.bind(this);
         this.fieldValue = this.getCompactFieldValue(props.options, props.selected);
+        this.dialogButtons = this.getDialogButtons();
+
         this.state = {
             dialogOpen: false,
             selected: props.selected,
@@ -23,9 +25,16 @@ class MultipleFilter extends React.Component {
     }
 
     styles = {
+        wrapper: {
+            width: 'inherit',
+            position: 'relative',
+        },
         dialog: {
             minWidth: 875,
             maxWidth: '100%',
+        },
+        textInput: {
+            cursor: 'pointer',
         },
         cancelButton: {
             marginRight: 16,
@@ -85,12 +94,13 @@ class MultipleFilter extends React.Component {
     render() {
         const { title, options, styles } = this.props;
         const { dialogOpen, selected } = this.state;
+        const { dialogButtons } = this;
         
         return (
-            <div style={{ width: 'inherit', position: 'relative' }}>
+            <div style={this.styles.wrapper}>
                 <Dialog
                     title={title}
-                    actions={this.getDialogButtons()}
+                    actions={dialogButtons}
                     autoScrollBodyContent={true}
                     autoDetectWindowHeight={true}
                     contentStyle={this.styles.dialog}
@@ -111,7 +121,7 @@ class MultipleFilter extends React.Component {
                     onChange={this.openDialog}
                     floatingLabelText={title}
                     style={styles.textField}
-                    inputStyle={{ cursor: 'pointer' }}
+                    inputStyle={this.styles.textInput}
                 />
             </div>
         );

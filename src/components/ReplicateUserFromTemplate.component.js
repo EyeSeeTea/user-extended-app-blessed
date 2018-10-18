@@ -11,6 +11,7 @@ import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores'
 
 import { toBuilderValidator, validateValues, validateUsername, validatePassword } from '../utils/validators';
 import User from '../models/user';
+import { getExistingUsers } from '../models/userHelpers'
 import { getFromTemplate } from '../utils/template';
 import snackActions from '../Snackbar/snack.actions';
 import InfoDialog from './InfoDialog';
@@ -49,7 +50,8 @@ class ReplicateUserFromTemplate extends React.Component {
 
     async componentDidMount() {
         const { userToReplicateId } = this.props;
-        const existingUsernames = await User.getExistingUsernames(d2);
+        const existingUsers = await getExistingUsers(d2);
+        const existingUsernames = new Set(existingUsers.map(user => user.userCredentials.username));
         const userToReplicate = await User.getById(d2, userToReplicateId);
         const username = `${userToReplicate.username}_$index`;
         this.setState({

@@ -17,6 +17,20 @@ const MultiSelect = React.createClass({
         filterText: React.PropTypes.string,
     },
 
+    styles: {
+        labelStyle: {
+            display: 'block',
+            width: 'calc(100% - 60px)',
+            lineHeight: '24px',
+            color: 'rgba(0,0,0,0.3)',
+            marginTop: '1rem',
+            fontSize: 16,
+        },
+        errorStyle: {
+            color: "red",
+        },
+    },
+
     getDefaultProps() {
         return {
             options: [],
@@ -64,21 +78,7 @@ const MultiSelect = React.createClass({
 
     render() {
         const { errors, label, sortable, height, filterText } = this.props;
-
-        const styles = {
-            labelStyle: {
-                display: 'block',
-                width: 'calc(100% - 60px)',
-                lineHeight: '24px',
-                color: 'rgba(0,0,0,0.3)',
-                marginTop: '1rem',
-                fontSize: 16,
-            },
-            errorStyle: {
-                color: "red",
-            },
-        };
-
+        const { styles } = this;
         const SelectedGroupEditor = sortable ? GroupEditorWithOrdering : GroupEditor;
 
         return (
