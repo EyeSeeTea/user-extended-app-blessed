@@ -218,9 +218,14 @@ class ImportTable extends React.Component {
         const { users } = this.state;
         const user = this.getUser(userId);
         const newUsers = users.set(userId, { ...user, [name]: value });
-        const { validators } = this.getFieldsInfo()[name] || {};
-        // Force re-render if field does not validate so error message is shown
-        const shouldRender = !(validators || []).every(validator => validator.validator(value, userId) === true);
+        const validators = (this.getFieldsInfo()[name] || {}).validators || [];
+        // Force re-render if validations change so new error messages are shown
+        const shouldRender = !_.isEqual(
+            validators.map(validator => validator.validator(value, userId)),
+            validators.map(validator => validator.validator(user[name], userId))
+        );
+
+        this.validateOnNextRender(shouldRender);
         this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {})});
 
         // Force a full validation when a username changed:
