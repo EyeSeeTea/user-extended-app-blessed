@@ -250,17 +250,37 @@ class ImportTable extends React.Component {
             .map((value, key) => nextState[key] !== value ? key : null)
             .compact()
             .value();
-        const changeInUsernames =
+
+        const changeInExistingUsernames =
             this.getDuplicatedUsernamesExist(this.state.users, this.state.existingUsernames) !==
             this.getDuplicatedUsernamesExist(nextState.users, nextState.existingUsernames);
-        const updateFromProps = (this.props !== nextProps);
-        const updateFromState = changeInUsernames || !_(changedStateKeys).isEqual(["users"]);
 
-        return this.shouldValidateOnNextRender() || updateFromProps || updateFromState;
+        const changeInDuplicatedUsernames = !_.isEqual(
+            this.getUsersWithDuplicatedUsername(this.state.users),
+            this.getUsersWithDuplicatedUsername(nextState.users)
+        );
+
+        const updateFromProps = (this.props !== nextProps);
+        const updateFromState = !(
+            !changeInExistingUsernames &&
+            !changeInDuplicatedUsernames &&
+            _(changedStateKeys).isEqual(["users"]) &&
+            this.state.users.keySeq().equals(nextState.users.keySeq())
+        );
+
+        return updateFromProps || updateFromState;
     }
 
     closeInfoDialog = () => {
         this.setState({ infoDialog: null });
+    }
+
+    getUsersWithDuplicatedUsername(users) {
+        return _(users.valueSeq().toJS())
+            .groupBy("username")
+            .flatMap((usersWithUsername, username) => usersWithUsername.length > 1 ? usersWithUsername : [])
+            .map("id")
+            .value();
     }
 
     getUsernamesInTable({skipId} = {}) {
