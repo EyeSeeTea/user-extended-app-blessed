@@ -135,6 +135,7 @@ class ImportTable extends React.Component {
             allowOverwrite: false,
             multipleSelector: null,
             modelValuesByField: null,
+            forceRender: null,
         };
     }
 
@@ -217,7 +218,10 @@ class ImportTable extends React.Component {
         const { users } = this.state;
         const user = this.getUser(userId);
         const newUsers = users.set(userId, { ...user, [name]: value });
-        this.setState({ users: newUsers });
+        const { validators } = this.getFieldsInfo()[name] || {};
+        // Force re-render if field does not validate so error message is shown
+        const shouldRender = !(validators || []).every(validator => validator.validator(value, userId) === true);
+        this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {})});
 
         // Force a full validation when a username changed:
         //   1) to check uniqueness across the table
@@ -328,7 +332,7 @@ class ImportTable extends React.Component {
         };
 
         return {
-            username: { validators:[validators.isUsernameNonExisting] },
+            username: { validators: [validators.isUsernameNonExisting] },
             password: { validators: [validators.isValidPassword] },
             firstName: { validators: [validators.isRequired] },
             surname: { validators: [validators.isRequired] },
