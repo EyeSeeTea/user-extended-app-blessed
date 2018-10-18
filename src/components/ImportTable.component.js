@@ -250,12 +250,13 @@ class ImportTable extends React.Component {
             .map((value, key) => nextState[key] !== value ? key : null)
             .compact()
             .value();
+        const changeInUsernames =
+            this.getDuplicatedUsernamesExist(this.state.users, this.state.existingUsernames) !==
+            this.getDuplicatedUsernamesExist(nextState.users, nextState.existingUsernames);
         const updateFromProps = (this.props !== nextProps);
-        const updateFromState = !(
-            _(changedStateKeys).isEqual(["users"]) &&
-            this.state.users.keySeq().equals(nextState.users.keySeq())
-        );
-        return (updateFromProps || updateFromState);
+        const updateFromState = changeInUsernames || !_(changedStateKeys).isEqual(["users"]);
+
+        return this.shouldValidateOnNextRender() || updateFromProps || updateFromState;
     }
 
     closeInfoDialog = () => {
@@ -571,12 +572,16 @@ class ImportTable extends React.Component {
         );
     }
 
+    getDuplicatedUsernamesExist(users, existingUsernames) {
+        return users.valueSeq().some(user => existingUsernames.has(user.username));
+    }
+
     render() {
         const { onRequestClose, onSave } = this.props;
         const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } = this.state;
         const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
-        const duplicatedUsernamesExist = users.valueSeq().some(user => existingUsernames.has(user.username));
+        const duplicatedUsernamesExist = this.getDuplicatedUsernamesExist(users, existingUsernames);
         const showProcessButton = !users.isEmpty() && areUsersValid;
         const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
         const dialogTitle = this.renderDialogTitle();
