@@ -260,9 +260,10 @@ class ImportTable extends React.Component {
             .compact()
             .value();
 
-        const changeInExistingUsernames =
-            this.getDuplicatedUsernamesExist(this.state.users, this.state.existingUsernames) !==
-            this.getDuplicatedUsernamesExist(nextState.users, nextState.existingUsernames);
+        const changeInExistingUsernames = !_.isEqual(
+            this.getUsersWithExistingUsername(this.state.users, this.state.existingUsernames),
+            this.getUsersWithExistingUsername(nextState.users, nextState.existingUsernames)
+        );
 
         const changeInDuplicatedUsernames = !_.isEqual(
             this.getUsersWithDuplicatedUsername(this.state.users),
@@ -282,6 +283,13 @@ class ImportTable extends React.Component {
 
     closeInfoDialog = () => {
         this.setState({ infoDialog: null });
+    }
+
+    getUsersWithExistingUsername(users, existingUsernames) {
+        return _(users.valueSeq().toJS())
+            .filter(user => existingUsernames.has(user.username))
+            .map("id")
+            .value();
     }
 
     getUsersWithDuplicatedUsername(users) {
