@@ -118,11 +118,13 @@ function namesFromCollection(collection) {
         .join(", ");
 }
 
-function collectionFromNames(rowIndex, modelName, objectsByName, namesString) {
+function collectionFromNames(user, rowIndex, field, objectsByName) {
+    const namesString = user[field];
     const names = (namesString || "").split(",").map(_.trim).filter(s => s);
     const missingValues = _.difference(names, _.keys(objectsByName));
-    const warnings = missingValues
-        .map(missingValue => `Value not found: ${missingValue} [row=${rowIndex} column=${modelName}]`);
+    const { username } = user;
+    const warnings = missingValues.map(missingValue =>
+        `Value not found: ${missingValue} [username=${username || "-"} csv-row=${rowIndex} csv-column=${field}]`);
     const objects = _(objectsByName).at(names).compact().value();
     return { objects, warnings };
 }
@@ -146,12 +148,10 @@ function getPlainUser(user) {
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const byName = _(modelValuesByField).mapValues(models => _.keyBy(models, "displayName")).value();
     const relationships = {
-        userRoles: collectionFromNames(rowIndex, "userRoles", byName.userRoles, user.userRoles),
-        userGroups: collectionFromNames(rowIndex, "userGroups", byName.userGroups, user.userGroups),
-        organisationUnits: collectionFromNames(rowIndex, "organisationUnits",
-                byName.organisationUnits, user.organisationUnits),
-        dataViewOrganisationUnits: collectionFromNames(rowIndex, "dataViewOrganisationUnits",
-                byName.organisationUnits, user.dataViewOrganisationUnits),
+        userRoles: collectionFromNames(user, rowIndex, "userRoles", byName.userRoles),
+        userGroups: collectionFromNames(user, rowIndex, "userGroups", byName.userGroups),
+        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byName.organisationUnits),
+        dataViewOrganisationUnits: collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byName.organisationUnits),
     };
     const warnings = _(relationships).values().flatMap("warnings").value();
     const objectRelationships = _(relationships).mapValues("objects").value();
