@@ -584,12 +584,14 @@ class ImportTable extends React.Component {
         const { title, warnings } = this.props;
         const errorsCount = _(this.usersValidation).values().sumBy(isValid => isValid ? 0 : 1);
         const errorText = errorsCount === 0 ? null : this.t('errors_on_table', { n: errorsCount });
+        const maxWarnings = 10;
+        const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
 
-        const warningText = warnings.length === 0 ? null : [
-            `${warnings.length} ${this.t('warnings')}:`,
-            "",
-            ...warnings.map((line, idx) => `${idx+1}. ${line}`),
-        ].join("\n");
+        const warningText = warnings.length === 0 ? null : _([
+            this.t('warnings', { n: warnings.length }) + ":",
+            ..._(warnings).take(maxWarnings).map((line, idx) => `${idx+1}. ${line}`),
+            hiddenWarnings > 0 ? this.t('and_n_more_warnings', {n: hiddenWarnings}) : null,
+        ]).compact().join("\n");
 
         return (
             <div>
