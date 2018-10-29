@@ -21,6 +21,7 @@ class ImportExport extends React.Component {
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
         filterOptions: PropTypes.object.isRequired,
         onImport: PropTypes.func.isRequired,
+        maxUsers: PropTypes.number.isRequired,
     }
 
     state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
@@ -73,11 +74,11 @@ class ImportExport extends React.Component {
     }
 
     importFromCsv = () => {
-        const { onImport } = this.props;
+        const { onImport, maxUsers } = this.props;
         this.setState({ isProcessing : true });
 
         fileDialog({ accept: ".csv" })
-            .then(files => importFromCsv(d2, files[0]))
+            .then(files => importFromCsv(d2, files[0], { maxUsers }))
             .then(result => {
                 this.setState({ isProcessing : false });
                 return onImport(result);

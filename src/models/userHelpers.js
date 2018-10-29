@@ -164,8 +164,9 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     return { user: plainUser, warnings };
 }
 
-async function getUsersFromCsv(d2, file, csv) {
-    const [columnNames, ...rows] = csv.data;
+async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
+    const columnNames = _.first(csv.data);
+    const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
 
     // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
     const columnMapping = _(columnNames)
@@ -203,8 +204,10 @@ async function getUsersFromCsv(d2, file, csv) {
             errors: [`Missing required properties: ${missingProperties.join(", ")}`],
         };
     } else {
+        const ignoredRows = (csv.data.length - 1 - rows.length);
         const baseWarnings = _.compact([
             _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
+            ignoredRows > 0 ? `maxRows=${maxUsers}, ${ignoredRows} rows ignored` : null,
         ]);
         const userRows = rows.map(row =>
             _(csvColumnProperties)
@@ -394,14 +397,14 @@ async function exportToCsv(d2, columns, filterOptions) {
     return Papa.unparse(table);
 }
 
-async function importFromCsv(d2, file) {
+async function importFromCsv(d2, file, { maxUsers }) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
             delimiter: ",",
             skipEmptyLines: true,
             trimHeaders: true,
             complete: async (csv) => {
-                const res = await getUsersFromCsv(d2, file, csv);
+                const res = await getUsersFromCsv(d2, file, csv, { maxUsers });
                 res.success ? resolve(res) : reject(res.errors.join("\n"));
             },
             error: (err, file) => reject(err),

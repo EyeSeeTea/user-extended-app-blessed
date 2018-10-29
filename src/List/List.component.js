@@ -115,6 +115,8 @@ const List = React.createClass({
 
     mixins: [ObserverRegistry, Translate, Auth],
 
+    maxImportUsers: 200,
+
     styles: {
         dataTableWrap: {
             display: 'flex',
@@ -587,6 +589,7 @@ const List = React.createClass({
                             columns={settings.getVisibleTableColumns()}
                             filterOptions={listFilterOptions}
                             onImport={this._openImportTable}
+                            maxUsers={this.maxImportUsers}
                         />
                     </div>
                 </div>
@@ -664,7 +667,7 @@ const List = React.createClass({
                         users={importUsers.users}
                         columns={importUsers.columns}
                         warnings={importUsers.warnings}
-                        maxUsers={200}
+                        maxUsers={this.maxImportUsers}
                     />
                 }
             </div>
