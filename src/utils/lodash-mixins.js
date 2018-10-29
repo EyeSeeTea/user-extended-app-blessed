@@ -58,6 +58,37 @@ function joinString(getTranslation, strings, maxItems, joinString) {
          getTranslation("this_and_n_others", {"this": base, "n": strings.length - maxItems});
 }
 
+/* Accumulate consecutive elements in groups as long as the group satisfies a predicate.
+   Throw an error if an item cannot be added to an empty group.
+
+Example:
+
+  > _.chunkWhile([9, 6, 3, 2, 6, 3, 2, 3], xs => _.sum(xs) < 10);
+  [ [ 9 ], [ 6, 3 ], [ 2, 6 ], [ 3, 2, 3 ] ]
+*/
+function chunkWhile(xs, predicate) {
+    let output = [];
+    let currentGroup = [];
+
+    xs.forEach(x => {
+        const potentialNewCurrentGroup = currentGroup.concat([x]);
+
+        if (predicate(potentialNewCurrentGroup)) {
+            currentGroup = potentialNewCurrentGroup;
+        } else if (currentGroup.length == 0) {
+            throw new Error(`[chunkWhile] Item does not satisfy predicate: ${x}`);
+        } else {
+            output.push(currentGroup);
+            currentGroup = [x];
+        }
+    });
+
+    if (currentGroup.length > 0)
+        output.push(currentGroup);
+
+    return output;
+}
+
 _.mixin({
     imerge,
     deepMerge,
@@ -67,6 +98,7 @@ _.mixin({
     imerge,
     groupByKeys,
     joinString,
+    chunkWhile,
 });
 
 export default _;

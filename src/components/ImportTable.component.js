@@ -362,7 +362,7 @@ class ImportTable extends React.Component {
         const { users, modelValuesByField } = this.state;
         const options = modelValuesByField[field];
         const user = this.getUser(userId);
-        const selected = (user[field] || []).map(model => model.id);
+        const selected = user[field] || [];
 
         this.setState({
             multipleSelector: { user, field, selected, options },
@@ -558,7 +558,8 @@ class ImportTable extends React.Component {
             } else {
                 onRequestClose();
             }
-        } catch(err) {
+        } catch (err) {
+            console.error(err);
             this.setState({ isImporting: false });
         }
     }
@@ -574,9 +575,7 @@ class ImportTable extends React.Component {
         this.setState({ multipleSelector: null });
     }
 
-    onMultipleSelectorChange = (selectedIds, field, user) => {
-        const { multipleSelector: { options } } = this.state;
-        const selectedObjects = _(options).keyBy("id").at(selectedIds).compact().value();
+    onMultipleSelectorChange = (selectedObjects, field, user) => {
         this.onUpdateField(user.id, field, selectedObjects);
         this.setState({ multipleSelector: null });
     }

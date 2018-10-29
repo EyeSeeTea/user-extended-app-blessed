@@ -85,8 +85,7 @@ class OrgUnitsFilter extends React.Component {
     }
 
     getCompactFieldValue(orgUnits, selected, limit = 3) {
-        const selectedIds = selected.map(path => last(path.split("/")));
-        const names = _(orgUnits).keyBy("id").at(selectedIds).map("displayName").value();
+        const names = selected.map(ou => ou.displayName);
 
         if (names.length <= limit) {
             return names.join(', ');
@@ -139,7 +138,7 @@ OrgUnitsFilter.propTypes = {
     title: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     orgUnits: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+    selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     styles: PropTypes.object,
 };
 

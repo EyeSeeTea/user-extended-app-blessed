@@ -30,7 +30,7 @@ class OrgUnitDialog extends React.Component {
         const selected = this.getCommonOrgUnits(props.models, props.field);
 
         this.state = {
-            selected: selected.map(ou => ou.path),
+            selected: selected,
             updateStrategy: props.models.length > 1 ? "merge" : "replace",
         };
 
@@ -69,7 +69,7 @@ class OrgUnitDialog extends React.Component {
     }
 
     save() {
-        const selected = this.state.selected.map(path => ({id: _.last(path.split("/"))}));
+        const { selected } = this.state;
 
         this.setState({loading: true});
         this.model.save(this.props.models, selected, selected.map(ou => ou.id), this.state.updateStrategy)

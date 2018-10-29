@@ -321,7 +321,6 @@ const List = React.createClass({
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { showAllUsers, pager, searchString } = this.state;
         const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
-        const getIdFromPath = path => _.last(path.split("/"));
 
         const options = {
             modelType: this.props.params.modelType,
@@ -331,8 +330,8 @@ const List = React.createClass({
             filters: {
                 "userCredentials.userRoles.id": inFilter(filterByRoles),
                 "userGroups.id": inFilter(filterByGroups),
-                "organisationUnits.id": inFilter(filterByOrgUnits.map(getIdFromPath)),
-                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(getIdFromPath)),
+                "organisationUnits.id": inFilter(filterByOrgUnits.map(ou => ou.id)),
+                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(ou => ou.id)),
             },
         };
         

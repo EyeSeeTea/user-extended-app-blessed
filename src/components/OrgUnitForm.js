@@ -8,6 +8,8 @@ import OrgUnitSelectByLevel from 'd2-ui/lib/org-unit-select/OrgUnitSelectByLevel
 import OrgUnitSelectByGroup from 'd2-ui/lib/org-unit-select/OrgUnitSelectByGroup.component';
 import OrgUnitSelectAll from 'd2-ui/lib/org-unit-select/OrgUnitSelectAll.component';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
+import { listWithInFilter } from '../utils/dhis2Helpers';
 
 class OrgUnitForm extends React.Component {
     constructor(props, context) {
@@ -77,19 +79,27 @@ class OrgUnitForm extends React.Component {
         this.disposable && this.disposable.unsubscribe();
     }
 
-    onChange(orgUnitsPaths) {
-        this.props.onChange(orgUnitsPaths);
+    async onChange(orgUnitsPaths) {
+        const { d2 } = this.context;
+        const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
+        const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
+            paging: false,
+            fields: 'id,displayName,path',
+        });
+
+        this.props.onChange(newSelected);
     }
 
-    toggleOrgUnit(ev, orgUnit) {
-        const newSelected = _(this.props.selected).find(path => path === orgUnit.path)
-            ? this.props.selected.filter(path => path !== orgUnit.path)
-            : this.props.selected.concat([orgUnit.path]);
+    toggleOrgUnit(ev, orgUnitModel) {
+        const orgUnit = _(orgUnitModel).pick(["id", "path", "displayName"]).value();
+        const newSelected = _(this.props.selected).find(selectedOu => selectedOu.path === orgUnit.path)
+            ? this.props.selected.filter(selectedOu => selectedOu.path !== orgUnit.path)
+            : this.props.selected.concat([orgUnit]);
         this.props.onChange(newSelected);
     }
 
     renderRoots() {
-        const selectedPaths = this.props.selected;
+        const selectedPaths = this.props.selected.map(ou => ou.path);
 
         if (this.state.rootOrgUnits.length) {
             return (
@@ -142,7 +152,7 @@ class OrgUnitForm extends React.Component {
             },
         };
 
-        const selectedPaths = this.props.selected;
+        const selectedPaths = this.props.selected.map(ou => ou.path);
 
         return (
             <div style={styles.wrapper}>
@@ -190,7 +200,7 @@ class OrgUnitForm extends React.Component {
 OrgUnitForm.propTypes = {
     onChange: PropTypes.func.isRequired,
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+    selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     intersectionPolicy: PropTypes.bool,
 };
 

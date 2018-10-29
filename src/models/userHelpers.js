@@ -3,7 +3,7 @@ import moment from 'moment';
 import Papa from 'papaparse';
 import { generateUid } from 'd2/lib/uid';
 
-import { getModelValuesByField } from '../utils/dhis2Helpers';
+import { mapPromise, listWithInFilter } from '../utils/dhis2Helpers';
 
 const queryFields = [
     'displayName|rename(name)',
@@ -58,6 +58,42 @@ const columnNameFromPropertyMapping = {
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
 
+const modelByField = {
+    userRoles: "userRoles",
+    userGroups: "userGroups",
+    organisationUnits: "organisationUnits",
+    dataViewOrganisationUnits: "organisationUnits",
+};
+
+const queryFieldsByModel = {
+    userRoles: ["id", "displayName"],
+    userGroups: ["id", "displayName"],
+    organisationUnits: ["id", "path", "displayName"],
+}
+        
+async function getAssociations(d2, field, objs) {
+    const valuesByField = _(modelByField)
+        .flatMap((model, _field) =>
+            objs.map(obj => ({ model, value: (obj[_field] || "").split(",").map(s => s.trim()) }))
+        )
+        .groupBy("model")
+        .mapValues(vs => _(vs).flatMap("value").uniq().compact().value())
+        .pickBy(vs => !_(vs).isEmpty())
+        .value();
+
+    const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
+        const fields = queryFieldsByModel[model];
+        const models = await listWithInFilter(d2.models[model], field, values, {
+                fields: fields.join(","),
+                paging: false,
+            })
+            .then(models => models.map(model => _.pick(model, fields)));
+        return [model, models];
+    });
+
+    return _.fromPairs(pairs);
+}
+
 function buildD2Filter(filters) {
     return filters
         .map(([key, [operator, value]]) =>
@@ -107,14 +143,8 @@ function getPlainUser(user) {
     };
 }
 
-function getPlainUserFromRow(modelValuesByField, columnProperties, row, rowIndex) {
+function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const byName = _(modelValuesByField).mapValues(models => _.keyBy(models, "displayName")).value();
-    const user = _(columnProperties)
-        .zip(row)
-        .map(([property, value]) => property ? [property, value] : undefined)
-        .compact()
-        .fromPairs()
-        .value();
     const relationships = {
         userRoles: collectionFromNames(rowIndex, "userRoles", byName.userRoles, user.userRoles),
         userGroups: collectionFromNames(rowIndex, "userGroups", byName.userGroups, user.userGroups),
@@ -147,7 +177,6 @@ async function getUsersFromCsv(d2, file, csv) {
         .fromPairs()
         .value();
     const csvColumnProperties = _(columnMapping).values().value();
-    const modelValuesByField = await getModelValuesByField(d2, csvColumnProperties);
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
@@ -177,8 +206,17 @@ async function getUsersFromCsv(d2, file, csv) {
         const baseWarnings = _.compact([
             _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
         ]);
-        const data = rows.map((row, rowIndex) =>
-            getPlainUserFromRow(modelValuesByField, csvColumnProperties, row, rowIndex + 2));
+        const userRows = rows.map(row =>
+            _(csvColumnProperties)
+                .zip(row)
+                .map(([property, value]) => property ? [property, value] : undefined)
+                .compact()
+                .fromPairs()
+                .value()
+        );
+        const modelValuesByField = await getAssociations(d2, "displayName", userRows);
+        const data = userRows.map((userRow, rowIndex) =>
+            getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2));
         const users = data.map(o => o.user);
         const userWarnings = _(data).flatMap(o => o.warnings).value();
         const warnings = [...baseWarnings, ...userWarnings]
