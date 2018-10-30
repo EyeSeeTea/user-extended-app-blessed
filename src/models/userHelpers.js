@@ -217,7 +217,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
                 .fromPairs()
                 .value()
         );
-        const modelValuesByField = await getAssociations(d2, "displayName", userRows);
+        const modelValuesByField = await getAssociations(d2, "name", userRows);
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2));
         const users = data.map(o => o.user);
