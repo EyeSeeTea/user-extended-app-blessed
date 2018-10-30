@@ -369,12 +369,12 @@ class ImportTable extends React.Component {
         });
     }
 
-    getTextField(name, value, { validators, component }) {
+    getTextField(name, value, { validators, component, extraProps }) {
         return {
             name,
             value: value || "",
             component: component || TextField,
-            props: { name, type: "string", style: { width: "100%" } },
+            props: { name, type: "string", style: { width: "100%" }, ...extraProps },
             validators,
         };
     }
@@ -411,7 +411,8 @@ class ImportTable extends React.Component {
                         />,
                 });
             } else {
-                return this.getTextField(field, value, { component: TextField, validators });
+                const extraProps = {changeEvent: 'onBlur'};
+                return this.getTextField(field, value, { component: TextField, validators, extraProps });
             }
         });
     }
