@@ -75,16 +75,18 @@ class ImportExport extends React.Component {
 
     importFromCsv = () => {
         const { onImport, maxUsers } = this.props;
-        this.setState({ isProcessing : true });
 
         fileDialog({ accept: ".csv" })
-            .then(files => importFromCsv(d2, files[0], { maxUsers }))
-            .then(result => {
-                this.setState({ isProcessing : false });
-                return onImport(result);
+            .then(files => {
+                this.setState({ isProcessing : true });
+                return importFromCsv(d2, files[0], { maxUsers });
             })
+            .then(result => onImport(result))
             .catch(err => snackActions.show({ message: err.toString() }))
-            .then(this.closeMenu);
+            .finally(() => {
+                this.closeMenu();
+                this.setState({ isProcessing : false });
+            });
     }
 
     render() {
