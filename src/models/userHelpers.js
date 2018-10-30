@@ -83,10 +83,9 @@ async function getAssociations(d2, field, objs) {
 
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
-        const models = await listWithInFilter(d2.models[model], field, values, {
-                fields: fields.join(","),
-                paging: false,
-            })
+        const models = await listWithInFilter(d2.models[model], field, values,
+                { fields: fields.join(","), paging: false },
+                { useInOperator: false })
             .then(models => models.map(model => _.pick(model, fields)));
         return [model, models];
     });

@@ -19,19 +19,31 @@ function mapPromise(items, mapper) {
 /* Perform a model.list with a filter=FIELD:in:[VALUE1,VALUE2,...], breaking values to
    avoid hitting the 414 URL too-long error.
 */
-async function listWithInFilter(model, inFilterField, inFilterValues, options) {
-    const maxUrlLength = (8192 - 1000); // Reserve 1000 chars for the rest of URL
-    const lengthOfSeparator = encodeURIComponent(",").length;
+async function listWithInFilter(model, inFilterField, inFilterValues, listOptions, { useInOperator = true } = {}) {
+    const maxUrlLength = (8192 - 1000); // Reserve some chars for the rest of URL
+    let filterOptions, chunkPredicate;
 
-    const filterGroups = _m(inFilterValues).chunkWhile(values =>
-        _(values).map(val => val.length + lengthOfSeparator).sum() < maxUrlLength
-    ).value();
+    if (useInOperator) {
+        const getFilter = values => `${inFilterField}:in:[${values.join(',')}]`;
+        chunkPredicate = values =>
+            encodeURIComponent(getFilter(values)).length < maxUrlLength;
+        filterOptions = values => ({ filter: getFilter(values) });
+    } else {
+        const getFilter = value => `${inFilterField}:eq:${value}`;
+        chunkPredicate = values =>
+            values.map(value => `filter=${encodeURIComponent(getFilter(value))}`).join("&").length < maxUrlLength;
+        filterOptions = values => ({
+            filter: values.map(value => `${inFilterField}:eq:${value}`),
+            rootJunction: "OR",
+        });
+    }
+
+    const filterGroups = _m(inFilterValues).chunkWhile(chunkPredicate).value();
 
     const listOfModels = await mapPromise(filterGroups, values => {
-        return model.list({
-            ...options,
-            filter: `${inFilterField}:in:[${values.join(',')}]`,
-        }).then(collection => collection.toArray());
+        return model
+            .list({ ...listOptions, ...filterOptions(values) })
+            .then(collection => collection.toArray());
     });
 
     return _.flatten(listOfModels);
