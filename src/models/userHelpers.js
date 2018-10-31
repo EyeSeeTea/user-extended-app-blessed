@@ -5,6 +5,9 @@ import { generateUid } from 'd2/lib/uid';
 
 import { mapPromise, listWithInFilter } from '../utils/dhis2Helpers';
 
+// Delimiter to use in multiple-value fields (roles, groups, orgUnits)
+const fieldSplitChar = ";;";
+
 const queryFields = [
     'displayName|rename(name)',
     'shortName',
@@ -70,11 +73,11 @@ const queryFieldsByModel = {
     userGroups: ["id", "displayName"],
     organisationUnits: ["id", "path", "displayName"],
 }
-        
+
 async function getAssociations(d2, field, objs) {
     const valuesByField = _(modelByField)
         .flatMap((model, _field) =>
-            objs.map(obj => ({ model, value: (obj[_field] || "").split(",").map(s => s.trim()) }))
+            objs.map(obj => ({ model, value: (obj[_field] || "").split(fieldSplitChar).map(s => s.trim()) }))
         )
         .groupBy("model")
         .mapValues(vs => _(vs).flatMap("value").uniq().compact().value())
@@ -114,12 +117,12 @@ function parseDate(stringDate) {
 function namesFromCollection(collection) {
     return (collection.toArray ? collection.toArray() : collection)
         .map(model => model.displayName)
-        .join(", ");
+        .join(fieldSplitChar);
 }
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
     const namesString = user[field];
-    const names = (namesString || "").split(",").map(_.trim).filter(s => s);
+    const names = (namesString || "").split(fieldSplitChar).map(_.trim).filter(s => s);
     const missingValues = _.difference(names, _.keys(objectsByName));
     const { username } = user;
     const warnings = missingValues.map(missingValue =>
