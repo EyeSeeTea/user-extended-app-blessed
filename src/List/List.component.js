@@ -165,7 +165,6 @@ const List = React.createClass({
             searchString: "",
             userGroups: [],
             userRoles: [],
-            orgUnits: [],
             filterByRoles: [],
             filterByGroups: [],
             filterByOrgUnits: [],
@@ -242,7 +241,6 @@ const List = React.createClass({
         /** load select fields data */
         listActions.loadUserRoles.next();
         listActions.loadUserGroups.next();
-        listActions.loadOrgUnits.next();
 
         /** Set user roles list for filter by role */
         const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
@@ -252,10 +250,6 @@ const List = React.createClass({
         /** Set user groups list for filter by group */
         const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
             this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
-        });
-
-        const orgUnitsStoreDisposable = listStore.listOrgUnitsSubject.subscribe(orgUnits => {
-            this.setState({ orgUnits: orgUnits.toArray().map(ou => ({ id: ou.id, displayName: ou.displayName })) });
         });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
@@ -284,7 +278,6 @@ const List = React.createClass({
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
         this.registerDisposable(groupsStoreDisposable);
-        this.registerDisposable(orgUnitsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
@@ -559,7 +552,6 @@ const List = React.createClass({
                                     <div className="user-management-control select-organisation-unit">
                                         <OrgUnitsFilter
                                             title={this.getTranslation('filter_by_organisation_units')}
-                                            orgUnits={this.state.orgUnits}
                                             selected={this.state.filterByOrgUnits}
                                             onChange={this.setFilterOrgUnits}
                                             styles={styles.filterStyles}
@@ -569,7 +561,6 @@ const List = React.createClass({
                                     <div className="user-management-control select-organisation-unit-output">
                                         <OrgUnitsFilter
                                             title={this.getTranslation('filter_by_organisation_units_output')}
-                                            orgUnits={this.state.orgUnits}
                                             selected={this.state.filterByOrgUnitsOutput}
                                             onChange={this.setFilterOrgUnitsOutput}
                                             styles={styles.filterStyles}
