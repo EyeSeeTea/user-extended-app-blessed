@@ -1,8 +1,8 @@
 'use strict';
 
 var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
-var colors = require('colors');
 
 const isDevBuild = process.argv[1].indexOf('webpack-dev-server') !== -1;
 const dhisConfigPath = process.env.DHIS2_HOME ?
@@ -115,5 +115,25 @@ if (!isDevBuild) {
         }),
     ];
 }
+
+const scriptPrefix = dhisConfig.baseUrl;
+const pathnamePrefix = scriptPrefix;
+
+// Generates an `index.html` file with the <script> injected.
+webpackConfig.plugins.push(new HtmlWebpackPlugin({
+    inject: true,
+    template: './index.html',
+    vendorScripts: [
+        `${pathnamePrefix}/dhis-web-core-resource/material-design-icons/material-icons.css`,
+        `${pathnamePrefix}/dhis-web-core-resource/fonts/roboto.css`,
+        `${pathnamePrefix}/dhis-web-commons/font-awesome/css/font-awesome.min.css`,
+    ]
+        .map(asset => {
+            return /\.js$/.test(asset)
+                ? `<script src="${asset}"></script>`
+                : `<link type="text/css" rel="stylesheet" href="${asset}">`;
+        })
+        .join('\n'),
+}));
 
 module.exports = webpackConfig;

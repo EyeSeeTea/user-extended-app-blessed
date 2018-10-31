@@ -6,10 +6,6 @@
 
     <link rel="shortcut icon" href="app-favicon.ico">
 
-    <link type="text/css" rel="stylesheet" href="../../../dhis-web-commons/material-design-icons/material-icons.css">
-    <link type="text/css" rel="stylesheet" href="../../../dhis-web-commons/fonts/roboto.css">
-    <link type="text/css" rel="stylesheet" href="../../../dhis-web-commons/font-awesome/css/font-awesome.min.css">
-
     <style type="text/css">
         body {
             margin: 0;
@@ -19,16 +15,18 @@
             display: block;
         }
     </style>
+
+    <%= htmlWebpackPlugin.options.vendorScripts %>
 </head>
 <body>
     <div id="app" class="app"></div>
-
+    
     <script src="polyfill.min.js"></script>
     <script src="jquery.min.js"></script>
     <script src="includes/feedback-tool/feedback.js"></script>
     <script src="includes/feedback-tool/feedback-github.js"></script>
     <script src="includes/feedback-tool/feedback-dhis2.js"></script>
     <link rel="stylesheet" href="includes/feedback-tool/feedback.css" />
-    <script src="app.js"></script>
+    <!-- <script src="app.js"></script> -->
 </body>
 </html>
