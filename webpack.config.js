@@ -3,6 +3,7 @@
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
+var colors = require('colors');
 
 const isDevBuild = process.argv[1].indexOf('webpack-dev-server') !== -1;
 const dhisConfigPath = process.env.DHIS2_HOME ?
@@ -36,7 +37,7 @@ const webpackConfig = {
     output: {
         path: __dirname + '/build',
         filename: 'app.js',
-        publicPath: 'http://localhost:8081/',
+        publicPath: isDevBuild ? '/' : '',
     },
     module: {
         loaders: [
@@ -82,6 +83,7 @@ const webpackConfig = {
         proxy: [
             { path: '/api/**', target: dhisConfig.baseUrl, bypass },
             { path: '/dhis-web-commons/**', target: dhisConfig.baseUrl, bypass },
+            { path: '/dhis-web-core-resource/**', target: dhisConfig.baseUrl, bypass },
             { path: '/icons/**', target: dhisConfig.baseUrl, bypass },
             { path: '/css/**', target: 'http://localhost:8081/src', bypass },
             { path: '/i18n/**', target: 'http://localhost:8081/src', bypass },
@@ -116,10 +118,8 @@ if (!isDevBuild) {
     ];
 }
 
-const scriptPrefix = dhisConfig.baseUrl;
-const pathnamePrefix = scriptPrefix;
-
 // Generates an `index.html` file with the <script> injected.
+const pathnamePrefix = isDevBuild ? '' : '../../..';
 webpackConfig.plugins.push(new HtmlWebpackPlugin({
     inject: true,
     template: './index.html',
