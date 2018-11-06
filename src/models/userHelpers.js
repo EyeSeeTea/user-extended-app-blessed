@@ -6,7 +6,7 @@ import { generateUid } from 'd2/lib/uid';
 import { mapPromise, listWithInFilter } from '../utils/dhis2Helpers';
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
-const fieldSplitChar = ";;";
+const fieldSplitChar = "||";
 
 const queryFields = [
     'displayName|rename(name)',
