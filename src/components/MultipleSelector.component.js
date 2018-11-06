@@ -35,17 +35,18 @@ class MultipleSelector extends React.Component {
         },
     };
 
-    onChange = (selected) => {
+    onMultiSelectChange = (selectedIds) => {
+        const { options } = this.props;
+        const selected = _(options).keyBy("id").at(selectedIds).compact().value();
         this.setState({ selected });
     }
 
-    onOrgUnitsChange = (selectedPaths) => {
-        const selected = selectedPaths.map(path => _.last(path.split("/")));
+    onOrgUnitsChange = (selected) => {
         this.setState({ selected });
     }
 
     applyAndClose = () => {
-        const { field, onChange, data, options } = this.props;
+        const { field, onChange, data } = this.props;
         const { selected } = this.state;
 
         onChange(selected, field, data);
@@ -81,29 +82,28 @@ class MultipleSelector extends React.Component {
         const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
 
-        const selectOptions = options.map(o => ({value: o.id, text: o.displayName}));
-
         switch (field) {
         case "userGroups":
         case "userRoles":
+            const selectOptions = options.map(o => ({value: o.id, text: o.displayName}));
+            const selectedIds = _(selected).map("id").value();
+
             return (
                 <FilteredMultiSelect
                     options={selectOptions}
-                    selected={selected}
+                    selected={selectedIds}
                     onRequestClose={this.closeDialog}
-                    onChange={this.onChange}
+                    onChange={this.onMultiSelectChange}
                 />
             );
         case "organisationUnits":
         case "dataViewOrganisationUnits":
-            const selectedPaths = _(options).keyBy("id").at(selected).compact().map("path").value();
-
             return (
                 <OrgUnitForm
                     onRequestClose={this.closeDialog}
                     onChange={this.onOrgUnitsChange}
                     roots={orgUnitRoots}
-                    selected={selectedPaths}
+                    selected={selected}
                     intersectionPolicy={false}
                 />
             );
@@ -134,11 +134,15 @@ class MultipleSelector extends React.Component {
 
 MultipleSelector.propTypes = {
     field: PropTypes.string.isRequired,
-    selected: PropTypes.arrayOf(PropTypes.string).isRequired,
-    options: PropTypes.arrayOf(PropTypes.object).isRequired,
+    selected: PropTypes.arrayOf(PropTypes.object).isRequired,
+    options: PropTypes.arrayOf(PropTypes.object),
     onClose: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
     orgUnitRoots: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+MultipleSelector.defaultProps = {
+    options: [],
 };
 
 MultipleSelector.contextTypes = {

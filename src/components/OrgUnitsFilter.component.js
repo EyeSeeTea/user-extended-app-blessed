@@ -18,7 +18,7 @@ class OrgUnitsFilter extends React.Component {
         this.closeDialog = this.closeDialog.bind(this);
         this.onChange = this.onChange.bind(this);
         this.applyAndClose = this.applyAndClose.bind(this);
-        this.fieldValue = this.getCompactFieldValue(props.orgUnits, props.selected);
+        this.fieldValue = this.getCompactFieldValue(props.selected);
         this.state = {
             dialogOpen: false,
             selected: props.selected,
@@ -49,7 +49,7 @@ class OrgUnitsFilter extends React.Component {
 
     componentWillReceiveProps(newProps) {
         if (newProps.selected !== this.props.selected)
-            this.fieldValue = this.getCompactFieldValue(this.props.orgUnits, newProps.selected);
+            this.fieldValue = this.getCompactFieldValue(newProps.selected);
     }
 
     openDialog() {
@@ -84,9 +84,8 @@ class OrgUnitsFilter extends React.Component {
         ];
     }
 
-    getCompactFieldValue(orgUnits, selected, limit = 3) {
-        const selectedIds = selected.map(path => last(path.split("/")));
-        const names = _(orgUnits).keyBy("id").at(selectedIds).map("displayName").value();
+    getCompactFieldValue(selected, {limit = 3} = {}) {
+        const names = selected.map(ou => ou.displayName);
 
         if (names.length <= limit) {
             return names.join(', ');
@@ -138,8 +137,7 @@ class OrgUnitsFilter extends React.Component {
 OrgUnitsFilter.propTypes = {
     title: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
-    orgUnits: PropTypes.arrayOf(PropTypes.object).isRequired,
-    selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+    selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     styles: PropTypes.object,
 };
 

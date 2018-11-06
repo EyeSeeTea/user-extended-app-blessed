@@ -3,7 +3,10 @@ import moment from 'moment';
 import Papa from 'papaparse';
 import { generateUid } from 'd2/lib/uid';
 
-import { getModelValuesByField } from '../utils/dhis2Helpers';
+import { mapPromise, listWithInFilter } from '../utils/dhis2Helpers';
+
+// Delimiter to use in multiple-value fields (roles, groups, orgUnits)
+const fieldSplitChar = "||";
 
 const queryFields = [
     'displayName|rename(name)',
@@ -58,6 +61,41 @@ const columnNameFromPropertyMapping = {
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
 
+const modelByField = {
+    userRoles: "userRoles",
+    userGroups: "userGroups",
+    organisationUnits: "organisationUnits",
+    dataViewOrganisationUnits: "organisationUnits",
+};
+
+const queryFieldsByModel = {
+    userRoles: ["id", "displayName"],
+    userGroups: ["id", "displayName"],
+    organisationUnits: ["id", "path", "displayName"],
+}
+
+async function getAssociations(d2, field, objs) {
+    const valuesByField = _(modelByField)
+        .flatMap((model, _field) =>
+            objs.map(obj => ({ model, value: (obj[_field] || "").split(fieldSplitChar).map(s => s.trim()) }))
+        )
+        .groupBy("model")
+        .mapValues(vs => _(vs).flatMap("value").uniq().compact().value())
+        .pickBy(vs => !_(vs).isEmpty())
+        .value();
+
+    const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
+        const fields = queryFieldsByModel[model];
+        const models = await listWithInFilter(d2.models[model], field, values,
+                { fields: fields.join(","), paging: false },
+                { useInOperator: false })
+            .then(models => models.map(model => _.pick(model, fields)));
+        return [model, models];
+    });
+
+    return _.fromPairs(pairs);
+}
+
 function buildD2Filter(filters) {
     return filters
         .map(([key, [operator, value]]) =>
@@ -79,14 +117,16 @@ function parseDate(stringDate) {
 function namesFromCollection(collection) {
     return (collection.toArray ? collection.toArray() : collection)
         .map(model => model.displayName)
-        .join(", ");
+        .join(fieldSplitChar);
 }
 
-function collectionFromNames(rowIndex, modelName, objectsByName, namesString) {
-    const names = (namesString || "").split(",").map(_.trim).filter(s => s);
+function collectionFromNames(user, rowIndex, field, objectsByName) {
+    const namesString = user[field];
+    const names = (namesString || "").split(fieldSplitChar).map(_.trim).filter(s => s);
     const missingValues = _.difference(names, _.keys(objectsByName));
-    const warnings = missingValues
-        .map(missingValue => `Value not found: ${missingValue} [row=${rowIndex} column=${modelName}]`);
+    const { username } = user;
+    const warnings = missingValues.map(missingValue =>
+        `Value not found: ${missingValue} [username=${username || "-"} csv-row=${rowIndex} csv-column=${field}]`);
     const objects = _(objectsByName).at(names).compact().value();
     return { objects, warnings };
 }
@@ -107,21 +147,13 @@ function getPlainUser(user) {
     };
 }
 
-function getPlainUserFromRow(modelValuesByField, columnProperties, row, rowIndex) {
+function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const byName = _(modelValuesByField).mapValues(models => _.keyBy(models, "displayName")).value();
-    const user = _(columnProperties)
-        .zip(row)
-        .map(([property, value]) => property ? [property, value] : undefined)
-        .compact()
-        .fromPairs()
-        .value();
     const relationships = {
-        userRoles: collectionFromNames(rowIndex, "userRoles", byName.userRoles, user.userRoles),
-        userGroups: collectionFromNames(rowIndex, "userGroups", byName.userGroups, user.userGroups),
-        organisationUnits: collectionFromNames(rowIndex, "organisationUnits",
-                byName.organisationUnits, user.organisationUnits),
-        dataViewOrganisationUnits: collectionFromNames(rowIndex, "dataViewOrganisationUnits",
-                byName.organisationUnits, user.dataViewOrganisationUnits),
+        userRoles: collectionFromNames(user, rowIndex, "userRoles", byName.userRoles),
+        userGroups: collectionFromNames(user, rowIndex, "userGroups", byName.userGroups),
+        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byName.organisationUnits),
+        dataViewOrganisationUnits: collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byName.organisationUnits),
     };
     const warnings = _(relationships).values().flatMap("warnings").value();
     const objectRelationships = _(relationships).mapValues("objects").value();
@@ -134,8 +166,9 @@ function getPlainUserFromRow(modelValuesByField, columnProperties, row, rowIndex
     return { user: plainUser, warnings };
 }
 
-async function getUsersFromCsv(d2, file, csv) {
-    const [columnNames, ...rows] = csv.data;
+async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
+    const columnNames = _.first(csv.data);
+    const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
 
     // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
     const columnMapping = _(columnNames)
@@ -147,7 +180,6 @@ async function getUsersFromCsv(d2, file, csv) {
         .fromPairs()
         .value();
     const csvColumnProperties = _(columnMapping).values().value();
-    const modelValuesByField = await getModelValuesByField(d2, csvColumnProperties);
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
@@ -174,11 +206,22 @@ async function getUsersFromCsv(d2, file, csv) {
             errors: [`Missing required properties: ${missingProperties.join(", ")}`],
         };
     } else {
+        const ignoredRows = (csv.data.length - 1 - rows.length);
         const baseWarnings = _.compact([
             _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
+            ignoredRows > 0 ? `maxRows=${maxUsers}, ${ignoredRows} rows ignored` : null,
         ]);
-        const data = rows.map((row, rowIndex) =>
-            getPlainUserFromRow(modelValuesByField, csvColumnProperties, row, rowIndex + 2));
+        const userRows = rows.map(row =>
+            _(csvColumnProperties)
+                .zip(row)
+                .map(([property, value]) => property ? [property, value] : undefined)
+                .compact()
+                .fromPairs()
+                .value()
+        );
+        const modelValuesByField = await getAssociations(d2, "name", userRows);
+        const data = userRows.map((userRow, rowIndex) =>
+            getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2));
         const users = data.map(o => o.user);
         const userWarnings = _(data).flatMap(o => o.warnings).value();
         const warnings = [...baseWarnings, ...userWarnings]
@@ -356,14 +399,14 @@ async function exportToCsv(d2, columns, filterOptions) {
     return Papa.unparse(table);
 }
 
-async function importFromCsv(d2, file) {
+async function importFromCsv(d2, file, { maxUsers }) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
             delimiter: ",",
             skipEmptyLines: true,
             trimHeaders: true,
             complete: async (csv) => {
-                const res = await getUsersFromCsv(d2, file, csv);
+                const res = await getUsersFromCsv(d2, file, csv, { maxUsers });
                 res.success ? resolve(res) : reject(res.errors.join("\n"));
             },
             error: (err, file) => reject(err),

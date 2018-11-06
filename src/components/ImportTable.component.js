@@ -362,19 +362,19 @@ class ImportTable extends React.Component {
         const { users, modelValuesByField } = this.state;
         const options = modelValuesByField[field];
         const user = this.getUser(userId);
-        const selected = (user[field] || []).map(model => model.id);
+        const selected = user[field] || [];
 
         this.setState({
             multipleSelector: { user, field, selected, options },
         });
     }
 
-    getTextField(name, value, { validators, component }) {
+    getTextField(name, value, { validators, component, extraProps }) {
         return {
             name,
             value: value || "",
             component: component || TextField,
-            props: { name, type: "string", style: { width: "100%" } },
+            props: { name, type: "string", style: { width: "100%" }, ...extraProps },
             validators,
         };
     }
@@ -411,7 +411,8 @@ class ImportTable extends React.Component {
                         />,
                 });
             } else {
-                return this.getTextField(field, value, { component: TextField, validators });
+                const extraProps = {changeEvent: 'onBlur'};
+                return this.getTextField(field, value, { component: TextField, validators, extraProps });
             }
         });
     }
@@ -558,7 +559,8 @@ class ImportTable extends React.Component {
             } else {
                 onRequestClose();
             }
-        } catch(err) {
+        } catch (err) {
+            console.error(err);
             this.setState({ isImporting: false });
         }
     }
@@ -574,9 +576,7 @@ class ImportTable extends React.Component {
         this.setState({ multipleSelector: null });
     }
 
-    onMultipleSelectorChange = (selectedIds, field, user) => {
-        const { multipleSelector: { options } } = this.state;
-        const selectedObjects = _(options).keyBy("id").at(selectedIds).compact().value();
+    onMultipleSelectorChange = (selectedObjects, field, user) => {
         this.onUpdateField(user.id, field, selectedObjects);
         this.setState({ multipleSelector: null });
     }
@@ -585,12 +585,14 @@ class ImportTable extends React.Component {
         const { title, warnings } = this.props;
         const errorsCount = _(this.usersValidation).values().sumBy(isValid => isValid ? 0 : 1);
         const errorText = errorsCount === 0 ? null : this.t('errors_on_table', { n: errorsCount });
+        const maxWarnings = 10;
+        const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
 
-        const warningText = warnings.length === 0 ? null : [
-            `${warnings.length} ${this.t('warnings')}:`,
-            "",
-            ...warnings.map((line, idx) => `${idx+1}. ${line}`),
-        ].join("\n");
+        const warningText = warnings.length === 0 ? null : _([
+            this.t('warnings', { n: warnings.length }) + ":",
+            ..._(warnings).take(maxWarnings).map((line, idx) => `${idx+1}. ${line}`),
+            hiddenWarnings > 0 ? this.t('and_n_more_warnings', {n: hiddenWarnings}) : null,
+        ]).compact().join("\n");
 
         return (
             <div>

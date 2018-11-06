@@ -21,9 +21,10 @@ class ImportExport extends React.Component {
         columns: PropTypes.arrayOf(PropTypes.string).isRequired,
         filterOptions: PropTypes.object.isRequired,
         onImport: PropTypes.func.isRequired,
+        maxUsers: PropTypes.number.isRequired,
     }
 
-    state = { isMenuOpen: false, anchorEl: null, isExporting: false };
+    state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
 
     t = this.props.d2.i18n.getTranslation.bind(this.props.d2.i18n);
 
@@ -57,7 +58,7 @@ class ImportExport extends React.Component {
 
     exportToCsvAndSave = async () => {
         const { d2, columns, filterOptions } = this.props;
-        this.setState({ isExporting : true });
+        this.setState({ isProcessing : true });
 
         try {
             const csvString = await exportToCsv(d2, columns, filterOptions);
@@ -68,23 +69,29 @@ class ImportExport extends React.Component {
             snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
         } finally {
             this.closeMenu();
-            this.setState({ isExporting : false });
+            this.setState({ isProcessing : false });
         }
     }
 
     importFromCsv = () => {
-        const { onImport } = this.props;
+        const { onImport, maxUsers } = this.props;
 
         fileDialog({ accept: ".csv" })
-            .then(files => importFromCsv(d2, files[0]))
-            .then(onImport)
+            .then(files => {
+                this.setState({ isProcessing : true });
+                return importFromCsv(d2, files[0], { maxUsers });
+            })
+            .then(result => onImport(result))
             .catch(err => snackActions.show({ message: err.toString() }))
-            .then(this.closeMenu);
+            .finally(() => {
+                this.closeMenu();
+                this.setState({ isProcessing : false });
+            });
     }
 
     render() {
         const { d2 } = this.props;
-        const { isMenuOpen, anchorEl, isExporting } = this.state;
+        const { isMenuOpen, anchorEl, isProcessing } = this.state;
         const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave } = this;
         const { t } = this;
 
@@ -94,7 +101,7 @@ class ImportExport extends React.Component {
                     <ImportExportIcon />
                 </IconButton>
 
-                {isExporting && <ModalLoadingMask />}
+                {isProcessing && <ModalLoadingMask />}
 
                 <Popover
                     open={isMenuOpen}

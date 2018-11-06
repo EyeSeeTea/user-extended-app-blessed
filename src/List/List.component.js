@@ -115,6 +115,8 @@ const List = React.createClass({
 
     mixins: [ObserverRegistry, Translate, Auth],
 
+    maxImportUsers: 200,
+
     styles: {
         dataTableWrap: {
             display: 'flex',
@@ -163,7 +165,6 @@ const List = React.createClass({
             searchString: "",
             userGroups: [],
             userRoles: [],
-            orgUnits: [],
             filterByRoles: [],
             filterByGroups: [],
             filterByOrgUnits: [],
@@ -240,7 +241,6 @@ const List = React.createClass({
         /** load select fields data */
         listActions.loadUserRoles.next();
         listActions.loadUserGroups.next();
-        listActions.loadOrgUnits.next();
 
         /** Set user roles list for filter by role */
         const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
@@ -250,10 +250,6 @@ const List = React.createClass({
         /** Set user groups list for filter by group */
         const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
             this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
-        });
-
-        const orgUnitsStoreDisposable = listStore.listOrgUnitsSubject.subscribe(orgUnits => {
-            this.setState({ orgUnits: orgUnits.toArray().map(ou => ({ id: ou.id, displayName: ou.displayName })) });
         });
 
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
@@ -282,7 +278,6 @@ const List = React.createClass({
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(rolesStoreDisposable);
         this.registerDisposable(groupsStoreDisposable);
-        this.registerDisposable(orgUnitsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
@@ -321,7 +316,6 @@ const List = React.createClass({
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { showAllUsers, pager, searchString } = this.state;
         const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
-        const getIdFromPath = path => _.last(path.split("/"));
 
         const options = {
             modelType: this.props.params.modelType,
@@ -331,8 +325,8 @@ const List = React.createClass({
             filters: {
                 "userCredentials.userRoles.id": inFilter(filterByRoles),
                 "userGroups.id": inFilter(filterByGroups),
-                "organisationUnits.id": inFilter(filterByOrgUnits.map(getIdFromPath)),
-                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(getIdFromPath)),
+                "organisationUnits.id": inFilter(filterByOrgUnits.map(ou => ou.id)),
+                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(ou => ou.id)),
             },
         };
         
@@ -558,7 +552,6 @@ const List = React.createClass({
                                     <div className="user-management-control select-organisation-unit">
                                         <OrgUnitsFilter
                                             title={this.getTranslation('filter_by_organisation_units')}
-                                            orgUnits={this.state.orgUnits}
                                             selected={this.state.filterByOrgUnits}
                                             onChange={this.setFilterOrgUnits}
                                             styles={styles.filterStyles}
@@ -568,7 +561,6 @@ const List = React.createClass({
                                     <div className="user-management-control select-organisation-unit-output">
                                         <OrgUnitsFilter
                                             title={this.getTranslation('filter_by_organisation_units_output')}
-                                            orgUnits={this.state.orgUnits}
                                             selected={this.state.filterByOrgUnitsOutput}
                                             onChange={this.setFilterOrgUnitsOutput}
                                             styles={styles.filterStyles}
@@ -588,6 +580,7 @@ const List = React.createClass({
                             columns={settings.getVisibleTableColumns()}
                             filterOptions={listFilterOptions}
                             onImport={this._openImportTable}
+                            maxUsers={this.maxImportUsers}
                         />
                     </div>
                 </div>
@@ -665,7 +658,7 @@ const List = React.createClass({
                         users={importUsers.users}
                         columns={importUsers.columns}
                         warnings={importUsers.warnings}
-                        maxUsers={200}
+                        maxUsers={this.maxImportUsers}
                     />
                 }
             </div>
