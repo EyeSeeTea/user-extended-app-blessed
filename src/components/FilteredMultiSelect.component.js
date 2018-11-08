@@ -9,9 +9,7 @@ class FilteredMultiSelectComponent extends React.Component {
         super(props, context);
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
         this.onFilterTextChange = this.onFilterTextChange.bind(this);
-        this.state = {
-            filterText: "",
-        };
+        this.state = { filterText: "" };
     }
 
     styles = {

@@ -1,6 +1,6 @@
 {
   "name": "d2-user-extended-app",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
@@ -17,7 +17,7 @@
     "lint": "eslint src && eslint --env node,mocha --global expect,sinon --rule 'no-unused-expressions: 0' test && scss-lint",
     "__prebuild": "npm test && npm run lint",
     "build": "rm -rf build && webpack && npm run manifest",
-    "postbuild": "cp -rv app-config.json src/i18n index.html includes icon.png app-favicon.ico node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js ./build/",
+    "postbuild": "cp -rv app-config.json src/i18n includes icon.png app-favicon.ico node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js ./build/",
     "validate": "npm ls",
     "manifest": "d2-manifest package.json build/manifest.webapp",
     "clean-i18n": "resources/scripts/clean-i18n-translations.js src/i18n/"
@@ -43,6 +43,7 @@
     "eslint-config-dhis2": "^2.0.2",
     "eslint-plugin-react": "^6.3.0",
     "fbjs": "^0.2.1",
+    "html-webpack-plugin": "^3.2.0",
     "http-proxy": "git+https://github.com/nicolayr/node-http-proxy.git",
     "istanbul": "0.3.18",
     "jquery": "^3.3.1",
@@ -89,10 +90,12 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.8.0",
+    "file-dialog": "^0.0.7",
     "file-saver": "^1.3.8",
     "immutability-helper": "^2.6.4",
     "immutable": "^3.8.2",
     "jquery": "^3.3.1",
+    "memoize-weak": "^1.0.2",
     "papaparse": "^4.6.0",
     "prop-types": "^15.5.10",
     "react-animate-height": "^2.0.4",

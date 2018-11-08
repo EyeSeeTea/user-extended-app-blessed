@@ -1,6 +1,7 @@
 'use strict';
 
 var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
 var colors = require('colors');
 
@@ -36,7 +37,7 @@ const webpackConfig = {
     output: {
         path: __dirname + '/build',
         filename: 'app.js',
-        publicPath: 'http://localhost:8081/',
+        publicPath: isDevBuild ? '/' : '',
     },
     module: {
         loaders: [
@@ -82,6 +83,7 @@ const webpackConfig = {
         proxy: [
             { path: '/api/**', target: dhisConfig.baseUrl, bypass },
             { path: '/dhis-web-commons/**', target: dhisConfig.baseUrl, bypass },
+            { path: '/dhis-web-core-resource/**', target: dhisConfig.baseUrl, bypass },
             { path: '/icons/**', target: dhisConfig.baseUrl, bypass },
             { path: '/css/**', target: 'http://localhost:8081/src', bypass },
             { path: '/i18n/**', target: 'http://localhost:8081/src', bypass },
@@ -115,5 +117,23 @@ if (!isDevBuild) {
         }),
     ];
 }
+
+// Generates an `index.html` file with the <script> injected.
+const pathnamePrefix = isDevBuild ? '' : '../../..';
+webpackConfig.plugins.push(new HtmlWebpackPlugin({
+    inject: true,
+    template: './index.html',
+    vendorScripts: [
+        `${pathnamePrefix}/dhis-web-core-resource/material-design-icons/material-icons.css`,
+        `${pathnamePrefix}/dhis-web-core-resource/fonts/roboto.css`,
+        `${pathnamePrefix}/dhis-web-commons/font-awesome/css/font-awesome.min.css`,
+    ]
+        .map(asset => {
+            return /\.js$/.test(asset)
+                ? `<script src="${asset}"></script>`
+                : `<link type="text/css" rel="stylesheet" href="${asset}">`;
+        })
+        .join('\n'),
+}));
 
 module.exports = webpackConfig;
