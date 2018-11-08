@@ -1,15 +1,19 @@
+import _ from 'lodash';
+
 const error = (errorKey) => ({ isValid: false, error: errorKey });
 const valid = () => ({ isValid: true });
 
 /* Return { isValid: true } if password is valid, { isValid: false, error: "some_key"} otherwise */
-export const validatePassword = (password) => {
+export const validatePassword = (password, { allowEmpty = false } = {}) => {
     // See https://github.com/dhis2/user-app/blob/master/src/utils/checkPasswordForErrors.js
     const lowerCase = /^(?=.*[a-z]).+$/;
     const upperCase = /^(?=.*[A-Z]).+$/;
     const digit = /^(?=.*[0-9]).+$/;
     const specialChar = /[`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/;
 
-    if (!password) {
+    if (allowEmpty && password === "") {
+        return valid();
+    } else if (!password) {
         return error('is_required');
     } else if (password.length < 8) {
         return error('at_least_8_chars_long');
@@ -50,8 +54,8 @@ export const validateUsername = (existingUsernames, usedUsernames, username) => 
 /* Transform validators of this module to the format required by d2-ui component FormBuilder */
 export const toBuilderValidator = (customValidator, getErrorMessage) => {
     return {
-        validator: value => {
-            const result = customValidator(value);
+        validator: (value, ...args) => {
+            const result = customValidator(value, ...args);
             if (result.isValid) {
                 return true;
             } else {

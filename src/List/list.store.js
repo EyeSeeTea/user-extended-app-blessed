@@ -78,17 +78,6 @@ export default Store.create({
         });
     },
 
-    getOrgUnits() {
-        getD2().then(d2 => {
-            if (d2.models.organisationUnits) {
-                const orgUnitsPromise = d2.models.organisationUnits.list({paging: false, fields: "id,displayName"});
-                Observable.fromPromise(orgUnitsPromise).subscribe(res => {
-                    this.listOrgUnitsSubject.onNext(res);
-                });
-            }
-        });
-    },
-
     getNextPage() {
         this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getNextPage()));
     },

@@ -6,7 +6,7 @@ import userGroupsAssignmentDialogStore from './userGroups.store';
 import replicateUserStore from './replicateUser.store';
 import deleteUserStore from './deleteUser.store';
 import _m from '../utils/lodash-mixins';
-import { getOrgUnitsRoots } from '../utils/orgUnits';
+import { getOrgUnitsRoots } from '../utils/dhis2Helpers';
 
 async function assignToOrgUnits(selectedUsers, field, titleKey) {
     const d2 = await getD2();
