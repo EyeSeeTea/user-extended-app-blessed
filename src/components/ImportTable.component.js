@@ -497,12 +497,10 @@ class ImportTable extends React.Component {
     }
 
     renderTable() {
-        const { d2 } = this.context;
         const { users } = this.state;
         const { maxUsers } = this.props;
         const canAddNewUser = users.size < maxUsers;
         const headers = this.getColumns().map(camelCaseToUnderscores);
-        const getColumnName = header => _(d2.i18n.translations).has(header) ? this.t(header) : header;
 
         return (
             <div>
@@ -512,7 +510,7 @@ class ImportTable extends React.Component {
                             <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
                             {headers.map(header =>
                                 <TableHeaderColumn key={header} style={styles.header}>
-                                    {getColumnName(header)}
+                                    {this.t(header)}
                                 </TableHeaderColumn>
                             )}
                             <TableHeaderColumn style={styles.actionsHeader}></TableHeaderColumn>
