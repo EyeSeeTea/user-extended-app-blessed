@@ -45,6 +45,7 @@ import { saveUsers } from '../models/userHelpers';
 import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
+import ClearIcon from 'material-ui/svg-icons/content/clear';
 import AnimateHeight from 'react-animate-height';
 
 const pageSize = 50;
@@ -163,6 +164,7 @@ const List = React.createClass({
             isLoading: true,
             detailsObject: null,
             searchString: "",
+            searchStringClear: null,
             userGroups: [],
             userRoles: [],
             filterByRoles: [],
@@ -171,7 +173,7 @@ const List = React.createClass({
             filterByOrgUnitsOutput: [],
             sorting: initialSorting,
             layoutSettingsVisible: false,
-            showAllUsers: true,
+            showOnlyManagedUsers: false,
             showExtendedFilters: false,
             sharing: {
                 model: null,
@@ -314,12 +316,12 @@ const List = React.createClass({
             ? (this.state.sorting[0] + ":i" + this.state.sorting[1])
             : null;
         const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
-        const { showAllUsers, pager, searchString } = this.state;
+        const { showOnlyManagedUsers, pager, searchString } = this.state;
         const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
 
         const options = {
             modelType: this.props.params.modelType,
-            canManage: !showAllUsers,
+            canManage: showOnlyManagedUsers,
             order: order,
             query: searchString,
             filters: {
@@ -358,7 +360,7 @@ const List = React.createClass({
     },
 
     _onCanManageClick(ev, isChecked) {
-        this.setState({showAllUsers: !isChecked}, this.filterList);
+        this.setState({showOnlyManagedUsers: isChecked}, this.filterList);
     },
 
     setFilterRoles(roles) {
@@ -438,6 +440,17 @@ const List = React.createClass({
         this.setState({showExtendedFilters: !this.state.showExtendedFilters});
     },
 
+    _clearFilters() {
+        this.setState({
+            showOnlyManagedUsers: false,
+            searchStringClear: new Date(),
+            filterByGroups: [],
+            filterByRoles: [],
+            filterByOrgUnits: [],
+            filterByOrgUnitsOutput: [],
+        }, this.filterList);
+    },
+
     _openImportTable(importResult) {
         this.setState({ importUsers: { open: true, ...importResult }});
     },
@@ -481,11 +494,18 @@ const List = React.createClass({
 
         const rows = this.getDataTableRows(this.state.dataRows);
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
-        const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
+        const { showOnlyManagedUsers, searchString, searchStringClear } = this.state;
+        const { filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { importUsers } = this.state;
         const { settings, layoutSettingsVisible, tableColumns } = this.state;
-        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
-        const filterIconColor = isFiltering ? "#ff9800" : undefined;
+        const isExtendedFiltering = !_([
+            filterByGroups,
+            filterByRoles,
+            filterByOrgUnits,
+            filterByOrgUnitsOutput,
+        ]).every(_.isEmpty)
+        const isFiltering = showOnlyManagedUsers || searchString || isExtendedFiltering;
+        const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
 
@@ -504,20 +524,32 @@ const List = React.createClass({
                 <div className="controls-wrapper">
                     <div className="user-management-controls" style={{flex: 'unset'}}>
                         <div className="user-management-control search-box">
-                            <SearchBox searchObserverHandler={this.searchListByName} />
+                            <SearchBox clear={searchStringClear} searchObserverHandler={this.searchListByName} />
 
                             <Checkbox
                                 className="control-checkbox"
                                 label={this.getTranslation('display_only_users_can_manage')}
                                 onCheck={this._onCanManageClick}
-                                checked={!showAllUsers}
+                                checked={showOnlyManagedUsers}
                             />
 
-                            <span>
-                                <IconButton className="expand-filters" onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")} style={filterButtonColor}>
-                                    <FilterListIcon color={filterIconColor} />
+                            <IconButton
+                                className="expand-filters"
+                                onTouchTap={this._toggleExtendedFilters}
+                                tooltip={this.getTranslation("extended_filters")}
+                                style={filterButtonColor}
+                            >
+                                <FilterListIcon color={filterIconColor} />
+                            </IconButton>
+
+                            {isFiltering &&
+                                <IconButton
+                                    onTouchTap={this._clearFilters}
+                                    tooltip={this.getTranslation("clear_filters")}
+                                >
+                                    <ClearIcon />
                                 </IconButton>
-                            </span>
+                            }
                         </div>
 
                         <AnimateHeight
