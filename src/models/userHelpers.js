@@ -182,15 +182,12 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
         .value();
 
     // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
-    const columnMapping = _(columnNames)
-        .map(columnName => [
-            columnName,
+    const csvColumnProperties = _(columnNames)
+        .map(columnName =>
             propertyFromColumnNameMapping[columnName] ||
-                (_(knownColumnNames).includes(columnName) ? columnName : undefined)
-        ])
-        .fromPairs()
+                (_(knownColumnNames).includes(columnName) ? columnName : undefined))
         .value();
-    const csvColumnProperties = _(columnMapping).values().value();
+    const columnMapping = _(columnNames).zip(csvColumnProperties).fromPairs().value();
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
