@@ -2,12 +2,14 @@ import React, { isValidElement } from 'react';
 import classes from 'classnames';
 import isObject from 'd2-utilizr/lib/isObject';
 import isString from 'd2-utilizr/lib/isString';
+import isBoolean from 'd2-utilizr/lib/isBoolean';
 import moment from 'moment';
 import IconButton from 'material-ui/IconButton';
 import MoreVert from 'material-ui/svg-icons/navigation/more-vert';
 import Color from 'd2-ui/lib/data-table/data-value/Color.component';
 import Translate from 'd2-ui/lib/i18n/Translate.mixin';
 import Checkbox from 'material-ui/Checkbox/Checkbox';
+import FontIcon from 'material-ui/FontIcon/FontIcon';
 
 import './MultipleDataTableRow.scss';
 
@@ -63,6 +65,24 @@ const MultipleDataTableRow = React.createClass({
 
     mixins: [Translate],
 
+    styles: {
+        selectCell: {width: 40},
+        actionButton: {width: '1%'},
+        textWrapStyle: {
+            width: '100%',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            position: 'absolute',
+            wordBreak: 'break-all',
+            wordWrap: 'break-word',
+            top: 0,
+            bottom: 0,
+            lineHeight: '50px',
+            paddingRight: '1rem',
+        },
+    },
+
     renderSelectCell(isActive, isSelected) {
         const {onSelectCellClicked} = this.props;
 
@@ -70,12 +90,22 @@ const MultipleDataTableRow = React.createClass({
             <div
                 key="__select__"
                 className="data-table__rows__row__column"
-                style={{width: 40}}
+                style={this.styles.selectCell}
                 onClick={ev => onSelectCellClicked && onSelectCellClicked(isActive, !isSelected)}
             >
                 <SimpleCheckbox checked={isSelected} />
             </div>
         );
+    },
+
+    renderValue(value) {
+        if (isString(value)) {
+            return <span title={value} style={this.styles.textWrapStyle}>{value}</span>;
+        } else if (isBoolean(value) && value) {
+            return <FontIcon className="material-icons">check</FontIcon>;
+        } else {
+            return value;
+        }
     },
 
     render() {
@@ -88,20 +118,6 @@ const MultipleDataTableRow = React.createClass({
             });
 
         const dataSource = this.props.dataSource;
-
-        const textWrapStyle = {
-            width: '100%',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            position: 'absolute',
-            wordBreak: 'break-all',
-            wordWrap: 'break-word',
-            top: 0,
-            bottom: 0,
-            lineHeight: '50px',
-            paddingRight: '1rem',
-        };
 
         const selectCells = this.props.showSelectCell ?
             [this.renderSelectCell(this.props.dataSource, this.props.isActive)] : [];
@@ -142,7 +158,7 @@ const MultipleDataTableRow = React.createClass({
                     onContextMenu={this.handleContextClick}
                     onClick={this.handleClick}
                 >
-                    {isString(displayValue) ? <span title={displayValue} style={textWrapStyle} >{displayValue}</span> : displayValue}
+                    {this.renderValue(displayValue)}
                 </div>
             );
         }));
@@ -150,7 +166,7 @@ const MultipleDataTableRow = React.createClass({
         return (
             <div className={classList} style={this.props.style}>
                 {columns}
-                <div className={'data-table__rows__row__column'} style={{width: '1%'}}>
+                <div className={'data-table__rows__row__column'} style={this.styles.actionButton}>
                     {this.props.hideActionsIcon ? null :
                         <IconButton tooltip={this.getTranslation('actions')} onClick={this.iconMenuClick}>
                             <MoreVert />

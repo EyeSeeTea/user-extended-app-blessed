@@ -153,6 +153,7 @@ const List = React.createClass({
         return users.map(user => ({
             ...user,
             lastLogin: user.userCredentials.lastLogin,
+            disabled: user.userCredentials.disabled,
             userGroups: namesFromCollection(user.userGroups),
             organisationUnits: namesFromCollection(user.organisationUnits),
             dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
@@ -256,7 +257,7 @@ const List = React.createClass({
         };
 
         listActions.filter(paginatedOptions).subscribe(() => {}, error => log.error(error));
-        this.setState({ listFilterOptions: options });
+        this.setState({ isLoading: true, listFilterOptions: options });
     },
 
     onColumnSort(sorting) {

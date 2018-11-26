@@ -16,7 +16,7 @@ const queryFields = [
     'created',
     'email',
     'id',
-    'userCredentials[username, userRoles[id,displayName],lastLogin]',
+    'userCredentials[username,disabled,userRoles[id,displayName],lastLogin]',
     'lastUpdated',
     'created',
     'displayDescription',
@@ -363,8 +363,10 @@ function getList(d2, filters, listOptions) {
         separate calls to the API for those filters and use the returned IDs to build
         the final, paginated call. */
 
-    const [preliminarFilters, normalFilters] =
-        _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
+    const [preliminarFilters, normalFilters] = _.partition(
+        activeFilters,
+        ([key, [operator, value]]) => operator === "in" && key.match(/\./)
+    );
     const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
         model
             .list({

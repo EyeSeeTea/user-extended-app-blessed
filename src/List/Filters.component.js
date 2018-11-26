@@ -30,7 +30,7 @@ export default class Filters extends React.Component {
         },
         paper: {
             paddingLeft: 20,
-            height: 160,
+            paddingBottom: 2,
             marginTop: 40,
         },
         filterStyles: {
@@ -61,6 +61,7 @@ export default class Filters extends React.Component {
             searchString: "",
             searchStringClear: null,
             showOnlyManagedUsers: false,
+            showOnlyActiveUsers: false,
             userRoles: [],
             userGroups: [],
             orgUnits: [],
@@ -101,6 +102,7 @@ export default class Filters extends React.Component {
     getFilterOptions() {
         const {
             showOnlyManagedUsers,
+            showOnlyActiveUsers,
             searchString,
             userRoles,
             userGroups,
@@ -111,9 +113,10 @@ export default class Filters extends React.Component {
         const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
 
         return {
-            canManage: showOnlyManagedUsers,
             query: searchString,
+            ...showOnlyManagedUsers ? { canManage: "true" } : {},
             filters: {
+                "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
                 "userGroups.id": inFilter(userGroups),
                 "organisationUnits.id": inFilter(orgUnits.map(ou => ou.id)),
@@ -125,6 +128,7 @@ export default class Filters extends React.Component {
     clearFilters = () => {
         this.setState({
             showOnlyManagedUsers: false,
+            showOnlyActiveUsers: false,
             searchStringClear: new Date(),
             userGroups: [],
             userRoles: [],
@@ -145,6 +149,8 @@ export default class Filters extends React.Component {
         };
     }
 
+    checkboxHandler = (ev, isChecked) => isChecked
+
     render() {
         const { onChange } = this.props;
         const {
@@ -153,18 +159,15 @@ export default class Filters extends React.Component {
             orgUnits,
             orgUnitsOutput,
             showOnlyManagedUsers,
+            showOnlyActiveUsers,
             searchString,
             searchStringClear,
             showExtendedFilters,
         } = this.state;
         const { styles } = this;
 
-        const isExtendedFiltering = !_([
-            userGroups,
-            userRoles,
-            orgUnits,
-            orgUnitsOutput,
-        ]).every(_.isEmpty)
+        const isExtendedFiltering = showOnlyManagedUsers || showOnlyActiveUsers ||
+            !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty)
         const isFiltering = showOnlyManagedUsers || searchString || isExtendedFiltering;
         const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
@@ -173,13 +176,6 @@ export default class Filters extends React.Component {
             <div className="user-management-controls" style={styles.wrapper}>
                 <div className="user-management-control search-box">
                     <SearchBox clear={searchStringClear} searchObserverHandler={this.searchListByName} />
-
-                    <Checkbox
-                        className="control-checkbox"
-                        label={this.getTranslation('display_only_users_can_manage')}
-                        onCheck={this.setFilter("showOnlyManagedUsers", (ev, isChecked) => isChecked)}
-                        checked={showOnlyManagedUsers}
-                    />
 
                     <IconButton
                         className="expand-filters"
@@ -206,6 +202,22 @@ export default class Filters extends React.Component {
                     style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
                 >
                     <Paper zDepth={1} rounded={false} style={styles.paper}>
+                        <div className="control-row checkboxes">
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_users_can_manage')}
+                                onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
+                                checked={showOnlyManagedUsers}
+                            />
+
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation('display_only_enabled_users')}
+                                onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
+                                checked={showOnlyActiveUsers}
+                            />
+                        </div>
+
                         <div className="control-row">
                             <div className="user-management-control select-role">
                                 <MultipleFilter
