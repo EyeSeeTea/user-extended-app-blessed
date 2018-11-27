@@ -247,7 +247,7 @@ function parseResponse(response, payload) {
         const error = _(errors).flatten().flatten().uniq().join("\n");
         return { success: false, response, error, payload };
     } else {
-        return { success: true };
+        return { success: true, response, payload };
     }
 }
 
@@ -329,7 +329,26 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
     }));
 }
 
+function postMetadata(api, payload) {
+    return api
+        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
+        .then(res => parseResponse(res, payload))
+        .catch(error => ({ success: false, error }));
+    }
+
 /* Public interface */
+
+async function updateUsers(d2, users, mapper) {
+    const api = d2.Api.getApi();
+    const existingUsers = await getExistingUsers(d2, {
+        fields: ":owner",
+        filter: "id:in:[" + _(users).map("id").join(",") + "]",
+    });
+    const usersToSave = _(existingUsers).map(mapper).compact().value();
+    const payload = { users: usersToSave };
+
+    return postMetadata(api, payload);
+}
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
 
@@ -343,10 +362,7 @@ async function saveUsers(d2, users) {
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
 
-    return api
-        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
-        .catch(error => ({ success: false, error }));
+    return postMetadata(api, payload);
 }
 
 /* Return an array of users from DHIS2 API.
@@ -426,4 +442,4 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-export { getList, exportToCsv, importFromCsv, saveUsers, parseResponse, getExistingUsers };
+export { getList, exportToCsv, importFromCsv, updateUsers, saveUsers, parseResponse, getExistingUsers };
