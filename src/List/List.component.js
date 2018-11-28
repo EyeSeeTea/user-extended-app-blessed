@@ -36,6 +36,7 @@ import MenuItem from 'material-ui/MenuItem';
 import MultipleFilter from '../components/MultipleFilter.component';
 import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
+import ViewColumnIcon from 'material-ui/svg-icons/action/view-column';
 import SettingsIcon from 'material-ui/svg-icons/action/settings';
 import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
@@ -46,6 +47,7 @@ import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
 import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
 import AnimateHeight from 'react-animate-height';
+import SettingsDialog from '../components/SettingsDialog.component';
 
 const pageSize = 50;
 
@@ -170,6 +172,7 @@ const List = React.createClass({
             filterByOrgUnits: [],
             filterByOrgUnitsOutput: [],
             sorting: initialSorting,
+            settingsVisible: false,
             layoutSettingsVisible: false,
             showAllUsers: true,
             showExtendedFilters: false,
@@ -200,9 +203,12 @@ const List = React.createClass({
     },
 
     getDataTableRows(users) {
-        const namesFromCollection = collection => {
+        const { settings } = this.state;
+        const orgUnitsField = settings.get("organisationUnitsField");
+        
+        const namesFromCollection = (collection, displayField) => {
             return _(collection && collection.toArray ? collection.toArray() : (collection || []))
-                .map("displayName")
+                .map(displayField)
                 .sortBy()
                 .join(", ") || "-";
         };
@@ -210,10 +216,10 @@ const List = React.createClass({
         return users.map(user => ({
             ...user,
             lastLogin: user.userCredentials.lastLogin,
-            userGroups: namesFromCollection(user.userGroups),
-            organisationUnits: namesFromCollection(user.organisationUnits),
-            dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
-            userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles),
+            userGroups: namesFromCollection(user.userGroups, "displayName"),
+            userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles, "displayName"),
+            organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
+            dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
             model: user,
             d2: this.context.d2,
         }));
@@ -411,10 +417,21 @@ const List = React.createClass({
         return (
             <div>
                 <IconButton onTouchTap={this._openLayoutSettings} tooltip={this.getTranslation("layout_settings")}>
-                  <SettingsIcon />
+                    <ViewColumnIcon />
                 </IconButton>
             </div>
         );
+    },
+
+    _openSettings() {
+        this.setState({ settingsVisible: true });
+    },
+
+    _closeSettings(newSettings) {
+        this.setState({
+            settingsVisible: false,
+            ...newSettings ? { settings: newSettings } : {},
+        });
     },
 
     _openLayoutSettings() {
@@ -426,7 +443,7 @@ const List = React.createClass({
     },
 
     _setLayoutSettings(selectedColumns) {
-        const newSettings = this.state.settings.setVisibleTableColumns(selectedColumns);
+        const newSettings = this.state.settings.set({ visibleTableColumns: selectedColumns });
         this.setState({ settings: newSettings });
     },
 
@@ -483,7 +500,7 @@ const List = React.createClass({
         const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { importUsers } = this.state;
-        const { settings, layoutSettingsVisible, tableColumns } = this.state;
+        const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
         const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
         const filterIconColor = isFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
@@ -494,9 +511,11 @@ const List = React.createClass({
             value: c.name,
         }));
 
+
         const visibleColumns = _(tableColumns)
             .keyBy("name")
-            .at(settings.getVisibleTableColumns())
+            .at(settings.get("visibleTableColumns"))
+            .compact()
             .value();
 
         return (
@@ -577,11 +596,16 @@ const List = React.createClass({
 
                         <ImportExport
                             d2={d2}
-                            columns={settings.getVisibleTableColumns()}
+                            columns={settings.get("visibleTableColumns")}
                             filterOptions={listFilterOptions}
                             onImport={this._openImportTable}
                             maxUsers={this.maxImportUsers}
+                            settings={settings}
                         />
+
+                        <IconButton onTouchTap={this._openSettings} tooltip={this.getTranslation("settings")}>
+                            <SettingsIcon />
+                        </IconButton>
                     </div>
                 </div>
 
@@ -640,10 +664,17 @@ const List = React.createClass({
                 {layoutSettingsVisible &&
                     <TableLayout
                         options={allColumns}
-                        selected={settings.getVisibleTableColumns()}
+                        selected={visibleColumns.map(c => c.name)}
                         onChange={this._setLayoutSettings}
                         onSave={this._saveLayoutSettings}
                         onClose={this._closeLayoutSettings}
+                    />
+                }
+
+                {settingsVisible &&
+                    <SettingsDialog
+                        settings={settings}
+                        onRequestClose={this._closeSettings}
                     />
                 }
 
