@@ -50,6 +50,7 @@ const columnNameFromPropertyMapping = {
     firstName: "First name",
     surname: "Surname",
     email: "Email",
+    phoneNumber: "Phone number",
     lastUpdated: "Updated",
     lastLogin: "Last login",
     created: "Created",
@@ -170,16 +171,23 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
     const columnNames = _.first(csv.data);
     const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
 
-    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
-    const columnMapping = _(columnNames)
-        .map(columnName => [
-            columnName,
-            propertyFromColumnNameMapping[columnName] ||
-                (_(columnNameFromPropertyMapping).keys().includes(columnName) ? columnName : undefined)
-        ])
-        .fromPairs()
+    const plainUserAttributes = _(d2.models.users.modelValidations)
+        .map((value, key) => _(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null)
+        .compact()
         .value();
-    const csvColumnProperties = _(columnMapping).values().value();
+
+    const knownColumnNames = _(columnNameFromPropertyMapping)
+        .keys()
+        .union(plainUserAttributes)
+        .value();
+
+    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
+    const csvColumnProperties = _(columnNames)
+        .map(columnName =>
+            propertyFromColumnNameMapping[columnName] ||
+                (_(knownColumnNames).includes(columnName) ? columnName : undefined))
+        .value();
+    const columnMapping = _(columnNames).zip(csvColumnProperties).fromPairs().value();
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
@@ -188,7 +196,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
         : csvColumnProperties;
 
     const validColumnProperties = _(columnProperties)
-        .intersection(_.keys(columnNameFromPropertyMapping))
+        .intersection(knownColumnNames)
         .difference(propertiesIgnoredOnImport)
         .value();
 
