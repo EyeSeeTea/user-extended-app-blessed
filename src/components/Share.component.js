@@ -5,7 +5,7 @@ class Share extends React.Component {
     styles = {
         eyeseeteaShare: {
             backgroundColor: 'rgb(243,243,243)',
-            position: 'absolute',
+            position: 'fixed',
             bottom: '0px',
             right: '100px',
             borderRadius: '0px',
@@ -15,7 +15,6 @@ class Share extends React.Component {
             width: '65px',
             zIndex: 10001,
             textAlign: 'center',
-            // transition: 'opacity 8s linear'
         },
 
         eyeseeteaShareButtons: {
