@@ -185,15 +185,6 @@ export default class Filters extends React.Component {
                     >
                         <FilterListIcon color={filterIconColor} />
                     </IconButton>
-
-                    {isFiltering &&
-                        <IconButton
-                            onTouchTap={this.clearFilters}
-                            tooltip={this.getTranslation("clear_filters")}
-                        >
-                            <ClearIcon />
-                        </IconButton>
-                    }
                 </div>
 
                 <AnimateHeight
@@ -216,6 +207,16 @@ export default class Filters extends React.Component {
                                 onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
                                 checked={showOnlyActiveUsers}
                             />
+
+                            {isFiltering &&
+                                <IconButton
+                                    style={{marginRight: 25, marginLeft: 'auto'}}
+                                    onTouchTap={this.clearFilters}
+                                    tooltip={this.getTranslation("clear_filters")}
+                                >
+                                    <ClearIcon />
+                                </IconButton>
+                            }
                         </div>
 
                         <div className="control-row">
