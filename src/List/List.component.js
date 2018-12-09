@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
+import set from 'lodash/fp/set';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
 import DataTable from '../data-table/DataTable.component';
@@ -7,10 +8,12 @@ import MultipleDataTable from '../components/multiple-data-table/MultipleDataTab
 import Pagination from 'd2-ui/lib/pagination/Pagination.component';
 import contextActions from './context.actions';
 import detailsStore from './details.store';
+import enableStore from './enable.store';
 import listStore from './list.store';
 import deleteUserStore from './deleteUser.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
+import { getCompactTextForModels } from '../utils/i18n';
 import Translate from '../utils/Translate.mixin';
 import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
@@ -34,7 +37,7 @@ import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
 import ImportTable from '../components/ImportTable.component';
 import User from '../models/user';
-import { saveUsers } from '../models/userHelpers';
+import { saveUsers, updateUsers } from '../models/userHelpers';
 import ModalLoadingMask from '../components/ModalLoadingMask.component';
 import Filters from './Filters.component';
 import DetailsBoxWithScroll from './DetailsBoxWithScroll.component';
@@ -202,6 +205,22 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
+        const enableStoreDisposable = enableStore.subscribe(({ users, action }) => {
+            const message = this.getTranslation(`confirm_${action}`, {
+                users: getCompactTextForModels(this.context.d2, users, {
+                    i18nKey: "this_and_n_others",
+                    field: "username",
+                    limit: 1,
+                }),
+            });
+
+            snackActions.show({
+                message,
+                action: 'confirm',
+                onActionTouchTap: () => this.setUsersEnableState(users, action),
+            });
+        });
+
         const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
 
         this.registerDisposable(detailsStoreDisposable);
@@ -210,8 +229,28 @@ const List = React.createClass({
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
         this.registerDisposable(deleteUserStoreDisposable);
+        this.registerDisposable(enableStoreDisposable);
 
         this.filterList();
+    },
+
+    async setUsersEnableState(users, action) {
+        const newValue = action === 'disable';
+        const response = await updateUsers(this.context.d2, users, user => {
+            return (user.userCredentials.disabled !== newValue)
+                ? set("userCredentials.disabled", newValue, user)
+                : null;
+        })
+
+        if (response.success) {
+            const count = response.response.stats && response.response.stats.updated || 0;
+            const message = this.getTranslation(`${action}_successful`, { count });
+            snackActions.show({ message });
+            this.filterList();
+        } else {
+            const message = this.getTranslation(`${action}_error`, { error: response.error.toString() });
+            snackActions.show({ message });
+        }
     },
 
     setAssignState(key, value) {

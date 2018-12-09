@@ -1,6 +1,7 @@
 import detailsStore from './details.store';
 import { config, getInstance as getD2 } from 'd2/lib/d2';
 import orgUnitAssignmentDialogStore from './organisation-unit-dialog/organisationUnitDialogStore';
+import enableStore from './enable.store';
 import userRolesAssignmentDialogStore from './userRoles.store';
 import userGroupsAssignmentDialogStore from './userGroups.store';
 import replicateUserStore from './replicateUser.store';
@@ -56,6 +57,16 @@ function checkAccess(requiredKeys) {
     };
 }
 
+function isStateActionVisible(action) {
+    const currentUserHasUpdateAccessOn = checkAccess("update");
+    const requiredDisabledValue = action === 'enable';
+
+    return users => (
+        currentUserHasUpdateAccessOn(users) &&
+            _(users).some(user => user.disabled === requiredDisabledValue)
+    );
+}
+
 function isAdmin(rows) {
     if (rows && rows.length > 0) {
         const { authorities } = rows[0].d2.currentUser;
@@ -105,6 +116,20 @@ const contextActions = [
         multiple: false,
         onClick: user => goToUserEditPage(user),
         allowed: checkAccess(["update"]),
+    },
+    {
+        name: 'enable',
+        multiple: true,
+        icon: 'playlist_add_check',
+        onClick: users =>  enableStore.setState({users, action: 'enable'}),
+        allowed: isStateActionVisible('enable'),
+    },
+    {
+        name: 'disable',
+        multiple: true,
+        icon: 'block',
+        onClick: users =>  enableStore.setState({users, action: 'disable'}),
+        allowed: isStateActionVisible('disable'),
     },
     {
         name: 'remove',
