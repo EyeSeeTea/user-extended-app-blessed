@@ -16,7 +16,7 @@ const queryFields = [
     'created',
     'email',
     'id',
-    'userCredentials[username,userRoles[id,displayName],lastLogin]',
+    'userCredentials[username,disabled,userRoles[id,displayName],lastLogin]',
     'lastUpdated',
     'created',
     'displayDescription',
@@ -50,6 +50,7 @@ const columnNameFromPropertyMapping = {
     firstName: "First name",
     surname: "Surname",
     email: "Email",
+    phoneNumber: "Phone number",
     lastUpdated: "Updated",
     lastLogin: "Last login",
     created: "Created",
@@ -171,16 +172,23 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     const columnNames = _.first(csv.data);
     const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
 
-    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
-    const columnMapping = _(columnNames)
-        .map(columnName => [
-            columnName,
-            propertyFromColumnNameMapping[columnName] ||
-                (_(columnNameFromPropertyMapping).keys().includes(columnName) ? columnName : undefined)
-        ])
-        .fromPairs()
+    const plainUserAttributes = _(d2.models.users.modelValidations)
+        .map((value, key) => _(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null)
+        .compact()
         .value();
-    const csvColumnProperties = _(columnMapping).values().value();
+
+    const knownColumnNames = _(columnNameFromPropertyMapping)
+        .keys()
+        .union(plainUserAttributes)
+        .value();
+
+    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
+    const csvColumnProperties = _(columnNames)
+        .map(columnName =>
+            propertyFromColumnNameMapping[columnName] ||
+                (_(knownColumnNames).includes(columnName) ? columnName : undefined))
+        .value();
+    const columnMapping = _(columnNames).zip(csvColumnProperties).fromPairs().value();
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
@@ -189,7 +197,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         : csvColumnProperties;
 
     const validColumnProperties = _(columnProperties)
-        .intersection(_.keys(columnNameFromPropertyMapping))
+        .intersection(knownColumnNames)
         .difference(propertiesIgnoredOnImport)
         .value();
 
@@ -248,7 +256,7 @@ function parseResponse(response, payload) {
         const error = _(errors).flatten().flatten().uniq().join("\n");
         return { success: false, response, error, payload };
     } else {
-        return { success: true };
+        return { success: true, response, payload };
     }
 }
 
@@ -330,7 +338,26 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
     }));
 }
 
+function postMetadata(api, payload) {
+    return api
+        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
+        .then(res => parseResponse(res, payload))
+        .catch(error => ({ success: false, error }));
+    }
+
 /* Public interface */
+
+async function updateUsers(d2, users, mapper) {
+    const api = d2.Api.getApi();
+    const existingUsers = await getExistingUsers(d2, {
+        fields: ":owner",
+        filter: "id:in:[" + _(users).map("id").join(",") + "]",
+    });
+    const usersToSave = _(existingUsers).map(mapper).compact().value();
+    const payload = { users: usersToSave };
+
+    return postMetadata(api, payload);
+}
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
 
@@ -344,10 +371,7 @@ async function saveUsers(d2, users) {
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
 
-    return api
-        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
-        .catch(error => ({ success: false, error }));
+    return postMetadata(api, payload);
 }
 
 /* Return an array of users from DHIS2 API.
@@ -364,8 +388,10 @@ function getList(d2, filters, listOptions) {
         separate calls to the API for those filters and use the returned IDs to build
         the final, paginated call. */
 
-    const [preliminarFilters, normalFilters] =
-        _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
+    const [preliminarFilters, normalFilters] = _.partition(
+        activeFilters,
+        ([key, [operator, value]]) => operator === "in" && key.match(/\./)
+    );
     const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
         model
             .list({
@@ -425,4 +451,4 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-export { getList, exportToCsv, importFromCsv, saveUsers, parseResponse, getExistingUsers };
+export { getList, exportToCsv, importFromCsv, updateUsers, saveUsers, parseResponse, getExistingUsers };

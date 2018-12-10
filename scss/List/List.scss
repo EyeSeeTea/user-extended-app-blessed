@@ -56,6 +56,14 @@
   padding-bottom: 5px;
 }
 
+.control-row.checkboxes {
+  display: flex;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  padding-top: 10px;
+  margin-left: -23px;
+}
+
 .user-management-control {
   flex: 1;
 }

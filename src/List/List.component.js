@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
+import set from 'lodash/fp/set';
 import log from 'loglevel';
 import isIterable from 'd2-utilizr/lib/isIterable';
 import DataTable from '../data-table/DataTable.component';
 import MultipleDataTable from '../components/multiple-data-table/MultipleDataTable.component';
 import Pagination from 'd2-ui/lib/pagination/Pagination.component';
-import DetailsBox from './DetailsBox.component';
 import contextActions from './context.actions';
 import detailsStore from './details.store';
+import enableStore from './enable.store';
 import listStore from './list.store';
 import deleteUserStore from './deleteUser.store';
 import listActions from './list.actions';
 import ObserverRegistry from '../utils/ObserverRegistry.mixin';
-import Paper from 'material-ui/Paper/Paper';
+import { getCompactTextForModels } from '../utils/i18n';
 import Translate from '../utils/Translate.mixin';
-import SearchBox from './SearchBox.component';
 import LoadingStatus from './LoadingStatus.component';
 import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
 import Auth from 'd2-ui/lib/auth/Auth.mixin';
@@ -28,12 +28,8 @@ import UserGroupsDialog from '../components/UserGroupsDialog.component';
 import ReplicateUserFromTemplate from '../components/ReplicateUserFromTemplate.component';
 import ReplicateUserFromTable from '../components/ReplicateUserFromTable.component';
 import snackActions from '../Snackbar/snack.actions';
-import Heading from 'd2-ui/lib/headings/Heading.component';
-import Checkbox from 'material-ui/Checkbox/Checkbox';
-import { Observable } from 'rx';
 import PropTypes from 'prop-types';
 import MenuItem from 'material-ui/MenuItem';
-import MultipleFilter from '../components/MultipleFilter.component';
 import ImportExport from '../components/ImportExport.component';
 import IconButton from 'material-ui/IconButton';
 import ViewColumnIcon from 'material-ui/svg-icons/action/view-column';
@@ -42,12 +38,11 @@ import TableLayout from '../components/TableLayout.component';
 import Settings from '../models/settings';
 import ImportTable from '../components/ImportTable.component';
 import User from '../models/user';
-import { saveUsers } from '../models/userHelpers';
-import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
+import { saveUsers, updateUsers } from '../models/userHelpers';
 import ModalLoadingMask from '../components/ModalLoadingMask.component';
-import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
-import AnimateHeight from 'react-animate-height';
 import SettingsDialog from '../components/SettingsDialog.component';
+import Filters from './Filters.component';
+import DetailsBoxWithScroll from './DetailsBoxWithScroll.component';
 
 const pageSize = 50;
 
@@ -75,35 +70,6 @@ export function calculatePageValue(pager) {
     const endItem = pageCalculationValue;
 
     return `${startItem} - ${endItem > total ? total : endItem}`;
-}
-
-class DetailsBoxWithScroll extends Component {
-
-    componentDidMount() {
-        this.disposable = Observable
-            .fromEvent(global, 'scroll')
-            .debounce(200)
-            .map(() => document.querySelector('body').scrollTop)
-            .subscribe(() => this.forceUpdate());
-    }
-
-    componentWillUnmount() {
-        this.disposable && this.disposable.dispose();
-    }
-
-    render() {
-        return (
-            <div style={this.props.style}>
-                <Paper zDepth={1} rounded={false} style={{ maxWidth: 500, minWidth: 300, marginTop: document.querySelector('body').scrollTop }}>
-                    <DetailsBox
-                        source={this.props.detailsObject.model}
-                        showDetailBox={!!this.props.detailsObject}
-                        onClose={this.props.onClose}
-                    />
-                </Paper>
-            </div>
-        );
-    }
 }
 
 const initialSorting = ["name", "asc"];
@@ -141,41 +107,21 @@ const List = React.createClass({
             display: 'flex',
             flexOrientation: 'row',
         },
-
-        filterStyles: {
-            textField: {
-                width: "90%",
-            },
-        },
-        animationVisible: {
-            width: 850,
-        },
-        animationHidden: {
-            width: 0,
-        },
     },
 
     getInitialState() {
         return {
             listFilterOptions: {},
             dataRows: null,
+            filters: {},
             pager: {
                 total: 0,
             },
             isLoading: true,
             detailsObject: null,
-            searchString: "",
-            userGroups: [],
-            userRoles: [],
-            filterByRoles: [],
-            filterByGroups: [],
-            filterByOrgUnits: [],
-            filterByOrgUnitsOutput: [],
             sorting: initialSorting,
             settingsVisible: false,
             layoutSettingsVisible: false,
-            showAllUsers: true,
-            showExtendedFilters: false,
             sharing: {
                 model: null,
                 open: false,
@@ -216,6 +162,7 @@ const List = React.createClass({
         return users.map(user => ({
             ...user,
             lastLogin: user.userCredentials.lastLogin,
+            disabled: user.userCredentials.disabled,
             userGroups: namesFromCollection(user.userGroups, "displayName"),
             userRoles: namesFromCollection(user.userCredentials && user.userCredentials.userRoles, "displayName"),
             organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
@@ -244,20 +191,6 @@ const List = React.createClass({
             this.registerDisposable(sourceStoreDisposable);
         });
 
-        /** load select fields data */
-        listActions.loadUserRoles.next();
-        listActions.loadUserGroups.next();
-
-        /** Set user roles list for filter by role */
-        const rolesStoreDisposable = listStore.listRolesSubject.subscribe(userRoles => {
-            this.setState({ userRoles: userRoles.toArray().map(role => ({value: role.id, text: role.displayName})) });
-        });
-
-        /** Set user groups list for filter by group */
-        const groupsStoreDisposable = listStore.listGroupsSubject.subscribe(userGroups => {
-            this.setState({ userGroups: userGroups.toArray().map(role => ({value: role.id, text: role.displayName})) });
-        });
-
         const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
             this.setState({ detailsObject });
         });
@@ -278,18 +211,52 @@ const List = React.createClass({
             this.setAssignState("replicateUser", replicateUser);
         });
 
+        const enableStoreDisposable = enableStore.subscribe(({ users, action }) => {
+            const message = this.getTranslation(`confirm_${action}`, {
+                users: getCompactTextForModels(this.context.d2, users, {
+                    i18nKey: "this_and_n_others",
+                    field: "username",
+                    limit: 1,
+                }),
+            });
+
+            snackActions.show({
+                message,
+                action: 'confirm',
+                onActionTouchTap: () => this.setUsersEnableState(users, action),
+            });
+        });
+
         const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
 
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
-        this.registerDisposable(rolesStoreDisposable);
-        this.registerDisposable(groupsStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
         this.registerDisposable(deleteUserStoreDisposable);
+        this.registerDisposable(enableStoreDisposable);
 
         this.filterList();
+    },
+
+    async setUsersEnableState(users, action) {
+        const newValue = action === 'disable';
+        const response = await updateUsers(this.context.d2, users, user => {
+            return (user.userCredentials.disabled !== newValue)
+                ? set("userCredentials.disabled", newValue, user)
+                : null;
+        })
+
+        if (response.success) {
+            const count = response.response.stats && response.response.stats.updated || 0;
+            const message = this.getTranslation(`${action}_successful`, { count });
+            snackActions.show({ message });
+            this.filterList();
+        } else {
+            const message = this.getTranslation(`${action}_error`, { error: response.error.toString() });
+            snackActions.show({ message });
+        }
     },
 
     setAssignState(key, value) {
@@ -319,21 +286,12 @@ const List = React.createClass({
         const order = this.state.sorting
             ? (this.state.sorting[0] + ":i" + this.state.sorting[1])
             : null;
-        const { filterByRoles, filterByGroups, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
-        const { showAllUsers, pager, searchString } = this.state;
-        const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
+        const { pager, filters } = this.state;
 
         const options = {
             modelType: this.props.params.modelType,
-            canManage: !showAllUsers,
             order: order,
-            query: searchString,
-            filters: {
-                "userCredentials.userRoles.id": inFilter(filterByRoles),
-                "userGroups.id": inFilter(filterByGroups),
-                "organisationUnits.id": inFilter(filterByOrgUnits.map(ou => ou.id)),
-                "dataViewOrganisationUnits.id": inFilter(filterByOrgUnitsOutput.map(ou => ou.id)),
-            },
+            ...filters,
         };
         
         const paginatedOptions = {
@@ -344,43 +302,11 @@ const List = React.createClass({
         };
 
         listActions.filter(paginatedOptions).subscribe(() => {}, error => log.error(error));
-        this.setState({ listFilterOptions: options });
+        this.setState({ isLoading: true, listFilterOptions: options });
     },
 
     onColumnSort(sorting) {
         this.setState({sorting}, this.filterList);
-    },
-
-    searchListByName(searchObserver) {
-        const searchListByNameDisposable = searchObserver
-            .subscribe((value) => {
-                this.setState({
-                    isLoading: true,
-                    searchString: value
-                }, this.filterList);
-            });
-
-        this.registerDisposable(searchListByNameDisposable);
-    },
-
-    _onCanManageClick(ev, isChecked) {
-        this.setState({showAllUsers: !isChecked}, this.filterList);
-    },
-
-    setFilterRoles(roles) {
-        this.setState({filterByRoles: roles}, this.filterList);
-    },
-
-    setFilterGroups(groups) {
-        this.setState({filterByGroups: groups}, this.filterList);
-    },
-
-    setFilterOrgUnits(orgUnits) {
-        this.setState({filterByOrgUnits: orgUnits}, this.filterList);
-    },
-
-    setFilterOrgUnitsOutput(orgUnits) {
-        this.setState({filterByOrgUnitsOutput: orgUnits}, this.filterList);
     },
 
     convertObjsToMenuItems(objs) {
@@ -451,10 +377,6 @@ const List = React.createClass({
         this.state.settings.save().then(this._closeLayoutSettings);
     },
 
-    _toggleExtendedFilters() {
-        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
-    },
-
     _openImportTable(importResult) {
         this.setState({ importUsers: { open: true, ...importResult }});
     },
@@ -474,6 +396,10 @@ const List = React.createClass({
 
     _closeImportUsers() {
         this.setState({ importUsers: { open: false }});
+    },
+
+    _onFiltersChange(filters) {
+        this.setState( { filters }, this.filterList);
     },
 
     render() {
@@ -497,20 +423,16 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        const { assignUserRoles, assignUserGroups, replicateUser, showExtendedFilters, listFilterOptions } = this.state;
+        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions } = this.state;
         const { showAllUsers, filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput } = this.state;
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
-        const isFiltering = !_([filterByGroups, filterByRoles, filterByOrgUnits, filterByOrgUnitsOutput]).every(_.isEmpty)
-        const filterIconColor = isFiltering ? "#ff9800" : undefined;
-        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
         const { styles } = this;
 
         const allColumns = tableColumns.map(c => ({
             text: this.getTranslation(camelCaseToUnderscores(c.name)),
             value: c.name,
         }));
-
 
         const visibleColumns = _(tableColumns)
             .keyBy("name")
@@ -521,75 +443,7 @@ const List = React.createClass({
         return (
             <div>
                 <div className="controls-wrapper">
-                    <div className="user-management-controls" style={{flex: 'unset'}}>
-                        <div className="user-management-control search-box">
-                            <SearchBox searchObserverHandler={this.searchListByName} />
-
-                            <Checkbox
-                                className="control-checkbox"
-                                label={this.getTranslation('display_only_users_can_manage')}
-                                onCheck={this._onCanManageClick}
-                                checked={!showAllUsers}
-                            />
-
-                            <span>
-                                <IconButton className="expand-filters" onTouchTap={this._toggleExtendedFilters} tooltip={this.getTranslation("extended_filters")} style={filterButtonColor}>
-                                    <FilterListIcon color={filterIconColor} />
-                                </IconButton>
-                            </span>
-                        </div>
-
-                        <AnimateHeight
-                            duration={400}
-                            height={showExtendedFilters ? 'auto' : 0}
-                            style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
-                        >
-                            <Paper zDepth={1} rounded={false} style={{ paddingLeft: 20,height: 160, marginTop: 40 }}>
-                                <div className="control-row">
-                                    <div className="user-management-control select-role">
-                                        <MultipleFilter
-                                            title={this.getTranslation('filter_role')}
-                                            options={this.state.userRoles || []}
-                                            selected={this.state.filterByRoles}
-                                            onChange={this.setFilterRoles}
-                                            styles={styles.filterStyles}
-                                        />
-                                    </div>
-
-                                    <div className="user-management-control select-group">
-                                        <MultipleFilter
-                                            title={this.getTranslation('filter_group')}
-                                            options={this.state.userGroups || []}
-                                            selected={this.state.filterByGroups}
-                                            onChange={this.setFilterGroups}
-                                            styles={styles.filterStyles}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="control-row">
-                                    <div className="user-management-control select-organisation-unit">
-                                        <OrgUnitsFilter
-                                            title={this.getTranslation('filter_by_organisation_units')}
-                                            selected={this.state.filterByOrgUnits}
-                                            onChange={this.setFilterOrgUnits}
-                                            styles={styles.filterStyles}
-                                        />
-                                    </div>
-
-                                    <div className="user-management-control select-organisation-unit-output">
-                                        <OrgUnitsFilter
-                                            title={this.getTranslation('filter_by_organisation_units_output')}
-                                            selected={this.state.filterByOrgUnitsOutput}
-                                            onChange={this.setFilterOrgUnitsOutput}
-                                            styles={styles.filterStyles}
-                                        />
-                                    </div>
-                                </div>
-                                </Paper>
-                            
-                        </AnimateHeight>
-                    </div>
+                    <Filters onChange={this._onFiltersChange} />
 
                     <div className="user-management-control pagination">
                         <Pagination {...paginationProps} />
