@@ -26,8 +26,10 @@
 }
 
 .user-management-control.pagination {
+  display: flex;
   flex: 1;
-  position: relative;
+  margin-top: 5px;
+  margin-right: 22px;
 }
 
 .user-management-control {
@@ -79,20 +81,15 @@
 }
 
 .data-table-pager {
-  position: absolute;
-  bottom: 0;
-  right: 50px;
   margin-right: 20px;
+  flex: 1;
 }
 
 .data-table-pager--buttons {
   margin: 0 !important;
 }
 
-.data-table-import-export{
-  position: absolute;
-  bottom: 0;
-  right: 5px;
+.data-table-import-export {
 }
 
 .expand-filters{
