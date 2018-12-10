@@ -21,6 +21,7 @@ const columns = [
     {name: 'organisationUnits', sortable: false},
     {name: 'dataViewOrganisationUnits', sortable: false},
     {name: 'lastLogin', sortable: false},
+    {name: 'disabled', sortable: false},
 ];
 
 const columnObservable = appState
