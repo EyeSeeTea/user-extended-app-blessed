@@ -40,6 +40,8 @@ const requiredPropertiesOnImport = ["username", "password", "firstName", "surnam
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
+const columnsIgnoredOnExport = ["disabled"];
+
 const userCredentialsFields = ["username", "password", "userRoles"];
 
 const columnNameFromPropertyMapping = {
@@ -423,8 +425,9 @@ function getList(d2, filters, listOptions) {
 async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, paging: false };
     const users = await getList(d2, filters, listOptions);
-    const userRows = users.toArray().map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
-    const header = columns.map(getColumnNameFromProperty);
+    const columnsToExport = _(columns).without(...columnsIgnoredOnExport).value()
+    const userRows = users.toArray().map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
+    const header = columnsToExport.map(getColumnNameFromProperty);
     const table = [header, ...userRows]
 
     return Papa.unparse(table);
