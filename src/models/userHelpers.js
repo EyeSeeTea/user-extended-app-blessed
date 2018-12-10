@@ -341,7 +341,11 @@ function postMetadata(api, payload) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
         .then(res => parseResponse(res, payload))
-        .catch(error => ({ success: false, payload, error: error && error.message || error.toString() }));
+        .catch(error => ({
+            success: false,
+            payload,
+            error: error ? error.message || error.toString() : "Unknown",
+        }));
     }
 
 /* Public interface */
