@@ -37,9 +37,11 @@ const styles = {
     dialogBody: {
         paddingTop: '10px',
     },
+    tableWrapper: {
+        overflow: "visible",
+    },
     table: {
         marginBottom: 5,
-        overflowX: "auto",
     },
     tableBody: {
         overflow: "visible",
@@ -497,20 +499,27 @@ class ImportTable extends React.Component {
     }
 
     renderTable() {
+        const { d2 } = this.context;
         const { users } = this.state;
         const { maxUsers } = this.props;
         const canAddNewUser = users.size < maxUsers;
         const headers = this.getColumns().map(camelCaseToUnderscores);
+        const getColumnName = header => _(d2.i18n.translations).has(header) ? this.t(header) : header;
 
         return (
             <div>
-                <Table fixedHeader={true} style={styles.table} bodyStyle={styles.tableBody}>
+                <Table
+                    fixedHeader={true}
+                    wrapperStyle={styles.tableWrapper}
+                    style={styles.table}
+                    bodyStyle={styles.tableBody}
+                >
                     <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
                             <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
                             {headers.map(header =>
                                 <TableHeaderColumn key={header} style={styles.header}>
-                                    {this.t(header)}
+                                    {getColumnName(header)}
                                 </TableHeaderColumn>
                             )}
                             <TableHeaderColumn style={styles.actionsHeader}></TableHeaderColumn>

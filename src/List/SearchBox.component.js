@@ -11,6 +11,7 @@ config.i18n.strings.add('search_by_name');
 const SearchBox = React.createClass({
     propTypes: {
         searchObserverHandler: PropTypes.func.isRequired,
+        clear: PropTypes.any,
     },
 
     mixins: [ObservedEvents, Translate],
@@ -23,6 +24,13 @@ const SearchBox = React.createClass({
 
     componentWillMount() {
         this.searchBoxCb = this.createEventObserver('searchBox');
+    },
+
+    componentWillReceiveProps(newProps) {
+        if (this.props.clear != newProps.clear) {
+            this.setState({ value: '' });
+            this.searchBoxCb({ target: { value: '' } });
+        }
     },
 
     componentDidMount() {

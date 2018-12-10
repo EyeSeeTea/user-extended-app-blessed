@@ -16,7 +16,7 @@ const queryFields = [
     'created',
     'email',
     'id',
-    'userCredentials[username, userRoles[id,displayName],lastLogin]',
+    'userCredentials[username,disabled,userRoles[id,displayName],lastLogin]',
     'lastUpdated',
     'created',
     'displayDescription',
@@ -26,8 +26,8 @@ const queryFields = [
     'href',
     'level',
     'userGroups[id,displayName,publicAccess]',
-    'organisationUnits[id,displayName]',
-    'dataViewOrganisationUnits[id,displayName]',
+    'organisationUnits[id,code,displayName]',
+    'dataViewOrganisationUnits[id,code,displayName]',
 ].join(",");
 
 /*
@@ -40,6 +40,8 @@ const requiredPropertiesOnImport = ["username", "password", "firstName", "surnam
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
+const columnsIgnoredOnExport = ["disabled"];
+
 const userCredentialsFields = ["username", "password", "userRoles"];
 
 const columnNameFromPropertyMapping = {
@@ -50,6 +52,7 @@ const columnNameFromPropertyMapping = {
     firstName: "First name",
     surname: "Surname",
     email: "Email",
+    phoneNumber: "Phone number",
     lastUpdated: "Updated",
     lastLogin: "Last login",
     created: "Created",
@@ -71,10 +74,10 @@ const modelByField = {
 const queryFieldsByModel = {
     userRoles: ["id", "displayName"],
     userGroups: ["id", "displayName"],
-    organisationUnits: ["id", "path", "displayName"],
+    organisationUnits: ["id", "path", "code", "displayName"],
 }
 
-async function getAssociations(d2, field, objs) {
+async function getAssociations(d2, objs, { orgUnitsField }) {
     const valuesByField = _(modelByField)
         .flatMap((model, _field) =>
             objs.map(obj => ({ model, value: (obj[_field] || "").split(fieldSplitChar).map(s => s.trim()) }))
@@ -86,10 +89,11 @@ async function getAssociations(d2, field, objs) {
 
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
-        const models = await listWithInFilter(d2.models[model], field, values,
+        const matchField = model === "organisationUnits" ? orgUnitsField : "displayName";
+        const models = await listWithInFilter(d2.models[model], matchField, values,
                 { fields: fields.join(","), paging: false },
                 { useInOperator: false })
-            .then(models => models.map(model => _.pick(model, fields)));
+            .then(models => _(models).map(model => _.pick(model, fields)).keyBy(matchField).value());
         return [model, models];
     });
 
@@ -114,9 +118,9 @@ function parseDate(stringDate) {
     return moment(stringDate).toISOString();
 }
 
-function namesFromCollection(collection) {
-    return (collection.toArray ? collection.toArray() : collection)
-        .map(model => model.displayName)
+function namesFromCollection(collection, field) {
+    return _(collection.toArray ? collection.toArray() : collection)
+        .map(field)
         .join(fieldSplitChar);
 }
 
@@ -131,7 +135,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     return { objects, warnings };
 }
 
-function getPlainUser(user) {
+function getPlainUser(user, { orgUnitsField }) {
     const userCredentials = user.userCredentials || {};
 
     return {
@@ -140,20 +144,20 @@ function getPlainUser(user) {
         lastUpdated: formatDate(user.lastUpdated),
         lastLogin: formatDate(userCredentials.lastLogin),
         created: formatDate(user.created),
-        userRoles: namesFromCollection(userCredentials.userRoles),
-        userGroups: namesFromCollection(user.userGroups),
-        organisationUnits: namesFromCollection(user.organisationUnits),
-        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits),
+        userRoles: namesFromCollection(userCredentials.userRoles, "displayName"),
+        userGroups: namesFromCollection(user.userGroups, "displayName"),
+        organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
+        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
     };
 }
 
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
-    const byName = _(modelValuesByField).mapValues(models => _.keyBy(models, "displayName")).value();
+    const byField = modelValuesByField;
     const relationships = {
-        userRoles: collectionFromNames(user, rowIndex, "userRoles", byName.userRoles),
-        userGroups: collectionFromNames(user, rowIndex, "userGroups", byName.userGroups),
-        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byName.organisationUnits),
-        dataViewOrganisationUnits: collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byName.organisationUnits),
+        userRoles: collectionFromNames(user, rowIndex, "userRoles", byField.userRoles),
+        userGroups: collectionFromNames(user, rowIndex, "userGroups", byField.userGroups),
+        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byField.organisationUnits),
+        dataViewOrganisationUnits: collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byField.organisationUnits),
     };
     const warnings = _(relationships).values().flatMap("warnings").value();
     const objectRelationships = _(relationships).mapValues("objects").value();
@@ -166,20 +170,27 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     return { user: plainUser, warnings };
 }
 
-async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
+async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     const columnNames = _.first(csv.data);
     const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
 
-    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
-    const columnMapping = _(columnNames)
-        .map(columnName => [
-            columnName,
-            propertyFromColumnNameMapping[columnName] ||
-                (_(columnNameFromPropertyMapping).keys().includes(columnName) ? columnName : undefined)
-        ])
-        .fromPairs()
+    const plainUserAttributes = _(d2.models.users.modelValidations)
+        .map((value, key) => _(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null)
+        .compact()
         .value();
-    const csvColumnProperties = _(columnMapping).values().value();
+
+    const knownColumnNames = _(columnNameFromPropertyMapping)
+        .keys()
+        .union(plainUserAttributes)
+        .value();
+
+    // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
+    const csvColumnProperties = _(columnNames)
+        .map(columnName =>
+            propertyFromColumnNameMapping[columnName] ||
+                (_(knownColumnNames).includes(columnName) ? columnName : undefined))
+        .value();
+    const columnMapping = _(columnNames).zip(csvColumnProperties).fromPairs().value();
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
@@ -188,7 +199,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
         : csvColumnProperties;
 
     const validColumnProperties = _(columnProperties)
-        .intersection(_.keys(columnNameFromPropertyMapping))
+        .intersection(knownColumnNames)
         .difference(propertiesIgnoredOnImport)
         .value();
 
@@ -219,7 +230,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers }) {
                 .fromPairs()
                 .value()
         );
-        const modelValuesByField = await getAssociations(d2, "name", userRows);
+        const modelValuesByField = await getAssociations(d2, userRows, { orgUnitsField });
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2));
         const users = data.map(o => o.user);
@@ -247,7 +258,7 @@ function parseResponse(response, payload) {
         const error = _(errors).flatten().flatten().uniq().join("\n");
         return { success: false, response, error, payload };
     } else {
-        return { success: true };
+        return { success: true, response, payload };
     }
 }
 
@@ -329,7 +340,30 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
     }));
 }
 
+function postMetadata(api, payload) {
+    return api
+        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
+        .then(res => parseResponse(res, payload))
+        .catch(error => ({
+            success: false,
+            payload,
+            error: error ? error.message || error.toString() : "Unknown",
+        }));
+    }
+
 /* Public interface */
+
+async function updateUsers(d2, users, mapper) {
+    const api = d2.Api.getApi();
+    const existingUsers = await getExistingUsers(d2, {
+        fields: ":owner",
+        filter: "id:in:[" + _(users).map("id").join(",") + "]",
+    });
+    const usersToSave = _(existingUsers).map(mapper).compact().value();
+    const payload = { users: usersToSave };
+
+    return postMetadata(api, payload);
+}
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
 
@@ -343,10 +377,7 @@ async function saveUsers(d2, users) {
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
 
-    return api
-        .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
-        .catch(error => ({ success: false, error }));
+    return postMetadata(api, payload);
 }
 
 /* Return an array of users from DHIS2 API.
@@ -363,8 +394,10 @@ function getList(d2, filters, listOptions) {
         separate calls to the API for those filters and use the returned IDs to build
         the final, paginated call. */
 
-    const [preliminarFilters, normalFilters] =
-        _(activeFilters).partition(([key, opValue]) => key.match(/\./)).value();
+    const [preliminarFilters, normalFilters] = _.partition(
+        activeFilters,
+        ([key, [operator, value]]) => operator === "in" && key.match(/\./)
+    );
     const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
         model
             .list({
@@ -389,24 +422,25 @@ function getList(d2, filters, listOptions) {
 }
 
 /* Get users from Dhis2 API and export given columns to a CSV string */
-async function exportToCsv(d2, columns, filterOptions) {
+async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, paging: false };
     const users = await getList(d2, filters, listOptions);
-    const userRows = users.toArray().map(user => _.at(getPlainUser(user), columns));
-    const header = columns.map(getColumnNameFromProperty);
+    const columnsToExport = _(columns).without(...columnsIgnoredOnExport).value()
+    const userRows = users.toArray().map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
+    const header = columnsToExport.map(getColumnNameFromProperty);
     const table = [header, ...userRows]
 
     return Papa.unparse(table);
 }
 
-async function importFromCsv(d2, file, { maxUsers }) {
+async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
             delimiter: ",",
             skipEmptyLines: true,
             trimHeaders: true,
             complete: async (csv) => {
-                const res = await getUsersFromCsv(d2, file, csv, { maxUsers });
+                const res = await getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField });
                 res.success ? resolve(res) : reject(res.errors.join("\n"));
             },
             error: (err, file) => reject(err),
@@ -424,4 +458,4 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-export { getList, exportToCsv, importFromCsv, saveUsers, parseResponse, getExistingUsers };
+export { getList, exportToCsv, importFromCsv, updateUsers, saveUsers, parseResponse, getExistingUsers };
