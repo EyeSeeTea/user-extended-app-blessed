@@ -22,6 +22,7 @@ class ImportExport extends React.Component {
         filterOptions: PropTypes.object.isRequired,
         onImport: PropTypes.func.isRequired,
         maxUsers: PropTypes.number.isRequired,
+        settings: PropTypes.object.isRequired,
     }
 
     state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
@@ -57,11 +58,12 @@ class ImportExport extends React.Component {
     }
 
     exportToCsvAndSave = async () => {
-        const { d2, columns, filterOptions } = this.props;
+        const { d2, columns, filterOptions, settings } = this.props;
+        const orgUnitsField = settings.get("organisationUnitsField");
         this.setState({ isProcessing : true });
 
         try {
-            const csvString = await exportToCsv(d2, columns, filterOptions);
+            const csvString = await exportToCsv(d2, columns, filterOptions, { orgUnitsField });
             const blob = new Blob([csvString], {type: "text/plain;charset=utf-8"});
             const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
             const filename = `users-${datetime}.csv`
@@ -74,12 +76,13 @@ class ImportExport extends React.Component {
     }
 
     importFromCsv = () => {
-        const { onImport, maxUsers } = this.props;
+        const { onImport, maxUsers, settings } = this.props;
+        const orgUnitsField = settings.get("organisationUnitsField");
 
         fileDialog({ accept: ".csv" })
             .then(files => {
                 this.setState({ isProcessing : true });
-                return importFromCsv(d2, files[0], { maxUsers });
+                return importFromCsv(d2, files[0], { maxUsers, orgUnitsField });
             })
             .then(result => onImport(result))
             .catch(err => snackActions.show({ message: err.toString() }))
