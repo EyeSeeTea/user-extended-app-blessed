@@ -44,6 +44,10 @@ export default class Filters extends React.Component {
         animationHidden: {
             width: 0,
         },
+        clearFiltersButton: {
+            marginRight: 25,
+            marginLeft: 'auto',
+        },
     }
 
     constructor(props, context) {
@@ -210,7 +214,7 @@ export default class Filters extends React.Component {
 
                             {isFiltering &&
                                 <IconButton
-                                    style={{marginRight: 25, marginLeft: 'auto'}}
+                                    style={styles.clearFiltersButton}
                                     onTouchTap={this.clearFilters}
                                     tooltip={this.getTranslation("clear_filters")}
                                 >
