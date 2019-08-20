@@ -111,7 +111,7 @@ function getColumnNameFromProperty(property) {
 }
 
 function formatDate(stringDate) {
-    return moment(stringDate).format("YYYY-MM-DD HH:mm:ss");
+    return !!stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
 }
 
 function parseDate(stringDate) {
@@ -138,7 +138,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
 function getPlainUser(user, { orgUnitsField }) {
     const userCredentials = user.userCredentials || {};
 
-    return {
+    return _.compact({
         ...user,
         username: userCredentials.username,
         lastUpdated: formatDate(user.lastUpdated),
@@ -148,7 +148,7 @@ function getPlainUser(user, { orgUnitsField }) {
         userGroups: namesFromCollection(user.userGroups, "displayName"),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
-    };
+    });
 }
 
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
