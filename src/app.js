@@ -25,7 +25,7 @@ if (process.env.NODE_ENV !== 'production') {
 function configI18n(userSettings) {
     const uiLocale = userSettings.keyUiLocale;
 
-    if (uiLocale !== 'en') {
+    if (uiLocale && uiLocale !== 'en') {
         // Add the language sources for the preferred locale
         config.i18n.sources.add(`./i18n/i18n_module_${uiLocale}.properties`);
     }
@@ -52,8 +52,10 @@ render(<MuiThemeProvider muiTheme={appTheme}><LoadingMask /></MuiThemeProvider>,
 
 getManifest('./manifest.webapp')
     .then(manifest => {
-        const baseUrl = process.env.NODE_ENV === 'production' ? manifest.getBaseUrl() : dhisDevConfig.baseUrl;
+        const isProduction = process.env.NODE_ENV === 'production';
+        const baseUrl = isProduction ? manifest.getBaseUrl() : dhisDevConfig.baseUrl;
         config.baseUrl = `${baseUrl}/api`;
+        if (!isProduction) config.headers = { Authorization: dhisDevConfig.authorization }
         log.info(`Loading: ${manifest.name} v${manifest.version}`);
         log.info(`Built ${manifest.manifest_generated_at}`);
     })
