@@ -138,7 +138,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
 function getPlainUser(user, { orgUnitsField }) {
     const userCredentials = user.userCredentials || {};
 
-    return _.compact({
+    return {
         ...user,
         username: userCredentials.username,
         lastUpdated: formatDate(user.lastUpdated),
@@ -148,7 +148,7 @@ function getPlainUser(user, { orgUnitsField }) {
         userGroups: namesFromCollection(user.userGroups, "displayName"),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
-    });
+    };
 }
 
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
