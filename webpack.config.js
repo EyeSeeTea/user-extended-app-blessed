@@ -119,7 +119,7 @@ if (!isDevBuild) {
 }
 
 // Generates an `index.html` file with the <script> injected.
-const pathnamePrefix = isDevBuild ? '' : '../../..';
+const pathnamePrefix = isDevBuild ? dhisConfig.baseUrl : '../../..';
 webpackConfig.plugins.push(new HtmlWebpackPlugin({
     inject: true,
     template: './index.html',
