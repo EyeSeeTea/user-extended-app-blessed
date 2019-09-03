@@ -111,7 +111,7 @@ function getColumnNameFromProperty(property) {
 }
 
 function formatDate(stringDate) {
-    return moment(stringDate).format("YYYY-MM-DD HH:mm:ss");
+    return !!stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
 }
 
 function parseDate(stringDate) {

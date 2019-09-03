@@ -6,6 +6,7 @@ node_modules*
 src/css/*
 coverage/*
 manifest.webapp
+*.zip
 
 # TODO: Jshint is a dependency of the git hook which installs these files on install...
 .jshintignore
@@ -22,3 +23,4 @@ stats.json
 
 # Ignore config.js
 config.js
+app-config.json
