@@ -1,32 +1,32 @@
-import React from 'react';
-import Checkbox from 'material-ui/Checkbox/Checkbox';
-import PropTypes from 'prop-types';
-import IconButton from 'material-ui/IconButton';
-import FilterListIcon from 'material-ui/svg-icons/content/filter-list';
-import ClearIcon from 'material-ui/svg-icons/content/clear';
-import AnimateHeight from 'react-animate-height';
-import Paper from 'material-ui/Paper/Paper';
-import memoize from 'memoize-weak';
+import React from "react";
+import Checkbox from "material-ui/Checkbox/Checkbox";
+import PropTypes from "prop-types";
+import IconButton from "material-ui/IconButton";
+import FilterListIcon from "material-ui/svg-icons/content/filter-list";
+import ClearIcon from "material-ui/svg-icons/content/clear";
+import AnimateHeight from "react-animate-height";
+import Paper from "material-ui/Paper/Paper";
+import memoize from "memoize-weak";
 
-import SearchBox from './SearchBox.component';
-import OrgUnitsFilter from '../components/OrgUnitsFilter.component';
-import MultipleFilter from '../components/MultipleFilter.component';
-import ObserverRegistry from '../utils/ObserverRegistry.mixin';
-import listActions from './list.actions';
-import listStore from './list.store';
+import SearchBox from "./SearchBox.component";
+import OrgUnitsFilter from "../components/OrgUnitsFilter.component";
+import MultipleFilter from "../components/MultipleFilter.component";
+import ObserverRegistry from "../utils/ObserverRegistry.mixin";
+import listActions from "./list.actions";
+import listStore from "./list.store";
 
 export default class Filters extends React.Component {
     static contextTypes = {
         d2: PropTypes.object.isRequired,
-    }
+    };
 
     static propTypes = {
         onChange: PropTypes.func.isRequired,
-    }
+    };
 
     styles = {
         wrapper: {
-            flex: 'unset',
+            flex: "unset",
         },
         paper: {
             paddingLeft: 20,
@@ -46,9 +46,9 @@ export default class Filters extends React.Component {
         },
         clearFiltersButton: {
             marginRight: 25,
-            marginLeft: 'auto',
+            marginLeft: "auto",
         },
-    }
+    };
 
     constructor(props, context) {
         super(props);
@@ -78,7 +78,8 @@ export default class Filters extends React.Component {
     componentDidMount() {
         listActions.loadUserRoles.next();
         listActions.loadUserGroups.next();
-        const toOptions = objs => objs.toArray().map(obj => ({value: obj.id, text: obj.displayName}));
+        const toOptions = objs =>
+            objs.toArray().map(obj => ({ value: obj.id, text: obj.displayName }));
 
         this.registerDisposable(
             listStore.listRolesSubject.subscribe(userRoles => {
@@ -94,14 +95,16 @@ export default class Filters extends React.Component {
     }
 
     toggleExtendedFilters = () => {
-        this.setState({showExtendedFilters: !this.state.showExtendedFilters});
-    }
+        this.setState({ showExtendedFilters: !this.state.showExtendedFilters });
+    };
 
-    searchListByName = (searchObserver) => {
+    searchListByName = searchObserver => {
         this.registerDisposable(
-            searchObserver.subscribe(value => this.setState({ searchString: value }, this.notifyParent))
+            searchObserver.subscribe(value =>
+                this.setState({ searchString: value }, this.notifyParent)
+            )
         );
-    }
+    };
 
     getFilterOptions() {
         const {
@@ -114,11 +117,11 @@ export default class Filters extends React.Component {
             orgUnitsOutput,
         } = this.state;
 
-        const inFilter = (field) => _(field).isEmpty() ? null : ["in", field];
+        const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
 
         return {
             query: searchString,
-            ...showOnlyManagedUsers ? { canManage: "true" } : {},
+            ...(showOnlyManagedUsers ? { canManage: "true" } : {}),
             filters: {
                 "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
@@ -130,16 +133,19 @@ export default class Filters extends React.Component {
     }
 
     clearFilters = () => {
-        this.setState({
-            showOnlyManagedUsers: false,
-            showOnlyActiveUsers: false,
-            searchStringClear: new Date(),
-            userGroups: [],
-            userRoles: [],
-            orgUnits: [],
-            orgUnitsOutput: [],
-        }, this.notifyParent);
-    }
+        this.setState(
+            {
+                showOnlyManagedUsers: false,
+                showOnlyActiveUsers: false,
+                searchStringClear: new Date(),
+                userGroups: [],
+                userRoles: [],
+                orgUnits: [],
+                orgUnitsOutput: [],
+            },
+            this.notifyParent
+        );
+    };
 
     notifyParent() {
         const filterOptions = this.getFilterOptions();
@@ -151,9 +157,9 @@ export default class Filters extends React.Component {
             const newValue = getter ? getter(...args) : args[0];
             this.setState({ [key]: newValue }, this.notifyParent);
         };
-    }
+    };
 
-    checkboxHandler = (ev, isChecked) => isChecked
+    checkboxHandler = (ev, isChecked) => isChecked;
 
     render() {
         const { onChange } = this.props;
@@ -170,16 +176,21 @@ export default class Filters extends React.Component {
         } = this.state;
         const { styles } = this;
 
-        const isExtendedFiltering = showOnlyManagedUsers || showOnlyActiveUsers ||
-            !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty)
+        const isExtendedFiltering =
+            showOnlyManagedUsers ||
+            showOnlyActiveUsers ||
+            !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty);
         const isFiltering = showOnlyManagedUsers || searchString || isExtendedFiltering;
         const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
-        const filterButtonColor = showExtendedFilters ? {backgroundColor: '#cdcdcd'} : undefined;
+        const filterButtonColor = showExtendedFilters ? { backgroundColor: "#cdcdcd" } : undefined;
 
         return (
             <div className="user-management-controls" style={styles.wrapper}>
                 <div className="user-management-control search-box">
-                    <SearchBox clear={searchStringClear} searchObserverHandler={this.searchListByName} />
+                    <SearchBox
+                        clear={searchStringClear}
+                        searchObserverHandler={this.searchListByName}
+                    />
 
                     <IconButton
                         className="expand-filters"
@@ -193,26 +204,32 @@ export default class Filters extends React.Component {
 
                 <AnimateHeight
                     duration={400}
-                    height={showExtendedFilters ? 'auto' : 0}
+                    height={showExtendedFilters ? "auto" : 0}
                     style={showExtendedFilters ? styles.animationVisible : styles.animationHidden}
                 >
                     <Paper zDepth={1} rounded={false} style={styles.paper}>
                         <div className="control-row checkboxes">
                             <Checkbox
                                 className="control-checkbox"
-                                label={this.getTranslation('display_only_users_can_manage')}
-                                onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
+                                label={this.getTranslation("display_only_users_can_manage")}
+                                onCheck={this.setFilter(
+                                    "showOnlyManagedUsers",
+                                    this.checkboxHandler
+                                )}
                                 checked={showOnlyManagedUsers}
                             />
 
                             <Checkbox
                                 className="control-checkbox"
-                                label={this.getTranslation('display_only_enabled_users')}
-                                onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
+                                label={this.getTranslation("display_only_enabled_users")}
+                                onCheck={this.setFilter(
+                                    "showOnlyActiveUsers",
+                                    this.checkboxHandler
+                                )}
                                 checked={showOnlyActiveUsers}
                             />
 
-                            {isFiltering &&
+                            {isFiltering && (
                                 <IconButton
                                     style={styles.clearFiltersButton}
                                     onTouchTap={this.clearFilters}
@@ -220,13 +237,13 @@ export default class Filters extends React.Component {
                                 >
                                     <ClearIcon />
                                 </IconButton>
-                            }
+                            )}
                         </div>
 
                         <div className="control-row">
                             <div className="user-management-control select-role">
                                 <MultipleFilter
-                                    title={this.getTranslation('filter_role')}
+                                    title={this.getTranslation("filter_role")}
                                     options={this.state.userRolesAll}
                                     selected={this.state.userRoles}
                                     onChange={this.setFilter("userRoles")}
@@ -236,7 +253,7 @@ export default class Filters extends React.Component {
 
                             <div className="user-management-control select-group">
                                 <MultipleFilter
-                                    title={this.getTranslation('filter_group')}
+                                    title={this.getTranslation("filter_group")}
                                     options={this.state.userGroupsAll}
                                     selected={this.state.userGroups}
                                     onChange={this.setFilter("userGroups")}
@@ -248,7 +265,7 @@ export default class Filters extends React.Component {
                         <div className="control-row">
                             <div className="user-management-control select-organisation-unit">
                                 <OrgUnitsFilter
-                                    title={this.getTranslation('filter_by_organisation_units')}
+                                    title={this.getTranslation("filter_by_organisation_units")}
                                     selected={this.state.orgUnits}
                                     onChange={this.setFilter("orgUnits")}
                                     styles={styles.filterStyles}
@@ -257,7 +274,9 @@ export default class Filters extends React.Component {
 
                             <div className="user-management-control select-organisation-unit-output">
                                 <OrgUnitsFilter
-                                    title={this.getTranslation('filter_by_organisation_units_output')}
+                                    title={this.getTranslation(
+                                        "filter_by_organisation_units_output"
+                                    )}
                                     selected={this.state.orgUnitsOutput}
                                     onChange={this.setFilter("orgUnitsOutput")}
                                     styles={styles.filterStyles}

@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import snackActions from '../Snackbar/snack.actions';
+import React from "react";
+import PropTypes from "prop-types";
+import snackActions from "../Snackbar/snack.actions";
 
-import User from '../models/user';
-import ImportTable from './ImportTable.component';
-import LoadingMask from '../loading-mask/LoadingMask.component';
-                                
+import User from "../models/user";
+import ImportTable from "./ImportTable.component";
+import LoadingMask from "../loading-mask/LoadingMask.component";
+
 class ReplicateUserFromTable extends React.Component {
     columns = [
         "username",
@@ -15,8 +15,8 @@ class ReplicateUserFromTable extends React.Component {
         "email",
         "organisationUnits",
         "dataViewOrganisationUnits",
-    ]
-    
+    ];
+
     constructor(props, context) {
         super(props);
         const { d2 } = context;
@@ -33,7 +33,7 @@ class ReplicateUserFromTable extends React.Component {
         this.setState({ userToReplicate });
     }
 
-    replicateUsers = async (users) => {
+    replicateUsers = async users => {
         const { userToReplicate } = this.state;
         const response = await userToReplicate.replicateFromPlainFields(users);
 
@@ -47,22 +47,26 @@ class ReplicateUserFromTable extends React.Component {
         } else {
             return response;
         }
-    }
+    };
 
     render() {
         const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
         const title = this.t("replicate_user", {
-            user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : "",
+            user: userToReplicate
+                ? `${userToReplicate.displayName} (${userToReplicate.username})`
+                : "",
         });
 
-        return (!userToReplicate ? <LoadingMask /> :
+        return !userToReplicate ? (
+            <LoadingMask />
+        ) : (
             <ImportTable
                 title={title}
                 onSave={this.replicateUsers}
                 maxUsers={100}
                 templateUser={userToReplicate}
-                actionText={this.t('replicate')}
+                actionText={this.t("replicate")}
                 onRequestClose={onRequestClose}
                 columns={this.columns}
             />

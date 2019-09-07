@@ -1,14 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-import last from 'lodash/fp/last';
+import React from "react";
+import PropTypes from "prop-types";
+import TextField from "material-ui/TextField";
+import Dialog from "material-ui/Dialog";
+import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import last from "lodash/fp/last";
 
-import FilteredMultiSelect from '../components/FilteredMultiSelect.component';
-import { getOrgUnitsRoots } from '../utils/dhis2Helpers';
-import OrgUnitForm from './OrgUnitForm';
+import FilteredMultiSelect from "../components/FilteredMultiSelect.component";
+import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
+import OrgUnitForm from "./OrgUnitForm";
 
 class OrgUnitsFilter extends React.Component {
     constructor(props, context) {
@@ -29,18 +29,18 @@ class OrgUnitsFilter extends React.Component {
     styles = {
         dialog: {
             minWidth: 875,
-            maxWidth: '100%',
+            maxWidth: "100%",
         },
         cancelButton: {
             marginRight: 16,
         },
         wrapper: {
-            width: 'inherit',
-            position: 'relative',
+            width: "inherit",
+            position: "relative",
         },
         inputStyle: {
-            cursor: 'pointer',
-        }
+            cursor: "pointer",
+        },
     };
 
     componentDidMount() {
@@ -72,27 +72,29 @@ class OrgUnitsFilter extends React.Component {
     getDialogButtons() {
         return [
             <FlatButton
-                label={this.getTranslation('cancel')}
+                label={this.getTranslation("cancel")}
                 onClick={this.closeDialog}
                 style={this.styles.cancelButton}
             />,
             <RaisedButton
                 primary
-                label={this.getTranslation('apply')}
+                label={this.getTranslation("apply")}
                 onClick={this.applyAndClose}
             />,
         ];
     }
 
-    getCompactFieldValue(selected, {limit = 3} = {}) {
+    getCompactFieldValue(selected, { limit = 3 } = {}) {
         const names = selected.map(ou => ou.displayName);
 
         if (names.length <= limit) {
-            return names.join(', ');
+            return names.join(", ");
         } else {
             return this.getTranslation("this_and_n_others_compact", {
-                "this": _(names).take(limit).join(", "),
-                "n": names.length - limit,
+                this: _(names)
+                    .take(limit)
+                    .join(", "),
+                n: names.length - limit,
             });
         }
     }
@@ -100,7 +102,7 @@ class OrgUnitsFilter extends React.Component {
     render() {
         const { title, styles } = this.props;
         const { dialogOpen, selected } = this.state;
-        
+
         return (
             <div style={this.styles.wrapper}>
                 <Dialog

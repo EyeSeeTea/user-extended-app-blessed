@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField/TextField';
+import React from "react";
+import PropTypes from "prop-types";
+import TextField from "material-ui/TextField/TextField";
 
-import MultiSelect from './MultiSelect.component';
+import MultiSelect from "./MultiSelect.component";
 
 class FilteredMultiSelectComponent extends React.Component {
     constructor(props, context) {
@@ -15,8 +15,10 @@ class FilteredMultiSelectComponent extends React.Component {
     styles = {
         contents: {
             padding: 15,
-            position: 'relative',
-            height: 450, minHeight: 450, maxHeight: 450,
+            position: "relative",
+            height: 450,
+            minHeight: 450,
+            maxHeight: 450,
             minWidth: 800,
         },
     };
@@ -32,11 +34,11 @@ class FilteredMultiSelectComponent extends React.Component {
         return (
             <div style={this.styles.contents}>
                 <TextField
-                    style={{marginLeft: 15, marginTop: 5, marginBottom: -15}}
+                    style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
                     value={filterText}
                     onChange={this.onFilterTextChange}
                     type="search"
-                    hintText={this.getTranslation('search')}
+                    hintText={this.getTranslation("search")}
                 />
 
                 <MultiSelect
