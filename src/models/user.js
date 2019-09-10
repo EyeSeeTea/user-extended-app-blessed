@@ -49,6 +49,8 @@ class User {
               username: userFields.username,
               password: userFields.password,
             },
+            organisationUnits: optional(userFields.organisationUnits),
+            dataViewOrganisationUnits: optional(userFields.dataViewOrganisationUnits),
         }));
 
         return this.replicate(newUsersAttributes);

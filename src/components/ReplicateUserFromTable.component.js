@@ -13,6 +13,8 @@ class ReplicateUserFromTable extends React.Component {
         "firstName",
         "surname",
         "email",
+        "organisationUnits",
+        "dataViewOrganisationUnits",
     ]
     
     constructor(props, context) {
