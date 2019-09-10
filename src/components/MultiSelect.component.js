@@ -1,8 +1,8 @@
-import React from 'react';
-import Store from 'd2-ui/lib/store/Store';
-import Translate from 'd2-ui/lib/i18n/Translate.mixin';
-import GroupEditor from 'd2-ui/lib/group-editor/GroupEditor.component';
-import GroupEditorWithOrdering from 'd2-ui/lib/group-editor/GroupEditorWithOrdering.component';
+import React from "react";
+import Store from "d2-ui/lib/store/Store";
+import Translate from "d2-ui/lib/i18n/Translate.mixin";
+import GroupEditor from "d2-ui/lib/group-editor/GroupEditor.component";
+import GroupEditorWithOrdering from "d2-ui/lib/group-editor/GroupEditorWithOrdering.component";
 
 const MultiSelect = React.createClass({
     propTypes: {
@@ -19,11 +19,11 @@ const MultiSelect = React.createClass({
 
     styles: {
         labelStyle: {
-            display: 'block',
-            width: 'calc(100% - 60px)',
-            lineHeight: '24px',
-            color: 'rgba(0,0,0,0.3)',
-            marginTop: '1rem',
+            display: "block",
+            width: "calc(100% - 60px)",
+            lineHeight: "24px",
+            color: "rgba(0,0,0,0.3)",
+            marginTop: "1rem",
             fontSize: 16,
         },
         errorStyle: {
@@ -48,7 +48,7 @@ const MultiSelect = React.createClass({
         const assignedStore = Store.create();
         availableStore.setState(this.props.isLoading ? false : this.props.options);
         assignedStore.setState(this.props.isLoading ? false : this.props.selected);
-        return {availableStore, assignedStore};
+        return { availableStore, assignedStore };
     },
 
     componentWillReceiveProps(nextProps) {
@@ -83,14 +83,14 @@ const MultiSelect = React.createClass({
 
         return (
             <div>
-                <label style={styles.labelStyle}>
-                    {label}
-                </label>
+                <label style={styles.labelStyle}>{label}</label>
 
                 <div>
-                    {errors.map((error, idx) =>
-                        <p key={idx} style={styles.errorStyle}>{error}</p>
-                    )}
+                    {errors.map((error, idx) => (
+                        <p key={idx} style={styles.errorStyle}>
+                            {error}
+                        </p>
+                    ))}
                 </div>
 
                 <SelectedGroupEditor

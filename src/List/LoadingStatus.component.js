@@ -1,6 +1,6 @@
-import React from 'react';
-import LinearProgress from 'material-ui/LinearProgress/LinearProgress';
-import PropTypes from 'prop-types';
+import React from "react";
+import LinearProgress from "material-ui/LinearProgress/LinearProgress";
+import PropTypes from "prop-types";
 
 export default React.createClass({
     propTypes: {
@@ -14,10 +14,10 @@ export default React.createClass({
     },
 
     render() {
-        if (!this.props.isLoading) { return null; }
+        if (!this.props.isLoading) {
+            return null;
+        }
 
-        return (
-            <LinearProgress mode="indeterminate" style={{ backgroundColor: 'lightblue' }} />
-        );
+        return <LinearProgress mode="indeterminate" style={{ backgroundColor: "lightblue" }} />;
     },
 });

@@ -1,7 +1,7 @@
-import { pick, merge, unzip, flatten, times, uniq } from 'lodash/fp';
-import { generateUid } from 'd2/lib/uid';
-import { getFromTemplate } from '../utils/template';
-import { parseResponse } from './userHelpers';
+import { pick, merge, unzip, flatten, times, uniq } from "lodash/fp";
+import { generateUid } from "d2/lib/uid";
+import { getFromTemplate } from "../utils/template";
+import { parseResponse } from "./userHelpers";
 
 class User {
     constructor(d2, attributes) {
@@ -24,16 +24,19 @@ class User {
         const usernames = getFromTemplate(usernameTemplate, count);
         const passwords = getFromTemplate(passwordTemplate, count);
         const values = [userIds, usernames, passwords];
-        const newUserFields = unzip(values).map(([id, username, password]) =>
-            ({ id, username, password }));
+        const newUserFields = unzip(values).map(([id, username, password]) => ({
+            id,
+            username,
+            password,
+        }));
 
         return this.replicateFromPlainFields(newUserFields);
     }
 
     // newUserFields: [{id, username, password, name, email}]
     replicateFromPlainFields(newUserFields) {
-        const optional = (value) => value || undefined;
-        const nullable = (value) => value || null;
+        const optional = value => value || undefined;
+        const nullable = value => value || null;
 
         const newUsersAttributes = newUserFields.map(userFields => ({
             id: userFields.id,
@@ -41,13 +44,13 @@ class User {
             firstName: optional(userFields.firstName),
             surname: optional(userFields.surname),
             userCredentials: {
-              id: generateUid(),
-              openId: nullable(userFields.openId),
-              ldapId: nullable(userFields.ldapId),
-              code: nullable(userFields.code),
-              userInfo: { id: userFields.id },
-              username: userFields.username,
-              password: userFields.password,
+                id: generateUid(),
+                openId: nullable(userFields.openId),
+                ldapId: nullable(userFields.ldapId),
+                code: nullable(userFields.code),
+                userInfo: { id: userFields.id },
+                username: userFields.username,
+                password: userFields.password,
             },
             organisationUnits: optional(userFields.organisationUnits),
             dataViewOrganisationUnits: optional(userFields.dataViewOrganisationUnits),
@@ -59,7 +62,9 @@ class User {
     async replicate(newUsersAttributes) {
         const ownedProperties = this.d2.models.user.getOwnedPropertyNames();
         const userJson = pick(ownedProperties, this.attributes);
-        const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
+        const newUsers = newUsersAttributes.map(newUserAttributes =>
+            merge(userJson, newUserAttributes)
+        );
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
         const { userGroups } = await this.api.get("/userGroups", {
             filter: "id:in:[" + userGroupIds.join(",") + "]",

@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Dialog, FlatButton, RaisedButton } from 'material-ui';
+import React from "react";
+import PropTypes from "prop-types";
+import { Dialog, FlatButton, RaisedButton } from "material-ui";
 
-import MultiSelect from '../components/MultiSelect.component';
-import snackActions from '../Snackbar/snack.actions';
+import MultiSelect from "../components/MultiSelect.component";
+import snackActions from "../Snackbar/snack.actions";
 
 class TableLayout extends React.Component {
     constructor(props, context) {
@@ -14,11 +14,11 @@ class TableLayout extends React.Component {
 
     styles = {
         wrapper: {
-            width: 'inherit',
-            position: 'relative',
+            width: "inherit",
+            position: "relative",
         },
         dialog: {
-            minWidth: '40%',
+            minWidth: "40%",
         },
         body: {
             marginBottom: 15,
@@ -31,41 +31,37 @@ class TableLayout extends React.Component {
     cancel = () => {
         this.onChange(this.initialSelected);
         this.props.onClose();
-    }
+    };
 
-    onChange = (selected) => {
+    onChange = selected => {
         this.props.onChange(selected);
-    }
+    };
 
     save = () => {
         const { selected } = this.props;
-        
+
         if (_(selected).isEmpty()) {
-            snackActions.show({ message: this.getTranslation('table_layout_at_least_one_column') });
+            snackActions.show({ message: this.getTranslation("table_layout_at_least_one_column") });
         } else {
             this.props.onSave();
         }
-    }
+    };
 
     getDialogButtons() {
         return [
             <FlatButton
-                label={this.getTranslation('cancel')}
+                label={this.getTranslation("cancel")}
                 onClick={this.cancel}
                 style={this.styles.cancelButton}
             />,
-            <RaisedButton
-                primary={true}
-                label={this.getTranslation('save')}
-                onClick={this.save}
-            />
+            <RaisedButton primary={true} label={this.getTranslation("save")} onClick={this.save} />,
         ];
     }
 
     render() {
         const { options, selected } = this.props;
         const title = this.getTranslation("layout_settings");
-        
+
         return (
             <div style={this.styles.wrapper}>
                 <Dialog

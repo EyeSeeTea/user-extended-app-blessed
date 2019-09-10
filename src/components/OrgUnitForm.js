@@ -1,22 +1,22 @@
-import React from 'react';
-import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
-import TextField from 'material-ui/TextField/TextField';
-import Action from 'd2-ui/lib/action/Action';
-import { Observable } from 'rxjs/Rx';
-import OrgUnitTree from 'd2-ui/lib/org-unit-tree/OrgUnitTree.component';
-import OrgUnitSelectByLevel from 'd2-ui/lib/org-unit-select/OrgUnitSelectByLevel.component';
-import OrgUnitSelectByGroup from 'd2-ui/lib/org-unit-select/OrgUnitSelectByGroup.component';
-import OrgUnitSelectAll from 'd2-ui/lib/org-unit-select/OrgUnitSelectAll.component';
-import PropTypes from 'prop-types';
-import _ from 'lodash';
-import { listWithInFilter } from '../utils/dhis2Helpers';
+import React from "react";
+import LoadingMask from "d2-ui/lib/loading-mask/LoadingMask.component";
+import TextField from "material-ui/TextField/TextField";
+import Action from "d2-ui/lib/action/Action";
+import { Observable } from "rxjs/Rx";
+import OrgUnitTree from "d2-ui/lib/org-unit-tree/OrgUnitTree.component";
+import OrgUnitSelectByLevel from "d2-ui/lib/org-unit-select/OrgUnitSelectByLevel.component";
+import OrgUnitSelectByGroup from "d2-ui/lib/org-unit-select/OrgUnitSelectByGroup.component";
+import OrgUnitSelectAll from "d2-ui/lib/org-unit-select/OrgUnitSelectAll.component";
+import PropTypes from "prop-types";
+import _ from "lodash";
+import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitForm extends React.Component {
     constructor(props, context) {
         super(props, context);
 
         this.state = {
-            searchValue: '',
+            searchValue: "",
             originalRoots: this.props.roots,
             rootOrgUnits: this.props.roots,
             groups: [],
@@ -24,7 +24,7 @@ class OrgUnitForm extends React.Component {
             loading: false,
         };
 
-        this._searchOrganisationUnits = Action.create('searchOrganisationUnits');
+        this._searchOrganisationUnits = Action.create("searchOrganisationUnits");
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
         this.toggleOrgUnit = this.toggleOrgUnit.bind(this);
         this.onChange = this.onChange.bind(this);
@@ -36,23 +36,19 @@ class OrgUnitForm extends React.Component {
         Promise.all([
             d2.models.organisationUnitLevels.list({
                 paging: false,
-                fields: 'id,level,displayName,path',
-                order: 'level:asc',
+                fields: "id,level,displayName,path",
+                order: "level:asc",
             }),
             d2.models.organisationUnitGroups.list({
                 paging: false,
-                fields: 'id,displayName,path',
+                fields: "id,displayName,path",
             }),
-        ])
-            .then(([
-                levels,
+        ]).then(([levels, groups]) => {
+            this.setState({
                 groups,
-            ]) => {
-                this.setState({
-                    groups,
-                    levels
-                });
+                levels,
             });
+        });
 
         this.disposable = this._searchOrganisationUnits
             .map(action => action.data)
@@ -63,14 +59,19 @@ class OrgUnitForm extends React.Component {
                     return Observable.of(this.state.originalRoots);
                 } else {
                     const organisationUnitRequest = this.context.d2.models.organisationUnits
-                        .filter().on('displayName').ilike(searchValue)
-                        .list({ fields: 'id,displayName,path,children::isNotEmpty', withinUserHierarchy: true })
+                        .filter()
+                        .on("displayName")
+                        .ilike(searchValue)
+                        .list({
+                            fields: "id,displayName,path,children::isNotEmpty",
+                            withinUserHierarchy: true,
+                        })
                         .then(modelCollection => modelCollection.toArray());
                     return Observable.fromPromise(organisationUnitRequest);
                 }
             })
             .concatAll()
-            .subscribe((orgUnits) => {
+            .subscribe(orgUnits => {
                 this.setState({ rootOrgUnits: orgUnits });
             });
     }
@@ -84,15 +85,19 @@ class OrgUnitForm extends React.Component {
         const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
-            fields: 'id,displayName,path',
+            fields: "id,displayName,path",
         });
 
         this.props.onChange(newSelected);
     }
 
     toggleOrgUnit(ev, orgUnitModel) {
-        const orgUnit = _(orgUnitModel).pick(["id", "path", "displayName"]).value();
-        const newSelected = _(this.props.selected).find(selectedOu => selectedOu.path === orgUnit.path)
+        const orgUnit = _(orgUnitModel)
+            .pick(["id", "path", "displayName"])
+            .value();
+        const newSelected = _(this.props.selected).find(
+            selectedOu => selectedOu.path === orgUnit.path
+        )
             ? this.props.selected.filter(selectedOu => selectedOu.path !== orgUnit.path)
             : this.props.selected.concat([orgUnit]);
         this.props.onChange(newSelected);
@@ -103,7 +108,7 @@ class OrgUnitForm extends React.Component {
 
         if (this.state.rootOrgUnits.length) {
             return (
-                <div style={{ maxHeight: 350, maxWidth: 480, overflow: 'auto' }}>
+                <div style={{ maxHeight: 350, maxWidth: 480, overflow: "auto" }}>
                     {this.state.rootOrgUnits.map(rootOu => (
                         <OrgUnitTree
                             key={rootOu.id}
@@ -118,37 +123,39 @@ class OrgUnitForm extends React.Component {
             );
         }
 
-        return (
-            <div>{this.context.d2.i18n.getTranslation('no_roots_found')}</div>
-        );
+        return <div>{this.context.d2.i18n.getTranslation("no_roots_found")}</div>;
     }
 
     render() {
         if (!this.state.rootOrgUnits) {
-            return (<div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>);
+            return <div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>;
         }
 
         const { root, models, intersectionPolicy } = this.props;
         const styles = {
             wrapper: {
-                position: 'relative',
-                height: 450, minHeight: 450, maxHeight: 450,
+                position: "relative",
+                height: 450,
+                minHeight: 450,
+                maxHeight: 450,
                 minWidth: 800,
             },
             loadingMask: {
-                position: 'fixed',
-                top: 54, right: 22,
+                position: "fixed",
+                top: 54,
+                right: 22,
                 width: 480,
                 height: 250,
-                background: 'rgba(255,255,255,0.6)',
+                background: "rgba(255,255,255,0.6)",
                 zIndex: 5,
             },
             controls: {
-                position: 'fixed',
-                top: 156, right: 24,
+                position: "fixed",
+                top: 156,
+                right: 24,
                 width: 575,
                 zIndex: 1,
-                background: 'white',
+                background: "white",
             },
         };
 
@@ -160,11 +167,15 @@ class OrgUnitForm extends React.Component {
                     <div style={styles.loadingMask}>
                         <LoadingMask />
                     </div>
-                ) : undefined}
+                ) : (
+                    undefined
+                )}
 
                 <TextField
-                    onChange={(event) => this._searchOrganisationUnits(event.target.value)}
-                    floatingLabelText={this.context.d2.i18n.getTranslation('filter_organisation_units_by_name')}
+                    onChange={event => this._searchOrganisationUnits(event.target.value)}
+                    floatingLabelText={this.context.d2.i18n.getTranslation(
+                        "filter_organisation_units_by_name"
+                    )}
                     fullWidth
                 />
 
@@ -189,7 +200,9 @@ class OrgUnitForm extends React.Component {
                     </div>
                 </div>
                 <div className="organisation-unit-tree__selected">
-                    {`${this.props.selected.length} ${this.getTranslation('organisation_units_selected')}`}
+                    {`${this.props.selected.length} ${this.getTranslation(
+                        "organisation_units_selected"
+                    )}`}
                 </div>
                 {this.renderRoots()}
             </div>

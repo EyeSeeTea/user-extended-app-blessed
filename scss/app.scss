@@ -1,29 +1,28 @@
 // Component stylesheets from dependencies
-@import '../node_modules/d2-ui/lib/css/DataTable';
-@import '../node_modules/d2-ui/lib/css/Pagination';
-@import '../node_modules/d2-ui/lib/css/HeaderBar';
+@import "../node_modules/d2-ui/lib/css/DataTable";
+@import "../node_modules/d2-ui/lib/css/Pagination";
+@import "../node_modules/d2-ui/lib/css/HeaderBar";
 
-@import 'variables';
-@import '../scss/List/DetailsBox';
-@import '../scss/List/List';
-@import '../scss/DataTable/DataTable';
-
+@import "variables";
+@import "../scss/List/DetailsBox";
+@import "../scss/List/List";
+@import "../scss/DataTable/DataTable";
 
 // Basic for all
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html {
-  background: $html-background-color;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
+    background: $html-background-color;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
 }
 
 #feedback-additional {
-  display: none;
+    display: none;
 }
 
 button:focus {
-  outline:none;
+    outline: none;
 }
