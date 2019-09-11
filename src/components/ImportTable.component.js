@@ -457,6 +457,8 @@ class ImportTable extends React.Component {
                 password: `District123_${index}`,
                 firstName: templateUser.attributes.firstName,
                 surname: templateUser.attributes.surname,
+                organisationUnits: templateUser.attributes.organisationUnits,
+                dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
             };
         } else {
             newUser = {
