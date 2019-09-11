@@ -1,13 +1,13 @@
-import React from 'react';
-import Dialog from 'material-ui/Dialog/Dialog';
-import FlatButton from 'material-ui/FlatButton/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-import Toggle from 'material-ui/Toggle/Toggle';
-import BatchModelsMultiSelectModel from '../../components/batch-models-multi-select/BatchModelsMultiSelect.model';
-import { getOwnedPropertyJSON } from 'd2/lib/model/helpers/json';
-import PropTypes from 'prop-types';
-import _m from '../../utils/lodash-mixins';
-import OrgUnitForm from '../../components/OrgUnitForm';
+import React from "react";
+import Dialog from "material-ui/Dialog/Dialog";
+import FlatButton from "material-ui/FlatButton/FlatButton";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import Toggle from "material-ui/Toggle/Toggle";
+import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
+import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
+import PropTypes from "prop-types";
+import _m from "../../utils/lodash-mixins";
+import OrgUnitForm from "../../components/OrgUnitForm";
 
 class OrgUnitDialog extends React.Component {
     constructor(props, context) {
@@ -21,7 +21,7 @@ class OrgUnitDialog extends React.Component {
                 users: pairs.map(([user, orgUnitsForUser]) =>
                     _m(getOwnedPropertyJSON(user))
                         .omit("userCredentials")
-                        .imerge({[props.field]: orgUnitsForUser.map(ou => ({id: ou.id}))})
+                        .imerge({ [props.field]: orgUnitsForUser.map(ou => ({ id: ou.id })) })
                         .value()
                 ),
             }),
@@ -44,19 +44,29 @@ class OrgUnitDialog extends React.Component {
     }
 
     _renderStrategyToggle() {
-        const {models} = this.props;
-        const {updateStrategy} = this.state;
+        const { models } = this.props;
+        const { updateStrategy } = this.state;
 
         if (models && models.length > 1) {
-            const label = this.getTranslation('update_strategy') + ": " +
-                this.getTranslation('update_strategy_' + updateStrategy);
+            const label =
+                this.getTranslation("update_strategy") +
+                ": " +
+                this.getTranslation("update_strategy_" + updateStrategy);
 
             return (
                 <Toggle
                     label={label}
                     checked={updateStrategy === "replace"}
-                    onToggle={(ev, newValue) => this.setState({updateStrategy: newValue ? "replace" : "merge"})}
-                    style={{width: 300, float: "right", marginTop: 20, marginRight: 15, marginBottom: -50}}
+                    onToggle={(ev, newValue) =>
+                        this.setState({ updateStrategy: newValue ? "replace" : "merge" })
+                    }
+                    style={{
+                        width: 300,
+                        float: "right",
+                        marginTop: 20,
+                        marginRight: 15,
+                        marginBottom: -50,
+                    }}
                 />
             );
         } else {
@@ -71,25 +81,27 @@ class OrgUnitDialog extends React.Component {
     save() {
         const { selected } = this.state;
 
-        this.setState({loading: true});
-        this.model.save(this.props.models, selected, selected.map(ou => ou.id), this.state.updateStrategy)
+        this.setState({ loading: true });
+        this.model
+            .save(this.props.models, selected, selected.map(ou => ou.id), this.state.updateStrategy)
             .then(() => {
-                this.setState({loading: false});
+                this.setState({ loading: false });
                 this.props.onOrgUnitAssignmentSaved();
                 this.props.onRequestClose();
             })
             .catch(err => {
-                this.setState({loading: false});
+                this.setState({ loading: false });
                 this.props.onOrgUnitAssignmentError(err);
                 this.props.onRequestClose();
             });
     }
 
     render() {
-        const {root, title, models} = this.props;
+        const { root, title, models } = this.props;
         const styles = {
             dialog: {
-                minWidth: 875, maxWidth: '100%',
+                minWidth: 875,
+                maxWidth: "100%",
             },
             cancelButton: {
                 marginRight: 16,
@@ -98,14 +110,14 @@ class OrgUnitDialog extends React.Component {
 
         const dialogActions = [
             <FlatButton
-                label={this.getTranslation('cancel')}
+                label={this.getTranslation("cancel")}
                 onClick={this.props.onRequestClose}
                 style={styles.cancelButton}
                 disabled={this.state.loading}
             />,
             <RaisedButton
                 primary
-                label={this.getTranslation('save')}
+                label={this.getTranslation("save")}
                 onClick={this.save}
                 disabled={this.state.loading}
             />,

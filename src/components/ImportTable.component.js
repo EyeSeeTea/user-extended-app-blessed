@@ -1,41 +1,48 @@
-import React from 'react';
-import _ from 'lodash';
-import memoize from 'memoize-weak';
-import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores'
-import PropTypes from 'prop-types';
-import Dialog from 'material-ui/Dialog/Dialog';
-import FlatButton from 'material-ui/FlatButton/FlatButton';
-import TextField from 'material-ui/TextField/TextField';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
-import Chip from 'material-ui/Chip';
-import Toggle from 'material-ui/Toggle/Toggle';
-import Validators from 'd2-ui/lib/forms/Validators';
-import FormBuilder from 'd2-ui/lib/forms/FormBuilder.component';
-import { generateUid } from 'd2/lib/uid';
-import { OrderedMap } from 'immutable';
-import FontIcon from 'material-ui/FontIcon';
-import IconButton from 'material-ui/IconButton';
+import React from "react";
+import _ from "lodash";
+import memoize from "memoize-weak";
+import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
+import PropTypes from "prop-types";
+import Dialog from "material-ui/Dialog/Dialog";
+import FlatButton from "material-ui/FlatButton/FlatButton";
+import TextField from "material-ui/TextField/TextField";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import {
+    Table,
+    TableBody,
+    TableHeader,
+    TableHeaderColumn,
+    TableRow,
+    TableRowColumn,
+} from "material-ui/Table";
+import Chip from "material-ui/Chip";
+import Toggle from "material-ui/Toggle/Toggle";
+import Validators from "d2-ui/lib/forms/Validators";
+import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
+import { generateUid } from "d2/lib/uid";
+import { OrderedMap } from "immutable";
+import FontIcon from "material-ui/FontIcon";
+import IconButton from "material-ui/IconButton";
 
-import { toBuilderValidator, validateUsername, validatePassword } from '../utils/validators';
-import User from '../models/user';
-import { getExistingUsers } from '../models/userHelpers'
-import snackActions from '../Snackbar/snack.actions';
-import ModalLoadingMask from './ModalLoadingMask.component';
-import LoadingMask from '../loading-mask/LoadingMask.component';
-import InfoDialog from './InfoDialog';
-import MultipleSelector from './MultipleSelector.component';
-import { getModelValuesByField } from '../utils/dhis2Helpers';
-import { getCompactTextForModels } from '../utils/i18n';
-import { getOrgUnitsRoots } from '../utils/dhis2Helpers';
+import { toBuilderValidator, validateUsername, validatePassword } from "../utils/validators";
+import User from "../models/user";
+import { getExistingUsers } from "../models/userHelpers";
+import snackActions from "../Snackbar/snack.actions";
+import ModalLoadingMask from "./ModalLoadingMask.component";
+import LoadingMask from "../loading-mask/LoadingMask.component";
+import InfoDialog from "./InfoDialog";
+import MultipleSelector from "./MultipleSelector.component";
+import { getModelValuesByField } from "../utils/dhis2Helpers";
+import { getCompactTextForModels } from "../utils/i18n";
+import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
 
 const styles = {
     dialog: {
-        width: '95%',
-        maxWidth: 'none',
+        width: "95%",
+        maxWidth: "none",
     },
     dialogBody: {
-        paddingTop: '10px',
+        paddingTop: "10px",
     },
     tableWrapper: {
         overflow: "visible",
@@ -57,8 +64,8 @@ const styles = {
         margin: "0px 0px -1px",
         padding: "24px 24px 20px",
         fontSize: 24,
-        fontWeight: '400',
-        lineHeight: '32px',
+        fontWeight: "400",
+        lineHeight: "32px",
         display: "inline",
     },
     header: {
@@ -74,14 +81,14 @@ const styles = {
         border: "none",
     },
     rowExistingUser: {
-      border: "none",
-      backgroundColor: "#FDD",
+        border: "none",
+        backgroundColor: "#FDD",
     },
     chipExistingUser: {
-      backgroundColor: "#FAA",
+        backgroundColor: "#FAA",
     },
     removeIcon: {
-        cursor: 'pointer',
+        cursor: "pointer",
     },
     warningsInfo: {
         textAlign: "left",
@@ -99,15 +106,15 @@ const styles = {
     },
     actionsHeader: {
         width: 50,
-        paddingLeft: '10px',
-        paddingRight: '10px',
-        overflow: 'visible',
+        paddingLeft: "10px",
+        paddingRight: "10px",
+        overflow: "visible",
     },
     cancelButton: {
         marginRight: 16,
     },
 };
-                                
+
 class ImportTable extends React.Component {
     constructor(props, context) {
         super(props);
@@ -118,12 +125,14 @@ class ImportTable extends React.Component {
 
         this.getRemoveRowHandler = memoize(userId => () => this.removeRow(userId));
         this.getOnUpdateField = memoize(userId => (...args) => this.onUpdateField(userId, ...args));
-        this.getOnUpdateFormStatus = memoize(userId => (...args) => this.onUpdateFormStatus(userId, ...args));
+        this.getOnUpdateFormStatus = memoize(userId => (...args) =>
+            this.onUpdateFormStatus(userId, ...args)
+        );
         this.getActionsByState = memoize(this.getActionsByState.bind(this));
-        this.getOnTextFieldClicked = memoize((...args) => (ev) => this.onTextFieldClicked(...args));
+        this.getOnTextFieldClicked = memoize((...args) => ev => this.onTextFieldClicked(...args));
 
         this.fieldsInfo = this.getFieldsInfo();
-        this.usersValidation = {} // {USER_ID: true | false}
+        this.usersValidation = {}; // {USER_ID: true | false}
         this.validateOnNextRender();
 
         this.state = {
@@ -173,7 +182,7 @@ class ImportTable extends React.Component {
         return _.compact([
             showOverwriteToggle && !templateUser && (
                 <Toggle
-                    label={this.t('overwrite_existing_users')}
+                    label={this.t("overwrite_existing_users")}
                     labelPosition="right"
                     toggled={allowOverwrite}
                     onToggle={this.toggleAllowOverwrite}
@@ -181,7 +190,7 @@ class ImportTable extends React.Component {
                 />
             ),
             <FlatButton
-                label={this.t('close')}
+                label={this.t("close")}
                 onClick={onRequestClose}
                 style={styles.cancelButton}
             />,
@@ -228,14 +237,14 @@ class ImportTable extends React.Component {
         );
 
         this.validateOnNextRender(shouldRender);
-        this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {})});
+        this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {}) });
 
         // Force a full validation when a username changed:
         //   1) to check uniqueness across the table
         //   2) to disable password validation on existing user
         if (name === "username") {
             this.validateOnNextRender();
-        };
+        }
     }
 
     onUpdateFormStatus(userId, formStatus) {
@@ -258,7 +267,7 @@ class ImportTable extends React.Component {
             so it's not necessary to pass down the new values (through props) to see the changes.
         */
         const changedStateKeys = _(this.state)
-            .map((value, key) => nextState[key] !== value ? key : null)
+            .map((value, key) => (nextState[key] !== value ? key : null))
             .compact()
             .value();
 
@@ -272,7 +281,7 @@ class ImportTable extends React.Component {
             this.getUsersWithDuplicatedUsername(nextState.users)
         );
 
-        const updateFromProps = (this.props !== nextProps);
+        const updateFromProps = this.props !== nextProps;
         const updateFromState = !(
             !changeInExistingUsernames &&
             !changeInDuplicatedUsernames &&
@@ -285,7 +294,7 @@ class ImportTable extends React.Component {
 
     closeInfoDialog = () => {
         this.setState({ infoDialog: null });
-    }
+    };
 
     getUsersWithExistingUsername(users, existingUsernames) {
         return _(users.valueSeq().toJS())
@@ -297,15 +306,17 @@ class ImportTable extends React.Component {
     getUsersWithDuplicatedUsername(users) {
         return _(users.valueSeq().toJS())
             .groupBy("username")
-            .flatMap((usersWithUsername, username) => usersWithUsername.length > 1 ? usersWithUsername : [])
+            .flatMap((usersWithUsername, username) =>
+                usersWithUsername.length > 1 ? usersWithUsername : []
+            )
             .map("id")
             .value();
     }
 
-    getUsernamesInTable({skipId} = {}) {
+    getUsernamesInTable({ skipId } = {}) {
         const { users } = this.state;
         const usernames = _(users.valueSeq().toJS())
-            .map(user => user.id !== skipId ? user.username : null)
+            .map(user => (user.id !== skipId ? user.username : null))
             .compact()
             .value();
         return new Set(usernames);
@@ -328,12 +339,13 @@ class ImportTable extends React.Component {
                 message: this.t(Validators.isEmail.message),
             },
             isUsernameNonExisting: toBuilderValidator(
-                (username, userId) => validateUsername(
-                    this.state.allowOverwrite ? new Set() : this.state.existingUsernames,
-                    this.getUsernamesInTable({skipId: userId}),
-                    username
-                ),
-                (username, error) => this.t(`username_${error}`, { username }),
+                (username, userId) =>
+                    validateUsername(
+                        this.state.allowOverwrite ? new Set() : this.state.existingUsernames,
+                        this.getUsernamesInTable({ skipId: userId }),
+                        username
+                    ),
+                (username, error) => this.t(`username_${error}`, { username })
             ),
             isValidPassword: toBuilderValidator(
                 (password, userId) => {
@@ -342,7 +354,7 @@ class ImportTable extends React.Component {
                     const allowEmptyPassword = existingUsernames.has(users.get(userId).username);
                     return validatePassword(password, { allowEmpty: allowEmptyPassword });
                 },
-                (password, error) => this.t(`password_${error}`),
+                (password, error) => this.t(`password_${error}`)
             ),
         };
 
@@ -369,7 +381,7 @@ class ImportTable extends React.Component {
         this.setState({
             multipleSelector: { user, field, selected, options },
         });
-    }
+    };
 
     getTextField(name, value, { validators, component, extraProps }) {
         return {
@@ -396,25 +408,34 @@ class ImportTable extends React.Component {
 
             if (isMultipleValue) {
                 const values = value || [];
-                const compactValue = _(values).isEmpty() ? "-" :
-                    `[${values.length}] ` + getCompactTextForModels(this.context.d2, values, { limit: 1 });
-                const hoverText = _(values).map("displayName").join(", ");
+                const compactValue = _(values).isEmpty()
+                    ? "-"
+                    : `[${values.length}] ` +
+                      getCompactTextForModels(this.context.d2, values, { limit: 1 });
+                const hoverText = _(values)
+                    .map("displayName")
+                    .join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
                 return this.getTextField(field, compactValue, {
                     validators,
-                    component: (props) =>
+                    component: props => (
                         <TextField
                             {...props}
                             value={compactValue}
                             title={hoverText}
                             onClick={onClick}
                             onChange={onClick}
-                        />,
+                        />
+                    ),
                 });
             } else {
-                const extraProps = {changeEvent: 'onBlur'};
-                return this.getTextField(field, value, { component: TextField, validators, extraProps });
+                const extraProps = { changeEvent: "onBlur" };
+                return this.getTextField(field, value, {
+                    component: TextField,
+                    validators,
+                    extraProps,
+                });
             }
         });
     }
@@ -427,7 +448,9 @@ class ImportTable extends React.Component {
 
         if (templateUser) {
             const invalidUsernames = this.getInvalidUsernames();
-            const index = _.range(1, 1000).find(i => !invalidUsernames.has(`${templateUser.username}_${i}`));
+            const index = _.range(1, 1000).find(
+                i => !invalidUsernames.has(`${templateUser.username}_${i}`)
+            );
             newUser = {
                 id: generateUid(),
                 username: `${templateUser.username}_${index}`,
@@ -445,16 +468,18 @@ class ImportTable extends React.Component {
 
         this.setState({ users: users.set(newUser.id, newUser) });
         this.validateOnNextRender();
-    }
+    };
 
-    removeRow = (userId) => {
+    removeRow = userId => {
         const { users } = this.state;
         const { usersValidation } = this;
 
         this.setState({ users: users.remove(userId) });
-        this.usersValidation = _(usersValidation).omit(userId).value();
+        this.usersValidation = _(usersValidation)
+            .omit(userId)
+            .value();
         this.validateOnNextRender();
-    }
+    };
 
     renderTableRow = ({ id: userId, children }) => {
         const { users, existingUsers, existingUsernames, allowOverwrite } = this.state;
@@ -479,7 +504,7 @@ class ImportTable extends React.Component {
                 <TableRowColumn style={styles.actionsHeader}>
                     <IconButton
                         style={styles.removeIcon}
-                        title={this.t('remove_user')}
+                        title={this.t("remove_user")}
                         onClick={this.getRemoveRowHandler(userId)}
                     >
                         <FontIcon className="material-icons">delete</FontIcon>
@@ -487,7 +512,7 @@ class ImportTable extends React.Component {
                 </TableRowColumn>
             </TableRow>
         );
-    }
+    };
 
     componentDidUpdate() {
         // After a render, unset validateOnRender to avoid infinite loops of FormBuilder render/validation
@@ -495,7 +520,7 @@ class ImportTable extends React.Component {
     }
 
     renderTableRowColumn({ children }) {
-        return <TableRowColumn style={styles.cell}>{children}</TableRowColumn>
+        return <TableRowColumn style={styles.cell}>{children}</TableRowColumn>;
     }
 
     renderTable() {
@@ -504,7 +529,8 @@ class ImportTable extends React.Component {
         const { maxUsers } = this.props;
         const canAddNewUser = users.size < maxUsers;
         const headers = this.getColumns().map(camelCaseToUnderscores);
-        const getColumnName = header => _(d2.i18n.translations).has(header) ? this.t(header) : header;
+        const getColumnName = header =>
+            _(d2.i18n.translations).has(header) ? this.t(header) : header;
 
         return (
             <div>
@@ -517,17 +543,17 @@ class ImportTable extends React.Component {
                     <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
                             <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
-                            {headers.map(header =>
+                            {headers.map(header => (
                                 <TableHeaderColumn key={header} style={styles.header}>
                                     {getColumnName(header)}
                                 </TableHeaderColumn>
-                            )}
+                            ))}
                             <TableHeaderColumn style={styles.actionsHeader}></TableHeaderColumn>
                         </TableRow>
                     </TableHeader>
 
                     <TableBody displayRowCheckbox={false}>
-                        {_.map(users.valueSeq().toJS(), user =>
+                        {_.map(users.valueSeq().toJS(), user => (
                             <FormBuilder
                                 key={"form-" + user.id}
                                 id={user.id}
@@ -540,14 +566,14 @@ class ImportTable extends React.Component {
                                 mainWrapper={this.renderTableRow}
                                 fieldWrapper={this.renderTableRowColumn}
                             />
-                        )}
+                        ))}
                     </TableBody>
                 </Table>
 
                 <div style={styles.addRowButton}>
                     <RaisedButton
                         disabled={!canAddNewUser}
-                        label={this.t('add_user')}
+                        label={this.t("add_user")}
                         onClick={this.addRow}
                     />
                 </div>
@@ -572,50 +598,61 @@ class ImportTable extends React.Component {
             console.error(err);
             this.setState({ isImporting: false });
         }
-    }
+    };
 
     toggleAllowOverwrite = () => {
         this.setState({
             allowOverwrite: !this.state.allowOverwrite,
         });
         this.validateOnNextRender();
-    }
+    };
 
     onMultipleSelectorClose = () => {
         this.setState({ multipleSelector: null });
-    }
+    };
 
     onMultipleSelectorChange = (selectedObjects, field, user) => {
         this.onUpdateField(user.id, field, selectedObjects);
         this.setState({ multipleSelector: null });
-    }
+    };
 
     renderDialogTitle() {
         const { title, warnings } = this.props;
-        const errorsCount = _(this.usersValidation).values().sumBy(isValid => isValid ? 0 : 1);
-        const errorText = errorsCount === 0 ? null : this.t('errors_on_table', { n: errorsCount });
+        const errorsCount = _(this.usersValidation)
+            .values()
+            .sumBy(isValid => (isValid ? 0 : 1));
+        const errorText = errorsCount === 0 ? null : this.t("errors_on_table", { n: errorsCount });
         const maxWarnings = 10;
         const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
 
-        const warningText = warnings.length === 0 ? null : _([
-            this.t('warnings', { n: warnings.length }) + ":",
-            ..._(warnings).take(maxWarnings).map((line, idx) => `${idx+1}. ${line}`),
-            hiddenWarnings > 0 ? this.t('and_n_more_warnings', {n: hiddenWarnings}) : null,
-        ]).compact().join("\n");
+        const warningText =
+            warnings.length === 0
+                ? null
+                : _([
+                      this.t("warnings", { n: warnings.length }) + ":",
+                      ..._(warnings)
+                          .take(maxWarnings)
+                          .map((line, idx) => `${idx + 1}. ${line}`),
+                      hiddenWarnings > 0
+                          ? this.t("and_n_more_warnings", { n: hiddenWarnings })
+                          : null,
+                  ])
+                      .compact()
+                      .join("\n");
 
         return (
             <div>
                 <h3 style={styles.dialogTitle}>{title}</h3>
-                {errorText &&
+                {errorText && (
                     <span title={errorText} style={styles.dialogIcons}>
                         <FontIcon className="material-icons">error</FontIcon>
                     </span>
-                }
-                {warningText &&
+                )}
+                {warningText && (
                     <span title={warningText} style={styles.dialogIcons}>
                         <FontIcon className="material-icons">warning</FontIcon>
                     </span>
-                }
+                )}
             </div>
         );
     }
@@ -626,12 +663,24 @@ class ImportTable extends React.Component {
 
     render() {
         const { onRequestClose, onSave } = this.props;
-        const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } = this.state;
+        const {
+            infoDialog,
+            users,
+            isLoading,
+            existingUsernames,
+            allowOverwrite,
+            areUsersValid,
+            isImporting,
+        } = this.state;
         const { multipleSelector, modelValuesByField, orgUnitRoots } = this.state;
 
         const duplicatedUsernamesExist = this.getDuplicatedUsernamesExist(users, existingUsernames);
         const showProcessButton = !users.isEmpty() && areUsersValid;
-        const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
+        const actions = this.getActionsByState(
+            allowOverwrite,
+            duplicatedUsernamesExist,
+            showProcessButton
+        );
         const dialogTitle = this.renderDialogTitle();
 
         return (
@@ -646,11 +695,11 @@ class ImportTable extends React.Component {
                 bodyStyle={styles.dialogBody}
                 onRequestClose={onRequestClose}
             >
-                {isImporting && <ModalLoadingMask /> }
+                {isImporting && <ModalLoadingMask />}
 
                 {isLoading ? <LoadingMask /> : this.renderTable()}
 
-                {multipleSelector &&
+                {multipleSelector && (
                     <MultipleSelector
                         field={multipleSelector.field}
                         selected={multipleSelector.selected}
@@ -660,16 +709,16 @@ class ImportTable extends React.Component {
                         data={multipleSelector.user}
                         orgUnitRoots={orgUnitRoots}
                     />
-                }
+                )}
 
-                {infoDialog &&
+                {infoDialog && (
                     <InfoDialog
                         t={this.t}
                         title={this.t("metadata_error")}
                         onClose={this.closeInfoDialog}
                         response={infoDialog.response}
                     />
-                }
+                )}
             </Dialog>
         );
     }

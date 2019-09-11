@@ -1,33 +1,33 @@
-import _ from 'lodash';
-import moment from 'moment';
-import Papa from 'papaparse';
-import { generateUid } from 'd2/lib/uid';
+import _ from "lodash";
+import moment from "moment";
+import Papa from "papaparse";
+import { generateUid } from "d2/lib/uid";
 
-import { mapPromise, listWithInFilter } from '../utils/dhis2Helpers';
+import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
 
 const queryFields = [
-    'displayName|rename(name)',
-    'shortName',
-    'firstName',
-    'surname',
-    'created',
-    'email',
-    'id',
-    'userCredentials[username,disabled,userRoles[id,displayName],lastLogin]',
-    'lastUpdated',
-    'created',
-    'displayDescription',
-    'code',
-    'publicAccess',
-    'access',
-    'href',
-    'level',
-    'userGroups[id,displayName,publicAccess]',
-    'organisationUnits[id,code,displayName]',
-    'dataViewOrganisationUnits[id,code,displayName]',
+    "displayName|rename(name)",
+    "shortName",
+    "firstName",
+    "surname",
+    "created",
+    "email",
+    "id",
+    "userCredentials[username,disabled,userRoles[id,displayName],lastLogin]",
+    "lastUpdated",
+    "created",
+    "displayDescription",
+    "code",
+    "publicAccess",
+    "access",
+    "href",
+    "level",
+    "userGroups[id,displayName,publicAccess]",
+    "organisationUnits[id,code,displayName]",
+    "dataViewOrganisationUnits[id,code,displayName]",
 ].join(",");
 
 /*
@@ -75,25 +75,42 @@ const queryFieldsByModel = {
     userRoles: ["id", "displayName"],
     userGroups: ["id", "displayName"],
     organisationUnits: ["id", "path", "code", "displayName"],
-}
+};
 
 async function getAssociations(d2, objs, { orgUnitsField }) {
     const valuesByField = _(modelByField)
         .flatMap((model, _field) =>
-            objs.map(obj => ({ model, value: (obj[_field] || "").split(fieldSplitChar).map(s => s.trim()) }))
+            objs.map(obj => ({
+                model,
+                value: (obj[_field] || "").split(fieldSplitChar).map(s => s.trim()),
+            }))
         )
         .groupBy("model")
-        .mapValues(vs => _(vs).flatMap("value").uniq().compact().value())
+        .mapValues(vs =>
+            _(vs)
+                .flatMap("value")
+                .uniq()
+                .compact()
+                .value()
+        )
         .pickBy(vs => !_(vs).isEmpty())
         .value();
 
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
         const matchField = model === "organisationUnits" ? orgUnitsField : "displayName";
-        const models = await listWithInFilter(d2.models[model], matchField, values,
-                { fields: fields.join(","), paging: false },
-                { useInOperator: false })
-            .then(models => _(models).map(model => _.pick(model, fields)).keyBy(matchField).value());
+        const models = await listWithInFilter(
+            d2.models[model],
+            matchField,
+            values,
+            { fields: fields.join(","), paging: false },
+            { useInOperator: false }
+        ).then(models =>
+            _(models)
+                .map(model => _.pick(model, fields))
+                .keyBy(matchField)
+                .value()
+        );
         return [model, models];
     });
 
@@ -101,9 +118,17 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
 }
 
 function buildD2Filter(filters) {
-    return filters
-        .map(([key, [operator, value]]) =>
-            [key, operator, _.isArray(value) ? `[${_(value).take(maxUids).join(",")}]` : value].join(":"));
+    return filters.map(([key, [operator, value]]) =>
+        [
+            key,
+            operator,
+            _.isArray(value)
+                ? `[${_(value)
+                      .take(maxUids)
+                      .join(",")}]`
+                : value,
+        ].join(":")
+    );
 }
 
 function getColumnNameFromProperty(property) {
@@ -126,12 +151,21 @@ function namesFromCollection(collection, field) {
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
     const namesString = user[field];
-    const names = (namesString || "").split(fieldSplitChar).map(_.trim).filter(s => s);
+    const names = (namesString || "")
+        .split(fieldSplitChar)
+        .map(_.trim)
+        .filter(s => s);
     const missingValues = _.difference(names, _.keys(objectsByName));
     const { username } = user;
-    const warnings = missingValues.map(missingValue =>
-        `Value not found: ${missingValue} [username=${username || "-"} csv-row=${rowIndex} csv-column=${field}]`);
-    const objects = _(objectsByName).at(names).compact().value();
+    const warnings = missingValues.map(
+        missingValue =>
+            `Value not found: ${missingValue} [username=${username ||
+                "-"} csv-row=${rowIndex} csv-column=${field}]`
+    );
+    const objects = _(objectsByName)
+        .at(names)
+        .compact()
+        .value();
     return { objects, warnings };
 }
 
@@ -147,7 +181,10 @@ function getPlainUser(user, { orgUnitsField }) {
         userRoles: namesFromCollection(userCredentials.userRoles, "displayName"),
         userGroups: namesFromCollection(user.userGroups, "displayName"),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
-        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
+        dataViewOrganisationUnits: namesFromCollection(
+            user.dataViewOrganisationUnits,
+            orgUnitsField
+        ),
     };
 }
 
@@ -156,11 +193,26 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const relationships = {
         userRoles: collectionFromNames(user, rowIndex, "userRoles", byField.userRoles),
         userGroups: collectionFromNames(user, rowIndex, "userGroups", byField.userGroups),
-        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byField.organisationUnits),
-        dataViewOrganisationUnits: collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byField.organisationUnits),
+        organisationUnits: collectionFromNames(
+            user,
+            rowIndex,
+            "organisationUnits",
+            byField.organisationUnits
+        ),
+        dataViewOrganisationUnits: collectionFromNames(
+            user,
+            rowIndex,
+            "dataViewOrganisationUnits",
+            byField.organisationUnits
+        ),
     };
-    const warnings = _(relationships).values().flatMap("warnings").value();
-    const objectRelationships = _(relationships).mapValues("objects").value();
+    const warnings = _(relationships)
+        .values()
+        .flatMap("warnings")
+        .value();
+    const objectRelationships = _(relationships)
+        .mapValues("objects")
+        .value();
     const plainUser = _(_.clone(user))
         .assign(objectRelationships)
         .omit(propertiesIgnoredOnImport)
@@ -172,10 +224,17 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
 
 async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     const columnNames = _.first(csv.data);
-    const rows = maxUsers ? _(csv.data).drop(1).take(maxUsers).value() : _(csv.data).drop(1).value();
+    const rows = maxUsers
+        ? _(csv.data)
+              .drop(1)
+              .take(maxUsers)
+              .value()
+        : _(csv.data)
+              .drop(1)
+              .value();
 
     const plainUserAttributes = _(d2.models.users.modelValidations)
-        .map((value, key) => _(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null)
+        .map((value, key) => (_(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null))
         .compact()
         .value();
 
@@ -186,17 +245,27 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
 
     // Column properties can be human names (propertyFromColumnNameMapping) or direct key values
     const csvColumnProperties = _(columnNames)
-        .map(columnName =>
-            propertyFromColumnNameMapping[columnName] ||
-                (_(knownColumnNames).includes(columnName) ? columnName : undefined))
+        .map(
+            columnName =>
+                propertyFromColumnNameMapping[columnName] ||
+                (_(knownColumnNames).includes(columnName) ? columnName : undefined)
+        )
         .value();
-    const columnMapping = _(columnNames).zip(csvColumnProperties).fromPairs().value();
+    const columnMapping = _(columnNames)
+        .zip(csvColumnProperties)
+        .fromPairs()
+        .value();
 
     // Insert password column after username if not found
     const usernameIdx = csvColumnProperties.indexOf("username");
-    const columnProperties = !csvColumnProperties.includes("password") && usernameIdx >= 0
-        ? [...csvColumnProperties.slice(0, usernameIdx + 1), "password", ...csvColumnProperties.slice(usernameIdx + 1)]
-        : csvColumnProperties;
+    const columnProperties =
+        !csvColumnProperties.includes("password") && usernameIdx >= 0
+            ? [
+                  ...csvColumnProperties.slice(0, usernameIdx + 1),
+                  "password",
+                  ...csvColumnProperties.slice(usernameIdx + 1),
+              ]
+            : csvColumnProperties;
 
     const validColumnProperties = _(columnProperties)
         .intersection(knownColumnNames)
@@ -205,7 +274,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
 
     const unknownColumns = _(columnMapping)
         .toPairs()
-        .map(([columnName, property]) => !property ? columnName : undefined)
+        .map(([columnName, property]) => (!property ? columnName : undefined))
         .compact()
         .value();
 
@@ -217,7 +286,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
             errors: [`Missing required properties: ${missingProperties.join(", ")}`],
         };
     } else {
-        const ignoredRows = (csv.data.length - 1 - rows.length);
+        const ignoredRows = csv.data.length - 1 - rows.length;
         const baseWarnings = _.compact([
             _(unknownColumns).isEmpty() ? null : `Unknown columns: ${unknownColumns.join(", ")}`,
             ignoredRows > 0 ? `maxRows=${maxUsers}, ${ignoredRows} rows ignored` : null,
@@ -225,17 +294,20 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const userRows = rows.map(row =>
             _(csvColumnProperties)
                 .zip(row)
-                .map(([property, value]) => property ? [property, value] : undefined)
+                .map(([property, value]) => (property ? [property, value] : undefined))
                 .compact()
                 .fromPairs()
                 .value()
         );
         const modelValuesByField = await getAssociations(d2, userRows, { orgUnitsField });
         const data = userRows.map((userRow, rowIndex) =>
-            getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2));
+            getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
+        );
         const users = data.map(o => o.user);
-        const userWarnings = _(data).flatMap(o => o.warnings).value();
-        const warnings = [...baseWarnings, ...userWarnings]
+        const userWarnings = _(data)
+            .flatMap(o => o.warnings)
+            .value();
+        const warnings = [...baseWarnings, ...userWarnings];
 
         return {
             success: true,
@@ -249,13 +321,20 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
 function parseResponse(response, payload) {
     if (!response) {
         return { success: false };
-    } else if (response.status !== 'OK') {
-        const toArray = xs => (xs || []);
-        const errors = toArray(response && response.typeReports)
-            .map(typeReport => toArray(typeReport.objectReports)
-                .map(objectReport => objectReport.errorReports
-                    .map(errorReport => [errorReport.mainKlass, errorReport.message].join(" - "))));
-        const error = _(errors).flatten().flatten().uniq().join("\n");
+    } else if (response.status !== "OK") {
+        const toArray = xs => xs || [];
+        const errors = toArray(response && response.typeReports).map(typeReport =>
+            toArray(typeReport.objectReports).map(objectReport =>
+                objectReport.errorReports.map(errorReport =>
+                    [errorReport.mainKlass, errorReport.message].join(" - ")
+                )
+            )
+        );
+        const error = _(errors)
+            .flatten()
+            .flatten()
+            .uniq()
+            .join("\n");
         return { success: false, response, error, payload };
     } else {
         return { success: true, response, payload };
@@ -267,7 +346,11 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
 
     const userRoot = {
         ...baseUser,
-        ...clean(_(userFields).omit(userCredentialsFields).value()),
+        ...clean(
+            _(userFields)
+                .omit(userCredentialsFields)
+                .value()
+        ),
         id: baseUser.id || userFields.id,
     };
 
@@ -275,8 +358,12 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
         ...userRoot,
         userCredentials: {
             ...baseUser.userCredentials,
-            ...clean(_(userFields).pick(userCredentialsFields).value()),
-            id: baseUser.userCredentials && baseUser.userCredentials.id || generateUid(),
+            ...clean(
+                _(userFields)
+                    .pick(userCredentialsFields)
+                    .value()
+            ),
+            id: (baseUser.userCredentials && baseUser.userCredentials.id) || generateUid(),
             userInfo: { id: userRoot.id },
         },
     };
@@ -284,13 +371,18 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
 
 function getUsersToSave(users, existingUsersToUpdate) {
     const usersByUsername = _.keyBy(users, "username");
-    const existingUsernamesSet = new Set(existingUsersToUpdate.map(user => user.userCredentials.username));
+    const existingUsernamesSet = new Set(
+        existingUsersToUpdate.map(user => user.userCredentials.username)
+    );
     const usersToCreate = _(users)
         .filter(user => !existingUsernamesSet.has(user.username))
         .map(userAttributes => getUserPayloadFromPlainAttributes({}, userAttributes))
         .value();
     const usersToUpdate = existingUsersToUpdate.map(existingUser =>
-        getUserPayloadFromPlainAttributes(existingUser, usersByUsername[existingUser.userCredentials.username])
+        getUserPayloadFromPlainAttributes(
+            existingUser,
+            usersByUsername[existingUser.userCredentials.username]
+        )
     );
     return usersToCreate.concat(usersToUpdate);
 }
@@ -311,7 +403,9 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
         .map(user => [user.userCredentials.username, (user.userGroups || []).map(ug => ug.id)])
         .fromPairs()
         .value();
-    const allUsers = await getExistingUsers(d2, { fields: "id,userGroups[id],userCredentials[username]" });
+    const allUsers = await getExistingUsers(d2, {
+        fields: "id,userGroups[id],userCredentials[username]",
+    });
     const userGroupsInvolved = _(usersToSave)
         .concat(existingUsersToUpdate)
         .flatMap("userGroups")
@@ -321,15 +415,21 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
         .concat(allUsers)
         .uniqBy(user => user.userCredentials.username)
         .flatMap(user => {
-            const userGroupIds = userGroupsByUsername[user.userCredentials.username] ||
+            const userGroupIds =
+                userGroupsByUsername[user.userCredentials.username] ||
                 user.userGroups.map(ug => ug.id);
-            return userGroupIds.map(userGroupId => ({ user, userGroupId }))
+            return userGroupIds.map(userGroupId => ({ user, userGroupId }));
         })
         .groupBy("userGroupId")
         .mapValues(items => items.map(item => item.user))
         .value();
     const { userGroups } = await api.get("/userGroups", {
-        filter: "id:in:[" + _(userGroupsInvolved).map("id").join(",") + "]",
+        filter:
+            "id:in:[" +
+            _(userGroupsInvolved)
+                .map("id")
+                .join(",") +
+            "]",
         fields: ":owner",
         paging: false,
     });
@@ -349,7 +449,7 @@ function postMetadata(api, payload) {
             payload,
             error: error ? error.message || error.toString() : "Unknown",
         }));
-    }
+}
 
 /* Public interface */
 
@@ -357,9 +457,17 @@ async function updateUsers(d2, users, mapper) {
     const api = d2.Api.getApi();
     const existingUsers = await getExistingUsers(d2, {
         fields: ":owner",
-        filter: "id:in:[" + _(users).map("id").join(",") + "]",
+        filter:
+            "id:in:[" +
+            _(users)
+                .map("id")
+                .join(",") +
+            "]",
     });
-    const usersToSave = _(existingUsers).map(mapper).compact().value();
+    const usersToSave = _(existingUsers)
+        .map(mapper)
+        .compact()
+        .value();
     const payload = { users: usersToSave };
 
     return postMetadata(api, payload);
@@ -371,7 +479,12 @@ async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userGroups[id]",
-        filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
+        filter:
+            "userCredentials.username:in:[" +
+            _(users)
+                .map("username")
+                .join(",") +
+            "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
@@ -387,7 +500,10 @@ async function saveUsers(d2, users) {
 */
 function getList(d2, filters, listOptions) {
     const model = d2.models.user;
-    const activeFilters = _(filters).pickBy().toPairs().value();
+    const activeFilters = _(filters)
+        .pickBy()
+        .toPairs()
+        .value();
 
     /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
         example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
@@ -406,7 +522,12 @@ function getList(d2, filters, listOptions) {
                 filter: buildD2Filter([preliminarFilter]),
             })
             .then(collection => collection.toArray().map(obj => obj.id))
-            .then(ids => `id:in:[${_(ids).take(maxUids).join(",")}]`)
+            .then(
+                ids =>
+                    `id:in:[${_(ids)
+                        .take(maxUids)
+                        .join(",")}]`
+            )
     );
 
     return Promise.all(preliminarD2Filters$).then(preliminarD2Filters => {
@@ -425,10 +546,14 @@ function getList(d2, filters, listOptions) {
 async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, paging: false };
     const users = await getList(d2, filters, listOptions);
-    const columnsToExport = _(columns).without(...columnsIgnoredOnExport).value()
-    const userRows = users.toArray().map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
+    const columnsToExport = _(columns)
+        .without(...columnsIgnoredOnExport)
+        .value();
+    const userRows = users
+        .toArray()
+        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
     const header = columnsToExport.map(getColumnNameFromProperty);
-    const table = [header, ...userRows]
+    const table = [header, ...userRows];
 
     return Papa.unparse(table);
 }
@@ -439,7 +564,7 @@ async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
             delimiter: ",",
             skipEmptyLines: true,
             trimHeaders: true,
-            complete: async (csv) => {
+            complete: async csv => {
                 const res = await getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField });
                 res.success ? resolve(res) : reject(res.errors.join("\n"));
             },
@@ -450,7 +575,7 @@ async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
 
 async function getExistingUsers(d2, options = {}) {
     const api = d2.Api.getApi();
-    const { users } = await api.get('/users', {
+    const { users } = await api.get("/users", {
         paging: false,
         fields: options.fields || "id,userCredentials[username]",
         ...options,
@@ -458,4 +583,12 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-export { getList, exportToCsv, importFromCsv, updateUsers, saveUsers, parseResponse, getExistingUsers };
+export {
+    getList,
+    exportToCsv,
+    importFromCsv,
+    updateUsers,
+    saveUsers,
+    parseResponse,
+    getExistingUsers,
+};

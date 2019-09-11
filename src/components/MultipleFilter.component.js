@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
+import React from "react";
+import PropTypes from "prop-types";
+import TextField from "material-ui/TextField";
+import Dialog from "material-ui/Dialog";
+import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 
-import FilteredMultiSelect from '../components/FilteredMultiSelect.component';
+import FilteredMultiSelect from "../components/FilteredMultiSelect.component";
 
 class MultipleFilter extends React.Component {
     constructor(props, context) {
@@ -26,15 +26,15 @@ class MultipleFilter extends React.Component {
 
     styles = {
         wrapper: {
-            width: 'inherit',
-            position: 'relative',
+            width: "inherit",
+            position: "relative",
         },
         dialog: {
             minWidth: 875,
-            maxWidth: '100%',
+            maxWidth: "100%",
         },
         textInput: {
-            cursor: 'pointer',
+            cursor: "pointer",
         },
         cancelButton: {
             marginRight: 16,
@@ -66,27 +66,33 @@ class MultipleFilter extends React.Component {
     getDialogButtons() {
         return [
             <FlatButton
-                label={this.getTranslation('cancel')}
+                label={this.getTranslation("cancel")}
                 onClick={this.closeDialog}
                 style={this.styles.cancelButton}
             />,
             <RaisedButton
                 primary
-                label={this.getTranslation('apply')}
+                label={this.getTranslation("apply")}
                 onClick={this.applyAndClose}
             />,
         ];
     }
 
     getCompactFieldValue(options, selected, limit = 3) {
-        const names = _(options).keyBy("value").at(selected).map("text").value();
+        const names = _(options)
+            .keyBy("value")
+            .at(selected)
+            .map("text")
+            .value();
 
         if (names.length <= limit) {
-            return names.join(', ');
+            return names.join(", ");
         } else {
             return this.getTranslation("this_and_n_others_compact", {
-                "this": _(names).take(limit).join(", "),
-                "n": names.length - limit,
+                this: _(names)
+                    .take(limit)
+                    .join(", "),
+                n: names.length - limit,
             });
         }
     }
@@ -95,7 +101,7 @@ class MultipleFilter extends React.Component {
         const { title, options, styles } = this.props;
         const { dialogOpen, selected } = this.state;
         const { dialogButtons } = this;
-        
+
         return (
             <div style={this.styles.wrapper}>
                 <Dialog

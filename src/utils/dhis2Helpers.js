@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import _m from '../utils/lodash-mixins';
+import _ from "lodash";
+import _m from "../utils/lodash-mixins";
 
-import appStateStore from '../App/appStateStore';
+import appStateStore from "../App/appStateStore";
 
 function getOrgUnitsRoots() {
     return appStateStore
@@ -11,34 +11,42 @@ function getOrgUnitsRoots() {
 }
 
 function mapPromise(items, mapper) {
-  const reducer = (promise, item) =>
-    promise.then(mappedItems => mapper(item).then(res => mappedItems.concat([res])));
-  return items.reduce(reducer, Promise.resolve([]));
+    const reducer = (promise, item) =>
+        promise.then(mappedItems => mapper(item).then(res => mappedItems.concat([res])));
+    return items.reduce(reducer, Promise.resolve([]));
 }
 
 /* Perform a model.list with a filter=FIELD:in:[VALUE1,VALUE2,...], breaking values to
    avoid hitting the 414 URL too-long error.
 */
-async function listWithInFilter(model, inFilterField, inFilterValues, listOptions, { useInOperator = true } = {}) {
-    const maxUrlLength = (8192 - 1000); // Reserve some chars for the rest of URL
+async function listWithInFilter(
+    model,
+    inFilterField,
+    inFilterValues,
+    listOptions,
+    { useInOperator = true } = {}
+) {
+    const maxUrlLength = 8192 - 1000; // Reserve some chars for the rest of URL
     let filterOptions, chunkPredicate;
 
     if (useInOperator) {
-        const getFilter = values => `${inFilterField}:in:[${values.join(',')}]`;
-        chunkPredicate = values =>
-            encodeURIComponent(getFilter(values)).length < maxUrlLength;
+        const getFilter = values => `${inFilterField}:in:[${values.join(",")}]`;
+        chunkPredicate = values => encodeURIComponent(getFilter(values)).length < maxUrlLength;
         filterOptions = values => ({ filter: getFilter(values) });
     } else {
         const getFilter = value => `${inFilterField}:eq:${value}`;
         chunkPredicate = values =>
-            values.map(value => `filter=${encodeURIComponent(getFilter(value))}`).join("&").length < maxUrlLength;
+            values.map(value => `filter=${encodeURIComponent(getFilter(value))}`).join("&").length <
+            maxUrlLength;
         filterOptions = values => ({
             filter: values.map(value => `${inFilterField}:eq:${value}`),
             rootJunction: "OR",
         });
     }
 
-    const filterGroups = _m(inFilterValues).chunkWhile(chunkPredicate).value();
+    const filterGroups = _m(inFilterValues)
+        .chunkWhile(chunkPredicate)
+        .value();
 
     const listOfModels = await mapPromise(filterGroups, values => {
         return model
@@ -60,18 +68,22 @@ const queryInfoByField = {
     userRoles: { model: "userRoles", queryFields: ["id", "displayName"] },
     userGroups: { model: "userGroups", queryFields: ["id", "displayName"] },
 };
-        
+
 /* Return object {field: [object]}.
 
     Supported models: userRoles, userGroups
 */
 async function getModelValuesByField(d2, fields) {
-    const queryInfos = _(queryInfoByField).at(fields).compact().value();
+    const queryInfos = _(queryInfoByField)
+        .at(fields)
+        .compact()
+        .value();
 
     return _.fromPairs(
-        await mapPromise(queryInfos, async ({ model, queryFields }) =>
-            [model, await getObjects(d2.models[model], queryFields)]
-        )
+        await mapPromise(queryInfos, async ({ model, queryFields }) => [
+            model,
+            await getObjects(d2.models[model], queryFields),
+        ])
     );
 }
 

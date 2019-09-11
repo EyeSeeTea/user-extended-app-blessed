@@ -1,13 +1,13 @@
-import React from 'react';
-import isArrayOfStrings from 'd2-utilizr/lib/isArrayOfStrings';
-import isIterable from 'd2-utilizr/lib/isIterable';
-import Action from 'd2-ui/lib/action/Action';
-import Checkbox from 'material-ui/Checkbox/Checkbox';
-import update from 'immutability-helper';
-import MultipleDataTableRow from './MultipleDataTableRow.component';
-import DataTableHeader from './DataTableHeader.component';
-import MultipleDataTableContextMenu from './MultipleDataTableContextMenu.component';
-import _ from 'lodash';
+import React from "react";
+import isArrayOfStrings from "d2-utilizr/lib/isArrayOfStrings";
+import isIterable from "d2-utilizr/lib/isIterable";
+import Action from "d2-ui/lib/action/Action";
+import Checkbox from "material-ui/Checkbox/Checkbox";
+import update from "immutability-helper";
+import MultipleDataTableRow from "./MultipleDataTableRow.component";
+import DataTableHeader from "./DataTableHeader.component";
+import MultipleDataTableContextMenu from "./MultipleDataTableContextMenu.component";
+import _ from "lodash";
 
 /* Example of usage:
 
@@ -39,11 +39,19 @@ import _ from 'lodash';
 export function fromActionsDefinitions(actions) {
     const actionsByName = _.keyBy(actions, "name");
     const contextActions = Action.createActionsFromNames(actions.map(a => a.name));
-    const contextMenuIcons = _(actions).map(a => [a.name, a.icon || a.name]).fromPairs().value();
-    const primaryActionDefinition = actions.find(action => action.primary)
-    const primaryAction = primaryActionDefinition ? contextActions[primaryActionDefinition.name] : null;
+    const contextMenuIcons = _(actions)
+        .map(a => [a.name, a.icon || a.name])
+        .fromPairs()
+        .value();
+    const primaryActionDefinition = actions.find(action => action.primary);
+    const primaryAction = primaryActionDefinition
+        ? contextActions[primaryActionDefinition.name]
+        : null;
 
-    const subactions = _(actions).map(action => [action.name, action.items]).fromPairs().value();
+    const subactions = _(actions)
+        .map(action => [action.name, action.items])
+        .fromPairs()
+        .value();
 
     const isContextActionAllowed = function(selection, actionName) {
         const action = actionsByName[actionName];
@@ -59,15 +67,17 @@ export function fromActionsDefinitions(actions) {
         }
     };
 
-    actions.filter(a => a.onClick).forEach(action => {
-        contextActions[action.name].subscribe(({data}) => {
-            const arg = action.multiple && !_.isArray(data) ? [data] : data;
-            action.onClick(arg);
+    actions
+        .filter(a => a.onClick)
+        .forEach(action => {
+            contextActions[action.name].subscribe(({ data }) => {
+                const arg = action.multiple && !_.isArray(data) ? [data] : data;
+                action.onClick(arg);
+            });
         });
-    });
 
-    return {contextActions, contextMenuIcons, isContextActionAllowed, primaryAction, subactions};
-};
+    return { contextActions, contextMenuIcons, isContextActionAllowed, primaryAction, subactions };
+}
 
 const MultipleDataTable = React.createClass({
     propTypes: {
@@ -80,7 +90,9 @@ const MultipleDataTable = React.createClass({
             table: React.PropTypes.object,
             header: React.PropTypes.object,
         }),
-        rows: React.PropTypes.arrayOf(React.PropTypes.shape({id: React.PropTypes.any.isRequired})),
+        rows: React.PropTypes.arrayOf(
+            React.PropTypes.shape({ id: React.PropTypes.any.isRequired })
+        ),
         activeRows: React.PropTypes.arrayOf(React.PropTypes.object),
         onActiveRowsChange: React.PropTypes.func,
         showSelectColumn: React.PropTypes.bool,
@@ -100,17 +112,22 @@ const MultipleDataTable = React.createClass({
     },
 
     componentWillReceiveProps(newProps) {
-        if (!_.isEqual(newProps, this.props))
-            this.setState(this.getStateFromProps(newProps));
+        if (!_.isEqual(newProps, this.props)) this.setState(this.getStateFromProps(newProps));
     },
 
     onSelectCellClicked(row, isChecked) {
         const isSelected = this.state.activeRows.find(r => r.id === row.id);
 
         if (isChecked || !isSelected) {
-            this.setState({activeRows: this.state.activeRows.concat([row])}, this.notifyActiveRows);
+            this.setState(
+                { activeRows: this.state.activeRows.concat([row]) },
+                this.notifyActiveRows
+            );
         } else if (!isChecked || isSelected) {
-            this.setState({activeRows: this.state.activeRows.filter(r => r.id !== row.id)}, this.notifyActiveRows);
+            this.setState(
+                { activeRows: this.state.activeRows.filter(r => r.id !== row.id) },
+                this.notifyActiveRows
+            );
         }
     },
 
@@ -122,8 +139,11 @@ const MultipleDataTable = React.createClass({
         }
 
         // Keep selections on table redraw unless forced by props
-        const activeRows = props.activeRows ||
-            _(dataRows).intersectionBy(this.state && this.state.activeRows || [], "id").value();
+        const activeRows =
+            props.activeRows ||
+            _(dataRows)
+                .intersectionBy((this.state && this.state.activeRows) || [], "id")
+                .value();
 
         return {
             columns: props.columns,
@@ -134,10 +154,15 @@ const MultipleDataTable = React.createClass({
     },
 
     renderContextMenu() {
-        const {contextActions, contextMenuIcons, isContextActionAllowed, subactions} =
-            this.state.contextActionsData;
-        const actionAccessChecker = isContextActionAllowed ?
-            isContextActionAllowed.bind(null, this.state.activeRows) : () => true;
+        const {
+            contextActions,
+            contextMenuIcons,
+            isContextActionAllowed,
+            subactions,
+        } = this.state.contextActionsData;
+        const actionAccessChecker = isContextActionAllowed
+            ? isContextActionAllowed.bind(null, this.state.activeRows)
+            : () => true;
 
         const actionsToShow = Object.keys(contextActions || {})
             .filter(actionAccessChecker)
@@ -147,58 +172,62 @@ const MultipleDataTable = React.createClass({
             }, {});
 
         return (
-                <MultipleDataTableContextMenu
-                    target={this.state.contextMenuTarget}
-                    onRequestClose={this._hideContextMenu}
-                    actions={actionsToShow}
-                    subactions={subactions}
-                    activeItems={this.state.activeRows}
-                    showContextMenu={this.state.showContextMenu}
-                    icons={contextMenuIcons}
-                />
+            <MultipleDataTableContextMenu
+                target={this.state.contextMenuTarget}
+                onRequestClose={this._hideContextMenu}
+                actions={actionsToShow}
+                subactions={subactions}
+                activeItems={this.state.activeRows}
+                showContextMenu={this.state.showContextMenu}
+                icons={contextMenuIcons}
+            />
         );
     },
 
     _onColumnSortingToggle(headerName) {
-        const newSortingDirection = this.state.sorting && this.state.sorting[0] == headerName ?
-            (this.state.sorting[1] == "asc" ? "desc" : "asc") : "asc";
+        const newSortingDirection =
+            this.state.sorting && this.state.sorting[0] == headerName
+                ? this.state.sorting[1] == "asc"
+                    ? "desc"
+                    : "asc"
+                : "asc";
         const newSorting = [headerName, newSortingDirection];
-        this.setState({sorting: newSorting});
+        this.setState({ sorting: newSorting });
         this.props.onColumnSort && this.props.onColumnSort(newSorting);
     },
 
     onColumnSelectAllClicked() {
         if (_(this.state.activeRows).isEmpty()) {
-            this.setState({activeRows: this.state.dataRows});
+            this.setState({ activeRows: this.state.dataRows });
         } else {
-            this.setState({activeRows: []});
+            this.setState({ activeRows: [] });
         }
     },
 
     renderSelectHeader() {
-        const selectedHeaderChecked = (
+        const selectedHeaderChecked =
             this.state.dataRows.length > 0 &&
             this.state.dataRows.length == this.state.activeRows.length &&
-            _(this.state.dataRows).difference(this.state.activeRows).isEmpty()
-        );
-        return (
-            <Checkbox
-                checked={selectedHeaderChecked}
-                iconStyle={{width: 'auto'}}
-            />
-        );
+            _(this.state.dataRows)
+                .difference(this.state.activeRows)
+                .isEmpty();
+        return <Checkbox checked={selectedHeaderChecked} iconStyle={{ width: "auto" }} />;
     },
 
     renderHeaders() {
         const sortableColumns = this.props.sortableColumns || [];
-        const [currentSortedColumn, currentSortedDirection] = (this.state.sorting || []);
-        const selectColumns = this.props.showSelectColumn ? [{
-            name: "_selected",
-            onClick: this.onColumnSelectAllClicked,
-            sortable: false,
-            contents: this.renderSelectHeader()
-        }] : [];
-        const dataColumns = this.state.columns
+        const [currentSortedColumn, currentSortedDirection] = this.state.sorting || [];
+        const selectColumns = this.props.showSelectColumn
+            ? [
+                  {
+                      name: "_selected",
+                      onClick: this.onColumnSelectAllClicked,
+                      sortable: false,
+                      contents: this.renderSelectHeader(),
+                  },
+              ]
+            : [];
+        const dataColumns = this.state.columns;
         const allColumns = selectColumns.concat(dataColumns);
 
         return allColumns.map((column, index) => (
@@ -209,62 +238,62 @@ const MultipleDataTable = React.createClass({
                 contents={column.contents}
                 sort={currentSortedColumn === column.name}
                 reverse={currentSortedDirection === "desc"}
-                headerClick={column.onClick || (column.sortable ? this._onColumnSortingToggle.bind(this, column.name) : null)}
+                headerClick={
+                    column.onClick ||
+                    (column.sortable ? this._onColumnSortingToggle.bind(this, column.name) : null)
+                }
             />
         ));
     },
 
     renderRows() {
-        return this.state.dataRows
-            .map((dataRowsSource, dataRowsId) => {
-                return (
-                    <MultipleDataTableRow
-                        key={dataRowsId}
-                        dataSource={dataRowsSource}
-                        columns={this.state.columns.map(c => c.name)}
-                        hideActionsIcon={this.props.hideRowsActionsIcon}
-                        isActive={this.isRowActive(dataRowsSource)}
-                        showSelectCell={this.props.showSelectColumn}
-                        onSelectCellClicked={this.onSelectCellClicked}
-                        itemClicked={this.handleRowClick}
-                        primaryClick={this.handlePrimaryClick}
-                        style={dataRowsSource._style}
-                    />
-                );
-            });
+        return this.state.dataRows.map((dataRowsSource, dataRowsId) => {
+            return (
+                <MultipleDataTableRow
+                    key={dataRowsId}
+                    dataSource={dataRowsSource}
+                    columns={this.state.columns.map(c => c.name)}
+                    hideActionsIcon={this.props.hideRowsActionsIcon}
+                    isActive={this.isRowActive(dataRowsSource)}
+                    showSelectCell={this.props.showSelectColumn}
+                    onSelectCellClicked={this.onSelectCellClicked}
+                    itemClicked={this.handleRowClick}
+                    primaryClick={this.handlePrimaryClick}
+                    style={dataRowsSource._style}
+                />
+            );
+        });
     },
-    
+
     render() {
         const defaultStyles = {
             table: {},
             header: {},
-        }
+        };
         const styles = _.merge({}, defaultStyles, this.props.styles);
 
         return (
-           <div className="data-table" style={styles.table}>
-               <div className="data-table__headers">
+            <div className="data-table" style={styles.table}>
+                <div className="data-table__headers">
                     {this.renderHeaders()}
                     <DataTableHeader
                         key="actions"
                         contents={this.props.tableActions ? this.props.tableActions : null}
                     />
-               </div>
-               <div className="data-table__rows">
-                   {this.renderRows()}
-               </div>
-               {this.renderContextMenu()}
-           </div>
+                </div>
+                <div className="data-table__rows">{this.renderRows()}</div>
+                {this.renderContextMenu()}
+            </div>
         );
     },
-    
+
     isRowActive(rowSource) {
-        if(!this.state.activeRows){
+        if (!this.state.activeRows) {
             return false;
         }
         return _.includes(this.state.activeRows, rowSource);
     },
-    
+
     isEventCtrlClick(event) {
         return this.props.isMultipleSelectionAllowed && event && event.ctrlKey;
     },
@@ -276,72 +305,84 @@ const MultipleDataTable = React.createClass({
     handleRowClick(event, rowSource) {
         //Update activeRows according to click|ctlr+click
         var newActiveRows;
-        if (this.isEventCtrlClick(event) || this.isRowActive(rowSource)){
+        if (this.isEventCtrlClick(event) || this.isRowActive(rowSource)) {
             //Remain selection + rowSource if not already selected
             newActiveRows = this.updateContextSelection(rowSource);
-        }else{
+        } else {
             //Context click just selects current row
-            newActiveRows =[rowSource];
+            newActiveRows = [rowSource];
         }
-          
+
         //Update state
-        this.setState({
-            contextMenuTarget: event.currentTarget,
-            showContextMenu: true,
-            activeRows: newActiveRows
-        }, this.notifyActiveRows);
+        this.setState(
+            {
+                contextMenuTarget: event.currentTarget,
+                showContextMenu: true,
+                activeRows: newActiveRows,
+            },
+            this.notifyActiveRows
+        );
     },
-    
+
     handlePrimaryClick(event, rowSource) {
         //Click -> Clears selection, Invoke external action (passing event)
-        const {primaryAction} = this.state.contextActionsData;
+        const { primaryAction } = this.state.contextActionsData;
 
-        if(!this.isEventCtrlClick(event)) {
-            this.setState({
-                activeRows: []
-            }, this.notifyActiveRows);
+        if (!this.isEventCtrlClick(event)) {
+            this.setState(
+                {
+                    activeRows: [],
+                },
+                this.notifyActiveRows
+            );
             primaryAction && primaryAction(rowSource);
             return;
         }
-        
+
         //Ctrl + Click -> Update selection
         const newActiveRows = this.updatePrimarySelection(rowSource);
-        this.setState({
-            activeRows:newActiveRows,
-            showContextMenu: false,
-        }, this.notifyActiveRows);
+        this.setState(
+            {
+                activeRows: newActiveRows,
+                showContextMenu: false,
+            },
+            this.notifyActiveRows
+        );
     },
-       
+
     _hideContextMenu() {
-        this.setState({
-            showContextMenu: false,
-        }, this.notifyActiveRows);
+        this.setState(
+            {
+                showContextMenu: false,
+            },
+            this.notifyActiveRows
+        );
     },
-    
-    updateContextSelection(rowSource){
-        return this.updateSelection(rowSource,true);
+
+    updateContextSelection(rowSource) {
+        return this.updateSelection(rowSource, true);
     },
-    
-    updatePrimarySelection(rowSource){
+
+    updatePrimarySelection(rowSource) {
         return this.updateSelection(rowSource, false);
     },
-    
-    updateSelection(rowSource, isContextClick){
+
+    updateSelection(rowSource, isContextClick) {
         const alreadySelected = this.isRowActive(rowSource);
-        
+
         //ctx click + Already selected -> Same selection
-        if(isContextClick && alreadySelected){
-            return this.state.activeRows
+        if (isContextClick && alreadySelected) {
+            return this.state.activeRows;
         }
-                 
+
         //click + Already selected -> Remove from selection
-        if(alreadySelected){
-            return this.state.activeRows.filter((nRow) => nRow!==rowSource);
+        if (alreadySelected) {
+            return this.state.activeRows.filter(nRow => nRow !== rowSource);
         }
-        
+
         //!already selected -> Add to selection
-        return update(this.state.activeRows?this.state.activeRows:[], {$push: [rowSource]});
-    }
+        return update(this.state.activeRows ? this.state.activeRows : [], { $push: [rowSource] });
+    },
 });
 
 export default MultipleDataTable;

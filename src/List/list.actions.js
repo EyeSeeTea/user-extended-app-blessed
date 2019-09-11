@@ -1,21 +1,21 @@
-import Action from 'd2-ui/lib/action/Action';
-import listStore from './list.store';
-import detailsStore from './details.store';
-import { getInstance } from 'd2/lib/d2';
-import { Observable } from 'rx';
+import Action from "d2-ui/lib/action/Action";
+import listStore from "./list.store";
+import detailsStore from "./details.store";
+import { getInstance } from "d2/lib/d2";
+import { Observable } from "rx";
 
 const listActions = Action.createActionsFromNames([
-  'loadList',
-  'setListSource',
-  'filter',
-  'loadUserRoles',
-  'loadUserGroups',
-  'getNextPage',
-  'getPreviousPage',
-  'hideDetailsBox',
+    "loadList",
+    "setListSource",
+    "filter",
+    "loadUserRoles",
+    "loadUserGroups",
+    "getNextPage",
+    "getPreviousPage",
+    "hideDetailsBox",
 ]);
 
-listActions.setListSource.subscribe((action) => {
+listActions.setListSource.subscribe(action => {
     listStore.listSourceSubject.onNext(Observable.just(action.data));
 });
 

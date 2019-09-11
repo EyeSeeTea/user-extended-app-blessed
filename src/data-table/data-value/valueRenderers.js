@@ -1,42 +1,46 @@
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { isNil } from 'lodash/fp';
-import Color from './Color.component';
-import Translate from 'd2-ui/lib/i18n/Translate.component';
+import PropTypes from "prop-types";
+import React, { PureComponent } from "react";
+import { isNil } from "lodash/fp";
+import Color from "./Color.component";
+import Translate from "d2-ui/lib/i18n/Translate.component";
 
-function TextValue({ value = '' }) {
+function TextValue({ value = "" }) {
     const textWrapStyle = {
-        width: '100%',
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        position: 'absolute',
-        wordBreak: 'break-all',
-        wordWrap: 'break-word',
+        width: "100%",
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        position: "absolute",
+        wordBreak: "break-all",
+        wordWrap: "break-word",
         top: 0,
-        lineHeight: '50px',
-        paddingRight: '1rem',
+        lineHeight: "50px",
+        paddingRight: "1rem",
     };
 
     const displayValue = value.toString();
 
-    return (<span title={displayValue} style={textWrapStyle}>{displayValue}</span>);
+    return (
+        <span title={displayValue} style={textWrapStyle}>
+            {displayValue}
+        </span>
+    );
 }
 
-function getDateToShowInList(value, locale = 'en') {
+function getDateToShowInList(value, locale = "en") {
     if (isNil(value)) {
-        return '';
+        return "";
     }
 
-    if (typeof global.Intl !== 'undefined' && Intl.DateTimeFormat) {
+    if (typeof global.Intl !== "undefined" && Intl.DateTimeFormat) {
         return new Intl.DateTimeFormat(locale, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+            year: "numeric",
+            month: "long",
+            day: "numeric",
         }).format(new Date(value));
     }
 
-    return value.substr(0, 19).replace('T', ' ');
+    return value.substr(0, 19).replace("T", " ");
 }
 
 class DateValue extends PureComponent {
@@ -44,23 +48,21 @@ class DateValue extends PureComponent {
         super(props, context);
 
         this.state = {
-            uiLocale: 'en',
+            uiLocale: "en",
         };
     }
 
     componentDidMount() {
         // Get the locale from the userSettings
         this.context.d2.currentUser.userSettings
-            .get('keyUiLocale')
+            .get("keyUiLocale")
             .then(uiLocale => this.setState({ uiLocale }));
     }
 
     render() {
         const displayDate = getDateToShowInList(this.props.value, this.state.uiLocale);
 
-        return (
-            <TextValue value={displayDate}/>
-        );
+        return <TextValue value={displayDate} />;
     }
 }
 
@@ -70,13 +72,13 @@ DateValue.contextTypes = {
 
 function ObjectWithDisplayName(props) {
     const textValue = props.value && (props.value.displayName || props.value.name);
-    return (<TextValue {...props} value={textValue}/>);
+    return <TextValue {...props} value={textValue} />;
 }
 
 const dhis2DateFormat = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{2,3}$/;
 
 function isDateValue({ valueType, value }) {
-    return valueType === 'DATE' || dhis2DateFormat.test(value);
+    return valueType === "DATE" || dhis2DateFormat.test(value);
 }
 
 function isColorValue({ value }) {
@@ -89,24 +91,24 @@ function isObjectWithDisplayName({ value }) {
 
 function PublicAccessValue({ value }) {
     if (value) {
-        if (value === 'rw------') {
+        if (value === "rw------") {
             return <Translate>public_can_edit</Translate>;
         }
 
-        if (value === 'r-------') {
+        if (value === "r-------") {
             return <Translate>public_can_view</Translate>;
         }
 
-        if (value === '--------') {
+        if (value === "--------") {
             return <Translate>public_none</Translate>;
         }
     }
 
-    return <TextValue value={value}/>;
+    return <TextValue value={value} />;
 }
 
 function isPublicAccess({ columnName }) {
-    return columnName === 'publicAccess';
+    return columnName === "publicAccess";
 }
 
 let valueRenderers = [
@@ -155,7 +157,7 @@ export function addValueRenderer(checker, component) {
  * @param {object} valueDetails The value and its details. The object has the properties `columnName`, `value` and `valueType`.
  * @returns {function} The React component that can render a value for the passed `valueDetails`.
  */
-export const findValueRenderer = (valueDetails) => {
+export const findValueRenderer = valueDetails => {
     const valueCheckers = valueRenderers.map(([checker]) => checker);
     const checkerIndex = valueCheckers.findIndex(checker => checker(valueDetails));
 
