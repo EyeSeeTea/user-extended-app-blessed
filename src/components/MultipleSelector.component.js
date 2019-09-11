@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-import OrgUnitForm from './OrgUnitForm';
-import _ from 'lodash';
+import React from "react";
+import PropTypes from "prop-types";
+import TextField from "material-ui/TextField";
+import Dialog from "material-ui/Dialog";
+import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import OrgUnitForm from "./OrgUnitForm";
+import _ from "lodash";
 
-import FilteredMultiSelect from '../components/FilteredMultiSelect.component';
+import FilteredMultiSelect from "../components/FilteredMultiSelect.component";
 
 class MultipleSelector extends React.Component {
     constructor(props, context) {
@@ -23,49 +23,53 @@ class MultipleSelector extends React.Component {
 
     styles = {
         wrapper: {
-            width: 'inherit',
-            position: 'relative',
+            width: "inherit",
+            position: "relative",
         },
         dialog: {
             minWidth: 875,
-            maxWidth: '100%',
+            maxWidth: "100%",
         },
         cancelButton: {
             marginRight: 16,
         },
     };
 
-    onMultiSelectChange = (selectedIds) => {
+    onMultiSelectChange = selectedIds => {
         const { options } = this.props;
-        const selected = _(options).keyBy("id").at(selectedIds).compact().value();
+        const selected = _(options)
+            .keyBy("id")
+            .at(selectedIds)
+            .compact()
+            .value();
         this.setState({ selected });
-    }
+    };
 
-    onOrgUnitsChange = (selected) => {
+    onOrgUnitsChange = selected => {
         this.setState({ selected });
-    }
+    };
 
     applyAndClose = () => {
         const { field, onChange, data } = this.props;
         const { selected } = this.state;
 
         onChange(selected, field, data);
-    }
+    };
 
     closeDialog = () => {
         this.props.onClose();
-    }
+    };
 
     getDialogButtons() {
         return [
             <FlatButton
-                label={this.getTranslation('close')}
+                label={this.getTranslation("close")}
                 onClick={this.closeDialog}
                 style={this.styles.cancelButton}
             />,
             <RaisedButton
                 primary
-                label={this.getTranslation('apply')}
+                label={this.getTranslation("apply")}
                 onClick={this.applyAndClose}
             />,
         ];
@@ -76,46 +80,48 @@ class MultipleSelector extends React.Component {
         userRoles: "assignRoles",
         organisationUnits: "assignToOrgUnits",
         dataViewOrganisationUnits: "assignToOrgUnitsOutput",
-    }
+    };
 
     renderForm() {
         const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
 
         switch (field) {
-        case "userGroups":
-        case "userRoles":
-            const selectOptions = options.map(o => ({value: o.id, text: o.displayName}));
-            const selectedIds = _(selected).map("id").value();
+            case "userGroups":
+            case "userRoles":
+                const selectOptions = options.map(o => ({ value: o.id, text: o.displayName }));
+                const selectedIds = _(selected)
+                    .map("id")
+                    .value();
 
-            return (
-                <FilteredMultiSelect
-                    options={selectOptions}
-                    selected={selectedIds}
-                    onRequestClose={this.closeDialog}
-                    onChange={this.onMultiSelectChange}
-                />
-            );
-        case "organisationUnits":
-        case "dataViewOrganisationUnits":
-            return (
-                <OrgUnitForm
-                    onRequestClose={this.closeDialog}
-                    onChange={this.onOrgUnitsChange}
-                    roots={orgUnitRoots}
-                    selected={selected}
-                    intersectionPolicy={false}
-                />
-            );
-        default:
-            throw new Error(`[MultipleSelector] Unknown field: ${field}`)
+                return (
+                    <FilteredMultiSelect
+                        options={selectOptions}
+                        selected={selectedIds}
+                        onRequestClose={this.closeDialog}
+                        onChange={this.onMultiSelectChange}
+                    />
+                );
+            case "organisationUnits":
+            case "dataViewOrganisationUnits":
+                return (
+                    <OrgUnitForm
+                        onRequestClose={this.closeDialog}
+                        onChange={this.onOrgUnitsChange}
+                        roots={orgUnitRoots}
+                        selected={selected}
+                        intersectionPolicy={false}
+                    />
+                );
+            default:
+                throw new Error(`[MultipleSelector] Unknown field: ${field}`);
         }
     }
 
     render() {
         const { field } = this.props;
         const title = this.getTranslation(this.titleByField[field]);
-        
+
         return (
             <Dialog
                 title={title}

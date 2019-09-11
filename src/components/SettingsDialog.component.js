@@ -1,22 +1,22 @@
-import React from 'react';
-import Dialog from 'material-ui/Dialog/Dialog';
-import FlatButton from 'material-ui/FlatButton/FlatButton';
-import LinearProgress from 'material-ui/LinearProgress/LinearProgress';
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
-import Card from 'material-ui/Card/Card';
-import CardText from 'material-ui/Card/CardText';
-import {Tabs, Tab} from 'material-ui/Tabs';
-import FormBuilder from 'd2-ui/lib/forms/FormBuilder.component';
-import Validators from 'd2-ui/lib/forms/Validators';
-import fp from 'lodash/fp';
-import PropTypes from 'prop-types';
-import _ from 'lodash';
-import Dropdown from './Dropdown.component';
-import TextField from 'd2-ui/lib/form-fields/TextField';
+import React from "react";
+import Dialog from "material-ui/Dialog/Dialog";
+import FlatButton from "material-ui/FlatButton/FlatButton";
+import LinearProgress from "material-ui/LinearProgress/LinearProgress";
+import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import Card from "material-ui/Card/Card";
+import CardText from "material-ui/Card/CardText";
+import { Tabs, Tab } from "material-ui/Tabs";
+import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
+import Validators from "d2-ui/lib/forms/Validators";
+import fp from "lodash/fp";
+import PropTypes from "prop-types";
+import _ from "lodash";
+import Dropdown from "./Dropdown.component";
+import TextField from "d2-ui/lib/form-fields/TextField";
 
-import Settings from '../models/settings';
+import Settings from "../models/settings";
 
-const TabCard = ({ fields, onUpdateFormStatus, onUpdateField }) =>
+const TabCard = ({ fields, onUpdateFormStatus, onUpdateField }) => (
     <Card style={{ padding: 10, margin: 10 }}>
         <CardText>
             <FormBuilder
@@ -26,28 +26,27 @@ const TabCard = ({ fields, onUpdateFormStatus, onUpdateField }) =>
                 onUpdateField={onUpdateField}
             />
         </CardText>
-    </Card>;
+    </Card>
+);
 
 export default class SettingsDialog extends React.Component {
     static propTypes = {
         onRequestClose: React.PropTypes.func.isRequired,
         settings: PropTypes.object.isRequired,
-    }
+    };
 
     static contextTypes = {
         d2: PropTypes.object.isRequired,
     };
 
     tabs = {
-        importExport: [
-            "organisationUnitsField",
-        ],
-    }
+        importExport: ["organisationUnitsField"],
+    };
 
     constructor(props, context) {
         super(props);
 
-        const { i18n } = context.d2
+        const { i18n } = context.d2;
         this.getTranslation = i18n.getTranslation.bind(i18n);
 
         this.state = {
@@ -61,91 +60,103 @@ export default class SettingsDialog extends React.Component {
         const { onRequestClose } = this.props;
         const { settings } = this.state;
         settings.save().then(() => onRequestClose(settings));
-    }
+    };
 
     onUpdateField = (key, value) => {
         const { settings } = this.state;
         const newSettings = settings.set({ [key]: value });
         this.setState({ settings: newSettings });
-    }
+    };
 
     getFields(key) {
         const { settings } = this.state;
         const keys = _.get(this.tabs, key);
-        const tabFields = _(settings.fields).keyBy("name").at(keys).value();
+        const tabFields = _(settings.fields)
+            .keyBy("name")
+            .at(keys)
+            .value();
 
         return tabFields.map(field => {
             const value = settings.get(field.name);
 
             switch (field.type) {
-            case "string":
-                return {
-                    name: field.name,
-                    value: (value !== null && value !== undefined && value) || field.defaultValue || "",
-                    component: TextField,
-                    validators: [{
-                        validator: Validators.isRequired,
-                        message: this.getTranslation(Validators.isRequired.message),
-                    }],
-                    props: {
-                        type: "string",
-                        style: {width: "100%"},
-                        changeEvent: "onBlur",
-                        floatingLabelText: field.label,
-                    },
-                };
-            case "select":
-                return {
-                    name: field.name,
-                    component: Dropdown,
-                    value: value,
-                    props: {
-                        options: field.options,
-                        isRequired: true,
-                        labelText: field.label,
-                        style: {width: "100%"},
-                        defaultValue: field.defaultValue,
-                    },
-                };
-            default:
-                throw new Error(`Unsupported field type: ${field.type}`);
+                case "string":
+                    return {
+                        name: field.name,
+                        value:
+                            (value !== null && value !== undefined && value) ||
+                            field.defaultValue ||
+                            "",
+                        component: TextField,
+                        validators: [
+                            {
+                                validator: Validators.isRequired,
+                                message: this.getTranslation(Validators.isRequired.message),
+                            },
+                        ],
+                        props: {
+                            type: "string",
+                            style: { width: "100%" },
+                            changeEvent: "onBlur",
+                            floatingLabelText: field.label,
+                        },
+                    };
+                case "select":
+                    return {
+                        name: field.name,
+                        component: Dropdown,
+                        value: value,
+                        props: {
+                            options: field.options,
+                            isRequired: true,
+                            labelText: field.label,
+                            style: { width: "100%" },
+                            defaultValue: field.defaultValue,
+                        },
+                    };
+                default:
+                    throw new Error(`Unsupported field type: ${field.type}`);
             }
         });
     }
 
     onChangeTab(value) {
-        this.setState({currentTab: value});
+        this.setState({ currentTab: value });
     }
 
     onUpdateFormStatus = (section, status) => {
         const { formStatuses } = this.state;
         const newFormStatuses = fp.set(section, status.valid, formStatuses);
         this.setState({ formStatuses: newFormStatuses });
-    }
+    };
 
     cancel = () => {
         this.props.onRequestClose();
-    }
+    };
 
     render() {
         const { settings, formStatuses } = this.state;
-        const saveIsEnabled = settings && _(formStatuses).values().every();
+        const saveIsEnabled =
+            settings &&
+            _(formStatuses)
+                .values()
+                .every();
 
         const actions = [
             <FlatButton
-                label={this.getTranslation('cancel')}
+                label={this.getTranslation("cancel")}
                 onTouchTap={this.cancel}
                 style={{ marginRight: 16 }}
             />,
             <RaisedButton
                 primary
-                label={this.getTranslation('save')}
+                label={this.getTranslation("save")}
                 disabled={!saveIsEnabled}
                 onTouchTap={this.save}
             />,
         ];
 
-        const getTabCardProps = (section) => ({
+        const getTabCardProps = section => ({
             fields: this.getFields(section),
             onUpdateFormStatus: status => _.defer(this.onUpdateFormStatus, section, status),
             onUpdateField: this.onUpdateField,
@@ -156,9 +167,9 @@ export default class SettingsDialog extends React.Component {
                 autoScrollBodyContent
                 autoDetectWindowHeight={false}
                 repositionOnUpdate
-                title={this.getTranslation('settings')}
-                style={{ maxWidth: 'none', height: 600 }}
-                contentStyle={{ maxWidth: 'none' }}
+                title={this.getTranslation("settings")}
+                style={{ maxWidth: "none", height: 600 }}
+                contentStyle={{ maxWidth: "none" }}
                 open={true}
                 onRequestClose={this.cancel}
                 actions={_.compact(actions)}

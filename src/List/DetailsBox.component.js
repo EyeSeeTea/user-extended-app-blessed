@@ -1,12 +1,12 @@
-import React from 'react';
-import classes from 'classnames';
+import React from "react";
+import classes from "classnames";
 
-import FontIcon from 'material-ui/FontIcon/FontIcon';
+import FontIcon from "material-ui/FontIcon/FontIcon";
 
-import PropTypes from 'prop-types';
-import Translate from 'd2-ui/lib/i18n/Translate.mixin';
-import camelCaseToUnderscores from 'd2-utilizr/lib/camelCaseToUnderscores';
-import Moment from 'react-moment';
+import PropTypes from "prop-types";
+import Translate from "d2-ui/lib/i18n/Translate.mixin";
+import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
+import Moment from "react-moment";
 
 export default React.createClass({
     propTypes: {
@@ -21,37 +21,38 @@ export default React.createClass({
     getDefaultProps() {
         return {
             fields: [
-                'name',
-                'username',
-                'shortName',
-                'code',
-                'displayDescription',
-                'created',
-                'lastUpdated',
-                'lastLogin',
-                'id',
-                'href',
-                'userRoles',
-                'userGroups',
-                'organisationUnits',
-                'dataViewOrganisationUnits'
+                "name",
+                "username",
+                "shortName",
+                "code",
+                "displayDescription",
+                "created",
+                "lastUpdated",
+                "lastLogin",
+                "id",
+                "href",
+                "userRoles",
+                "userGroups",
+                "organisationUnits",
+                "dataViewOrganisationUnits",
             ],
             showDetailBox: false,
-            onClose: () => { },
+            onClose: () => {},
         };
     },
 
     getDetailBoxContent() {
         if (!this.props.source) {
-            return (
-                <div className="detail-box__status">Loading details...</div>
-            );
+            return <div className="detail-box__status">Loading details...</div>;
         }
 
         return this.props.fields
             .filter(fieldName => this.props.source[fieldName])
             .map(fieldName => {
-                const valueToRender = this.getValueToRender(fieldName, this.props.source[fieldName]);
+                const valueToRender = this.getValueToRender(
+                    fieldName,
+                    this.props.source[fieldName]
+                );
 
                 return (
                     <div key={fieldName} className="detail-field">
@@ -68,28 +69,38 @@ export default React.createClass({
 
     getValueToRender(fieldName, value) {
         switch (fieldName) {
-            case 'created':
-            case 'lastUpdated':
-            case 'lastLogin':
-                return (<Moment format='DD/MM/YYYY h:mm a'>{value}</Moment>);
-            case 'href':
-                return <a style={{ wordBreak: 'break-all' }} href={`${value}.json`} target="_blank">{value}</a>;
-            case 'userRoles':
-            case 'userGroups':
-            case 'organisationUnits':
-            case 'dataViewOrganisationUnits':
-                const objs = _(value.toArray ? value.toArray() : value).sortBy("displayName").value();
-                const contents = _(objs).isEmpty()
-                    ? <div><i>{this.getTranslation('no_value')}</i></div>
-                    : objs.map(obj => <div key={obj.id}>{obj.displayName}</div>);
-                return (<div>{contents}</div>);
+            case "created":
+            case "lastUpdated":
+            case "lastLogin":
+                return <Moment format="DD/MM/YYYY h:mm a">{value}</Moment>;
+            case "href":
+                return (
+                    <a style={{ wordBreak: "break-all" }} href={`${value}.json`} target="_blank">
+                        {value}
+                    </a>
+                );
+            case "userRoles":
+            case "userGroups":
+            case "organisationUnits":
+            case "dataViewOrganisationUnits":
+                const objs = _(value.toArray ? value.toArray() : value)
+                    .sortBy("displayName")
+                    .value();
+                const contents = _(objs).isEmpty() ? (
+                    <div>
+                        <i>{this.getTranslation("no_value")}</i>
+                    </div>
+                ) : (
+                    objs.map(obj => <div key={obj.id}>{obj.displayName}</div>)
+                );
+                return <div>{contents}</div>;
             default:
                 return value;
         }
     },
 
     render() {
-        const classList = classes('details-box');
+        const classList = classes("details-box");
 
         if (this.props.showDetailBox === false) {
             return null;
@@ -97,12 +108,14 @@ export default React.createClass({
 
         return (
             <div className={classList}>
-                <FontIcon className="details-box__close-button material-icons" onClick={this.props.onClose}>close</FontIcon>
-                <div>
-                    {this.getDetailBoxContent()}
-                </div>
+                <FontIcon
+                    className="details-box__close-button material-icons"
+                    onClick={this.props.onClose}
+                >
+                    close
+                </FontIcon>
+                <div>{this.getDetailBoxContent()}</div>
             </div>
         );
     },
-
 });

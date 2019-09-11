@@ -1,8 +1,8 @@
-import React from 'react';
-import Snackbar from 'material-ui/Snackbar/Snackbar';
-import snackStore from './snack.store';
-import ObserverRegistry from '../utils/ObserverRegistry.mixin';
-import log from 'loglevel';
+import React from "react";
+import Snackbar from "material-ui/Snackbar/Snackbar";
+import snackStore from "./snack.store";
+import ObserverRegistry from "../utils/ObserverRegistry.mixin";
+import log from "loglevel";
 
 const SnackBarContainer = React.createClass({
     mixins: [ObserverRegistry],
@@ -11,7 +11,7 @@ const SnackBarContainer = React.createClass({
         return {
             show: false,
             snack: {
-                message: '',
+                message: "",
             },
         };
     },
@@ -48,9 +48,9 @@ const SnackBarContainer = React.createClass({
 
         return (
             <Snackbar
-                style={{ whiteSpace: 'nowrap', zIndex: 1000000 }}
-                bodyStyle={{ maxWidth: '100%' }}
-                contentStyle={{ display: 'flex' }}
+                style={{ whiteSpace: "nowrap", zIndex: 1000000 }}
+                bodyStyle={{ maxWidth: "100%" }}
+                contentStyle={{ display: "flex" }}
                 ref="snackbar"
                 message={message}
                 action={action}

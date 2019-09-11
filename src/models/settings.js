@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from "lodash";
 
 const endpoint = "/userDataStore";
 
@@ -6,14 +6,16 @@ const storeNamespace = "user-extended-app";
 
 const storeKey = "settings";
 
-const throwExc = exc => { throw exc; };
+const throwExc = exc => {
+    throw exc;
+};
 
 class Settings {
     constructor(d2, values) {
         this.d2 = d2;
         this.api = d2.Api.getApi();
         this.values = values;
-        this.fields = Settings.getFields(d2)
+        this.fields = Settings.getFields(d2);
     }
 
     static getFields(d2) {
@@ -41,13 +43,15 @@ class Settings {
                 label: t("setting_organisation_units_field"),
                 defaultValue: "displayName",
                 options: [
-                    {text: t("name"), value: "displayName"},
-                    {text: t("code"), value: "code"},
+                    { text: t("name"), value: "displayName" },
+                    { text: t("code"), value: "code" },
                 ],
             },
         ];
 
-        return _(fieldsList).keyBy("name").value();
+        return _(fieldsList)
+            .keyBy("name")
+            .value();
     }
 
     static build(d2) {
@@ -58,7 +62,8 @@ class Settings {
             .fromPairs()
             .value();
 
-        return api.get(`${endpoint}/${storeNamespace}/${storeKey}`)
+        return api
+            .get(`${endpoint}/${storeNamespace}/${storeKey}`)
             .then(values => new Settings(d2, values))
             .catch(res => {
                 if (res.httpStatusCode === 404) {
@@ -78,7 +83,7 @@ class Settings {
     set(partialUpdate) {
         _(partialUpdate).each((value, name) => {
             if (!this.fields[name]) {
-                throw(`Unknown setting: ${name}=${value}`);
+                throw `Unknown setting: ${name}=${value}`;
             }
         });
         const newValues = { ...this.values, ...partialUpdate };

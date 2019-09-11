@@ -1,6 +1,6 @@
 {
   "name": "d2-user-extended-app",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
@@ -18,7 +18,8 @@
     "__prebuild": "npm test && npm run lint",
     "build": "rm -rf build && webpack && npm run manifest",
     "postbuild": "cp -rv app-config.json src/i18n includes icon.png app-favicon.ico node_modules/babel-polyfill/dist/polyfill.min.js node_modules/jquery/dist/jquery.min.js ./build/",
-    "build-webapp": "yarn build && rm -f $npm_package_name.zip && cd build && zip -r ../$npm_package_name.zip *",
+    "build-webapp": "yarn build && rm -f User-Extended-App.zip && cd build && zip -r ../User-Extended-App.zip *",
+    "prettify": "prettier \"{src,scss}/**/*.{js,jsx,ts,tsx,json,css,scss}\" --write",
     "validate": "npm ls",
     "manifest": "d2-manifest package.json build/manifest.webapp",
     "clean-i18n": "resources/scripts/clean-i18n-translations.js src/i18n/"
@@ -70,6 +71,7 @@
     "phantomjs": "1.9.18",
     "phantomjs-polyfill": "0.0.1",
     "precommit-hook": "3.0.0",
+    "prettier": "^1.18.2",
     "react": "15.4.2",
     "react-dnd": "^2.1.4",
     "react-dnd-html5-backend": "^2.1.2",
