@@ -459,6 +459,7 @@ class ImportTable extends React.Component {
                 surname: templateUser.attributes.surname,
                 organisationUnits: templateUser.attributes.organisationUnits,
                 dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
+                email: templateUser.attributes.email,
             };
         } else {
             newUser = {
