@@ -1,6 +1,6 @@
 {
   "name": "d2-user-extended-app",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
