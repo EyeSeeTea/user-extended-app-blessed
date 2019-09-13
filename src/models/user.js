@@ -85,7 +85,12 @@ class User {
 
     static async getById(d2, userId) {
         const api = d2.Api.getApi();
-        const userAttributes = await api.get(`/users/${userId}`, { fields: ":all" });
+        const userAttributes = await api.get(`/users/${userId}`, {
+            fields:
+                ":all," +
+                "organisationUnits[id,code,displayName,path]," +
+                "dataViewOrganisationUnits[id,code,displayName,path]",
+        });
         return new User(d2, userAttributes);
     }
 }
