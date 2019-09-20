@@ -34,7 +34,7 @@ const queryFields = [
     Limit Uids to avoid 413 Request too large
     maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
 */
-const maxUids = (8192 - 1000) / (11 + 3);
+const maxUids = (4096 - 1000) / (11 + 3);
 
 const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
 
@@ -517,12 +517,14 @@ function getList(d2, filters, listOptions) {
 
     const listFilters = buildD2Filter(normalFilters.concat(preliminarFilters));
 
-    if (d2.system.version.minor >= 30) return model.list({
-        paging: true,
-        fields: queryFields,
-        filter: _(listFilters).isEmpty() ? "name:ne:default" : listFilters,
-        ...listOptions,
-    });
+    if (d2.system.version.minor >= 30) {
+        return model.list({
+            paging: true,
+            fields: queryFields,
+            filter: _(listFilters).isEmpty() ? "name:ne:default" : listFilters,
+            ...listOptions,
+        });
+    }
 
     const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
         model
