@@ -515,9 +515,8 @@ function getList(d2, filters, listOptions) {
         ([key, [operator, value]]) => operator === "in" && key.match(/\./)
     );
 
-    const listFilters = buildD2Filter(normalFilters.concat(preliminarFilters));
-
     if (d2.system.version.minor >= 30) {
+        const listFilters = buildD2Filter(normalFilters.concat(preliminarFilters));
         return model.list({
             paging: true,
             fields: queryFields,
