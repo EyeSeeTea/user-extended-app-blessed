@@ -79,10 +79,10 @@ function isStateActionVisible(action) {
         _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
-function isAdmin(rows) {
+function hasReplicateAuthority(rows) {
     if (rows && rows.length > 0) {
         const { authorities } = rows[0].d2.currentUser;
-        return authorities.has("ALL");
+        return authorities.has("F_REPLICATE_USER");
     } else {
         return false;
     }
@@ -155,7 +155,7 @@ const contextActions = [
         name: "replicateUser",
         icon: "content_copy",
         multiple: false,
-        allowed: isAdmin,
+        allowed: hasReplicateAuthority,
         items: [
             {
                 name: "replicate_user_from_template",
