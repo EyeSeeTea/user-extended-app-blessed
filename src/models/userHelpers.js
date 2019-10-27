@@ -162,10 +162,12 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
             `Value not found: ${missingValue} [username=${username ||
                 "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    const objects = _(objectsByName)
-        .at(names)
-        .compact()
-        .value();
+    const objects = objectsByName
+        ? _(objectsByName)
+              .at(names)
+              .compact()
+              .value()
+        : undefined;
     return { objects, warnings };
 }
 
