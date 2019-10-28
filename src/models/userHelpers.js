@@ -58,8 +58,8 @@ const columnNameFromPropertyMapping = {
     created: "Created",
     userRoles: "Roles",
     userGroups: "Groups",
-    organisationUnits: "OUOutput",
-    dataViewOrganisationUnits: "OUCapture",
+    organisationUnits: "OUCapture",
+    dataViewOrganisationUnits: "OUOutput",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
