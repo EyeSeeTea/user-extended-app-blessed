@@ -150,8 +150,8 @@ function namesFromCollection(collection, field) {
 }
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
-    const namesString = user[field];
-    const names = (namesString || "")
+    const value = user[field];
+    const names = (value || "")
         .split(fieldSplitChar)
         .map(_.trim)
         .filter(s => s);
@@ -162,7 +162,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
             `Value not found: ${missingValue} [username=${username ||
                 "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    const objects = objectsByName
+    const objects = value && objectsByName
         ? _(objectsByName)
               .at(names)
               .compact()
