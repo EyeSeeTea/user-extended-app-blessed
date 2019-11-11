@@ -58,8 +58,8 @@ const columnNameFromPropertyMapping = {
     created: "Created",
     userRoles: "Roles",
     userGroups: "Groups",
-    organisationUnits: "OUOutput",
-    dataViewOrganisationUnits: "OUCapture",
+    organisationUnits: "OUCapture",
+    dataViewOrganisationUnits: "OUOutput",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -150,8 +150,8 @@ function namesFromCollection(collection, field) {
 }
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
-    const namesString = user[field];
-    const names = (namesString || "")
+    const value = user[field];
+    const names = (value || "")
         .split(fieldSplitChar)
         .map(_.trim)
         .filter(s => s);
@@ -162,10 +162,12 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
             `Value not found: ${missingValue} [username=${username ||
                 "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    const objects = _(objectsByName)
-        .at(names)
-        .compact()
-        .value();
+    const objects = value && objectsByName
+        ? _(objectsByName)
+              .at(names)
+              .compact()
+              .value()
+        : undefined;
     return { objects, warnings };
 }
 
