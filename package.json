@@ -41,7 +41,7 @@
     "d2-ui": "github:EyeSeeTea/d2-ui#user-extended-app",
     "d2-utilizr": "0.2.9",
     "d3-color": "1.0.2",
-    "eslint": "^3.6.0",
+    "eslint": "^4.18.2",
     "eslint-config-dhis2": "^2.0.2",
     "eslint-plugin-react": "^6.3.0",
     "fbjs": "^0.2.1",
