@@ -14,8 +14,17 @@ class Settings {
     constructor(d2, values) {
         this.d2 = d2;
         this.api = d2.Api.getApi();
-        this.values = values;
         this.fields = Settings.getFields(d2);
+        this.values = Settings.validateValues(values, this.fields);
+    }
+
+    static validateValues(values, fields) {
+        // Set the default value for a setting with a value not present in the options list.
+        return _.mapValues(values, (value, key) => {
+            const { options, defaultValue } = fields[key] || {};
+            if (!options || !defaultValue) return value;
+            return _(options).some(option => option.value === value) ? value : defaultValue;
+        });
     }
 
     static getFields(d2) {
@@ -41,9 +50,9 @@ class Settings {
                 name: "organisationUnitsField",
                 type: "select",
                 label: t("setting_organisation_units_field"),
-                defaultValue: "displayName",
+                defaultValue: "shortName",
                 options: [
-                    { text: t("name"), value: "displayName" },
+                    { text: t("short_name"), value: "shortName" },
                     { text: t("code"), value: "code" },
                 ],
             },
