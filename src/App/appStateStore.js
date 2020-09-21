@@ -44,9 +44,10 @@ async function loadSideBarState() {
 
 // d2/src/current-user/CurrentUser.js#getOrganisationUnits + children[shortName]
 const orgUnitListOptions = {
-    fields: ':all,shortName,displayName,path,children[id,shortName,displayName,path,children::isNotEmpty]',
+    fields:
+        ":all,shortName,displayName,path,children[id,shortName,displayName,path,children::isNotEmpty]",
     paging: false,
-}
+};
 
 // TODO: Move the caching of these organisation units to d2.currentUser instead
 async function getCurrentUserOrganisationUnits(disableCache = false) {
@@ -55,10 +56,15 @@ async function getCurrentUserOrganisationUnits(disableCache = false) {
     }
 
     const d2 = await getInstance();
-    const organisationUnitsCollection = await d2.currentUser.getOrganisationUnits(orgUnitListOptions);
+    const organisationUnitsCollection = await d2.currentUser.getOrganisationUnits(
+        orgUnitListOptions
+    );
 
     if (d2.currentUser.authorities.has("ALL") && !organisationUnitsCollection.size) {
-        const rootLevelOrgUnits = await d2.models.organisationUnits.list({ ...orgUnitListOptions, level: 1 });
+        const rootLevelOrgUnits = await d2.models.organisationUnits.list({
+            ...orgUnitListOptions,
+            level: 1,
+        });
 
         getCurrentUserOrganisationUnits.currentUserOrganisationUnits = rootLevelOrgUnits;
 
