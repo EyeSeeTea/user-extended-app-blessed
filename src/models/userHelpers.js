@@ -114,12 +114,15 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                     { useInOperator: false }
                 );
 
-                return listOfModels.map(model => _.pick(model, fields));
+                return _(listOfModels)
+                    .map(model => ({ value: model[dbField], obj: _.pick(model, fields) }))
+                    .value();
             })
         );
         const modelsByField = _(modelsByFieldList)
             .flatten()
-            .groupBy(matchField)
+            .groupBy(({ value }) => value)
+            .mapValues(objs => objs.map(({ obj }) => obj))
             .value();
 
         return [model, modelsByField];
@@ -186,7 +189,10 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     const objects = _(data)
         .flatMap(({ objs }) => objs)
         .value();
-    const info = { hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates) };
+
+    const info = {
+        hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates),
+    };
 
     return { objects, warnings, info };
 }
