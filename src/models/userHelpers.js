@@ -8,6 +8,8 @@ import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
 
+export const fieldImportSuffix = "Import"
+
 const queryFields = [
     "displayName|rename(name)",
     "shortName",
@@ -111,12 +113,9 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                 { useInOperator: false }
             );
 
-            return _(listOfModels)
-                .map(model => _.pick(model, fields))
-                .keyBy(dbField)
-                .value()
+            return listOfModels.map(model => _.pick(model, fields));
         }));
-        const modelsByField = _.assign(...modelsByFieldList);
+        const modelsByField = _(modelsByFieldList).flatten().groupBy(matchField).value();
 
         return [model, modelsByField];
     });
@@ -169,13 +168,19 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
             `Value not found: ${missingValue} [username=${username ||
                 "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    const objects = value && objectsByName
-        ? _(objectsByName)
-              .at(names)
-              .compact()
-              .value()
-        : undefined;
-    return { objects, warnings };
+    if (!value || !objectsByName) return { warnings };
+
+    const data = _(names).map(name => {
+            const objs = _.uniqBy(objectsByName[name] || [], "id")
+            return { objs, hasDuplicates: objs.length > 1 };
+        })
+        .compact()
+        .value();
+
+    const objects = _(data).flatMap(({ objs }) => objs).value();
+    const info = { hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates) };
+
+    return { objects, warnings, info };
 }
 
 function getPlainUser(user, { orgUnitsField }) {
@@ -222,8 +227,13 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const objectRelationships = _(relationships)
         .mapValues("objects")
         .value();
+    const extraInfo = _(relationships)
+        .map(({ info }, field) => [field + fieldImportSuffix, info])
+        .fromPairs()
+        .value();
     const plainUser = _(_.clone(user))
         .assign(objectRelationships)
+        .assign(extraInfo)
         .omit(propertiesIgnoredOnImport)
         .omitBy(_.isUndefined)
         .value();
