@@ -237,13 +237,15 @@ class ImportTable extends React.Component {
             ...(fieldHasImportData
                 ? { [importField]: { ...user[importField], hasDuplicates: false } }
                 : {}),
-         });
+        });
         const validators = (this.getFieldsInfo()[name] || {}).validators || [];
         // Force re-render if validations change so new error messages are shown
-        const shouldRender = fieldHasImportData || !_.isEqual(
-            validators.map(validator => validator.validator(value, userId)),
-            validators.map(validator => validator.validator(user[name], userId))
-        );
+        const shouldRender =
+            fieldHasImportData ||
+            !_.isEqual(
+                validators.map(validator => validator.validator(value, userId)),
+                validators.map(validator => validator.validator(user[name], userId))
+            );
 
         this.validateOnNextRender(shouldRender);
         this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {}) });
@@ -365,17 +367,18 @@ class ImportTable extends React.Component {
                 },
                 (password, error) => this.t(`password_${error}`)
             ),
-            importWarnings: objField => toBuilderValidator(
-                (_value, userId) => {
-                    const field = objField + fieldImportSuffix;
-                    const isValid = { isValid: true };
-                    const user = this.state.users.get(userId);
-                    if (!user) return isValid;
-                    const { hasDuplicates } = user[field] || {};
-                    return hasDuplicates ? { isValid: false } : isValid;
-                },
-                (_value, error) => this.t("multiple_matches"),
-            ),
+            importWarnings: objField =>
+                toBuilderValidator(
+                    (_value, userId) => {
+                        const field = objField + fieldImportSuffix;
+                        const isValid = { isValid: true };
+                        const user = this.state.users.get(userId);
+                        if (!user) return isValid;
+                        const { hasDuplicates } = user[field] || {};
+                        return hasDuplicates ? { isValid: false } : isValid;
+                    },
+                    (_value, error) => this.t("multiple_matches")
+                ),
         };
 
         return {
@@ -385,7 +388,9 @@ class ImportTable extends React.Component {
             surname: { validators: [validators.isRequired] },
             email: { validators: [validators.isValidEmail] },
             organisationUnits: { validators: [validators.importWarnings("organisationUnits")] },
-            dataViewOrganisationUnits: { validators: [validators.importWarnings("dataViewOrganisationUnits")] },
+            dataViewOrganisationUnits: {
+                validators: [validators.importWarnings("dataViewOrganisationUnits")],
+            },
             _default: { validators: [] },
         };
     }
@@ -429,16 +434,20 @@ class ImportTable extends React.Component {
             const value = user[field];
             const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
             const isMultipleValue = relationshipFields.includes(field);
-            const displayField = field === "organisationUnits" || field === "dataViewOrganisationUnits"
-                ? orgUnitsField
-                : "displayName";
+            const displayField =
+                field === "organisationUnits" || field === "dataViewOrganisationUnits"
+                    ? orgUnitsField
+                    : "displayName";
 
             if (isMultipleValue) {
                 const values = value || [];
                 const compactValue = _(values).isEmpty()
                     ? "-"
                     : `[${values.length}] ` +
-                      getCompactTextForModels(this.context.d2, values, { limit: 1, field: displayField });
+                      getCompactTextForModels(this.context.d2, values, {
+                          limit: 1,
+                          field: displayField,
+                      });
                 const hoverText = _(values)
                     .map(displayField)
                     .join(", ");

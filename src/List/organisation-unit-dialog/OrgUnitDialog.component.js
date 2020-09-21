@@ -24,7 +24,7 @@ class OrgUnitDialog extends React.Component {
                             // getOwnedPropertyJSON returns only the id for user.userCredentials,
                             // and dhis2 >= 2.32 needs the full object.
                             userCredentials: user.userCredentials,
-                            [props.field]: orgUnitsForUser.map(ou => ({ id: ou.id }))
+                            [props.field]: orgUnitsForUser.map(ou => ({ id: ou.id })),
                         })
                         .value()
                 ),

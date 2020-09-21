@@ -8,7 +8,7 @@ import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
 
-export const fieldImportSuffix = "Import"
+export const fieldImportSuffix = "Import";
 
 const queryFields = [
     "displayName|rename(name)",
@@ -104,18 +104,23 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
         // On org units, match both by shortName and displayName
         const dbFields = matchField === "shortName" ? [matchField, "displayName"] : [matchField];
 
-        const modelsByFieldList = await Promise.all(dbFields.map(async dbField => {
-            const listOfModels = await listWithInFilter(
-                d2.models[model],
-                dbField,
-                values,
-                { fields: fields.join(","), paging: false },
-                { useInOperator: false }
-            );
+        const modelsByFieldList = await Promise.all(
+            dbFields.map(async dbField => {
+                const listOfModels = await listWithInFilter(
+                    d2.models[model],
+                    dbField,
+                    values,
+                    { fields: fields.join(","), paging: false },
+                    { useInOperator: false }
+                );
 
-            return listOfModels.map(model => _.pick(model, fields));
-        }));
-        const modelsByField = _(modelsByFieldList).flatten().groupBy(matchField).value();
+                return listOfModels.map(model => _.pick(model, fields));
+            })
+        );
+        const modelsByField = _(modelsByFieldList)
+            .flatten()
+            .groupBy(matchField)
+            .value();
 
         return [model, modelsByField];
     });
@@ -170,14 +175,17 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     );
     if (!value || !objectsByName) return { warnings };
 
-    const data = _(names).map(name => {
-            const objs = _.uniqBy(objectsByName[name] || [], "id")
+    const data = _(names)
+        .map(name => {
+            const objs = _.uniqBy(objectsByName[name] || [], "id");
             return { objs, hasDuplicates: objs.length > 1 };
         })
         .compact()
         .value();
 
-    const objects = _(data).flatMap(({ objs }) => objs).value();
+    const objects = _(data)
+        .flatMap(({ objs }) => objs)
+        .value();
     const info = { hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates) };
 
     return { objects, warnings, info };
