@@ -69,6 +69,7 @@ class ReplicateUserFromTable extends React.Component {
                 actionText={this.t("replicate")}
                 onRequestClose={onRequestClose}
                 columns={this.columns}
+                settings={this.props.settings}
             />
         );
     }
@@ -81,6 +82,7 @@ ReplicateUserFromTable.contextTypes = {
 ReplicateUserFromTable.propTypes = {
     userToReplicateId: PropTypes.string.isRequired,
     onRequestClose: PropTypes.func.isRequired,
+    settings: PropTypes.object.isRequired,
 };
 
 export default ReplicateUserFromTable;

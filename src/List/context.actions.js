@@ -14,7 +14,7 @@ async function assignToOrgUnits(selectedUsers, field, titleKey) {
     const userIds = selectedUsers.map(u => u.model.id);
     const listOptions = {
         paging: false,
-        fields: `:owner,${field}[id,path,displayName]`,
+        fields: `:owner,${field}[id,path,shortName,displayName]`,
         filter: `id:in:[${userIds.join(",")}]`,
     };
     const users = (await d2.models.users.list(listOptions)).toArray();

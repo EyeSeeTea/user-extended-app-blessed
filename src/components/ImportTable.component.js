@@ -401,19 +401,24 @@ class ImportTable extends React.Component {
             "dataViewOrganisationUnits",
         ];
 
+        const orgUnitsField = this.props.settings.get("organisationUnitsField");
+
         return this.getColumns().map(field => {
             const value = user[field];
             const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
             const isMultipleValue = relationshipFields.includes(field);
+            const displayField = field === "organisationUnits" || field === "dataViewOrganisationUnits"
+                ? orgUnitsField
+                : "displayName";
 
             if (isMultipleValue) {
                 const values = value || [];
                 const compactValue = _(values).isEmpty()
                     ? "-"
                     : `[${values.length}] ` +
-                      getCompactTextForModels(this.context.d2, values, { limit: 1 });
+                      getCompactTextForModels(this.context.d2, values, { limit: 1, field: displayField });
                 const hoverText = _(values)
-                    .map("displayName")
+                    .map(displayField)
                     .join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
@@ -741,6 +746,7 @@ ImportTable.propTypes = {
     actionText: PropTypes.string.isRequired,
     columns: PropTypes.arrayOf(PropTypes.string).isRequired,
     warnings: PropTypes.arrayOf(PropTypes.string),
+    settings: PropTypes.object.isRequired,
 };
 
 ImportTable.defaultProps = {

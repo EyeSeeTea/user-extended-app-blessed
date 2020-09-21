@@ -36,12 +36,12 @@ class OrgUnitForm extends React.Component {
         Promise.all([
             d2.models.organisationUnitLevels.list({
                 paging: false,
-                fields: "id,level,displayName,path",
+                fields: "id,level,displayName,shortName,path",
                 order: "level:asc",
             }),
             d2.models.organisationUnitGroups.list({
                 paging: false,
-                fields: "id,displayName,path",
+                fields: "id,displayName,shortName,path",
             }),
         ]).then(([levels, groups]) => {
             this.setState({
@@ -63,7 +63,7 @@ class OrgUnitForm extends React.Component {
                         .on("displayName")
                         .ilike(searchValue)
                         .list({
-                            fields: "id,displayName,path,children::isNotEmpty",
+                            fields: "id,displayName,shortName,path,children::isNotEmpty",
                             withinUserHierarchy: true,
                         })
                         .then(modelCollection => modelCollection.toArray());
@@ -85,7 +85,7 @@ class OrgUnitForm extends React.Component {
         const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
-            fields: "id,displayName,path",
+            fields: "id,displayName,shortName,path",
         });
 
         this.props.onChange(newSelected);
@@ -93,7 +93,7 @@ class OrgUnitForm extends React.Component {
 
     toggleOrgUnit(ev, orgUnitModel) {
         const orgUnit = _(orgUnitModel)
-            .pick(["id", "path", "displayName"])
+            .pick(["id", "shortName", "path", "displayName"])
             .value();
         const newSelected = _(this.props.selected).find(
             selectedOu => selectedOu.path === orgUnit.path
