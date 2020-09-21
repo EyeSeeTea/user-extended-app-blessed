@@ -360,6 +360,7 @@ const List = React.createClass({
                 <ReplicateComponent
                     userToReplicateId={info.user.id}
                     onRequestClose={this.onReplicateDialogClose}
+                    settings={this.state.settings}
                 />
             );
         } else {
@@ -589,6 +590,7 @@ const List = React.createClass({
                         columns={importUsers.columns}
                         warnings={importUsers.warnings}
                         maxUsers={this.maxImportUsers}
+                        settings={this.state.settings}
                     />
                 )}
             </div>
