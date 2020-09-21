@@ -26,8 +26,8 @@ const queryFields = [
     "href",
     "level",
     "userGroups[id,displayName,publicAccess]",
-    "organisationUnits[id,code,displayName]",
-    "dataViewOrganisationUnits[id,code,displayName]",
+    "organisationUnits[id,code,shortName,displayName]",
+    "dataViewOrganisationUnits[id,code,shortName,displayName]",
 ].join(",");
 
 /*
@@ -74,7 +74,7 @@ const modelByField = {
 const queryFieldsByModel = {
     userRoles: ["id", "displayName"],
     userGroups: ["id", "displayName"],
-    organisationUnits: ["id", "path", "code", "displayName"],
+    organisationUnits: ["id", "path", "code", "displayName", "shortName"],
 };
 
 async function getAssociations(d2, objs, { orgUnitsField }) {
@@ -99,19 +99,26 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
         const matchField = model === "organisationUnits" ? orgUnitsField : "displayName";
-        const models = await listWithInFilter(
-            d2.models[model],
-            matchField,
-            values,
-            { fields: fields.join(","), paging: false },
-            { useInOperator: false }
-        ).then(models =>
-            _(models)
+        // On org units, match both by shortName and displayName
+        const dbFields = matchField === "shortName" ? [matchField, "displayName"] : [matchField];
+
+        const modelsByFieldList = await Promise.all(dbFields.map(async dbField => {
+            const listOfModels = await listWithInFilter(
+                d2.models[model],
+                dbField,
+                values,
+                { fields: fields.join(","), paging: false },
+                { useInOperator: false }
+            );
+
+            return _(listOfModels)
                 .map(model => _.pick(model, fields))
-                .keyBy(matchField)
+                .keyBy(dbField)
                 .value()
-        );
-        return [model, models];
+        }));
+        const modelsByField = _.assign(...modelsByFieldList);
+
+        return [model, modelsByField];
     });
 
     return _.fromPairs(pairs);
