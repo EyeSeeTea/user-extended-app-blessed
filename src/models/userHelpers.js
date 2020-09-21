@@ -8,6 +8,8 @@ import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
 
+export const fieldImportSuffix = "Import";
+
 const queryFields = [
     "displayName|rename(name)",
     "shortName",
@@ -26,8 +28,8 @@ const queryFields = [
     "href",
     "level",
     "userGroups[id,displayName,publicAccess]",
-    "organisationUnits[id,code,displayName]",
-    "dataViewOrganisationUnits[id,code,displayName]",
+    "organisationUnits[id,code,shortName,displayName]",
+    "dataViewOrganisationUnits[id,code,shortName,displayName]",
 ].join(",");
 
 /*
@@ -74,7 +76,7 @@ const modelByField = {
 const queryFieldsByModel = {
     userRoles: ["id", "displayName"],
     userGroups: ["id", "displayName"],
-    organisationUnits: ["id", "path", "code", "displayName"],
+    organisationUnits: ["id", "path", "code", "displayName", "shortName"],
 };
 
 async function getAssociations(d2, objs, { orgUnitsField }) {
@@ -99,19 +101,31 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
         const matchField = model === "organisationUnits" ? orgUnitsField : "displayName";
-        const models = await listWithInFilter(
-            d2.models[model],
-            matchField,
-            values,
-            { fields: fields.join(","), paging: false },
-            { useInOperator: false }
-        ).then(models =>
-            _(models)
-                .map(model => _.pick(model, fields))
-                .keyBy(matchField)
-                .value()
+        // On org units, match both by shortName and displayName
+        const dbFields = matchField === "shortName" ? [matchField, "displayName"] : [matchField];
+
+        const modelsByFieldList = await Promise.all(
+            dbFields.map(async dbField => {
+                const listOfModels = await listWithInFilter(
+                    d2.models[model],
+                    dbField,
+                    values,
+                    { fields: fields.join(","), paging: false },
+                    { useInOperator: false }
+                );
+
+                return _(listOfModels)
+                    .map(model => ({ value: model[dbField], obj: _.pick(model, fields) }))
+                    .value();
+            })
         );
-        return [model, models];
+        const modelsByField = _(modelsByFieldList)
+            .flatten()
+            .groupBy(({ value }) => value)
+            .mapValues(objs => objs.map(({ obj }) => obj))
+            .value();
+
+        return [model, modelsByField];
     });
 
     return _.fromPairs(pairs);
@@ -162,13 +176,25 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
             `Value not found: ${missingValue} [username=${username ||
                 "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    const objects = value && objectsByName
-        ? _(objectsByName)
-              .at(names)
-              .compact()
-              .value()
-        : undefined;
-    return { objects, warnings };
+    if (!value || !objectsByName) return { warnings };
+
+    const data = _(names)
+        .map(name => {
+            const objs = _.uniqBy(objectsByName[name] || [], "id");
+            return { objs, hasDuplicates: objs.length > 1 };
+        })
+        .compact()
+        .value();
+
+    const objects = _(data)
+        .flatMap(({ objs }) => objs)
+        .value();
+
+    const info = {
+        hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates),
+    };
+
+    return { objects, warnings, info };
 }
 
 function getPlainUser(user, { orgUnitsField }) {
@@ -215,8 +241,13 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const objectRelationships = _(relationships)
         .mapValues("objects")
         .value();
+    const extraInfo = _(relationships)
+        .map(({ info }, field) => [field + fieldImportSuffix, info])
+        .fromPairs()
+        .value();
     const plainUser = _(_.clone(user))
         .assign(objectRelationships)
+        .assign(extraInfo)
         .omit(propertiesIgnoredOnImport)
         .omitBy(_.isUndefined)
         .value();

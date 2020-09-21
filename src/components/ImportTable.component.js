@@ -26,7 +26,7 @@ import IconButton from "material-ui/IconButton";
 
 import { toBuilderValidator, validateUsername, validatePassword } from "../utils/validators";
 import User from "../models/user";
-import { getExistingUsers } from "../models/userHelpers";
+import { getExistingUsers, fieldImportSuffix } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 import LoadingMask from "../loading-mask/LoadingMask.component";
@@ -228,13 +228,24 @@ class ImportTable extends React.Component {
     onUpdateField(userId, name, value) {
         const { users } = this.state;
         const user = this.getUser(userId);
-        const newUsers = users.set(userId, { ...user, [name]: value });
+        // Clear import warnings on field update
+        const importField = name + fieldImportSuffix;
+        const fieldHasImportData = !!user[importField];
+        const newUsers = users.set(userId, {
+            ...user,
+            [name]: value,
+            ...(fieldHasImportData
+                ? { [importField]: { ...user[importField], hasDuplicates: false } }
+                : {}),
+        });
         const validators = (this.getFieldsInfo()[name] || {}).validators || [];
         // Force re-render if validations change so new error messages are shown
-        const shouldRender = !_.isEqual(
-            validators.map(validator => validator.validator(value, userId)),
-            validators.map(validator => validator.validator(user[name], userId))
-        );
+        const shouldRender =
+            fieldHasImportData ||
+            !_.isEqual(
+                validators.map(validator => validator.validator(value, userId)),
+                validators.map(validator => validator.validator(user[name], userId))
+            );
 
         this.validateOnNextRender(shouldRender);
         this.setState({ users: newUsers, ...(shouldRender ? { forceRender: new Date() } : {}) });
@@ -356,6 +367,18 @@ class ImportTable extends React.Component {
                 },
                 (password, error) => this.t(`password_${error}`)
             ),
+            importWarnings: objField =>
+                toBuilderValidator(
+                    (_value, userId) => {
+                        const field = objField + fieldImportSuffix;
+                        const isValid = { isValid: true };
+                        const user = this.state.users.get(userId);
+                        if (!user) return isValid;
+                        const { hasDuplicates } = user[field] || {};
+                        return hasDuplicates ? { isValid: false } : isValid;
+                    },
+                    (_value, error) => this.t("multiple_matches")
+                ),
         };
 
         return {
@@ -364,6 +387,10 @@ class ImportTable extends React.Component {
             firstName: { validators: [validators.isRequired] },
             surname: { validators: [validators.isRequired] },
             email: { validators: [validators.isValidEmail] },
+            organisationUnits: { validators: [validators.importWarnings("organisationUnits")] },
+            dataViewOrganisationUnits: {
+                validators: [validators.importWarnings("dataViewOrganisationUnits")],
+            },
             _default: { validators: [] },
         };
     }
@@ -401,19 +428,28 @@ class ImportTable extends React.Component {
             "dataViewOrganisationUnits",
         ];
 
+        const orgUnitsField = this.props.settings.get("organisationUnitsField");
+
         return this.getColumns().map(field => {
             const value = user[field];
             const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
             const isMultipleValue = relationshipFields.includes(field);
+            const displayField =
+                field === "organisationUnits" || field === "dataViewOrganisationUnits"
+                    ? orgUnitsField
+                    : "displayName";
 
             if (isMultipleValue) {
                 const values = value || [];
                 const compactValue = _(values).isEmpty()
                     ? "-"
                     : `[${values.length}] ` +
-                      getCompactTextForModels(this.context.d2, values, { limit: 1 });
+                      getCompactTextForModels(this.context.d2, values, {
+                          limit: 1,
+                          field: displayField,
+                      });
                 const hoverText = _(values)
-                    .map("displayName")
+                    .map(displayField)
                     .join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
@@ -741,6 +777,7 @@ ImportTable.propTypes = {
     actionText: PropTypes.string.isRequired,
     columns: PropTypes.arrayOf(PropTypes.string).isRequired,
     warnings: PropTypes.arrayOf(PropTypes.string),
+    settings: PropTypes.object.isRequired,
 };
 
 ImportTable.defaultProps = {

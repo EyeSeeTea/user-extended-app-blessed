@@ -88,8 +88,8 @@ class User {
         const userAttributes = await api.get(`/users/${userId}`, {
             fields:
                 ":all," +
-                "organisationUnits[id,code,displayName,path]," +
-                "dataViewOrganisationUnits[id,code,displayName,path]",
+                "organisationUnits[id,code,shortName,displayName,path]," +
+                "dataViewOrganisationUnits[id,code,shortName,displayName,path]",
         });
         return new User(d2, userAttributes);
     }

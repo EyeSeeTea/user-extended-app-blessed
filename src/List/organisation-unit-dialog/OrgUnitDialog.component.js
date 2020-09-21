@@ -20,8 +20,12 @@ class OrgUnitDialog extends React.Component {
             getPayload: (allOrgUnits, pairs) => ({
                 users: pairs.map(([user, orgUnitsForUser]) =>
                     _m(getOwnedPropertyJSON(user))
-                        .omit("userCredentials")
-                        .imerge({ [props.field]: orgUnitsForUser.map(ou => ({ id: ou.id })) })
+                        .imerge({
+                            // getOwnedPropertyJSON returns only the id for user.userCredentials,
+                            // and dhis2 >= 2.32 needs the full object.
+                            userCredentials: user.userCredentials,
+                            [props.field]: orgUnitsForUser.map(ou => ({ id: ou.id })),
+                        })
                         .value()
                 ),
             }),

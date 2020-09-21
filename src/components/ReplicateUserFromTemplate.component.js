@@ -249,6 +249,7 @@ ReplicateUserFromTemplate.contextTypes = {
 ReplicateUserFromTemplate.propTypes = {
     userToReplicateId: PropTypes.string.isRequired,
     onRequestClose: PropTypes.func.isRequired,
+    settings: PropTypes.object,
 };
 
 export default ReplicateUserFromTemplate;
