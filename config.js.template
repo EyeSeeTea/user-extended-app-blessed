@@ -1,6 +1,0 @@
-btoa = (s) => new Buffer(s).toString('base64');
-
-Object.assign(exports, {
-  "baseUrl": "http://localhost:8080",
-  "authorization": "Basic " + btoa("admin:district")
-});
