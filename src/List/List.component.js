@@ -155,7 +155,7 @@ const List = React.createClass({
             },
             copyUsers: {
                 open: false,
-            }
+            },
         };
     },
 
@@ -253,11 +253,9 @@ const List = React.createClass({
 
         const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
 
-        const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(
-            copyUsers => {
-                this.setAssignState("copyUsers", copyUsers);
-            }
-        );
+        const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
+            this.setAssignState("copyUsers", copyUsers);
+        });
 
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
@@ -266,7 +264,6 @@ const List = React.createClass({
         this.registerDisposable(replicateUserDialogStoreDisposable);
         this.registerDisposable(deleteUserStoreDisposable);
         this.registerDisposable(enableStoreDisposable);
-        //new
         this.registerDisposable(userCopyUserDialogStoreDisposable);
 
         this.filterList();
@@ -469,8 +466,13 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-                                                                                    //new
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers } = this.state;
+        const {
+            assignUserRoles,
+            assignUserGroups,
+            replicateUser,
+            listFilterOptions,
+            copyUsers,
+        } = this.state;
         const {
             showAllUsers,
             filterByGroups,
@@ -560,23 +562,21 @@ const List = React.createClass({
                     />
                 ) : null}
 
-                {assignUserRoles.open ?  (<UserRolesDialog
+                {assignUserRoles.open ? (
+                    <UserRolesDialog
                         users={assignUserRoles.users}
                         onRequestClose={() =>
                             userRolesAssignmentDialogStore.setState({ open: false })
                         }
                     />
-                    ) : null}
+                ) : null}
 
-                
-                {copyUsers.open ? 
-                    (<CopyInUserDialog
+                {copyUsers.open ? (
+                    <CopyInUserDialog
                         users={copyUsers.users}
-                        onRequestClose={() =>
-                            copyInUserStore.setState({ open: false })
-                        }
+                        onRequestClose={() => copyInUserStore.setState({ open: false })}
                     />
-                    ) : null}
+                ) : null}
 
                 {assignUserGroups.open ? (
                     <UserGroupsDialog

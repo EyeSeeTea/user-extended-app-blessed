@@ -627,6 +627,27 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
+function getPayload(parentUser, destUsers) {
+    const users = destUsers.map(childUser => {
+        let childUserRoles = childUser.userCredentials.userRoles;
+        if (childUserRoles.length == 0) {
+            return _m.imerge(childUser, {
+                userCredentials: _m.imerge(childUser.userCredentials, {
+                    userRoles: parentUser.userCredentials.userRoles,
+                }),
+            });
+        } else {
+            parentUser.userCredentials.userRoles.forEach(role => {
+                if (childUserRoles.find(element => element.id == role.id) == undefined) {
+                    childUserRoles.push(role);
+                }
+            });
+            return childUser;
+        }
+    });
+    return { users };
+}
+
 export {
     getList,
     exportToCsv,
@@ -635,4 +656,5 @@ export {
     saveUsers,
     parseResponse,
     getExistingUsers,
+    getPayload,
 };

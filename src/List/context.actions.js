@@ -98,7 +98,7 @@ const contextActions = [
     },
     {
         name: "copyInUser",
-        multiple: true,
+        multiple: false,
         icon: "content_copy",
         onClick: users => copyInUserStore.setState({ users, open: true }),
         allowed: checkAccess(["update"]),

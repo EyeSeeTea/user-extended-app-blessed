@@ -65,19 +65,19 @@ export default class BatchModelsMultiSelectModel {
 
     async getUserInfo(ids) {
         const api = this.d2.Api.getApi();
-        const { users } =  await api.get("/users", {
+        const { users } = await api.get("/users", {
             paging: false,
             fields: ":owner",
-            filter:  "id:in:[" + ids.join(",")+ "]",
+            filter: "id:in:[" + ids.join(",") + "]",
         });
-        return users
+        return users;
     }
 
     async copyInUserSave(parents, selectedIds) {
         const api = this.d2.Api.getApi();
-        const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id])
-        const childrenUsers = await this.getUserInfo(selectedIds)
-        const payload = await this.getPayload(_.zip(parentWithRoles, childrenUsers));
+        const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
+        const childrenUsers = await this.getUserInfo(selectedIds);
+        const payload = await this.getPayload(...parentWithRoles, childrenUsers);
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
 
         return api.post(metadataUrl, payload).then(response => {

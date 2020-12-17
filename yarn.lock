@@ -5043,19 +5043,6 @@ phantomjs-polyfill@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/phantomjs-polyfill/-/phantomjs-polyfill-0.0.1.tgz#5e61a5c5621a2656e5374f23909d871ce61c1dd2"
 
-phantomjs@1.9.18:
-  version "1.9.18"
-  resolved "https://registry.yarnpkg.com/phantomjs/-/phantomjs-1.9.18.tgz#e876fce89b143a6c01c24e0332ef3822851cace1"
-  dependencies:
-    adm-zip "0.4.4"
-    fs-extra "~0.23.1"
-    kew "0.4.0"
-    npmconf "2.1.1"
-    progress "1.1.8"
-    request "2.42.0"
-    request-progress "0.3.1"
-    which "~1.0.5"
-
 pify@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
