@@ -476,12 +476,15 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
 function postMetadata(api, payload) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
-        .catch(error => ({
-            success: false,
-            payload,
-            error: error ? error.message || error.toString() : "Unknown",
-        }));
+        .then(res => {console.log(parseResponse(res, payload)); return parseResponse(res, payload)})
+        .catch(error => {
+            console.log(error)
+            return {
+                success: false,
+                payload,
+                error: error ? error.message || error.toString() : "Unknown",
+            }
+        });
 }
 
 /* Public interface */
@@ -519,11 +522,42 @@ async function saveUsers(d2, users) {
                 .join(",") +
             "]",
     });
+    console.log('existingUsersToUpdate')
+    console.log(existingUsersToUpdate)
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
+    console.log('usersToSave')
+    console.log(usersToSave)
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
+    console.log('userGroupsToSave')
+    console.log(userGroupsToSave)
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
 
     return postMetadata(api, payload);
+}
+
+async function saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles) {
+    const api = d2.Api.getApi();
+    const existingUsersToUpdate = await getExistingUsers(d2, {
+        fields: ":owner,userGroups[id]",
+        filter:
+            "userCredentials.username:in:[" +
+            _(users)
+                .map("username")
+                .join(",") +
+            "]",
+    });
+    console.log('existingUsersToUpdate')
+    console.log(existingUsersToUpdate)
+    const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
+    console.log('userGroupsToSave')
+    console.log(userGroupsToSave)
+    const payload = { users: users, userGroups: userGroupsToSave };
+
+    if(copyUserRoles && !copyUserGroups)
+    {
+        return postMetadata(api, { users: users});
+    }
+    else return postMetadata(api, payload);
 }
 
 /* Return an array of users from DHIS2 API.
@@ -627,25 +661,81 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-function getPayload(parentUser, destUsers) {
-    const users = destUsers.map(childUser => {
-        let childUserRoles = childUser.userCredentials.userRoles;
-        if (childUserRoles.length == 0) {
-            return _m.imerge(childUser, {
-                userCredentials: _m.imerge(childUser.userCredentials, {
-                    userRoles: parentUser.userCredentials.userRoles,
-                }),
-            });
-        } else {
-            parentUser.userCredentials.userRoles.forEach(role => {
-                if (childUserRoles.find(element => element.id == role.id) == undefined) {
-                    childUserRoles.push(role);
+/*
+use cases:
+1 parent to 1 child:
+    1. userRoles
+    2. userGroups
+    3. userRoles AND userGroups
+    4. child has no userRoles and/or userGroups 
+
+1 parent to many children
+    1. userRoles
+    2. userGroups
+    3. userRoles AND userGroups
+    4. child has no userRoles and/or userGroups 
+*/
+function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
+    
+        const users = destUsers.map(childUser => {
+            //if you only want to copy the userRoles
+            let childUserRoles = childUser.userCredentials.userRoles;
+            let childUserGroups = childUser.userGroups;
+            if(copyUserRoles && copyUserGroups)
+            {
+                console.log('hello in userRoles & userGroups!')
+                if(childUserGroups.length == 0 && childUserRoles.length == 0)
+                {
+                    return _m.imerge(childUser, {
+                        userCredentials: _m.imerge(childUser.userCredentials, {
+                            userRoles: parentUser.userCredentials.userRoles,
+                        }),
+                        userGroups: parentUser.userGroups,
+                    });
                 }
-            });
+            }
+            else if(copyUserRoles)
+            {   
+                //if the child has no userRoles, so you copy over all of them from the parent
+                if (childUserRoles.length == 0) {
+                    return _m.imerge(childUser, {
+                        userCredentials: _m.imerge(childUser.userCredentials, {
+                            userRoles: parentUser.userCredentials.userRoles,
+                        }),
+                    });
+                } else {
+                    //else if the childUser has userRoles already, you go through the parentRoles and 
+                    //see which ones the childUser doesn't have and add it
+                    parentUser.userCredentials.userRoles.forEach(role => {
+                        if (childUserRoles.find(element => element.id == role.id) == undefined) {
+                            childUserRoles.push(role);
+                        }
+                    });
+                }
+            }
+            else if(copyUserGroups)
+            {
+                console.log('hello in userGroups!')
+                //if the child has no childUserGroups, so you copy over all of them from the parent
+                if (childUserGroups.length == 0) {
+                    return _m.imerge(childUser, {
+                        ...childUser,
+                        userGroups: parentUser.userGroups,
+                    });
+                } else {
+                    //else if the childUser has userRoles already, you go through the parentRoles and 
+                    //see which ones the childUser doesn't have and add it
+                    parentUser.userGroups.forEach(group => {
+                        if (childUserGroups.find(element => element.id == group.id) == undefined) {
+                            childUserGroups.push(group);
+                        }
+                    });
+                }
+            }
             return childUser;
-        }
-    });
-    return { users };
+        });
+        console.log(users)
+        return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles)
 }
 
 export {

@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import BatchModelsMultiSelectModel from "./batch-models-multi-select/BatchModelsMultiSelect.model";
 import BatchModelsMultiSelectComponent from "./batch-models-multi-select/BatchModelsMultiSelect.component";
+import CopyInUserBatchModelsMultiSelectComponent from "./batch-models-multi-select/CopyInUserBatchModelsMultiSelect.component";
+import CopyInUserBatchModelsMultiSelectModel from "./batch-models-multi-select/CopyInUserBatchModelsMultiSelect.model";
 import _m from "../utils/lodash-mixins";
 import { getPayload } from "../models/userHelpers";
 
@@ -23,14 +25,13 @@ function CopyInUserDialog(props, context) {
     };
 
     return (
-        <BatchModelsMultiSelectComponent
-            model={new BatchModelsMultiSelectModel(context.d2, modelOptions)}
+        <CopyInUserBatchModelsMultiSelectComponent
+            model={new CopyInUserBatchModelsMultiSelectModel(context.d2, modelOptions)}
             parents={[{ ...props.users }]}
             onRequestClose={props.onRequestClose}
             getTitle={users => getTitle(getTranslation, users)}
             onSuccess={getTranslation("user_configuration_copied")}
             onError={getTranslation("user_configuration_copied_error")}
-            copyInUser={true}
         />
     );
 }
