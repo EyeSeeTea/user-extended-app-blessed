@@ -49,17 +49,9 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         });
         return users;
     }
-
-    //I don't need to change anything here, just pass in the 2 booleans 
     async copyInUserSave(parents, selectedIds, copyUserGroups, copyUserRoles) {
-        //with this way, I get both the userRoles AND userGroups so maybe I'll just do this to begin with
-        //then I pass this to the payload and then depending on the booleans I can copy userRoles and/or userGroups
         const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
         const childrenUsers = await this.getUserInfo(selectedIds);
-        console.log('parent')
-        console.log(parentWithRoles)
-        console.log('children')
-        console.log(childrenUsers)
         const payload = await this.getPayload(...parentWithRoles, childrenUsers, copyUserGroups, copyUserRoles);
         return payload;
     }

@@ -1,4 +1,5 @@
 import _ from "lodash";
+import _m from "../utils/lodash-mixins";
 import moment from "moment";
 import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
@@ -522,14 +523,8 @@ async function saveUsers(d2, users) {
                 .join(",") +
             "]",
     });
-    console.log('existingUsersToUpdate')
-    console.log(existingUsersToUpdate)
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    console.log('usersToSave')
-    console.log(usersToSave)
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
-    console.log('userGroupsToSave')
-    console.log(userGroupsToSave)
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
 
     return postMetadata(api, payload);
@@ -537,20 +532,7 @@ async function saveUsers(d2, users) {
 
 async function saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles) {
     const api = d2.Api.getApi();
-    const existingUsersToUpdate = await getExistingUsers(d2, {
-        fields: ":owner,userGroups[id]",
-        filter:
-            "userCredentials.username:in:[" +
-            _(users)
-                .map("username")
-                .join(",") +
-            "]",
-    });
-    console.log('existingUsersToUpdate')
-    console.log(existingUsersToUpdate)
-    const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
-    console.log('userGroupsToSave')
-    console.log(userGroupsToSave)
+    const userGroupsToSave = await getUserGroupsToSave(api, users, []);
     const payload = { users: users, userGroups: userGroupsToSave };
 
     if(copyUserRoles && !copyUserGroups)
@@ -664,39 +646,37 @@ async function getExistingUsers(d2, options = {}) {
 /*
 use cases:
 1 parent to 1 child:
-    1. userRoles
-    2. userGroups
-    3. userRoles AND userGroups
-    4. child has no userRoles and/or userGroups 
+    1. userRoles :) 
+    2. userGroups :) 
+    3. userRoles AND userGroups :)
+    4. child has no userRoles :)
+    5. child has no userGroups :)
+    5. child has no userRoles AND userGroups :)
 
 1 parent to many children
     1. userRoles
     2. userGroups
-    3. userRoles AND userGroups
-    4. child has no userRoles and/or userGroups 
+    3. userRoles AND userGroups :)
+    4. child has no userRoles 
+    5. child has no userGroups 
+    5. child has no userRoles AND userGroups 
 */
 function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
     
         const users = destUsers.map(childUser => {
-            //if you only want to copy the userRoles
             let childUserRoles = childUser.userCredentials.userRoles;
             let childUserGroups = childUser.userGroups;
-            if(copyUserRoles && copyUserGroups)
+            if(childUserGroups.length == 0 && childUserRoles.length == 0)
             {
-                console.log('hello in userRoles & userGroups!')
-                if(childUserGroups.length == 0 && childUserRoles.length == 0)
-                {
-                    return _m.imerge(childUser, {
-                        userCredentials: _m.imerge(childUser.userCredentials, {
-                            userRoles: parentUser.userCredentials.userRoles,
-                        }),
-                        userGroups: parentUser.userGroups,
-                    });
-                }
+                return _m.imerge(childUser, {
+                    userCredentials: _m.imerge(childUser.userCredentials, {
+                        userRoles: parentUser.userCredentials.userRoles,
+                    }),
+                    userGroups: parentUser.userGroups,
+                });  
             }
-            else if(copyUserRoles)
+            if(copyUserRoles)
             {   
-                //if the child has no userRoles, so you copy over all of them from the parent
                 if (childUserRoles.length == 0) {
                     return _m.imerge(childUser, {
                         userCredentials: _m.imerge(childUser.userCredentials, {
@@ -704,27 +684,20 @@ function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
                         }),
                     });
                 } else {
-                    //else if the childUser has userRoles already, you go through the parentRoles and 
-                    //see which ones the childUser doesn't have and add it
                     parentUser.userCredentials.userRoles.forEach(role => {
                         if (childUserRoles.find(element => element.id == role.id) == undefined) {
                             childUserRoles.push(role);
                         }
-                    });
+                    })
                 }
             }
-            else if(copyUserGroups)
+            if(copyUserGroups)
             {
-                console.log('hello in userGroups!')
-                //if the child has no childUserGroups, so you copy over all of them from the parent
                 if (childUserGroups.length == 0) {
                     return _m.imerge(childUser, {
-                        ...childUser,
                         userGroups: parentUser.userGroups,
                     });
                 } else {
-                    //else if the childUser has userRoles already, you go through the parentRoles and 
-                    //see which ones the childUser doesn't have and add it
                     parentUser.userGroups.forEach(group => {
                         if (childUserGroups.find(element => element.id == group.id) == undefined) {
                             childUserGroups.push(group);
@@ -732,9 +705,8 @@ function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
                     });
                 }
             }
-            return childUser;
+            return childUser
         });
-        console.log(users)
         return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles)
 }
 

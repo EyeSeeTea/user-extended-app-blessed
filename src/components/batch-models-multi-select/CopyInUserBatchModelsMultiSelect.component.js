@@ -22,7 +22,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             updateStrategy: this.props.parents.length > 1 ? "merge" : "replace",
             copyUserGroups: false,
             copyUserRoles: false,
-            errorMessage: '',
         };
     }
 
@@ -59,6 +58,12 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         cancelButton: {
             marginRight: 16,
         },
+        toggle: {
+             width: 175, 
+             float: "right", 
+             marginTop: 20, 
+             marginRight: 10 
+        }
     };
 
     componentDidMount() {
@@ -98,7 +103,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             return (
                 <Toggle
                     label={label}
-                    style={{ width: 300, float: "right", marginTop: 20, marginRight: 15 }}
+                    style={this.styles.toggle}
                     checked={this.state.updateStrategy === "replace"}
                     onToggle={(ev, newValue) =>
                         this.setState({ updateStrategy: newValue ? "replace" : "merge" })
@@ -119,8 +124,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     onChange(selectedIds) {
         this.setState({ selectedIds });
     }
-    
-
     render() {
         switch (this.state.state) {
             case "loading":
@@ -141,7 +144,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     onFilterTextChange(event) {
         this.setState({ filterText: event.target.value });
     }
-    //throw new Error("Cannot get user with ID: " + userId);
     getDialogButtons() {
         return [
             <FlatButton
@@ -152,8 +154,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             <RaisedButton
                 primary
                 label={this.getTranslation("save")}
-                onClick={ this.state.copyUserGroups || this.state.copyUserRoles ? this.copyInUserSave.bind(this) : () => {console.log('Error: You must select a toggle option'); this.setState({ errorMessage: 'Error: You must select a toggle option'})}
-                }
+                onClick={ this.state.copyUserGroups || this.state.copyUserRoles ? this.copyInUserSave.bind(this) : err => this.close("Error: You must select a toggle option") }
             />,
         ];
     }
@@ -176,7 +177,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                 open={true}
                 onRequestClose={this.props.onRequestClose}
             >
-                {this.state.errorMessage ? <h1>{this.state.errorMessage}</h1> : null}
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
                     value={filterText}
@@ -189,13 +189,13 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 
                     <Toggle
                         label={'User Groups'}
-                        style={{ width: 150, float: "right", marginTop: 20, marginRight: 15 }}
+                        style={this.styles.toggle}
                         checked={this.state.copyUserGroups == true}
                         onToggle={(ev, newValue) => this.setState({ copyUserGroups: newValue })}
                     />
                     <Toggle
                         label={'User Roles'}
-                        style={{ width: 150, float: "right", marginTop: 20, marginRight: 15 }}
+                        style={this.styles.toggle}
                         checked={this.state.copyUserRoles === true}
                         onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
                     />

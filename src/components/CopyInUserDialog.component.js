@@ -1,7 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import BatchModelsMultiSelectModel from "./batch-models-multi-select/BatchModelsMultiSelect.model";
-import BatchModelsMultiSelectComponent from "./batch-models-multi-select/BatchModelsMultiSelect.component";
 import CopyInUserBatchModelsMultiSelectComponent from "./batch-models-multi-select/CopyInUserBatchModelsMultiSelect.component";
 import CopyInUserBatchModelsMultiSelectModel from "./batch-models-multi-select/CopyInUserBatchModelsMultiSelect.model";
 import _m from "../utils/lodash-mixins";
