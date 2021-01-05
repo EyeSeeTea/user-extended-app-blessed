@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
-const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 import { getExistingUsers } from "../../models/userHelpers";
+const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 
 export default class CopyInUserBatchModelsMultiSelectModel {
     constructor(
@@ -41,9 +41,9 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-    
+
     async getUserInfo(ids) {
-        const users  = await getExistingUsers(d2, {
+        const users = await getExistingUsers(d2, {
             fields: ":owner,userGroups[id]",
             filter: "id:in:[" + ids.join(",") + "]",
         });
@@ -52,7 +52,12 @@ export default class CopyInUserBatchModelsMultiSelectModel {
     async copyInUserSave(parents, selectedIds, copyUserGroups, copyUserRoles) {
         const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
         const childrenUsers = await this.getUserInfo(selectedIds);
-        const payload = await this.getPayload(...parentWithRoles, childrenUsers, copyUserGroups, copyUserRoles);
+        const payload = await this.getPayload(
+            ...parentWithRoles,
+            childrenUsers,
+            copyUserGroups,
+            copyUserRoles
+        );
         return payload;
     }
 
@@ -62,6 +67,4 @@ export default class CopyInUserBatchModelsMultiSelectModel {
             .sortBy(obj => obj.name)
             .value();
     }
-
-    
 }

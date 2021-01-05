@@ -477,15 +477,12 @@ async function getUserGroupsToSave(api, usersToSave, existingUsersToUpdate) {
 function postMetadata(api, payload) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => {console.log(parseResponse(res, payload)); return parseResponse(res, payload)})
-        .catch(error => {
-            console.log(error)
-            return {
-                success: false,
-                payload,
-                error: error ? error.message || error.toString() : "Unknown",
-            }
-        });
+        .then(res => parseResponse(res, payload))
+        .catch(error => ({
+            success: false,
+            payload,
+            error: error ? error.message || error.toString() : "Unknown",
+        }));
 }
 
 /* Public interface */
@@ -535,11 +532,9 @@ async function saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles) {
     const userGroupsToSave = await getUserGroupsToSave(api, users, []);
     const payload = { users: users, userGroups: userGroupsToSave };
 
-    if(copyUserRoles && !copyUserGroups)
-    {
-        return postMetadata(api, { users: users});
-    }
-    else return postMetadata(api, payload);
+    if (copyUserRoles && !copyUserGroups) {
+        return postMetadata(api, { users: users });
+    } else return postMetadata(api, payload);
 }
 
 /* Return an array of users from DHIS2 API.
@@ -643,71 +638,41 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-/*
-use cases:
-1 parent to 1 child:
-    1. userRoles :) 
-    2. userGroups :) 
-    3. userRoles AND userGroups :)
-    4. child has no userRoles :)
-    5. child has no userGroups :)
-    5. child has no userRoles AND userGroups :)
-
-1 parent to many children
-    1. userRoles
-    2. userGroups
-    3. userRoles AND userGroups :)
-    4. child has no userRoles 
-    5. child has no userGroups 
-    5. child has no userRoles AND userGroups 
-*/
 function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
-    
-        const users = destUsers.map(childUser => {
-            let childUserRoles = childUser.userCredentials.userRoles;
-            let childUserGroups = childUser.userGroups;
-            if(childUserGroups.length == 0 && childUserRoles.length == 0)
-            {
-                return _m.imerge(childUser, {
+    const users = destUsers.map(childUser => {
+        let childUserRoles = childUser.userCredentials.userRoles;
+        let childUserGroups = childUser.userGroups;
+        if (copyUserRoles) {
+            if (childUserRoles.length == 0) {
+                childUser = _m.imerge(childUser, {
                     userCredentials: _m.imerge(childUser.userCredentials, {
                         userRoles: parentUser.userCredentials.userRoles,
                     }),
+                });
+            } else {
+                parentUser.userCredentials.userRoles.forEach(role => {
+                    if (childUserRoles.find(element => element.id == role.id) == undefined) {
+                        childUserRoles.push(role);
+                    }
+                });
+            }
+        }
+        if (copyUserGroups) {
+            if (childUserGroups.length == 0) {
+                childUser = _m.imerge(childUser, {
                     userGroups: parentUser.userGroups,
-                });  
+                });
+            } else {
+                parentUser.userGroups.forEach(group => {
+                    if (childUserGroups.find(element => element.id == group.id) == undefined) {
+                        childUserGroups.push(group);
+                    }
+                });
             }
-            if(copyUserRoles)
-            {   
-                if (childUserRoles.length == 0) {
-                    return _m.imerge(childUser, {
-                        userCredentials: _m.imerge(childUser.userCredentials, {
-                            userRoles: parentUser.userCredentials.userRoles,
-                        }),
-                    });
-                } else {
-                    parentUser.userCredentials.userRoles.forEach(role => {
-                        if (childUserRoles.find(element => element.id == role.id) == undefined) {
-                            childUserRoles.push(role);
-                        }
-                    })
-                }
-            }
-            if(copyUserGroups)
-            {
-                if (childUserGroups.length == 0) {
-                    return _m.imerge(childUser, {
-                        userGroups: parentUser.userGroups,
-                    });
-                } else {
-                    parentUser.userGroups.forEach(group => {
-                        if (childUserGroups.find(element => element.id == group.id) == undefined) {
-                            childUserGroups.push(group);
-                        }
-                    });
-                }
-            }
-            return childUser
-        });
-        return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles)
+        }
+        return childUser;
+    });
+    return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles);
 }
 
 export {

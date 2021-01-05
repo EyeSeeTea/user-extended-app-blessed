@@ -20,7 +20,6 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             selectedIds: null,
             filterText: "",
             updateStrategy: this.props.parents.length > 1 ? "merge" : "replace",
-            copyInUser: false,
         };
     }
 
@@ -61,9 +60,6 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
 
     componentDidMount() {
         const { parents, model } = this.props;
-        this.setState({
-            copyInUser: this.props.copyInUser,
-        });
 
         return Promise.all([model.getAllChildren(), model.getParents(parents)])
             .then(([allChildren, parentsLoaded]) =>
@@ -115,13 +111,6 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             .then(() => this.close(this.props.onSuccess))
             .catch(err => this.close(this.props.onError));
     }
-    async copyInUserSave() {
-        const { parents, selectedIds } = this.state;
-        await this.props.model
-            .copyInUserSave(parents, selectedIds)
-            .then(() => this.close(this.props.onSuccess))
-            .catch(err => this.close(this.props.onError));
-    }
     onChange(selectedIds) {
         this.setState({ selectedIds });
     }
@@ -157,9 +146,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             <RaisedButton
                 primary
                 label={this.getTranslation("save")}
-                onClick={
-                    this.state.copyInUser ? this.copyInUserSave.bind(this) : this.save.bind(this)
-                }
+                onClick={this.save.bind(this)}
             />,
         ];
     }

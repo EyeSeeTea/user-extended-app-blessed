@@ -59,18 +59,15 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             marginRight: 16,
         },
         toggle: {
-             width: 175, 
-             float: "right", 
-             marginTop: 20, 
-             marginRight: 10 
-        }
+            width: 175,
+            float: "right",
+            marginTop: 20,
+            marginRight: 10,
+        },
     };
 
     componentDidMount() {
         const { parents, model } = this.props;
-        this.setState({
-            copyInUser: this.props.copyInUser,
-        });
 
         return Promise.all([model.getAllChildren(), model.getParents(parents)])
             .then(([allChildren, parentsLoaded]) =>
@@ -154,7 +151,14 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             <RaisedButton
                 primary
                 label={this.getTranslation("save")}
-                onClick={ this.state.copyUserGroups || this.state.copyUserRoles ? this.copyInUserSave.bind(this) : err => this.close("Error: You must select a toggle option") }
+                onClick={
+                    this.state.copyUserGroups || this.state.copyUserRoles
+                        ? this.copyInUserSave.bind(this)
+                        : () =>
+                              snackActions.show({
+                                  message: "Error: You must select a toggle option",
+                              })
+                }
             />,
         ];
     }
@@ -187,18 +191,18 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 
                 {this.renderStrategyToggle()}
 
-                    <Toggle
-                        label={'User Groups'}
-                        style={this.styles.toggle}
-                        checked={this.state.copyUserGroups == true}
-                        onToggle={(ev, newValue) => this.setState({ copyUserGroups: newValue })}
-                    />
-                    <Toggle
-                        label={'User Roles'}
-                        style={this.styles.toggle}
-                        checked={this.state.copyUserRoles === true}
-                        onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
-                    />
+                <Toggle
+                    label={"User Groups"}
+                    style={this.styles.toggle}
+                    checked={this.state.copyUserGroups == true}
+                    onToggle={(ev, newValue) => this.setState({ copyUserGroups: newValue })}
+                />
+                <Toggle
+                    label={"User Roles"}
+                    style={this.styles.toggle}
+                    checked={this.state.copyUserRoles === true}
+                    onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
+                />
                 <div style={this.styles.contents}>
                     <MultiSelect
                         isLoading={isLoading}
