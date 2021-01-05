@@ -68,7 +68,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 
     componentDidMount() {
         const { parents, model } = this.props;
-
         return Promise.all([model.getAllChildren(), model.getParents(parents)])
             .then(([allChildren, parentsLoaded]) =>
                 this.setState({
@@ -167,9 +166,11 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         const isLoading = this.state.state === "loading";
         const { parents, allChildren, filterText, selectedIds } = this.state;
         const title = this.props.getTitle(parents, allChildren);
+        const parentName = this.props.parents[0].name;
         const options = _(allChildren || [])
             .sortBy("name")
             .map(obj => ({ value: obj.id, text: obj.name }))
+            .filter(obj => obj.text !== parentName)
             .value();
         return (
             <Dialog

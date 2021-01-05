@@ -6,7 +6,7 @@ const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 export default class CopyInUserBatchModelsMultiSelectModel {
     constructor(
         d2,
-        { parentModel, parentFields, getPayload, childrenModel, childrenFields, getChildren }
+        { parentModel, getPayload, parentFields, childrenModel, childrenFields, getChildren }
     ) {
         Object.assign(this, {
             d2,
