@@ -38,4 +38,9 @@ CopyInUserDialog.contextTypes = {
     d2: PropTypes.object.isRequired,
 };
 
+CopyInUserDialog.propTypes = {
+    user: PropTypes.object.isRequired,
+    onRequestClose: PropTypes.func.isRequired,
+};
+
 export default CopyInUserDialog;

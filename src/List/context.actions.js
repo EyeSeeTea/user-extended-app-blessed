@@ -1,3 +1,4 @@
+import _ from "lodash";
 import detailsStore from "./details.store";
 import { config, getInstance as getD2 } from "d2/lib/d2";
 import orgUnitAssignmentDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
@@ -100,7 +101,7 @@ const contextActions = [
         name: "copyInUser",
         multiple: false,
         icon: "content_copy",
-        onClick: users => copyInUserStore.setState({ users, open: true }),
+        onClick: user => copyInUserStore.setState({ user, open: true }),
         allowed: checkAccess(["update"]),
     },
     {

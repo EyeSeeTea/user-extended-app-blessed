@@ -573,7 +573,7 @@ const List = React.createClass({
 
                 {copyUsers.open ? (
                     <CopyInUserDialog
-                        users={copyUsers.users}
+                        user={copyUsers.user}
                         onRequestClose={() => copyInUserStore.setState({ open: false })}
                     />
                 ) : null}

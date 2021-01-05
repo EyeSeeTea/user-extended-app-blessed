@@ -75,9 +75,10 @@ export default class BatchModelsMultiSelectModel {
 
     async copyInUserSave(parents, selectedIds) {
         const api = this.d2.Api.getApi();
-        const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
+        const parentUser = _.first(await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]));
+        if (!parentUser) throw new Error("User not found");
         const childrenUsers = await this.getUserInfo(selectedIds);
-        const payload = await this.getPayload(...parentWithRoles, childrenUsers);
+        const payload = await this.getPayload(parentUser, childrenUsers);
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
 
         return api.post(metadataUrl, payload).then(response => {
