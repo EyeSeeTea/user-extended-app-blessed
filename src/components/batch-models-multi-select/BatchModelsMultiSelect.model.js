@@ -61,34 +61,6 @@ export default class BatchModelsMultiSelectModel {
         });
     }
 
-    async getUserInfo(ids) {
-        const api = this.d2.Api.getApi();
-        const { users } = await api.get("/users", {
-            paging: false,
-            fields: ":owner",
-            filter: "id:in:[" + ids.join(",") + "]",
-        });
-        return users;
-    }
-
-    async copyInUserSave(parents, selectedIds) {
-        const api = this.d2.Api.getApi();
-        const parentUser = _.first(await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]));
-        if (!parentUser) throw new Error("User not found");
-        const childrenUsers = await this.getUserInfo(selectedIds);
-        const payload = await this.getPayload(parentUser, childrenUsers);
-        const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
-
-        return api.post(metadataUrl, payload).then(response => {
-            if (response.status !== "OK") {
-                console.error("Response error", response);
-                throw new Error(response.status);
-            } else {
-                return response;
-            }
-        });
-    }
-
     getSelectedChildren(parents) {
         const commonChildren = _.intersectionBy(...parents.map(this.getChildren), "id");
         return _(commonChildren)
