@@ -74,9 +74,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                     state: "ready",
                     parents: parentsLoaded,
                     allChildren,
-                    selectedIds: this.props.model
-                        .getSelectedChildren(parentsLoaded)
-                        .map(obj => obj.id),
+                    selectedIds: [],
                 })
             )
             .catch(err =>
