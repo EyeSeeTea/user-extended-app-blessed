@@ -74,9 +74,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                     state: "ready",
                     parents: parentsLoaded,
                     allChildren,
-                    selectedIds: this.props.model
-                        .getSelectedChildren(parentsLoaded)
-                        .map(obj => obj.id),
+                    selectedIds: [],
                 })
             )
             .catch(err =>
@@ -140,6 +138,19 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     onFilterTextChange(event) {
         this.setState({ filterText: event.target.value });
     }
+
+    copy() {
+        const { copyUserGroups, copyUserRoles, selectedIds } = this.state;
+
+        if (!copyUserGroups && !copyUserRoles) {
+            snackActions.show({ message: this.getTranslation("select_one_toggle") });
+        } else if (_.isEmpty(selectedIds)) {
+            snackActions.show({ message: this.getTranslation("select_at_least_one_user") });
+        } else {
+            this.copyInUserSave();
+        }
+    }
+
     getDialogButtons() {
         return [
             <FlatButton
@@ -150,14 +161,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             <RaisedButton
                 primary
                 label={this.getTranslation("save")}
-                onClick={
-                    this.state.copyUserGroups || this.state.copyUserRoles
-                        ? this.copyInUserSave.bind(this)
-                        : () =>
-                              snackActions.show({
-                                  message: "Error: You must select a toggle option",
-                              })
-                }
+                onClick={this.copy.bind(this)}
             />,
         ];
     }
