@@ -643,32 +643,18 @@ function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
         let childUserRoles = childUser.userCredentials.userRoles;
         let childUserGroups = childUser.userGroups;
         if (copyUserRoles) {
-            if (childUserRoles.length == 0) {
-                childUser = _m.imerge(childUser, {
-                    userCredentials: _m.imerge(childUser.userCredentials, {
-                        userRoles: parentUser.userCredentials.userRoles,
-                    }),
-                });
-            } else {
-                parentUser.userCredentials.userRoles.forEach(role => {
-                    if (childUserRoles.find(element => element.id == role.id) == undefined) {
-                        childUserRoles.push(role);
-                    }
-                });
-            }
+            parentUser.userCredentials.userRoles.forEach(role => {
+                if (childUserRoles.find(element => element.id == role.id) == undefined) {
+                    childUserRoles.push(role);
+                }
+            });
         }
         if (copyUserGroups) {
-            if (childUserGroups.length == 0) {
-                childUser = _m.imerge(childUser, {
-                    userGroups: parentUser.userGroups,
-                });
-            } else {
-                parentUser.userGroups.forEach(group => {
-                    if (childUserGroups.find(element => element.id == group.id) == undefined) {
-                        childUserGroups.push(group);
-                    }
-                });
-            }
+            parentUser.userGroups.forEach(group => {
+                if (childUserGroups.find(element => element.id == group.id) == undefined) {
+                    childUserGroups.push(group);
+                }
+            });
         }
         return childUser;
     });
