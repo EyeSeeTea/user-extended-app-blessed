@@ -108,16 +108,21 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             return null;
         }
     }
+
     async copyInUserSave() {
         const { parents, selectedIds, copyUserGroups, copyUserRoles } = this.state;
+        this.setState({ state: "loading" });
         await this.props.model
             .copyInUserSave(parents, selectedIds, copyUserGroups, copyUserRoles)
             .then(() => this.close(this.props.onSuccess))
-            .catch(err => this.close(this.props.onError));
+            .catch(err => this.close(this.props.onError))
+            .finally(() => this.setState({ state: "ready" }));
     }
+
     onChange(selectedIds) {
         this.setState({ selectedIds });
     }
+
     render() {
         switch (this.state.state) {
             case "loading":
@@ -152,6 +157,8 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     }
 
     getDialogButtons() {
+        const isLoading = this.state.state === "loading";
+
         return [
             <FlatButton
                 label={this.getTranslation("cancel")}
@@ -162,6 +169,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                 primary
                 label={this.getTranslation("save")}
                 onClick={this.copy.bind(this)}
+                disabled={isLoading}
             />,
         ];
     }
