@@ -644,14 +644,14 @@ function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
         let childUserGroups = childUser.userGroups;
         if (copyUserRoles) {
             parentUser.userCredentials.userRoles.forEach(role => {
-                if (childUserRoles.find(element => element.id == role.id) == undefined) {
+                if (childUserRoles.find(element => element.id === role.id) === undefined) {
                     childUserRoles.push(role);
                 }
             });
         }
         if (copyUserGroups) {
             parentUser.userGroups.forEach(group => {
-                if (childUserGroups.find(element => element.id == group.id) == undefined) {
+                if (childUserGroups.find(element => element.id === group.id) === undefined) {
                     childUserGroups.push(group);
                 }
             });
