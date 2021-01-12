@@ -59,10 +59,10 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             marginRight: 16,
         },
         toggle: {
-            width: 175,
+            width: 135,
             float: "right",
             marginTop: 20,
-            marginRight: 10,
+            marginRight: 50,
         },
     };
 
