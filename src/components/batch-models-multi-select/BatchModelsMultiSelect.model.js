@@ -1,5 +1,4 @@
 import _ from "lodash";
-
 const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 
 export default class BatchModelsMultiSelectModel {

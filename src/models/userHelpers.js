@@ -1,4 +1,5 @@
 import _ from "lodash";
+import _m from "../utils/lodash-mixins";
 import moment from "moment";
 import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
@@ -526,6 +527,16 @@ async function saveUsers(d2, users) {
     return postMetadata(api, payload);
 }
 
+async function saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles) {
+    const api = d2.Api.getApi();
+    const userGroupsToSave = await getUserGroupsToSave(api, users, []);
+    const payload = { users: users, userGroups: userGroupsToSave };
+
+    if (copyUserRoles && !copyUserGroups) {
+        return postMetadata(api, { users: users });
+    } else return postMetadata(api, payload);
+}
+
 /* Return an array of users from DHIS2 API.
 
     filters: Object with `field` as keys, `[operator, value]` as values.
@@ -627,6 +638,29 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
+function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
+    const users = destUsers.map(childUser => {
+        let childUserRoles = childUser.userCredentials.userRoles;
+        let childUserGroups = childUser.userGroups;
+        if (copyUserRoles) {
+            parentUser.userCredentials.userRoles.forEach(role => {
+                if (childUserRoles.find(element => element.id === role.id) === undefined) {
+                    childUserRoles.push(role);
+                }
+            });
+        }
+        if (copyUserGroups) {
+            parentUser.userGroups.forEach(group => {
+                if (childUserGroups.find(element => element.id === group.id) === undefined) {
+                    childUserGroups.push(group);
+                }
+            });
+        }
+        return childUser;
+    });
+    return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles);
+}
+
 export {
     getList,
     exportToCsv,
@@ -635,4 +669,5 @@ export {
     saveUsers,
     parseResponse,
     getExistingUsers,
+    getPayload,
 };

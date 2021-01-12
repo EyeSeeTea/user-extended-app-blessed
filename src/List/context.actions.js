@@ -1,3 +1,4 @@
+import _ from "lodash";
 import detailsStore from "./details.store";
 import { config, getInstance as getD2 } from "d2/lib/d2";
 import orgUnitAssignmentDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
@@ -6,6 +7,7 @@ import userRolesAssignmentDialogStore from "./userRoles.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import replicateUserStore from "./replicateUser.store";
 import deleteUserStore from "./deleteUser.store";
+import copyInUserStore from "./copyInUser.store";
 import _m from "../utils/lodash-mixins";
 import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
 
@@ -94,6 +96,13 @@ const contextActions = [
         multiple: false,
         onClick: user => detailsStore.setState(user),
         primary: true,
+    },
+    {
+        name: "copyInUser",
+        multiple: false,
+        icon: "content_copy",
+        onClick: user => copyInUserStore.setState({ user, open: true }),
+        allowed: checkAccess(["update"]),
     },
     {
         name: "assignToOrgUnits",
