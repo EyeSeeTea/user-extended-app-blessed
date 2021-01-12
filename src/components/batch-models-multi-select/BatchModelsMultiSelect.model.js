@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
 const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 
 export default class BatchModelsMultiSelectModel {
@@ -40,8 +39,7 @@ export default class BatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-    //this is where the saved data is configured in order to get ready to send it
-    //then it sends it to getPayload
+
     save(parents, allChildren, selectedIds, updateStrategy) {
         const api = this.d2.Api.getApi();
         const selectedChildren = _(allChildren)
@@ -51,34 +49,6 @@ export default class BatchModelsMultiSelectModel {
             .value();
         const childrenForParents = this.getNewChildren(parents, selectedChildren, updateStrategy);
         const payload = this.getPayload(allChildren, _.zip(parents, childrenForParents));
-        const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
-
-        return api.post(metadataUrl, payload).then(response => {
-            if (response.status !== "OK") {
-                console.error("Response error", response);
-                throw new Error(response.status);
-            } else {
-                return response;
-            }
-        });
-    }
-
-    async getUserInfo(ids) {
-        const api = this.d2.Api.getApi();
-        const { users } = await api.get("/users", {
-            paging: false,
-            fields: ":owner",
-            filter: "id:in:[" + ids.join(",") + "]",
-        });
-        return users;
-    }
-
-    async copyInUserSave(parents, selectedIds) {
-        const api = this.d2.Api.getApi();
-        const parentUser = _.first(await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]));
-        if (!parentUser) throw new Error("User not found");
-        const childrenUsers = await this.getUserInfo(selectedIds);
-        const payload = await this.getPayload(parentUser, childrenUsers);
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
 
         return api.post(metadataUrl, payload).then(response => {

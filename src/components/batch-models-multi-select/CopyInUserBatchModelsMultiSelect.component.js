@@ -9,7 +9,7 @@ import snackActions from "../../Snackbar/snack.actions";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 
-export default class BatchModelsMultiSelectComponent extends React.Component {
+export default class CopyInUserBatchModelsMultiSelectComponent extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
@@ -20,6 +20,8 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             selectedIds: null,
             filterText: "",
             updateStrategy: this.props.parents.length > 1 ? "merge" : "replace",
+            copyUserGroups: false,
+            copyUserRoles: false,
         };
     }
 
@@ -56,6 +58,12 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         cancelButton: {
             marginRight: 16,
         },
+        toggle: {
+            width: 135,
+            float: "right",
+            marginTop: 20,
+            marginRight: 50,
+        },
     };
 
     componentDidMount() {
@@ -66,9 +74,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
                     state: "ready",
                     parents: parentsLoaded,
                     allChildren,
-                    selectedIds: this.props.model
-                        .getSelectedChildren(parentsLoaded)
-                        .map(obj => obj.id),
+                    selectedIds: [],
                 })
             )
             .catch(err =>
@@ -91,7 +97,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             return (
                 <Toggle
                     label={label}
-                    style={{ width: 300, float: "right", marginTop: 20, marginRight: 15 }}
+                    style={this.styles.toggle}
                     checked={this.state.updateStrategy === "replace"}
                     onToggle={(ev, newValue) =>
                         this.setState({ updateStrategy: newValue ? "replace" : "merge" })
@@ -103,13 +109,16 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         }
     }
 
-    save() {
-        const { parents, allChildren, selectedIds, updateStrategy } = this.state;
-        this.props.model
-            .save(parents, allChildren, selectedIds, updateStrategy)
+    async copyInUserSave() {
+        const { parents, selectedIds, copyUserGroups, copyUserRoles } = this.state;
+        this.setState({ state: "loading" });
+        await this.props.model
+            .copyInUserSave(parents, selectedIds, copyUserGroups, copyUserRoles)
             .then(() => this.close(this.props.onSuccess))
-            .catch(err => this.close(this.props.onError));
+            .catch(err => this.close(this.props.onError))
+            .finally(() => this.setState({ state: "ready" }));
     }
+
     onChange(selectedIds) {
         this.setState({ selectedIds });
     }
@@ -135,7 +144,21 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         this.setState({ filterText: event.target.value });
     }
 
+    copy() {
+        const { copyUserGroups, copyUserRoles, selectedIds } = this.state;
+
+        if (!copyUserGroups && !copyUserRoles) {
+            snackActions.show({ message: this.getTranslation("select_one_toggle") });
+        } else if (_.isEmpty(selectedIds)) {
+            snackActions.show({ message: this.getTranslation("select_at_least_one_user") });
+        } else {
+            this.copyInUserSave();
+        }
+    }
+
     getDialogButtons() {
+        const isLoading = this.state.state === "loading";
+
         return [
             <FlatButton
                 label={this.getTranslation("cancel")}
@@ -145,7 +168,8 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             <RaisedButton
                 primary
                 label={this.getTranslation("save")}
-                onClick={this.save.bind(this)}
+                onClick={this.copy.bind(this)}
+                disabled={isLoading}
             />,
         ];
     }
@@ -154,11 +178,12 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         const isLoading = this.state.state === "loading";
         const { parents, allChildren, filterText, selectedIds } = this.state;
         const title = this.props.getTitle(parents, allChildren);
+        const parentName = this.props.parents[0].name;
         const options = _(allChildren || [])
             .sortBy("name")
             .map(obj => ({ value: obj.id, text: obj.name }))
+            .filter(obj => obj.text !== parentName)
             .value();
-
         return (
             <Dialog
                 title={title}
@@ -179,6 +204,18 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
 
                 {this.renderStrategyToggle()}
 
+                <Toggle
+                    label={"User Groups"}
+                    style={this.styles.toggle}
+                    checked={this.state.copyUserGroups == true}
+                    onToggle={(ev, newValue) => this.setState({ copyUserGroups: newValue })}
+                />
+                <Toggle
+                    label={"User Roles"}
+                    style={this.styles.toggle}
+                    checked={this.state.copyUserRoles === true}
+                    onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
+                />
                 <div style={this.styles.contents}>
                     <MultiSelect
                         isLoading={isLoading}
@@ -193,12 +230,12 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
     }
 }
 
-BatchModelsMultiSelectComponent.propTypes = {
+CopyInUserBatchModelsMultiSelectComponent.propTypes = {
     model: PropTypes.object.isRequired,
     parents: PropTypes.arrayOf(PropTypes.object).isRequired,
     onRequestClose: PropTypes.func.isRequired,
 };
 
-BatchModelsMultiSelectComponent.contextTypes = {
+CopyInUserBatchModelsMultiSelectComponent.contextTypes = {
     d2: PropTypes.object.isRequired,
 };
