@@ -1,6 +1,6 @@
 {
   "name": "d2-user-extended-app",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "DHIS2 Extended User app",
   "main": "src/index.html",
   "license": "GPL-3.0",
@@ -55,7 +55,6 @@
     "karma-coverage": "0.5.0",
     "karma-mocha": "0.2.0",
     "karma-mocha-reporter": "1.1.1",
-    "karma-phantomjs-launcher": "0.2.1",
     "karma-sinon": "1.0.4",
     "karma-sinon-chai": "1.0.0",
     "karma-sourcemap-loader": "0.3.5",
@@ -68,7 +67,6 @@
     "mocha": "2.2.5",
     "moment": "^2.19.1",
     "node-sass": "^3.7.0",
-    "phantomjs": "1.9.18",
     "phantomjs-polyfill": "0.0.1",
     "precommit-hook": "3.0.0",
     "prettier": "^1.18.2",
