@@ -25,6 +25,7 @@ import replicateUserStore from "./replicateUser.store";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import UserRolesDialog from "../components/UserRolesDialog.component";
 import UserGroupsDialog from "../components/UserGroupsDialog.component";
+import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import snackActions from "../Snackbar/snack.actions";
@@ -43,6 +44,7 @@ import ModalLoadingMask from "../components/ModalLoadingMask.component";
 import SettingsDialog from "../components/SettingsDialog.component";
 import Filters from "./Filters.component";
 import DetailsBoxWithScroll from "./DetailsBoxWithScroll.component";
+import copyInUserStore from "./copyInUser.store";
 
 const pageSize = 50;
 
@@ -151,6 +153,9 @@ const List = React.createClass({
             importUsers: {
                 open: false,
             },
+            copyUsers: {
+                open: false,
+            },
         };
     },
 
@@ -248,6 +253,10 @@ const List = React.createClass({
 
         const deleteUserStoreDisposable = deleteUserStore.subscribe(users => this.filterList());
 
+        const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
+            this.setAssignState("copyUsers", copyUsers);
+        });
+
         this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
@@ -255,6 +264,7 @@ const List = React.createClass({
         this.registerDisposable(replicateUserDialogStoreDisposable);
         this.registerDisposable(deleteUserStoreDisposable);
         this.registerDisposable(enableStoreDisposable);
+        this.registerDisposable(userCopyUserDialogStoreDisposable);
 
         this.filterList();
     },
@@ -456,7 +466,13 @@ const List = React.createClass({
         };
 
         const rows = this.getDataTableRows(this.state.dataRows);
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions } = this.state;
+        const {
+            assignUserRoles,
+            assignUserGroups,
+            replicateUser,
+            listFilterOptions,
+            copyUsers,
+        } = this.state;
         const {
             showAllUsers,
             filterByGroups,
@@ -552,6 +568,13 @@ const List = React.createClass({
                         onRequestClose={() =>
                             userRolesAssignmentDialogStore.setState({ open: false })
                         }
+                    />
+                ) : null}
+
+                {copyUsers.open ? (
+                    <CopyInUserDialog
+                        user={copyUsers.user}
+                        onRequestClose={() => copyInUserStore.setState({ open: false })}
                     />
                 ) : null}
 
