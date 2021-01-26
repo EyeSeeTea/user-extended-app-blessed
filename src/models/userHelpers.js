@@ -638,10 +638,13 @@ async function getExistingUsers(d2, options = {}) {
     return users;
 }
 
-function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
+function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles, orgUnitOutput, orgUnits) {
     const users = destUsers.map(childUser => {
         let childUserRoles = childUser.userCredentials.userRoles;
         let childUserGroups = childUser.userGroups;
+        let childOrgUnitOutput = childUser.dataViewOrganisationUnits;
+        let childOrgUnits = childUser.organisationUnits;
+
         if (copyUserRoles) {
             parentUser.userCredentials.userRoles.forEach(role => {
                 if (childUserRoles.find(element => element.id === role.id) === undefined) {
@@ -653,6 +656,23 @@ function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
             parentUser.userGroups.forEach(group => {
                 if (childUserGroups.find(element => element.id === group.id) === undefined) {
                     childUserGroups.push(group);
+                }
+            });
+        }
+        if (orgUnitOutput) {
+            parentUser.dataViewOrganisationUnits.forEach(dataViewOrgUnit => {
+                if (
+                    childOrgUnitOutput.find(element => element.id === dataViewOrgUnit.id) ===
+                    undefined
+                ) {
+                    childOrgUnitOutput.push(dataViewOrgUnit);
+                }
+            });
+        }
+        if (orgUnits) {
+            parentUser.organisationUnits.forEach(dataOrgUnit => {
+                if (childOrgUnits.find(element => element.id === dataOrgUnit.id) === undefined) {
+                    childOrgUnits.push(dataOrgUnit);
                 }
             });
         }
