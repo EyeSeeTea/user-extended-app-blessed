@@ -638,64 +638,55 @@ async function getExistingUsers(d2, options = {}) {
     });
     return users;
 }
-function addItems(childUserElement, parentUserElement, accessElement) {
-    if (!accessElement) {
-        return childUserElement;
+function addItems(items1, items2, shouldAdd) {
+    if (!shouldAdd) {
+        return items1;
     } else {
-        return _(childUserElement)
-            .unionBy(parentUserElement, element => element.id)
+        return _(items1)
+            .unionBy(items2, element => element.id)
             .value();
     }
 }
 
-function getPayload(parentUser, destUsers, copyAccessElements) {
+function getPayload(parentUser, destUsers, fields) {
     const users = destUsers.map(childUser => {
-        const childUserRoles = childUser.userCredentials.userRoles;
-        const parentUserRoles = parentUser.userCredentials.userRoles;
-
-        const childUserGroups = childUser.userGroups;
-        const parentUserGroups = parentUser.userGroups;
-
-        const childOrgUnitOutput = childUser.dataViewOrganisationUnits;
-        const parentOrgUnitOutput = parentUser.dataViewOrganisationUnits;
-
-        const childOrgUnits = childUser.organisationUnits;
-        const parentOrgUnits = parentUser.organisationUnits;
-
         const newChildUserCredentials = {
             ...childUser.userCredentials,
-            userRoles: addItems(childUserRoles, parentUserRoles, copyAccessElements.userRoles),
+            userRoles: addItems(
+                childUser.userCredentials.userRoles,
+                parentUser.userCredentials.userRoles,
+                fields.userRoles
+            ),
         };
 
         const newChildUserGroups = addItems(
-            childUserGroups,
-            parentUserGroups,
-            copyAccessElements.userGroups
+            childUser.userGroups,
+            parentUser.userGroups,
+            fields.userGroups
         );
 
-        const newChildOrgUnitOutput = addItems(
-            childOrgUnitOutput,
-            parentOrgUnitOutput,
-            copyAccessElements.orgUnitOutput
+        const newChildOrgUnitsOutput = addItems(
+            childUser.dataViewOrganisationUnits,
+            parentUser.dataViewOrganisationUnits,
+            fields.orgUnitOutput
         );
 
         const newChildOrgUnits = addItems(
-            childOrgUnits,
-            parentOrgUnits,
-            copyAccessElements.orgUnits
+            childUser.organisationUnits,
+            parentUser.organisationUnits,
+            fields.orgUnits
         );
 
-        const newChildUser = {
+        return {
             ...childUser,
             userCredentials: newChildUserCredentials,
             userGroups: newChildUserGroups,
-            dataViewOrganisationUnits: newChildOrgUnitOutput,
+            dataViewOrganisationUnits: newChildOrgUnitsOutput,
             organisationUnits: newChildOrgUnits,
         };
-
-        return newChildUser;
     });
-    return saveCopyInUsers(d2, users, copyAccessElements.userGroups);
+
+    return saveCopyInUsers(d2, users, fields.userGroups);
 }
 
 export {
