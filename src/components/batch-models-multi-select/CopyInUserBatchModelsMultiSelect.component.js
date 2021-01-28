@@ -22,8 +22,8 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             updateStrategy: this.props.parents.length > 1 ? "merge" : "replace",
             copyUserGroups: false,
             copyUserRoles: false,
-            orgUnitOutput: false,
-            orgUnits: false,
+            copyOrgUnitOutput: false,
+            copyOrgUnits: false,
         };
     }
 
@@ -77,7 +77,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             marginRight: 65,
             float: "right",
         },
-        orgUnitOutputToggle: {
+        copyOrgUnitOutputToggle: {
             width: 140,
             float: "right",
             marginRight: 5,
@@ -132,19 +132,18 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             selectedIds,
             copyUserGroups,
             copyUserRoles,
-            orgUnitOutput,
-            orgUnits,
+            copyOrgUnitOutput,
+            copyOrgUnits,
         } = this.state;
         this.setState({ state: "loading" });
+        const copyAccessElements = {
+            userGroups: copyUserGroups,
+            userRoles: copyUserRoles,
+            orgUnitOutput: copyOrgUnitOutput,
+            orgUnits: copyOrgUnits,
+        };
         await this.props.model
-            .copyInUserSave(
-                parents,
-                selectedIds,
-                copyUserGroups,
-                copyUserRoles,
-                orgUnitOutput,
-                orgUnits
-            )
+            .copyInUserSave(parents, selectedIds, copyAccessElements)
             .then(() => this.close(this.props.onSuccess))
             .catch(err => this.close(this.props.onError))
             .finally(() => this.setState({ state: "ready" }));
@@ -176,9 +175,15 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     }
 
     copy() {
-        const { copyUserGroups, copyUserRoles, selectedIds } = this.state;
+        const {
+            copyUserGroups,
+            copyUserRoles,
+            copyOrgUnitOutput,
+            copyOrgUnits,
+            selectedIds,
+        } = this.state;
 
-        if (!copyUserGroups && !copyUserRoles) {
+        if (!copyUserGroups && !copyUserRoles && !copyOrgUnitOutput && !copyOrgUnits) {
             snackActions.show({ message: this.getTranslation("select_one_toggle") });
         } else if (_.isEmpty(selectedIds)) {
             snackActions.show({ message: this.getTranslation("select_at_least_one_user") });
@@ -250,15 +255,15 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                 <div>
                     <Toggle
                         label={"OU Outputs"}
-                        style={this.styles.orgUnitOutputToggle}
-                        checked={this.state.orgUnitOutput === true}
-                        onToggle={(ev, newValue) => this.setState({ orgUnitOutput: newValue })}
+                        style={this.styles.copyOrgUnitOutputToggle}
+                        checked={this.state.copyOrgUnitOutput === true}
+                        onToggle={(ev, newValue) => this.setState({ copyOrgUnitOutput: newValue })}
                     />
                     <Toggle
                         label={"Org Units"}
                         style={this.styles.orgUnitToggle}
-                        checked={this.state.orgUnits == true}
-                        onToggle={(ev, newValue) => this.setState({ orgUnits: newValue })}
+                        checked={this.state.copyOrgUnits == true}
+                        onToggle={(ev, newValue) => this.setState({ copyOrgUnits: newValue })}
                     />
                 </div>
                 <div style={this.styles.contents}>

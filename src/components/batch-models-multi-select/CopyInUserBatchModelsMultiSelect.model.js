@@ -49,23 +49,14 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         });
         return users;
     }
-    async copyInUserSave(
-        parents,
-        selectedIds,
-        copyUserGroups,
-        copyUserRoles,
-        orgUnitOutput,
-        orgUnits
-    ) {
+    async copyInUserSave(parents, selectedIds, copyAccessElements) {
         const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
         const childrenUsers = await this.getUserInfo(selectedIds);
+
         const payload = await this.getPayload(
             ...parentWithRoles,
             childrenUsers,
-            copyUserGroups,
-            copyUserRoles,
-            orgUnitOutput,
-            orgUnits
+            copyAccessElements
         );
         return payload;
     }
