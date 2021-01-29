@@ -527,14 +527,15 @@ async function saveUsers(d2, users) {
     return postMetadata(api, payload);
 }
 
-async function saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles) {
+async function saveCopyInUsers(d2, users, copyUserGroups) {
     const api = d2.Api.getApi();
-    const userGroupsToSave = await getUserGroupsToSave(api, users, []);
-    const payload = { users: users, userGroups: userGroupsToSave };
-
-    if (copyUserRoles && !copyUserGroups) {
+    if (copyUserGroups) {
+        const userGroupsToSave = await getUserGroupsToSave(api, users, []);
+        const payload = { users: users, userGroups: userGroupsToSave };
+        return postMetadata(api, payload);
+    } else {
         return postMetadata(api, { users: users });
-    } else return postMetadata(api, payload);
+    }
 }
 
 /* Return an array of users from DHIS2 API.
@@ -637,28 +638,55 @@ async function getExistingUsers(d2, options = {}) {
     });
     return users;
 }
+function addItems(items1, items2, shouldAdd) {
+    if (!shouldAdd) {
+        return items1;
+    } else {
+        return _(items1)
+            .unionBy(items2, element => element.id)
+            .value();
+    }
+}
 
-function getPayload(parentUser, destUsers, copyUserGroups, copyUserRoles) {
+function getPayload(parentUser, destUsers, fields) {
     const users = destUsers.map(childUser => {
-        let childUserRoles = childUser.userCredentials.userRoles;
-        let childUserGroups = childUser.userGroups;
-        if (copyUserRoles) {
-            parentUser.userCredentials.userRoles.forEach(role => {
-                if (childUserRoles.find(element => element.id === role.id) === undefined) {
-                    childUserRoles.push(role);
-                }
-            });
-        }
-        if (copyUserGroups) {
-            parentUser.userGroups.forEach(group => {
-                if (childUserGroups.find(element => element.id === group.id) === undefined) {
-                    childUserGroups.push(group);
-                }
-            });
-        }
-        return childUser;
+        const newChildUserCredentials = {
+            ...childUser.userCredentials,
+            userRoles: addItems(
+                childUser.userCredentials.userRoles,
+                parentUser.userCredentials.userRoles,
+                fields.userRoles
+            ),
+        };
+
+        const newChildUserGroups = addItems(
+            childUser.userGroups,
+            parentUser.userGroups,
+            fields.userGroups
+        );
+
+        const newChildOrgUnitsOutput = addItems(
+            childUser.dataViewOrganisationUnits,
+            parentUser.dataViewOrganisationUnits,
+            fields.orgUnitOutput
+        );
+
+        const newChildOrgUnits = addItems(
+            childUser.organisationUnits,
+            parentUser.organisationUnits,
+            fields.orgUnits
+        );
+
+        return {
+            ...childUser,
+            userCredentials: newChildUserCredentials,
+            userGroups: newChildUserGroups,
+            dataViewOrganisationUnits: newChildOrgUnitsOutput,
+            organisationUnits: newChildOrgUnits,
+        };
     });
-    return saveCopyInUsers(d2, users, copyUserGroups, copyUserRoles);
+
+    return saveCopyInUsers(d2, users, fields.userGroups);
 }
 
 export {
