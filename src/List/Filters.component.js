@@ -119,8 +119,7 @@ export default class Filters extends React.Component {
 
         const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
 
-        return {
-            query: searchString,
+        let returnObj = {
             ...(showOnlyManagedUsers ? { canManage: "true" } : {}),
             filters: {
                 "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
@@ -130,6 +129,8 @@ export default class Filters extends React.Component {
                 "dataViewOrganisationUnits.id": inFilter(orgUnitsOutput.map(ou => ou.id)),
             },
         };
+
+        return searchString ? { ...returnObj, query: searchString } : returnObj;
     }
 
     clearFilters = () => {
