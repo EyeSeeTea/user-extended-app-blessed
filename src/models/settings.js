@@ -49,7 +49,7 @@ class Settings {
             {
                 name: "organisationUnitsField",
                 type: "select",
-                label: t("setting_organisation_units_field"),
+                label: t("setting_organisation_units_capture_field"),
                 defaultValue: "shortName",
                 options: [
                     { text: t("short_name"), value: "shortName" },

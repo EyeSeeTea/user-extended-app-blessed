@@ -23,7 +23,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups: false,
             copyUserRoles: false,
             copyOrgUnitOutput: false,
-            copyOrgUnits: false,
+            copyOrgUnitsCapture: false,
         };
     }
 
@@ -72,8 +72,8 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             marginRight: 60,
             float: "right",
         },
-        orgUnitToggle: {
-            width: 125,
+        OUCaptureToggle: {
+            width: 135,
             marginRight: 65,
             float: "right",
         },
@@ -133,14 +133,14 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups,
             copyUserRoles,
             copyOrgUnitOutput,
-            copyOrgUnits,
+            copyOrgUnitsCapture,
         } = this.state;
         this.setState({ state: "loading" });
         const copyAccessElements = {
             userGroups: copyUserGroups,
             userRoles: copyUserRoles,
             orgUnitOutput: copyOrgUnitOutput,
-            orgUnits: copyOrgUnits,
+            orgUnits: copyOrgUnitsCapture,
         };
         await this.props.model
             .copyInUserSave(parents, selectedIds, copyAccessElements)
@@ -179,11 +179,11 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups,
             copyUserRoles,
             copyOrgUnitOutput,
-            copyOrgUnits,
+            copyOrgUnitsCapture,
             selectedIds,
         } = this.state;
 
-        if (!copyUserGroups && !copyUserRoles && !copyOrgUnitOutput && !copyOrgUnits) {
+        if (!copyUserGroups && !copyUserRoles && !copyOrgUnitOutput && !copyOrgUnitsCapture) {
             snackActions.show({ message: this.getTranslation("select_one_toggle") });
         } else if (_.isEmpty(selectedIds)) {
             snackActions.show({ message: this.getTranslation("select_at_least_one_user") });
@@ -260,10 +260,12 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                         onToggle={(ev, newValue) => this.setState({ copyOrgUnitOutput: newValue })}
                     />
                     <Toggle
-                        label={"Org Units"}
-                        style={this.styles.orgUnitToggle}
-                        checked={this.state.copyOrgUnits == true}
-                        onToggle={(ev, newValue) => this.setState({ copyOrgUnits: newValue })}
+                        label={"OU Capture"}
+                        style={this.styles.OUCaptureToggle}
+                        checked={this.state.copyOrgUnitsCapture == true}
+                        onToggle={(ev, newValue) =>
+                            this.setState({ copyOrgUnitsCapture: newValue })
+                        }
                     />
                 </div>
                 <div style={this.styles.contents}>
