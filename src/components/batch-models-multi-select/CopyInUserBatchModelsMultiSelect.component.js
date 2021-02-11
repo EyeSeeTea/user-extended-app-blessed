@@ -201,21 +201,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             />,
         ];
     }
-    /*
-    <Toggle
-                    label={"Merge"}
-                    style={this.styles.strategyToggle}
-                    checked={this.state.copyUserGroups == true}
-                    onToggle={(ev, newValue) => this.setState({ copyUserGroups: newValue })}
-                />
-                <Toggle
-                    label={"Replace"}
-                    style={this.styles.strategyToggle}
-                    checked={this.state.copyUserRoles === true}
-                    onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
-                />
-
-    */
 
     render() {
         const isLoading = this.state.state === "loading";

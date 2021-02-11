@@ -520,6 +520,7 @@ async function saveUsers(d2, users) {
                 .join(",") +
             "]",
     });
+    console.log();
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
     const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
     const payload = { users: usersToSave, userGroups: userGroupsToSave };
