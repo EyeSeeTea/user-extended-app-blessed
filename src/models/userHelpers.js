@@ -507,8 +507,13 @@ async function updateUsers(d2, users, mapper) {
     return postMetadata(api, payload);
 }
 
-/* Save array of users (plain attributes), updating existing one, creating new ones */
+async function getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate) {
+    const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
+    const payload = { users: users, userGroups: userGroupsToSave };
+    return postMetadata(api, payload);
+}
 
+/* Save array of users (plain attributes), updating existing one, creating new ones */
 async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
@@ -520,12 +525,8 @@ async function saveUsers(d2, users) {
                 .join(",") +
             "]",
     });
-    console.log();
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
-    const payload = { users: usersToSave, userGroups: userGroupsToSave };
-
-    return postMetadata(api, payload);
+    getUserGroupsToSaveAndPostMetadata(api, usersToSave, existingUsersToUpdate);
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {
@@ -540,9 +541,7 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
                     .join(",") +
                 "]",
         });
-        const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
-        const payload = { users: users, userGroups: userGroupsToSave };
-        return postMetadata(api, payload);
+        return getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate);
     } else {
         return postMetadata(api, { users: users });
     }
