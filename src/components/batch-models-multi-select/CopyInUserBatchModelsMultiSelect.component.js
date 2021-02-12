@@ -140,7 +140,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             userGroups: copyUserGroups,
             userRoles: copyUserRoles,
             orgUnitOutput: copyOrgUnitOutput,
-            orgUnits: copyOrgUnitsCapture,
+            orgUnitCapture: copyOrgUnitsCapture,
         };
         await this.props.model
             .copyInUserSave(parents, selectedIds, copyAccessElements)

@@ -78,7 +78,7 @@ class MultipleSelector extends React.Component {
     titleByField = {
         userGroups: "assignGroups",
         userRoles: "assignRoles",
-        organisationUnits: "assignToOrgUnits",
+        organisationUnitsCapture: "assignToOrgUnitsCapture",
         dataViewOrganisationUnits: "assignToOrgUnitsOutput",
     };
 
@@ -102,7 +102,7 @@ class MultipleSelector extends React.Component {
                         onChange={this.onMultiSelectChange}
                     />
                 );
-            case "organisationUnits":
+            case "organisationUnitsCapture":
             case "dataViewOrganisationUnits":
                 return (
                     <OrgUnitForm

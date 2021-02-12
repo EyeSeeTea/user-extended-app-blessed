@@ -105,10 +105,10 @@ const contextActions = [
         allowed: checkAccess(["update"]),
     },
     {
-        name: "assignToOrgUnits",
+        name: "assignToOrgUnitsCapture",
         multiple: true,
         icon: "business",
-        onClick: users => assignToOrgUnits(users, "organisationUnits", "assignToOrgUnits"),
+        onClick: users => assignToOrgUnits(users, "organisationUnits", "assignToOrgUnitsCapture"),
         allowed: checkAccess(["update"]),
     },
     {

@@ -674,7 +674,7 @@ function getPayload(parentUser, destUsers, fields) {
         const newChildOrgUnits = addItems(
             childUser.organisationUnits,
             parentUser.organisationUnits,
-            fields.orgUnits
+            fields.orgUnitCapture
         );
 
         return {
