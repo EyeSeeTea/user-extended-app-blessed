@@ -507,8 +507,13 @@ async function updateUsers(d2, users, mapper) {
     return postMetadata(api, payload);
 }
 
-/* Save array of users (plain attributes), updating existing one, creating new ones */
+async function getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate) {
+    const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
+    const payload = { users: users, userGroups: userGroupsToSave };
+    return postMetadata(api, payload);
+}
 
+/* Save array of users (plain attributes), updating existing one, creating new ones */
 async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
@@ -521,18 +526,22 @@ async function saveUsers(d2, users) {
             "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    const userGroupsToSave = await getUserGroupsToSave(api, usersToSave, existingUsersToUpdate);
-    const payload = { users: usersToSave, userGroups: userGroupsToSave };
-
-    return postMetadata(api, payload);
+    getUserGroupsToSaveAndPostMetadata(api, usersToSave, existingUsersToUpdate);
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {
     const api = d2.Api.getApi();
     if (copyUserGroups) {
-        const userGroupsToSave = await getUserGroupsToSave(api, users, []);
-        const payload = { users: users, userGroups: userGroupsToSave };
-        return postMetadata(api, payload);
+        const existingUsersToUpdate = await getExistingUsers(d2, {
+            fields: ":owner,userGroups[id]",
+            filter:
+                "userCredentials.username:in:[" +
+                _(users)
+                    .map("userCredentials.username")
+                    .join(",") +
+                "]",
+        });
+        return getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate);
     } else {
         return postMetadata(api, { users: users });
     }
@@ -638,43 +647,50 @@ async function getExistingUsers(d2, options = {}) {
     });
     return users;
 }
-function addItems(items1, items2, shouldAdd) {
+
+function addItems(items1, items2, shouldAdd, updateStrategy) {
     if (!shouldAdd) {
         return items1;
     } else {
-        return _(items1)
-            .unionBy(items2, element => element.id)
-            .value();
+        return updateStrategy === "merge"
+            ? _(items1)
+                  .unionBy(items2, element => element.id)
+                  .value()
+            : items2;
     }
 }
 
-function getPayload(parentUser, destUsers, fields) {
+function getPayload(parentUser, destUsers, fields, updateStrategy) {
     const users = destUsers.map(childUser => {
         const newChildUserCredentials = {
             ...childUser.userCredentials,
             userRoles: addItems(
                 childUser.userCredentials.userRoles,
                 parentUser.userCredentials.userRoles,
-                fields.userRoles
+                fields.userRoles,
+                updateStrategy
             ),
         };
 
         const newChildUserGroups = addItems(
             childUser.userGroups,
             parentUser.userGroups,
-            fields.userGroups
+            fields.userGroups,
+            updateStrategy
         );
 
         const newChildOrgUnitsOutput = addItems(
             childUser.dataViewOrganisationUnits,
             parentUser.dataViewOrganisationUnits,
-            fields.orgUnitOutput
+            fields.orgUnitOutput,
+            updateStrategy
         );
 
         const newChildOrgUnits = addItems(
             childUser.organisationUnits,
             parentUser.organisationUnits,
-            fields.orgUnits
+            fields.orgUnits,
+            updateStrategy
         );
 
         return {
