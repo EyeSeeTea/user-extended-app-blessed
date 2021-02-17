@@ -120,8 +120,8 @@ export default class Filters extends React.Component {
         const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
 
         return {
-            query: searchString,
             ...(showOnlyManagedUsers ? { canManage: "true" } : {}),
+            ...(searchString ? { query: searchString } : {}),
             filters: {
                 "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
