@@ -526,7 +526,7 @@ async function saveUsers(d2, users) {
             "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    getUserGroupsToSaveAndPostMetadata(api, usersToSave, existingUsersToUpdate);
+    return getUserGroupsToSaveAndPostMetadata(api, usersToSave, existingUsersToUpdate);
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {
