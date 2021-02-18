@@ -308,7 +308,7 @@ const List = React.createClass({
 
     _orgUnitAssignmentSaved() {
         snackActions.show({
-            message: "organisation_unit_assignment_saved",
+            message: "organisation_unit_capture_assignment_saved",
             action: "ok",
             translate: true,
         });
@@ -316,7 +316,10 @@ const List = React.createClass({
 
     _orgUnitAssignmentError(errorMessage) {
         log.error(errorMessage);
-        snackActions.show({ message: "organisation_unit_assignment_save_error", translate: true });
+        snackActions.show({
+            message: "organisation_unit_capture_assignment_save_error",
+            translate: true,
+        });
     },
 
     filterList({ page = 1 } = {}) {

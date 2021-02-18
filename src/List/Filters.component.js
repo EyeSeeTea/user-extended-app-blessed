@@ -265,7 +265,9 @@ export default class Filters extends React.Component {
                         <div className="control-row">
                             <div className="user-management-control select-organisation-unit">
                                 <OrgUnitsFilter
-                                    title={this.getTranslation("filter_by_organisation_units")}
+                                    title={this.getTranslation(
+                                        "filter_by_organisation_units_capture"
+                                    )}
                                     selected={this.state.orgUnits}
                                     onChange={this.setFilter("orgUnits")}
                                     styles={styles.filterStyles}

@@ -23,7 +23,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups: false,
             copyUserRoles: false,
             copyOrgUnitOutput: false,
-            copyOrgUnits: false,
+            copyOrgUnitsCapture: false,
         };
     }
 
@@ -72,6 +72,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             marginRight: 10,
             float: "right",
         },
+
         flexContainer: {
             display: "flex",
         },
@@ -132,7 +133,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             userGroups: copyUserGroups,
             userRoles: copyUserRoles,
             orgUnitOutput: copyOrgUnitOutput,
-            orgUnits: copyOrgUnits,
+            orgUnitCapture: copyOrgUnitsCapture,
         };
         await this.props.model
             .copyInUserSave(parents, selectedIds, copyAccessElements, updateStrategy)
@@ -171,11 +172,11 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups,
             copyUserRoles,
             copyOrgUnitOutput,
-            copyOrgUnits,
+            copyOrgUnitsCapture,
             selectedIds,
         } = this.state;
 
-        if (!copyUserGroups && !copyUserRoles && !copyOrgUnitOutput && !copyOrgUnits) {
+        if (!copyUserGroups && !copyUserRoles && !copyOrgUnitOutput && !copyOrgUnitsCapture) {
             snackActions.show({ message: this.getTranslation("select_one_toggle") });
         } else if (_.isEmpty(selectedIds)) {
             snackActions.show({ message: this.getTranslation("select_at_least_one_user") });
