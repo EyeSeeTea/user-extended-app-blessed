@@ -92,7 +92,6 @@ const webpackConfig = {
             { path: "/dhis-web-commons/**", target: dhisConfig.baseUrl, bypass },
             { path: "/dhis-web-core-resource/**", target: dhisConfig.baseUrl, bypass },
             { path: "/icons/**", target: dhisConfig.baseUrl, bypass },
-            { path: "/css/**", target: "http://localhost:8081/src", bypass },
             { path: "/i18n/**", target: "http://localhost:8081/src", bypass },
             {
                 path: "/jquery.min.js",
