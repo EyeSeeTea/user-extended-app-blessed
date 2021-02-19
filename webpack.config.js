@@ -139,9 +139,9 @@ webpackConfig.plugins.push(
         inject: true,
         template: "./index.html",
         vendorScripts: [
-            `material-design-icons/material-icons.css`,
-            `fonts/roboto.css`,
-            `font-awesome/css/font-awesome.min.css`,
+            `css/material-design-icons/material-icons.css`,
+            `css/fonts/roboto.css`,
+            `css/font-awesome/css/font-awesome.min.css`,
         ]
             .map(asset => {
                 return /\.js$/.test(asset)
