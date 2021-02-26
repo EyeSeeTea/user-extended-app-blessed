@@ -428,7 +428,6 @@ const List = React.createClass({
 
     async _importUsers(users) {
         const response = await saveUsers(this.context.d2, users);
-
         if (response.success) {
             const message = this.getTranslation("import_successful", { n: users.length });
             snackActions.show({ message });
