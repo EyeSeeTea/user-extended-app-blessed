@@ -513,14 +513,6 @@ async function getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpd
     return postMetadata(api, payload);
 }
 
-async function getUserInfo(ids) {
-    const users = await getExistingUsers(d2, {
-        fields: ":owner,userGroups[id]",
-        filter: "id:in:[" + ids.join(",") + "]",
-    });
-    return users;
-}
-
 /* Save array of users (plain attributes), updating existing one, creating new ones */
 async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
@@ -722,5 +714,4 @@ export {
     parseResponse,
     getExistingUsers,
     getPayload,
-    getUserInfo,
 };

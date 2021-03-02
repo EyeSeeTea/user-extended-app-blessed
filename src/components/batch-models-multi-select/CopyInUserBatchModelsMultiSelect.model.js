@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
-import { getUserInfo } from "../../models/userHelpers";
+import { getExistingUsers } from "../../models/userHelpers";
 const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 
 export default class CopyInUserBatchModelsMultiSelectModel {
@@ -41,10 +41,16 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-
+    async getUserInfo(ids) {
+        const users = await getExistingUsers(d2, {
+            fields: ":owner,userGroups[id]",
+            filter: "id:in:[" + ids.join(",") + "]",
+        });
+        return users;
+    }
     async copyInUserSave(parents, selectedIds, copyAccessElements, updateStrategy) {
-        const parentWithRoles = await getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
-        const childrenUsers = await getUserInfo(selectedIds);
+        const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
+        const childrenUsers = await this.getUserInfo(selectedIds);
 
         const payload = await this.getPayload(
             ...parentWithRoles,
