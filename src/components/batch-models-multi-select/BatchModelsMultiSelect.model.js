@@ -1,7 +1,4 @@
 import _ from "lodash";
-import { getUserInfo } from "../../models/userHelpers";
-import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
-
 const toArray = obj => (obj.toArray ? obj.toArray() : obj || []);
 
 export default class BatchModelsMultiSelectModel {
@@ -42,20 +39,6 @@ export default class BatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-
-    async setDisabledProperty(parents, payload) {
-        const parentsIds = parents.map(parent => getOwnedPropertyJSON(parent).id);
-        const parentJsons = await getUserInfo(parentsIds);
-        let zippedUsers = _.zip(payload.users, parentJsons);
-        const newPayload = zippedUsers.map(([currentPayload, allUserInfo]) => ({
-            ...currentPayload,
-            userCredentials: {
-                ...currentPayload.userCredentials,
-                disabled: allUserInfo.userCredentials.disabled,
-            },
-        }));
-        return newPayload;
-    }
     async save(parents, allChildren, selectedIds, updateStrategy) {
         const api = this.d2.Api.getApi();
         const selectedChildren = _(allChildren)
@@ -66,10 +49,6 @@ export default class BatchModelsMultiSelectModel {
 
         const childrenForParents = this.getNewChildren(parents, selectedChildren, updateStrategy);
         let payload = this.getPayload(allChildren, _.zip(parents, childrenForParents));
-        if (payload.users) {
-            const newPayload = this.setDisabledProperty(parents, payload);
-            payload = newPayload;
-        }
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
         return api.post(metadataUrl, payload).then(response => {
             if (response.status !== "OK") {
