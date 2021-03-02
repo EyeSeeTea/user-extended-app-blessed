@@ -41,7 +41,6 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-
     async getUserInfo(ids) {
         const users = await getExistingUsers(d2, {
             fields: ":owner,userGroups[id]",

@@ -28,7 +28,7 @@ function UserRolesDialog(props, context) {
 
     const modelOptions = {
         parentModel: d2.models.users,
-        parentFields: ":owner,userCredentials[id,username,userRoles[id,name],lastLogin]",
+        parentFields: ":owner,userCredentials[id,username,userRoles[id,name],lastLogin, disabled]",
         childrenModel: d2.models.userRoles,
         getChildren: user => user.userCredentials.userRoles,
         getPayload: getPayload,

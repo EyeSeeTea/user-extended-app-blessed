@@ -125,7 +125,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             copyUserGroups,
             copyUserRoles,
             copyOrgUnitOutput,
-            copyOrgUnits,
+            copyOrgUnitsCapture,
             updateStrategy,
         } = this.state;
         this.setState({ state: "loading" });

@@ -39,18 +39,17 @@ export default class BatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-
-    save(parents, allChildren, selectedIds, updateStrategy) {
+    async save(parents, allChildren, selectedIds, updateStrategy) {
         const api = this.d2.Api.getApi();
         const selectedChildren = _(allChildren)
             .keyBy("id")
             .at(...selectedIds)
             .compact()
             .value();
+
         const childrenForParents = this.getNewChildren(parents, selectedChildren, updateStrategy);
         const payload = this.getPayload(allChildren, _.zip(parents, childrenForParents));
         const metadataUrl = "metadata?importStrategy=UPDATE&mergeMode=REPLACE";
-
         return api.post(metadataUrl, payload).then(response => {
             if (response.status !== "OK") {
                 console.error("Response error", response);
