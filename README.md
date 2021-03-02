@@ -4,14 +4,14 @@ User App is a Dhis2 Web Application that provides an easy and integrated way to 
 
 ## Features
 
-- Landing page: it displays a list of users with some attributes information. The list allows sorting by some fields (click the column header) and single/multiple selections. You can also filter by name, role, groups and see only users you can manage.
-- Show details:  it behaves as the regular show details in any Dhis2 instance. It shows a right side panel with some information about the user. This is also the action by default when clicking a row.
-- Assign to organisation units: Implemented for single and multiple selections* allows setting Data capture and maintenance organisation units.
-- Assign to organisation units output: Implemented for single and multiple selections* allows setting Data output and analysis organisation units.
-- Assign roles: Implemented for single and multiple selections* allows assigning the roles to a user/s.
-- Assign to groups: Implemented for single and multiple selections* allows assigning the user groups for a user/s.
-- Shortcut to regular dhis2 user management app
-- Replicate user: Implemented for single mode allows creating multiple users using a single users as starting point. Currently, two modes are available: 'From Template' and 'From table'.
+-   Landing page: it displays a list of users with some attributes information. The list allows sorting by some fields (click the column header) and single/multiple selections. You can also filter by name, role, groups and see only users you can manage.
+-   Show details: it behaves as the regular show details in any Dhis2 instance. It shows a right side panel with some information about the user. This is also the action by default when clicking a row.
+-   Assign to organisation units capture: Implemented for single and multiple selections\* allows setting Data capture and maintenance organisation units.
+-   Assign to organisation units output: Implemented for single and multiple selections\* allows setting Data output and analysis organisation units.
+-   Assign roles: Implemented for single and multiple selections\* allows assigning the roles to a user/s.
+-   Assign to groups: Implemented for single and multiple selections\* allows assigning the user groups for a user/s.
+-   Shortcut to regular dhis2 user management app
+-   Replicate user: Implemented for single mode allows creating multiple users using a single users as starting point. Currently, two modes are available: 'From Template' and 'From table'.
 
 \*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected entities (organisation units, roles, etc) to the current values each user had, no values will be removed. Replace on the other hand overwrites any previous values and keep only those selected in this dialog.
 

@@ -308,7 +308,7 @@ const List = React.createClass({
 
     _orgUnitAssignmentSaved() {
         snackActions.show({
-            message: "organisation_unit_assignment_saved",
+            message: "organisation_unit_capture_assignment_saved",
             action: "ok",
             translate: true,
         });
@@ -316,7 +316,10 @@ const List = React.createClass({
 
     _orgUnitAssignmentError(errorMessage) {
         log.error(errorMessage);
-        snackActions.show({ message: "organisation_unit_assignment_save_error", translate: true });
+        snackActions.show({
+            message: "organisation_unit_capture_assignment_save_error",
+            translate: true,
+        });
     },
 
     filterList({ page = 1 } = {}) {
@@ -425,7 +428,6 @@ const List = React.createClass({
 
     async _importUsers(users) {
         const response = await saveUsers(this.context.d2, users);
-
         if (response.success) {
             const message = this.getTranslation("import_successful", { n: users.length });
             snackActions.show({ message });
