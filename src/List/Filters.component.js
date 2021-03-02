@@ -120,8 +120,8 @@ export default class Filters extends React.Component {
         const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
 
         return {
-            query: searchString,
             ...(showOnlyManagedUsers ? { canManage: "true" } : {}),
+            ...(searchString ? { query: searchString } : {}),
             filters: {
                 "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
@@ -265,7 +265,9 @@ export default class Filters extends React.Component {
                         <div className="control-row">
                             <div className="user-management-control select-organisation-unit">
                                 <OrgUnitsFilter
-                                    title={this.getTranslation("filter_by_organisation_units")}
+                                    title={this.getTranslation(
+                                        "filter_by_organisation_units_capture"
+                                    )}
                                     selected={this.state.orgUnits}
                                     onChange={this.setFilter("orgUnits")}
                                     styles={styles.filterStyles}

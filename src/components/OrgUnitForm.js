@@ -174,7 +174,7 @@ class OrgUnitForm extends React.Component {
                 <TextField
                     onChange={event => this._searchOrganisationUnits(event.target.value)}
                     floatingLabelText={this.context.d2.i18n.getTranslation(
-                        "filter_organisation_units_by_name"
+                        "filter_organisation_units_capture_by_name"
                     )}
                     fullWidth
                 />
@@ -201,7 +201,7 @@ class OrgUnitForm extends React.Component {
                 </div>
                 <div className="organisation-unit-tree__selected">
                     {`${this.props.selected.length} ${this.getTranslation(
-                        "organisation_units_selected"
+                        "organisation_units_capture_selected"
                     )}`}
                 </div>
                 {this.renderRoots()}

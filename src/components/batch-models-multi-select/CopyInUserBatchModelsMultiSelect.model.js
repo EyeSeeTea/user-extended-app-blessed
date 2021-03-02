@@ -41,7 +41,6 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
     }
-
     async getUserInfo(ids) {
         const users = await getExistingUsers(d2, {
             fields: ":owner,userGroups[id]",
@@ -49,14 +48,15 @@ export default class CopyInUserBatchModelsMultiSelectModel {
         });
         return users;
     }
-    async copyInUserSave(parents, selectedIds, copyAccessElements) {
+    async copyInUserSave(parents, selectedIds, copyAccessElements, updateStrategy) {
         const parentWithRoles = await this.getUserInfo([getOwnedPropertyJSON(parents[0]).id]);
         const childrenUsers = await this.getUserInfo(selectedIds);
 
         const payload = await this.getPayload(
             ...parentWithRoles,
             childrenUsers,
-            copyAccessElements
+            copyAccessElements,
+            updateStrategy
         );
         return payload;
     }
