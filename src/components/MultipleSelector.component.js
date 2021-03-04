@@ -81,7 +81,6 @@ class MultipleSelector extends React.Component {
         organisationUnitsCapture: "assignToOrgUnitsCapture",
         dataViewOrganisationUnits: "assignToOrgUnitsOutput",
     };
-    //organisationUnitsCapture
     renderForm() {
         const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
@@ -102,7 +101,7 @@ class MultipleSelector extends React.Component {
                         onChange={this.onMultiSelectChange}
                     />
                 );
-            case "organisationUnits":
+            case "organisationUnitsCapture":
             case "dataViewOrganisationUnits":
                 return (
                     <OrgUnitForm

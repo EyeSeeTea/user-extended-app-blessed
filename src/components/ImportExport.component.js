@@ -75,7 +75,7 @@ class ImportExport extends React.Component {
         }
     };
 
-    exportEmptyTemplate = async () => {
+    exportEmptyTemplate = () => {
         const { allColumns } = this.props;
         this.setState({ isProcessing: true });
 
