@@ -266,6 +266,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         : _(csv.data)
               .drop(1)
               .value();
+
     const plainUserAttributes = _(d2.models.users.modelValidations)
         .map((value, key) => (_(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null))
         .compact()
