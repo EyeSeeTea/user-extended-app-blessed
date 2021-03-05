@@ -23,6 +23,12 @@ class ImportExport extends React.Component {
         onImport: PropTypes.func.isRequired,
         maxUsers: PropTypes.number.isRequired,
         settings: PropTypes.object.isRequired,
+        allColumns: PropTypes.arrayOf(
+            React.PropTypes.shape({
+                text: PropTypes.string.isRequired,
+                value: PropTypes.string.isRequired,
+            })
+        ).isRequired,
     };
 
     state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
