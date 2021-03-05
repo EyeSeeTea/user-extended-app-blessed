@@ -64,11 +64,7 @@ class ImportExport extends React.Component {
 
         try {
             const csvString = await exportToCsv(d2, columns, filterOptions, { orgUnitsField });
-            const blob = new Blob([csvString], { type: "text/plain;charset=utf-8" });
-            const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-            const filename = `users-${datetime}.csv`;
-            FileSaver.saveAs(blob, filename);
-            snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
+            this.saveCsv(csvString, "users");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
@@ -81,15 +77,19 @@ class ImportExport extends React.Component {
 
         try {
             const labeledColumns = allColumns.map(column => column.text);
-            const blob = new Blob([labeledColumns], { type: "text/plain;charset=utf-8" });
-            const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-            const filename = `empty-user-template-${datetime}.csv`;
-            FileSaver.saveAs(blob, filename);
-            snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
+            this.saveCsv(labeledColumns, "empty-user-template");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
         }
+    };
+
+    saveCsv = (contents, name) => {
+        const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
+        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
+        const filename = `${name}-${datetime}.csv`;
+        FileSaver.saveAs(blob, filename);
+        snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
     };
 
     importFromCsv = () => {
