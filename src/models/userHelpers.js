@@ -336,11 +336,10 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
-        const trueOptions = ["TRUE", "true", "1"];
         const users = data.map(o => {
             let newUser = o.user;
             if (newUser.disabled) {
-                newUser.disabled = trueOptions.includes(newUser.disabled) ? true : false;
+                newUser.disabled = Boolean(newUser.disabled);
             }
             return newUser;
         });
@@ -516,7 +515,6 @@ async function updateUsers(d2, users, mapper) {
 async function getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate) {
     const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
     const payload = { users: users, userGroups: userGroupsToSave };
-    console.log(payload);
     return postMetadata(api, payload);
 }
 
