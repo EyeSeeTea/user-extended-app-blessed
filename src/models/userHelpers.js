@@ -43,9 +43,7 @@ const requiredPropertiesOnImport = ["username", "password", "firstName", "surnam
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
-const columnsIgnoredOnExport = ["disabled"];
-
-const userCredentialsFields = ["username", "password", "userRoles"];
+const userCredentialsFields = ["username", "password", "userRoles", "disabled"];
 
 const columnNameFromPropertyMapping = {
     id: "ID",
@@ -63,6 +61,7 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
+    disabled: "disabled",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -214,6 +213,7 @@ function getPlainUser(user, { orgUnitsField }) {
             user.dataViewOrganisationUnits,
             orgUnitsField
         ),
+        disabled: userCredentials.disabled,
     };
 }
 
@@ -266,7 +266,6 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         : _(csv.data)
               .drop(1)
               .value();
-
     const plainUserAttributes = _(d2.models.users.modelValidations)
         .map((value, key) => (_(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null))
         .compact()
@@ -337,7 +336,14 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
-        const users = data.map(o => o.user);
+        const trueOptions = ["TRUE", "true", "1"];
+        const users = data.map(o => {
+            let newUser = o.user;
+            if (newUser.disabled) {
+                newUser.disabled = trueOptions.includes(newUser.disabled) ? true : false;
+            }
+            return newUser;
+        });
         const userWarnings = _(data)
             .flatMap(o => o.warnings)
             .value();
@@ -510,6 +516,7 @@ async function updateUsers(d2, users, mapper) {
 async function getUserGroupsToSaveAndPostMetadata(api, users, existingUsersToUpdate) {
     const userGroupsToSave = await getUserGroupsToSave(api, users, existingUsersToUpdate);
     const payload = { users: users, userGroups: userGroupsToSave };
+    console.log(payload);
     return postMetadata(api, payload);
 }
 
@@ -558,7 +565,6 @@ function getList(d2, filters, listOptions) {
         .pickBy()
         .toPairs()
         .value();
-
     /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
         example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
         separate calls to the API for those filters and use the returned IDs to build
@@ -611,13 +617,10 @@ function getList(d2, filters, listOptions) {
 async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, paging: false };
     const users = await getList(d2, filters, listOptions);
-    const columnsToExport = _(columns)
-        .without(...columnsIgnoredOnExport)
-        .value();
     const userRows = users
         .toArray()
-        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
-    const header = columnsToExport.map(getColumnNameFromProperty);
+        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
+    const header = columns.map(getColumnNameFromProperty);
     const table = [header, ...userRows];
 
     return Papa.unparse(table);

@@ -91,7 +91,7 @@ const List = React.createClass({
 
     mixins: [ObserverRegistry, Translate, Auth],
 
-    maxImportUsers: 200,
+    maxImportUsers: 250,
 
     styles: {
         dataTableWrap: {
