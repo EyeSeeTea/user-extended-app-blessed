@@ -438,6 +438,7 @@ class ImportTable extends React.Component {
                 field === "organisationUnits" || field === "dataViewOrganisationUnits"
                     ? orgUnitsField
                     : "displayName";
+
             if (isMultipleValue) {
                 const values = value || [];
                 const compactValue = _(values).isEmpty()
@@ -452,7 +453,7 @@ class ImportTable extends React.Component {
                     .join(", ");
                 const onClick = this.getOnTextFieldClicked(user.id, field);
 
-                return this.getTextField(displayField, compactValue, {
+                return this.getTextField(field, compactValue, {
                     validators,
                     component: props => (
                         <TextField

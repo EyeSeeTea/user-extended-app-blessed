@@ -496,6 +496,7 @@ const List = React.createClass({
             .at(settings.get("visibleTableColumns"))
             .compact()
             .value();
+
         return (
             <div>
                 <div className="controls-wrapper">

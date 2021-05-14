@@ -30,7 +30,6 @@ class ReplicateUserFromTable extends React.Component {
     async componentDidMount() {
         const { userToReplicateId } = this.props;
         const userToReplicate = await User.getById(d2, userToReplicateId);
-        console.log(userToReplicate);
         this.setState({ userToReplicate });
     }
 
@@ -58,7 +57,6 @@ class ReplicateUserFromTable extends React.Component {
                 ? `${userToReplicate.displayName} (${userToReplicate.username})`
                 : "",
         });
-        console.log(title);
 
         return !userToReplicate ? (
             <LoadingMask />

@@ -85,12 +85,10 @@ class OrgUnitForm extends React.Component {
     async onChange(orgUnitsPaths) {
         const { d2 } = this.context;
         const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
-        console.log(orgUnitIds);
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
         });
-        console.log(newSelected);
 
         this.props.onChange(newSelected);
     }
@@ -170,7 +168,6 @@ class OrgUnitForm extends React.Component {
         };
 
         const selectedPaths = this.props.selected.map(ou => ou.path);
-        console.log(selectedPaths);
         return (
             <div style={styles.wrapper}>
                 {this.state.loading ? (
@@ -226,6 +223,7 @@ OrgUnitForm.propTypes = {
     selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     intersectionPolicy: PropTypes.bool,
     filteringByNameLabel: PropTypes.string,
+    orgUnitsSelectedLabel: PropTypes.string,
 };
 
 OrgUnitForm.defaultProps = {
