@@ -19,7 +19,7 @@ function getPayload(allUserRoles, pairs) {
 function getTitle(getTranslation, users) {
     const usernames = users && users.map(user => user.userCredentials.username);
     const info = usernames ? _m.joinString(getTranslation, usernames, 3, ", ") : "...";
-    return getTranslation("assignRoles") + ": " + info;
+    return getTranslation("assign_roles") + ": " + info;
 }
 
 function UserRolesDialog(props, context) {

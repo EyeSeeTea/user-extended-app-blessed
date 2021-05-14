@@ -13,7 +13,7 @@ class ReplicateUserFromTable extends React.Component {
         "firstName",
         "surname",
         "email",
-        "organisationUnitsCapture",
+        "organisationUnits",
         "dataViewOrganisationUnits",
     ];
 
@@ -30,6 +30,7 @@ class ReplicateUserFromTable extends React.Component {
     async componentDidMount() {
         const { userToReplicateId } = this.props;
         const userToReplicate = await User.getById(d2, userToReplicateId);
+        console.log(userToReplicate);
         this.setState({ userToReplicate });
     }
 
@@ -52,11 +53,12 @@ class ReplicateUserFromTable extends React.Component {
     render() {
         const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
-        const title = this.t("replicate_user", {
+        const title = this.t("replicate_user_title", {
             user: userToReplicate
                 ? `${userToReplicate.displayName} (${userToReplicate.username})`
                 : "",
         });
+        console.log(title);
 
         return !userToReplicate ? (
             <LoadingMask />

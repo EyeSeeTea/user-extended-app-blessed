@@ -42,7 +42,7 @@ function getPayload(allUserGroups, pairs) {
 function getTitle(getTranslation, users) {
     const usernames = users && users.map(user => user.userCredentials.username);
     const info = usernames ? _m.joinString(getTranslation, usernames, 3, ", ") : "...";
-    return getTranslation("assignGroups") + ": " + info;
+    return getTranslation("assign_groups") + ": " + info;
 }
 
 function UserGroupsDialog(props, context) {

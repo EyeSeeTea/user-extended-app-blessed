@@ -19,6 +19,8 @@ class OrgUnitForm extends React.Component {
             searchValue: "",
             originalRoots: this.props.roots,
             rootOrgUnits: this.props.roots,
+            filteringByNameLabel: this.props.filteringByNameLabel,
+            orgUnitsSelectedLabel: this.props.orgUnitsSelectedLabel,
             groups: [],
             levels: [],
             loading: false,
@@ -83,10 +85,12 @@ class OrgUnitForm extends React.Component {
     async onChange(orgUnitsPaths) {
         const { d2 } = this.context;
         const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
+        console.log(orgUnitIds);
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
         });
+        console.log(newSelected);
 
         this.props.onChange(newSelected);
     }
@@ -131,7 +135,13 @@ class OrgUnitForm extends React.Component {
             return <div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>;
         }
 
-        const { root, models, intersectionPolicy } = this.props;
+        const {
+            root,
+            models,
+            intersectionPolicy,
+            filteringByNameLabel,
+            orgUnitsSelectedLabel,
+        } = this.props;
         const styles = {
             wrapper: {
                 position: "relative",
@@ -160,7 +170,7 @@ class OrgUnitForm extends React.Component {
         };
 
         const selectedPaths = this.props.selected.map(ou => ou.path);
-
+        console.log(selectedPaths);
         return (
             <div style={styles.wrapper}>
                 {this.state.loading ? (
@@ -174,7 +184,7 @@ class OrgUnitForm extends React.Component {
                 <TextField
                     onChange={event => this._searchOrganisationUnits(event.target.value)}
                     floatingLabelText={this.context.d2.i18n.getTranslation(
-                        "filter_organisation_units_capture_by_name"
+                        `${filteringByNameLabel}`
                     )}
                     fullWidth
                 />
@@ -201,7 +211,7 @@ class OrgUnitForm extends React.Component {
                 </div>
                 <div className="organisation-unit-tree__selected">
                     {`${this.props.selected.length} ${this.getTranslation(
-                        "organisation_units_capture_selected"
+                        `${orgUnitsSelectedLabel}`
                     )}`}
                 </div>
                 {this.renderRoots()}
@@ -215,6 +225,7 @@ OrgUnitForm.propTypes = {
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,
     selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     intersectionPolicy: PropTypes.bool,
+    filteringByNameLabel: PropTypes.string,
 };
 
 OrgUnitForm.defaultProps = {

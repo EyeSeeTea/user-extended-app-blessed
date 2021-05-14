@@ -76,10 +76,10 @@ class MultipleSelector extends React.Component {
     }
 
     titleByField = {
-        userGroups: "assignGroups",
-        userRoles: "assignRoles",
-        organisationUnitsCapture: "assignToOrgUnitsCapture",
-        dataViewOrganisationUnits: "assignToOrgUnitsOutput",
+        userGroups: "assign_groups",
+        userRoles: "assign_roles",
+        organisationUnits: "assign_to_org_units_capture",
+        dataViewOrganisationUnits: "assign_to_org_units_output",
     };
 
     renderForm() {
@@ -102,7 +102,18 @@ class MultipleSelector extends React.Component {
                         onChange={this.onMultiSelectChange}
                     />
                 );
-            case "organisationUnitsCapture":
+            case "organisationUnits":
+                return (
+                    <OrgUnitForm
+                        onRequestClose={this.closeDialog}
+                        onChange={this.onOrgUnitsChange}
+                        roots={orgUnitRoots}
+                        selected={selected}
+                        intersectionPolicy={false}
+                        filteringByNameLabel="filter_organisation_units_capture_by_name"
+                        orgUnitsSelectedLabel="organisation_units_capture_selected"
+                    />
+                );
             case "dataViewOrganisationUnits":
                 return (
                     <OrgUnitForm
@@ -111,6 +122,8 @@ class MultipleSelector extends React.Component {
                         roots={orgUnitRoots}
                         selected={selected}
                         intersectionPolicy={false}
+                        filteringByNameLabel="filter_organisation_units_output_by_name"
+                        orgUnitsSelectedLabel="organisation_units_output_selected"
                     />
                 );
             default:

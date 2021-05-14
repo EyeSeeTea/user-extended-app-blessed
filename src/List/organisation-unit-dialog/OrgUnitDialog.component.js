@@ -144,6 +144,16 @@ class OrgUnitDialog extends React.Component {
                     roots={this.props.roots}
                     selected={this.state.selected}
                     intersectionPolicy={true}
+                    filteringByNameLabel={
+                        title.includes("organisation units capture")
+                            ? "filter_organisation_units_capture_by_name"
+                            : "filter_organisation_units_output_by_name"
+                    }
+                    orgUnitsSelectedLabel={
+                        title.includes("organisation units capture")
+                            ? "organisation_units_capture_selected"
+                            : "organisation_units_output_selected"
+                    }
                 />
             </Dialog>
         );
