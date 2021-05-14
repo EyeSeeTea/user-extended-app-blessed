@@ -168,6 +168,7 @@ class OrgUnitForm extends React.Component {
         };
 
         const selectedPaths = this.props.selected.map(ou => ou.path);
+
         return (
             <div style={styles.wrapper}>
                 {this.state.loading ? (

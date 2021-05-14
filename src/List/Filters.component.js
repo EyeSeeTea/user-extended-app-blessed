@@ -116,6 +116,7 @@ export default class Filters extends React.Component {
             orgUnits,
             orgUnitsOutput,
         } = this.state;
+
         const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
 
         return {

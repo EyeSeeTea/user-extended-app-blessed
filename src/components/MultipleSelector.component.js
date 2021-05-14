@@ -85,7 +85,7 @@ class MultipleSelector extends React.Component {
     renderForm() {
         const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
-        console.log(orgUnitRoots);
+
         switch (field) {
             case "userGroups":
             case "userRoles":
