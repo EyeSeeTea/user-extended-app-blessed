@@ -148,14 +148,14 @@ class ImportExport extends React.Component {
                 >
                     <Menu>
                         <MenuItem
-                            leftIcon={<ImportIcon />}
-                            primaryText={t("export")}
-                            onClick={exportToCsvAndSave}
-                        />
-                        <MenuItem
                             leftIcon={<ExportIcon />}
                             primaryText={t("import")}
                             onClick={importFromCsv}
+                        />
+                        <MenuItem
+                            leftIcon={<ImportIcon />}
+                            primaryText={t("export")}
+                            onClick={exportToCsvAndSave}
                         />
                         <MenuItem
                             leftIcon={<ImportIcon />}
