@@ -61,7 +61,7 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
-    disabled: "disabled",
+    disabled: "Disabled",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -336,13 +336,9 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
-        const users = data.map(o => {
-            let newUser = o.user;
-            if (newUser.disabled) {
-                newUser.disabled = Boolean(newUser.disabled);
-            }
-            return newUser;
-        });
+        const users = data.map(o =>
+            o.user.disabled ? { ...o.user, disabled: o.user.disabled.toLowerCase() } : o.user
+        );
         const userWarnings = _(data)
             .flatMap(o => o.warnings)
             .value();
@@ -563,6 +559,7 @@ function getList(d2, filters, listOptions) {
         .pickBy()
         .toPairs()
         .value();
+
     /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
         example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
         separate calls to the API for those filters and use the returned IDs to build
