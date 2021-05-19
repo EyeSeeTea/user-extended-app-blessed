@@ -23,6 +23,12 @@ class ImportExport extends React.Component {
         onImport: PropTypes.func.isRequired,
         maxUsers: PropTypes.number.isRequired,
         settings: PropTypes.object.isRequired,
+        allColumns: PropTypes.arrayOf(
+            React.PropTypes.shape({
+                text: PropTypes.string.isRequired,
+                value: PropTypes.string.isRequired,
+            })
+        ).isRequired,
     };
 
     state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
@@ -64,15 +70,32 @@ class ImportExport extends React.Component {
 
         try {
             const csvString = await exportToCsv(d2, columns, filterOptions, { orgUnitsField });
-            const blob = new Blob([csvString], { type: "text/plain;charset=utf-8" });
-            const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-            const filename = `users-${datetime}.csv`;
-            FileSaver.saveAs(blob, filename);
-            snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
+            this.saveCsv(csvString, "users");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
         }
+    };
+
+    exportEmptyTemplate = () => {
+        const { allColumns } = this.props;
+        this.setState({ isProcessing: true });
+
+        try {
+            const labeledColumns = allColumns.map(column => column.text);
+            this.saveCsv(labeledColumns, "empty-user-template");
+        } finally {
+            this.closeMenu();
+            this.setState({ isProcessing: false });
+        }
+    };
+
+    saveCsv = (contents, name) => {
+        const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
+        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
+        const filename = `${name}-${datetime}.csv`;
+        FileSaver.saveAs(blob, filename);
+        snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
     };
 
     importFromCsv = () => {
@@ -95,7 +118,13 @@ class ImportExport extends React.Component {
     render() {
         const { d2 } = this.props;
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
-        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave } = this;
+        const {
+            popoverConfig,
+            closeMenu,
+            importFromCsv,
+            exportToCsvAndSave,
+            exportEmptyTemplate,
+        } = this;
         const { t } = this;
 
         return (
@@ -120,13 +149,18 @@ class ImportExport extends React.Component {
                     <Menu>
                         <MenuItem
                             leftIcon={<ExportIcon />}
+                            primaryText={t("import")}
+                            onClick={importFromCsv}
+                        />
+                        <MenuItem
+                            leftIcon={<ImportIcon />}
                             primaryText={t("export")}
                             onClick={exportToCsvAndSave}
                         />
                         <MenuItem
                             leftIcon={<ImportIcon />}
-                            primaryText={t("import")}
-                            onClick={importFromCsv}
+                            primaryText={t("export_empty_template")}
+                            onClick={exportEmptyTemplate}
                         />
                     </Menu>
                 </Popover>

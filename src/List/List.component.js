@@ -508,6 +508,7 @@ const List = React.createClass({
                         <ImportExport
                             d2={d2}
                             columns={settings.get("visibleTableColumns")}
+                            allColumns={allColumns}
                             filterOptions={listFilterOptions}
                             onImport={this._openImportTable}
                             maxUsers={this.maxImportUsers}
