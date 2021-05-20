@@ -110,8 +110,12 @@ class MultipleSelector extends React.Component {
                         roots={orgUnitRoots}
                         selected={selected}
                         intersectionPolicy={false}
-                        filteringByNameLabel="filter_organisation_units_capture_by_name"
-                        orgUnitsSelectedLabel="organisation_units_capture_selected"
+                        filteringByNameLabel={this.getTranslation(
+                            "filter_organisation_units_capture_by_name"
+                        )}
+                        orgUnitsSelectedLabel={this.getTranslation(
+                            "organisation_units_capture_selected"
+                        )}
                     />
                 );
             case "dataViewOrganisationUnits":

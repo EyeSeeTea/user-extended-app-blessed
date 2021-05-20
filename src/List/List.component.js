@@ -551,7 +551,8 @@ const List = React.createClass({
                     ) : null}
                 </div>
 
-                {this.state.orgunitassignment.open ? (
+                {this.state.orgunitassignment.open &&
+                this.state.orgunitassignment.field === "organisationUnits" ? (
                     <OrgUnitDialog
                         models={this.state.orgunitassignment.users}
                         open={true}
@@ -561,6 +562,32 @@ const List = React.createClass({
                         roots={this.state.orgunitassignment.roots}
                         onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
                         onOrgUnitAssignmentError={this._orgUnitAssignmentError}
+                        filteringByNameLabel={this.getTranslation(
+                            "filter_organisation_units_capture_by_name"
+                        )}
+                        orgUnitsSelectedLabel={this.getTranslation(
+                            "organisation_units_capture_selected"
+                        )}
+                    />
+                ) : null}
+
+                {this.state.orgunitassignment.open &&
+                this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
+                    <OrgUnitDialog
+                        models={this.state.orgunitassignment.users}
+                        open={true}
+                        onRequestClose={this._closeOrgUnitDialog}
+                        title={this.state.orgunitassignment.title}
+                        field={this.state.orgunitassignment.field}
+                        roots={this.state.orgunitassignment.roots}
+                        onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
+                        onOrgUnitAssignmentError={this._orgUnitAssignmentError}
+                        filteringByNameLabel={this.getTranslation(
+                            "filter_organisation_units_output_by_name"
+                        )}
+                        orgUnitsSelectedLabel={this.getTranslation(
+                            "organisation_units_output_selected"
+                        )}
                     />
                 ) : null}
 

@@ -101,7 +101,8 @@ class OrgUnitDialog extends React.Component {
     }
 
     render() {
-        const { root, title, models } = this.props;
+        const { root, title, models, filteringByNameLabel, orgUnitsSelectedLabel } = this.props;
+
         const styles = {
             dialog: {
                 minWidth: 875,
@@ -144,16 +145,8 @@ class OrgUnitDialog extends React.Component {
                     roots={this.props.roots}
                     selected={this.state.selected}
                     intersectionPolicy={true}
-                    filteringByNameLabel={
-                        title.includes("organisation units capture")
-                            ? "filter_organisation_units_capture_by_name"
-                            : "filter_organisation_units_output_by_name"
-                    }
-                    orgUnitsSelectedLabel={
-                        title.includes("organisation units capture")
-                            ? "organisation_units_capture_selected"
-                            : "organisation_units_output_selected"
-                    }
+                    filteringByNameLabel={filteringByNameLabel}
+                    orgUnitsSelectedLabel={orgUnitsSelectedLabel}
                 />
             </Dialog>
         );
@@ -168,6 +161,8 @@ OrgUnitDialog.propTypes = {
     title: PropTypes.string.isRequired,
     onOrgUnitAssignmentSaved: PropTypes.func.isRequired,
     onOrgUnitAssignmentError: PropTypes.func.isRequired,
+    filteringByNameLabel: PropTypes.string.isRequired,
+    orgUnitsSelectedLabel: PropTypes.string.isRequired,
 };
 
 OrgUnitDialog.contextTypes = {
