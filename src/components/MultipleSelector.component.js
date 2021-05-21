@@ -85,6 +85,7 @@ class MultipleSelector extends React.Component {
     renderForm() {
         const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
+        const t = this.getTranslation.bind(this);
 
         switch (field) {
             case "userGroups":
@@ -110,12 +111,8 @@ class MultipleSelector extends React.Component {
                         roots={orgUnitRoots}
                         selected={selected}
                         intersectionPolicy={false}
-                        filteringByNameLabel={this.getTranslation(
-                            "filter_organisation_units_capture_by_name"
-                        )}
-                        orgUnitsSelectedLabel={this.getTranslation(
-                            "organisation_units_capture_selected"
-                        )}
+                        filteringByNameLabel={t("filter_organisation_units_capture_by_name")}
+                        orgUnitsSelectedLabel={t("organisation_units_capture_selected")}
                     />
                 );
             case "dataViewOrganisationUnits":
@@ -126,8 +123,8 @@ class MultipleSelector extends React.Component {
                         roots={orgUnitRoots}
                         selected={selected}
                         intersectionPolicy={false}
-                        filteringByNameLabel="filter_organisation_units_output_by_name"
-                        orgUnitsSelectedLabel="organisation_units_output_selected"
+                        filteringByNameLabel={t("filter_organisation_units_output_by_name")}
+                        orgUnitsSelectedLabel={t("organisation_units_output_selected")}
                     />
                 );
             default:
