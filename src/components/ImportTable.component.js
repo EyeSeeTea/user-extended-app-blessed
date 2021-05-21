@@ -468,11 +468,13 @@ class ImportTable extends React.Component {
             } else if (field === "disabled") {
                 return {
                     name: field,
-                    value,
                     component: Toggle,
                     props: {
                         name: field,
-                        type: "boolean",
+                        defaultToggled: value,
+                        onToggle: (event, isInputChecked) => {
+                            this.onUpdateField(user.id, field, isInputChecked);
+                        },
                         style: { width: "100%" },
                     },
                     validators,
