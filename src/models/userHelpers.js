@@ -266,6 +266,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         : _(csv.data)
               .drop(1)
               .value();
+
     const plainUserAttributes = _(d2.models.users.modelValidations)
         .map((value, key) => (_(["TEXT", "DATE", "URL"]).includes(value.type) ? key : null))
         .compact()
@@ -337,7 +338,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
         const users = data.map(o =>
-            o.user.disabled ? { ...o.user, disabled: o.user.disabled.toLowerCase() } : o.user
+            o.user.disabled ? { ...o.user, disabled: eval(o.user.disabled.toLowerCase()) } : o.user
         );
         const userWarnings = _(data)
             .flatMap(o => o.warnings)

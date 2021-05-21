@@ -238,6 +238,7 @@ class ImportTable extends React.Component {
                 ? { [importField]: { ...user[importField], hasDuplicates: false } }
                 : {}),
         });
+
         const validators = (this.getFieldsInfo()[name] || {}).validators || [];
         // Force re-render if validations change so new error messages are shown
         const shouldRender =
@@ -465,6 +466,18 @@ class ImportTable extends React.Component {
                         />
                     ),
                 });
+            } else if (field === "disabled") {
+                return {
+                    name: field,
+                    value,
+                    component: Toggle,
+                    props: {
+                        name: field,
+                        type: "boolean",
+                        style: { width: "100%" },
+                    },
+                    validators,
+                };
             } else {
                 const extraProps = { changeEvent: "onBlur" };
                 return this.getTextField(field, value, {
@@ -496,6 +509,7 @@ class ImportTable extends React.Component {
                 organisationUnits: templateUser.attributes.organisationUnits,
                 dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
                 email: templateUser.attributes.email,
+                disabled: false,
             };
         } else {
             newUser = {
