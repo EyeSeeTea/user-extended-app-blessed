@@ -337,9 +337,10 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
-        const users = data.map(o =>
-            o.user.disabled ? { ...o.user, disabled: eval(o.user.disabled.toLowerCase()) } : o.user
-        );
+        const users = data.map(o => {
+            const disableStr = (o.user.disabled || "").toLowerCase();
+            return { ...o.user, disabled: disableStr === "true" };
+        });
         const userWarnings = _(data)
             .flatMap(o => o.warnings)
             .value();
@@ -378,7 +379,7 @@ function parseResponse(response, payload) {
 }
 
 function getUserPayloadFromPlainAttributes(baseUser, userFields) {
-    const clean = obj => _.omitBy(obj, value => !value);
+    const clean = obj => _.omitBy(obj, value => value === undefined || value === null);
 
     const userRoot = {
         ...baseUser,
