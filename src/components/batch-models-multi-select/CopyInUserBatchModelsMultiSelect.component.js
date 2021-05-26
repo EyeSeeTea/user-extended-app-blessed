@@ -210,9 +210,10 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         const parentName = this.props.parents[0].name;
         const options = _(allChildren || [])
             .sortBy("name")
-            .map(obj => ({ value: obj.id, text: obj.name }))
+            .map(obj => ({ value: obj.id, text: `${obj.name} (${obj.userCredentials.username})` }))
             .filter(obj => obj.text !== parentName)
             .value();
+
         return (
             <Dialog
                 title={title}
