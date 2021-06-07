@@ -98,36 +98,37 @@ const contextActions = [
         primary: true,
     },
     {
-        name: "copyInUser",
+        name: "copy_in_user",
         multiple: false,
         icon: "content_copy",
         onClick: user => copyInUserStore.setState({ user, open: true }),
         allowed: checkAccess(["update"]),
     },
     {
-        name: "assignToOrgUnitsCapture",
-        multiple: true,
-        icon: "business",
-        onClick: users => assignToOrgUnits(users, "organisationUnits", "assignToOrgUnitsCapture"),
-        allowed: checkAccess(["update"]),
-    },
-    {
-        name: "assignToOrgUnitsOutput",
+        name: "assign_to_org_units_capture",
         multiple: true,
         icon: "business",
         onClick: users =>
-            assignToOrgUnits(users, "dataViewOrganisationUnits", "assignToOrgUnitsOutput"),
+            assignToOrgUnits(users, "organisationUnits", "assign_to_org_units_capture"),
         allowed: checkAccess(["update"]),
     },
     {
-        name: "assignRoles",
+        name: "assign_to_org_units_output",
+        multiple: true,
+        icon: "business",
+        onClick: users =>
+            assignToOrgUnits(users, "dataViewOrganisationUnits", "assign_to_org_units_output"),
+        allowed: checkAccess(["update"]),
+    },
+    {
+        name: "assign_roles",
         multiple: true,
         icon: "assignment",
         onClick: users => userRolesAssignmentDialogStore.setState({ users, open: true }),
         allowed: checkAccess(["update"]),
     },
     {
-        name: "assignGroups",
+        name: "assign_groups",
         icon: "group_add",
         multiple: true,
         onClick: users => userGroupsAssignmentDialogStore.setState({ users, open: true }),
@@ -161,7 +162,7 @@ const contextActions = [
         onClick: datasets => deleteUserStore.delete(datasets),
     },
     {
-        name: "replicateUser",
+        name: "replicate_user",
         icon: "content_copy",
         multiple: false,
         allowed: hasReplicateAuthority,

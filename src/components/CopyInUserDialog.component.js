@@ -8,7 +8,7 @@ import { getPayload } from "../models/userHelpers";
 function getTitle(getTranslation, users) {
     const usernames = users && users.map(user => user.userCredentials.username);
     const info = usernames ? _m.joinString(getTranslation, usernames, 3, ", ") : "...";
-    return getTranslation("copyInUser") + ": " + info;
+    return getTranslation("copy_in_user") + ": " + info;
 }
 
 function CopyInUserDialog(props, context) {
