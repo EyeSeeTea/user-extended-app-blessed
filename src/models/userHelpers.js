@@ -43,9 +43,7 @@ const requiredPropertiesOnImport = ["username", "password", "firstName", "surnam
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
-const columnsIgnoredOnExport = ["disabled"];
-
-const userCredentialsFields = ["username", "password", "userRoles"];
+const userCredentialsFields = ["username", "password", "userRoles", "disabled"];
 
 const columnNameFromPropertyMapping = {
     id: "ID",
@@ -63,6 +61,7 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
+    disabled: "Disabled",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -214,6 +213,7 @@ function getPlainUser(user, { orgUnitsField }) {
             user.dataViewOrganisationUnits,
             orgUnitsField
         ),
+        disabled: userCredentials.disabled,
     };
 }
 
@@ -337,7 +337,10 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
         const data = userRows.map((userRow, rowIndex) =>
             getPlainUserFromRow(userRow, modelValuesByField, rowIndex + 2)
         );
-        const users = data.map(o => o.user);
+        const users = data.map(o => {
+            const disableStr = (o.user.disabled || "").toLowerCase();
+            return { ...o.user, disabled: disableStr === "true" };
+        });
         const userWarnings = _(data)
             .flatMap(o => o.warnings)
             .value();
@@ -376,7 +379,7 @@ function parseResponse(response, payload) {
 }
 
 function getUserPayloadFromPlainAttributes(baseUser, userFields) {
-    const clean = obj => _.omitBy(obj, value => !value);
+    const clean = obj => _.omitBy(obj, value => value === undefined || value === null);
 
     const userRoot = {
         ...baseUser,
@@ -611,13 +614,10 @@ function getList(d2, filters, listOptions) {
 async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, paging: false };
     const users = await getList(d2, filters, listOptions);
-    const columnsToExport = _(columns)
-        .without(...columnsIgnoredOnExport)
-        .value();
     const userRows = users
         .toArray()
-        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columnsToExport));
-    const header = columnsToExport.map(getColumnNameFromProperty);
+        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
+    const header = columns.map(getColumnNameFromProperty);
     const table = [header, ...userRows];
 
     return Papa.unparse(table);
