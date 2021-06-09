@@ -5,6 +5,7 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
+import { getUserList } from "./userList";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -28,11 +29,6 @@ const queryFields = [
     "dataViewOrganisationUnits[id,code,shortName,displayName]",
 ].join(",");
 
-/*
-    Limit Uids to avoid 413 Request too large
-    maxUids = (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
-*/
-const maxUids = (4096 - 1000) / (11 + 3);
 
 const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
 
@@ -124,20 +120,6 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     });
 
     return _.fromPairs(pairs);
-}
-
-function buildD2Filter(filters) {
-    return filters.map(([key, [operator, value]]) =>
-        [
-            key,
-            operator,
-            _.isArray(value)
-                ? `[${_(value)
-                      .take(maxUids)
-                      .join(",")}]`
-                : value,
-        ].join(":")
-    );
 }
 
 function getColumnNameFromProperty(property) {
@@ -545,73 +527,11 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
     }
 }
 
-/* Return an array of users from DHIS2 API.
-
-    filters: Object with `field` as keys, `[operator, value]` as values.
-    listOptions: Object to be passed directory to d2.models.users.list(...)
-*/
-function getList(d2, filters, listOptions) {
-    const model = d2.models.user;
-    const activeFilters = _(filters)
-        .pickBy()
-        .toPairs()
-        .value();
-
-    /*  Filtering over nested fields (table[.table].field) in N-to-N relationships (for
-        example: userCredentials.userRoles.id), fails in dhis2 < v2.30. So we need to make
-        separate calls to the API for those filters and use the returned IDs to build
-        the final, paginated call. */
-
-    const [preliminarFilters, normalFilters] = _.partition(
-        activeFilters,
-        ([key, [operator, value]]) => operator === "in" && key.match(/\./)
-    );
-
-    if (d2.system.version.minor >= 30) {
-        const listFilters = buildD2Filter(normalFilters.concat(preliminarFilters));
-        return model.list({
-            paging: true,
-            fields: queryFields,
-            filter: _(listFilters).isEmpty() ? "name:ne:default" : listFilters,
-            ...listOptions,
-        });
-    }
-
-    const preliminarD2Filters$ = preliminarFilters.map(preliminarFilter =>
-        model
-            .list({
-                paging: false,
-                fields: "id",
-                filter: buildD2Filter([preliminarFilter]),
-            })
-            .then(collection => collection.toArray().map(obj => obj.id))
-            .then(
-                ids =>
-                    `id:in:[${_(ids)
-                        .take(maxUids)
-                        .join(",")}]`
-            )
-    );
-
-    return Promise.all(preliminarD2Filters$).then(preliminarD2Filters => {
-        const filters = buildD2Filter(normalFilters).concat(preliminarD2Filters);
-
-        return model.list({
-            paging: true,
-            fields: queryFields,
-            filter: _(filters).isEmpty() ? "name:ne:default" : filters,
-            ...listOptions,
-        });
-    });
-}
-
 /* Get users from Dhis2 API and export given columns to a CSV string */
 async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
-    const { filters, ...listOptions } = { ...filterOptions, paging: false };
-    const users = await getList(d2, filters, listOptions);
-    const userRows = users
-        .toArray()
-        .map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
+    const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
+    const { users } = await getUserList(d2, filters, listOptions);
+    const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
     const header = columns.map(getColumnNameFromProperty);
     const table = [header, ...userRows];
 
@@ -701,7 +621,6 @@ function getPayload(parentUser, destUsers, fields, updateStrategy) {
 }
 
 export {
-    getList,
     exportToCsv,
     importFromCsv,
     updateUsers,
