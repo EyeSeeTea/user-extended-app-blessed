@@ -39,12 +39,12 @@ export async function getUserList(d2, filtersObject, listOptions) {
     // 4) As we have to use a GET request, so we can easily hit the 414-URI-too-long errors when filtering.
     //
     // So we need to perform a custom filtering and pagination. Do separate queries for params
-    // `query` and `filter`, and manually paginate the intersection of users. Also, split the requests
-    // when necessary to avoid a 414 error.
+    // `query` and `filter`, and manually sort and paginate the intersection of users.
+    // Also, split the requests whenever necessary to avoid 414 errors.
 
+    const { canManage } = listOptions;
     const query = (listOptions.query || "").trim();
     const filters = getFiltersFromObject(filtersObject);
-    const { canManage } = listOptions;
     const hasQuery = query !== "" || canManage !== undefined;
     const hasFilters = !_.isEmpty(filters);
 
@@ -57,18 +57,51 @@ export async function getUserList(d2, filtersObject, listOptions) {
         .map(users => users.map(user => user.id));
 
     const allIds = _.intersection(...groupOfUserIds);
-    const { pager, objects: ids } = paginate(allIds, listOptions);
+    const sortedUsers = await getSortedUsers(d2, allIds, listOptions.order);
+    const { pager, objects: pageObjects } = paginate(sortedUsers, listOptions);
 
-    const usersLists = await mapPromise(_.chunk(ids, maxUids), idsGroup => {
+    const usersLists = await mapPromise(getChunks(pageObjects), pageObjectsGroup => {
         return getD2Users(d2, {
-            order: listOptions.order,
             fields: queryFields,
-            filters: [{ field: "id", operator: "in", value: idsGroup }],
+            filters: [{ field: "id", operator: "in", value: pageObjectsGroup.map(u => u.id) }],
             paging: false,
         });
     });
 
-    return { pager, users: _.flatten(usersLists) };
+    return { pager, users: sortObjectsByReference(pageObjects, _.flatten(usersLists), "id") };
+}
+
+function getChunks(objs) {
+    return _(objs)
+        .chunk(maxUids)
+        .take(10) // Limit the total chunks
+        .value();
+}
+
+function sortObjectsByReference(referenceObjects, unsortedObjects, idField) {
+    const ids = referenceObjects.map(obj => obj[idField]);
+
+    return _(unsortedObjects)
+        .keyBy(obj => obj[idField])
+        .at(...ids)
+        .compact()
+        .value();
+}
+
+async function getSortedUsers(d2, userIds, order) {
+    if (order) {
+        const [orderField = "name", d2Direction = "asc"] = order.split(":");
+        const direction = d2Direction.toLowerCase().includes("desc") ? "desc" : "asc";
+
+        const users = await getD2Users(d2, {
+            fields: ["id", orderField],
+            filters: [{ field: "id", operator: "in", value: userIds }],
+        });
+
+        return _.orderBy(users, [u => (u[orderField] || "").toString().toLowerCase()], [direction]);
+    } else {
+        return userIds.map(id => ({ id }));
+    }
 }
 
 // Record<string, [Operator, Value] | null> -> Array<{field: string, operator: Operator, Value: value}>
@@ -81,7 +114,7 @@ function getFiltersFromObject(filtersObject) {
 }
 
 // To be used when DHIS2 fixes all the API bugs */
-async function getUserListStandard(d2, filtersObject, listOptions) {
+async function _getUserListStandard(d2, filtersObject, listOptions) {
     const collection = await d2.models.user.list({
         ..._.pick(listOptions, ["order", "page", "pageSize", "query", "canManage"]),
         filter: buildD2Filter(getFiltersFromObject(filtersObject)),
@@ -146,7 +179,7 @@ async function getFilteredUsers(d2, filters) {
             const userIdsForFilter = [];
 
             // For each filter, we can still have too many UIDs, split the requests and perform a union
-            for (const valuesGroup of _.chunk(inFilter.value, maxUids)) {
+            for (const valuesGroup of getChunks(inFilter.value)) {
                 const filtersForGroup = [...nonInFilters, { ...inFilter, value: valuesGroup }];
                 const usersForGroup = await getD2Users(d2, { filters: filtersForGroup });
                 userIdsForFilter.push(usersForGroup.map(u => u.id));
