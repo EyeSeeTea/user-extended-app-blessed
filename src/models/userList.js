@@ -48,9 +48,9 @@ export async function getUserList(d2, filtersObject, listOptions) {
     const hasQuery = query !== "" || canManage !== undefined;
     const hasFilters = !_.isEmpty(filters);
 
-    const usersByQuery = hasQuery ? await getD2Users(d2, { query, canManage, fields: "id" }) : null;
+    const usersByQuery = hasQuery ? await getD2Users(d2, { query, canManage }) : null;
     const usersByFilters = hasFilters ? await getFilteredUsers(d2, filters) : null;
-    const allUsers = !hasQuery && !hasFilters ? await getD2Users(d2, { fields: "id" }) : null;
+    const allUsers = !hasQuery && !hasFilters ? await getD2Users(d2, {}) : null;
 
     const groupOfUserIds = [usersByQuery, usersByFilters, allUsers]
         .filter(users => users !== null)
@@ -62,7 +62,7 @@ export async function getUserList(d2, filtersObject, listOptions) {
     const usersLists = await mapPromise(_.chunk(ids, maxUids), idsGroup => {
         return getD2Users(d2, {
             order: listOptions.order,
-            fields: queryFields.join(","),
+            fields: queryFields,
             filters: [{ field: "id", operator: "in", value: idsGroup }],
             paging: false,
         });
@@ -83,9 +83,9 @@ function getFiltersFromObject(filtersObject) {
 // To be used when DHIS2 fixes all the API bugs */
 async function getUserListStandard(d2, filtersObject, listOptions) {
     const collection = await d2.models.user.list({
-        ..._.pick(listOptions, ["order", "page", "pageSize", "query"]),
+        ..._.pick(listOptions, ["order", "page", "pageSize", "query", "canManage"]),
         filter: buildD2Filter(getFiltersFromObject(filtersObject)),
-        fields: queryFields,
+        fields: queryFields.join(","),
         paging: true,
     });
 
@@ -119,11 +119,11 @@ function filtersExceedLimit(filters) {
 }
 
 async function getD2Users(d2, options) {
-    const { fields, paging = false, query, filters = [], ...otherOptions } = options;
+    const { fields = ["id"], paging = false, query, filters = [], ...otherOptions } = options;
 
     const listOptions = {
         ...otherOptions,
-        fields,
+        fields: fields.join(","),
         paging,
         ...(query ? { query } : {}),
         ...(!_.isEmpty(filters) ? { filter: buildD2Filter(filters) } : {}),
@@ -136,7 +136,7 @@ async function getD2Users(d2, options) {
 
 async function getFilteredUsers(d2, filters) {
     if (!filtersExceedLimit(filters)) {
-        return getD2Users(d2, { filters, fields: "id" });
+        return getD2Users(d2, { filters });
     } else {
         // We have too many in-filters values, make a one request per active filter and intersect the result.
         const [inFilters, nonInFilters] = _.partition(filters, ({ operator }) => operator === "in");
@@ -148,10 +148,7 @@ async function getFilteredUsers(d2, filters) {
             // For each filter, we can still have too many UIDs, split the requests and perform a union
             for (const valuesGroup of _.chunk(inFilter.value, maxUids)) {
                 const filtersForGroup = [...nonInFilters, { ...inFilter, value: valuesGroup }];
-                const usersForGroup = await getD2Users(d2, {
-                    filters: filtersForGroup,
-                    fields: "id",
-                });
+                const usersForGroup = await getD2Users(d2, { filters: filtersForGroup });
                 userIdsForFilter.push(usersForGroup.map(u => u.id));
             }
             groupsOfUserIds.push(_.union(...userIdsForFilter));
