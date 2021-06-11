@@ -60,15 +60,23 @@ export async function getUserList(d2, filtersObject, listOptions) {
     const sortedUsers = await getSortedUsers(d2, allIds, listOptions.order);
     const { pager, objects: pageObjects } = paginate(sortedUsers, listOptions);
 
-    const usersLists = await mapPromise(getChunks(pageObjects), pageObjectsGroup => {
+    const users = await request(pageObjects, usersGroup => {
         return getD2Users(d2, {
             fields: queryFields,
-            filters: [{ field: "id", operator: "in", value: pageObjectsGroup.map(u => u.id) }],
+            filters: [{ field: "id", operator: "in", value: usersGroup.map(u => u.id) }],
             paging: false,
         });
     });
 
-    return { pager, users: sortObjectsByReference(pageObjects, _.flatten(usersLists), "id") };
+    return { pager, users: sortObjectsByReference(pageObjects, users, "id") };
+}
+
+async function request(objects, getRequest) {
+    const objectsList = await mapPromise(getChunks(objects), objectsGroup => {
+        return getRequest(objectsGroup);
+    });
+
+    return _.flatten(objectsList);
 }
 
 function getChunks(objs) {
@@ -93,9 +101,11 @@ async function getSortedUsers(d2, userIds, order) {
         const [orderField = "name", d2Direction = "asc"] = order.split(":");
         const direction = d2Direction.toLowerCase().includes("desc") ? "desc" : "asc";
 
-        const users = await getD2Users(d2, {
-            fields: ["id", orderField],
-            filters: [{ field: "id", operator: "in", value: userIds }],
+        const users = await request(userIds, userIdsGroup => {
+            return getD2Users(d2, {
+                fields: ["id", orderField],
+                filters: [{ field: "id", operator: "in", value: userIdsGroup }],
+            });
         });
 
         return _.orderBy(users, [u => (u[orderField] || "").toString().toLowerCase()], [direction]);
