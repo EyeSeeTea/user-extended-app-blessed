@@ -48,6 +48,10 @@ export async function getUserList(d2, filtersObject, listOptions) {
     const hasQuery = query !== "" || canManage !== undefined;
     const hasFilters = !_.isEmpty(filters);
 
+    if (!hasFilters) {
+        return getUserListStandard(d2, filtersObject, listOptions);
+    }
+
     const usersByQuery = hasQuery ? await getD2Users(d2, { query, canManage }) : null;
     const usersByFilters = hasFilters ? await getFilteredUsers(d2, filters) : null;
     const allUsers = !hasQuery && !hasFilters ? await getD2Users(d2, {}) : null;
@@ -82,7 +86,7 @@ async function request(objects, getRequest) {
 function getChunks(objs) {
     return _(objs)
         .chunk(maxUids)
-        .take(10) // Limit the total chunks
+        .take(50) // Limit the total chunks
         .value();
 }
 
@@ -124,10 +128,11 @@ function getFiltersFromObject(filtersObject) {
 }
 
 // To be used when DHIS2 fixes all the API bugs */
-async function _getUserListStandard(d2, filtersObject, listOptions) {
+async function getUserListStandard(d2, filtersObject, listOptions) {
+    const filter = buildD2Filter(getFiltersFromObject(filtersObject));
     const collection = await d2.models.user.list({
         ..._.pick(listOptions, ["order", "page", "pageSize", "query", "canManage"]),
-        filter: buildD2Filter(getFiltersFromObject(filtersObject)),
+        ...(!_.isEmpty(filter) ? { filter } : {}),
         fields: queryFields.join(","),
         paging: true,
     });
