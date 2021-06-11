@@ -21,7 +21,7 @@ const queryFields = [
 ];
 
 // (maxSize - urlAndOtherParamsSize) / (uidSize + encodedCommaSize)
-const maxUids = Math.floor((4096 - 1000) / (11 + 3));
+const maxUids = Math.floor((4096 - 200) / (11 + 3));
 
 // type FiltersObject = Record<string, [Operator, Value] | null>
 // type ListOptions = {canManage?: boolean, query?: string, order?: string, page: number, pageSize: number }
