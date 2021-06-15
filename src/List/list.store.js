@@ -9,7 +9,7 @@ import { getUserList } from "../models/userList";
 const orderForQuery = modelName =>
     modelName === "organisationUnitLevel" ? "level:ASC" : "name:iasc";
 
-const columns = [
+export const columns = [
     { name: "username", sortable: false },
     { name: "firstName", sortable: true },
     { name: "surname", sortable: true },

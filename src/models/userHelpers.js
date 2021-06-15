@@ -6,6 +6,7 @@ import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
 import { getUserList } from "./userList";
+import { columns } from "../List/list.store";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -28,7 +29,6 @@ const queryFields = [
     "organisationUnits[id,code,shortName,displayName]",
     "dataViewOrganisationUnits[id,code,shortName,displayName]",
 ].join(",");
-
 
 const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
 
@@ -538,6 +538,23 @@ async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
     return Papa.unparse(table);
 }
 
+async function exportTemplateToCsv(d2) {
+    const columnsAdded = ["password"];
+    const columnsRemoved = ["lastUpdated", "created", "lastLogin"];
+    const columnKeysToExport = _(columns)
+        .map(column => column.name)
+        .difference(columnsRemoved)
+        .union(columnsAdded)
+        .value();
+    const header = _(columnKeysToExport)
+        .map(getColumnNameFromProperty)
+        .compact()
+        .value();
+    const table = [header];
+
+    return Papa.unparse(table);
+}
+
 async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
@@ -622,6 +639,7 @@ function getPayload(parentUser, destUsers, fields, updateStrategy) {
 
 export {
     exportToCsv,
+    exportTemplateToCsv,
     importFromCsv,
     updateUsers,
     saveUsers,
