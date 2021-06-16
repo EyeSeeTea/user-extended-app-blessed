@@ -11,7 +11,7 @@ import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
 
-import { exportToCsv, importFromCsv } from "../models/userHelpers";
+import { exportToCsv, exportTemplateToCsv, importFromCsv } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 
@@ -77,13 +77,12 @@ class ImportExport extends React.Component {
         }
     };
 
-    exportEmptyTemplate = () => {
-        const { allColumns } = this.props;
+    exportEmptyTemplate = async () => {
         this.setState({ isProcessing: true });
 
         try {
-            const labeledColumns = allColumns.map(column => column.text);
-            this.saveCsv(labeledColumns, "empty-user-template");
+            const csvString = await exportTemplateToCsv(d2);
+            this.saveCsv(csvString, "empty-user-template");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
