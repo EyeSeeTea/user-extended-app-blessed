@@ -102,6 +102,7 @@ class OrgUnitsFilter extends React.Component {
     render() {
         const { title, styles } = this.props;
         const { dialogOpen, selected } = this.state;
+        const t = this.getTranslation.bind(this);
 
         return (
             <div style={this.styles.wrapper}>
@@ -120,6 +121,16 @@ class OrgUnitsFilter extends React.Component {
                         roots={this.state.roots}
                         selected={this.state.selected}
                         intersectionPolicy={true}
+                        filteringByNameLabel={
+                            title.includes("organisation units capture")
+                                ? t("filter_organisation_units_capture_by_name")
+                                : t("filter_organisation_units_output_by_name")
+                        }
+                        orgUnitsSelectedLabel={
+                            title.includes("organisation units capture")
+                                ? t("organisation_units_capture_selected")
+                                : t("organisation_units_output_selected")
+                        }
                     />
                 </Dialog>
 

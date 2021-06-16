@@ -19,6 +19,8 @@ class OrgUnitForm extends React.Component {
             searchValue: "",
             originalRoots: this.props.roots,
             rootOrgUnits: this.props.roots,
+            filteringByNameLabel: this.props.filteringByNameLabel,
+            orgUnitsSelectedLabel: this.props.orgUnitsSelectedLabel,
             groups: [],
             levels: [],
             loading: false,
@@ -131,7 +133,13 @@ class OrgUnitForm extends React.Component {
             return <div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>;
         }
 
-        const { root, models, intersectionPolicy } = this.props;
+        const {
+            root,
+            models,
+            intersectionPolicy,
+            filteringByNameLabel,
+            orgUnitsSelectedLabel,
+        } = this.props;
         const styles = {
             wrapper: {
                 position: "relative",
@@ -173,9 +181,7 @@ class OrgUnitForm extends React.Component {
 
                 <TextField
                     onChange={event => this._searchOrganisationUnits(event.target.value)}
-                    floatingLabelText={this.context.d2.i18n.getTranslation(
-                        "filter_organisation_units_capture_by_name"
-                    )}
+                    floatingLabelText={filteringByNameLabel}
                     fullWidth
                 />
 
@@ -200,9 +206,7 @@ class OrgUnitForm extends React.Component {
                     </div>
                 </div>
                 <div className="organisation-unit-tree__selected">
-                    {`${this.props.selected.length} ${this.getTranslation(
-                        "organisation_units_capture_selected"
-                    )}`}
+                    {`${this.props.selected.length} ${orgUnitsSelectedLabel}`}
                 </div>
                 {this.renderRoots()}
             </div>
@@ -215,6 +219,8 @@ OrgUnitForm.propTypes = {
     roots: PropTypes.arrayOf(PropTypes.object).isRequired,
     selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     intersectionPolicy: PropTypes.bool,
+    filteringByNameLabel: PropTypes.string,
+    orgUnitsSelectedLabel: PropTypes.string,
 };
 
 OrgUnitForm.defaultProps = {

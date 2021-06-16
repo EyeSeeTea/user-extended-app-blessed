@@ -4,12 +4,12 @@ import Store from "d2-ui/lib/store/Store";
 import _ from "lodash";
 
 import appState from "../App/appStateStore";
-import { getList } from "../models/userHelpers";
+import { getUserList } from "../models/userList";
 
 const orderForQuery = modelName =>
     modelName === "organisationUnitLevel" ? "level:ASC" : "name:iasc";
 
-const columns = [
+export const columns = [
     { name: "username", sortable: false },
     { name: "firstName", sortable: true },
     { name: "surname", sortable: true },
@@ -40,11 +40,11 @@ export default Store.create({
         this.listSourceSubject
             .concatAll()
             .combineLatest(columnObservable)
-            .subscribe(([modelCollection, columns]) => {
+            .subscribe(([usersResponse, columns]) => {
                 this.setState({
                     tableColumns: columns,
-                    pager: modelCollection.pager,
-                    list: modelCollection.toArray().map(user => ({
+                    pager: usersResponse.pager,
+                    list: usersResponse.users.map(user => ({
                         ...user,
                         ...(!user.userCredentials
                             ? {}
@@ -98,7 +98,7 @@ export default Store.create({
     filter(options, complete, error) {
         getD2().then(d2 => {
             const { filters, ...listOptions } = options;
-            const listSearchPromise = getList(d2, filters, listOptions);
+            const listSearchPromise = getUserList(d2, filters, listOptions);
             this.listSourceSubject.onNext(Observable.fromPromise(listSearchPromise));
             complete(`list with filters '${filters}' is loading`);
         });

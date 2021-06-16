@@ -10,10 +10,13 @@ function getOrgUnitsRoots() {
         .toPromise();
 }
 
-function mapPromise(items, mapper) {
-    const reducer = (promise, item) =>
-        promise.then(mappedItems => mapper(item).then(res => mappedItems.concat([res])));
-    return items.reduce(reducer, Promise.resolve([]));
+async function mapPromise(inputValues, mapper) {
+    const output = [];
+    for (const value of inputValues) {
+        const res = await mapper(value);
+        output.push(res);
+    }
+    return output;
 }
 
 /* Perform a model.list with a filter=FIELD:in:[VALUE1,VALUE2,...], breaking values to

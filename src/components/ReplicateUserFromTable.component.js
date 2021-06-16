@@ -13,7 +13,7 @@ class ReplicateUserFromTable extends React.Component {
         "firstName",
         "surname",
         "email",
-        "organisationUnitsCapture",
+        "organisationUnits",
         "dataViewOrganisationUnits",
     ];
 
@@ -52,7 +52,7 @@ class ReplicateUserFromTable extends React.Component {
     render() {
         const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
-        const title = this.t("replicate_user", {
+        const title = this.t("replicate_user_title", {
             user: userToReplicate
                 ? `${userToReplicate.displayName} (${userToReplicate.username})`
                 : "",
