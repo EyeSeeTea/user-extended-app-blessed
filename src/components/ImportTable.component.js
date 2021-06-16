@@ -465,6 +465,20 @@ class ImportTable extends React.Component {
                         />
                     ),
                 });
+            } else if (field === "disabled") {
+                return {
+                    name: field,
+                    component: Toggle,
+                    props: {
+                        name: field,
+                        defaultToggled: value,
+                        onToggle: (event, isInputChecked) => {
+                            this.onUpdateField(user.id, field, isInputChecked);
+                        },
+                        style: { width: "100%" },
+                    },
+                    validators,
+                };
             } else {
                 const extraProps = { changeEvent: "onBlur" };
                 return this.getTextField(field, value, {
@@ -496,6 +510,7 @@ class ImportTable extends React.Component {
                 organisationUnits: templateUser.attributes.organisationUnits,
                 dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
                 email: templateUser.attributes.email,
+                disabled: templateUser.attributes.disabled,
             };
         } else {
             newUser = {

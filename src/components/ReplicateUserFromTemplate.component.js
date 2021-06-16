@@ -172,7 +172,7 @@ class ReplicateUserFromTemplate extends React.Component {
             isValid,
             validate,
         } = this.state;
-        const title = this.getTranslation("replicate_user", {
+        const title = this.getTranslation("replicate_user_title", {
             user: userToReplicate
                 ? `${userToReplicate.displayName} (${userToReplicate.username})`
                 : "",

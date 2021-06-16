@@ -14,7 +14,7 @@ export default class CopyInUserBatchModelsMultiSelectModel {
             parentFields: parentFields || ":owner",
             childrenModel: childrenModel,
             getChildren: parent => toArray(getChildren(parent)),
-            childrenFields: childrenFields || "id,name",
+            childrenFields: childrenFields || "id,name,userCredentials[username]",
             getPayload,
         });
     }
