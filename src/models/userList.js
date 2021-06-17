@@ -48,10 +48,6 @@ export async function getUserList(d2, filtersObject, listOptions) {
     const hasQuery = query !== "" || canManage !== undefined;
     const hasFilters = !_.isEmpty(filters);
 
-    if (!hasFilters) {
-        return getUserListStandard(d2, filtersObject, listOptions);
-    }
-
     const usersByQuery = hasQuery ? await getD2Users(d2, { query, canManage }) : null;
     const usersByFilters = hasFilters ? await getFilteredUsers(d2, filters) : null;
     const allUsers = !hasQuery && !hasFilters ? await getD2Users(d2, {}) : null;
