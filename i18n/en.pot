@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2021-09-30T20:45:16.406Z\n"
+"PO-Revision-Date: 2021-09-30T20:45:16.406Z\n"
+
+msgid "Settings"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Copy in user"
+msgstr ""
+
+msgid "Assign to organisation units"
+msgstr ""
+
+msgid "Assign to data view organisation units"
+msgstr ""
+
+msgid "Assign roles"
+msgstr ""
+
+msgid "Assign groups"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Replicate user from template"
+msgstr ""
+
+msgid "Replicate user from table"
+msgstr ""
+
+msgid "Search by name"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Surname"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "Organisation units"
+msgstr ""
+
+msgid "Data view organisation units"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
