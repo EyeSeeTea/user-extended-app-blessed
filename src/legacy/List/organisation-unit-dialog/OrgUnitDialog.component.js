@@ -1,8 +1,6 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog/Dialog";
-import FlatButton from "material-ui/FlatButton/FlatButton";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 import React from "react";
@@ -107,41 +105,15 @@ class OrgUnitDialog extends React.Component {
     render = () => {
         const { title, filteringByNameLabel, orgUnitsSelectedLabel } = this.props;
 
-        const styles = {
-            dialog: {
-                minWidth: 875,
-                maxWidth: "100%",
-            },
-            cancelButton: {
-                marginRight: 16,
-            },
-        };
-
-        const dialogActions = (
-            <React.Fragment>
-                <FlatButton
-                    label={this.getTranslation("cancel")}
-                    onClick={this.props.onRequestClose}
-                    style={styles.cancelButton}
-                    disabled={this.state.loading}
-                />
-                ,
-                <RaisedButton
-                    primary
-                    label={this.getTranslation("save")}
-                    onClick={this.save}
-                    disabled={this.state.loading}
-                />
-            </React.Fragment>
-        );
         return (
-            <Dialog
+            <ConfirmationDialog
+            open={true}
                 title={title}
-                actions={dialogActions}
-                autoScrollBodyContent
-                autoDetectWindowHeight
-                contentStyle={styles.dialog}
-                {...this.props}
+                maxWidth={"lg"}
+                fullWidth={true}
+                onCancel={this.props.onRequestClose}
+                onSave={this.save}
+                disabled={this.state.loading}
             >
                 {this._renderStrategyToggle()}
 
@@ -154,7 +126,7 @@ class OrgUnitDialog extends React.Component {
                     filteringByNameLabel={filteringByNameLabel}
                     orgUnitsSelectedLabel={orgUnitsSelectedLabel}
                 />
-            </Dialog>
+            </ConfirmationDialog>
         );
     };
 }
