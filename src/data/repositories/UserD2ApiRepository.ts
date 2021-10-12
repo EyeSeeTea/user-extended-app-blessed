@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { D2Api } from "@eyeseetea/d2-api/2.34";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
@@ -35,28 +36,18 @@ export class UserD2ApiRepository implements UserRepository {
             access: user.access,
         }));
     }
-
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
-        let filterObj;
+        let filterObj: FilterObject = {};
         if (filters !== undefined) {
-            filterObj = {
-                "dataViewOrganisationUnits.id":
-                    filters["dataViewOrganisationUnits.id"] !== null
-                        ? { in: filters["dataViewOrganisationUnits.id"][1] }
-                        : undefined,
-                "organisationUnits.id":
-                    filters["organisationUnits.id"] !== null ? { in: filters["organisationUnits.id"][1] } : undefined,
-                "userCredentials.disabled":
-                    filters["userCredentials.disabled"] !== undefined
-                        ? { eq: filters["userCredentials.disabled"][1] }
-                        : undefined,
-                "userCredentials.userRoles.id":
-                    filters["userCredentials.userRoles.id"] !== null
-                        ? { in: filters["userCredentials.userRoles.id"][1] }
-                        : undefined,
-                "userGroups.id": filters["userGroups.id"] !== null ? { in: filters["userGroups.id"][1] } : undefined,
-            };
+            filterObj = _.mapValues(filters, (items, key) => {
+                if(key === "userCredentials.disabled") {
+                    return items !== undefined ? { eq: items[1] }: undefined;
+                }
+                else {
+                    return items !== null ? { in: items[1] } : undefined;
+                }
+            });
         }
 
         return apiToFuture(
@@ -119,6 +110,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 }
+type FilterObject = Record<string, undefined | null | { eq?: any; in?: undefined; }>;
 
 const fields = {
     id: true,
