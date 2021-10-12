@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import TextField from "material-ui/TextField/TextField";
-
 import MultiSelect from "./MultiSelect.component";
 
 class FilteredMultiSelectComponent extends React.Component {
@@ -23,22 +22,21 @@ class FilteredMultiSelectComponent extends React.Component {
         },
     };
 
-    onFilterTextChange(event) {
-        this.setState({ filterText: event.target.value });
+    onFilterTextChange({ value }) {
+        this.setState({ filterText: value });
     }
 
     render = () => {
         const { options, selected, onChange } = this.props;
         const { filterText } = this.state;
-
         return (
             <div style={this.styles.contents}>
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
                     value={filterText}
-                    onChange={this.onFilterTextChange}
-                    type="search"
+                    onChange={e => this.onFilterTextChange(e)}
                     hintText={this.getTranslation("search")}
+                    type="search"
                 />
 
                 <MultiSelect

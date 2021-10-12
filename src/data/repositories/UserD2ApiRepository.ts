@@ -2,7 +2,7 @@ import { D2Api } from "@eyeseetea/d2-api/2.34";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { User } from "../../domain/entities/User";
-import { UserRepository } from "../../domain/repositories/UserRepository";
+import { UserRepository, ListOptions } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
@@ -36,8 +36,42 @@ export class UserD2ApiRepository implements UserRepository {
         }));
     }
 
-    public list(): FutureData<PaginatedResponse<User>> {
-        return apiToFuture(this.api.models.users.get({ fields })).map(({ objects, pager }) => ({
+    public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
+        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        let filterObj;
+        if (filters !== undefined) {
+            filterObj = {
+                "dataViewOrganisationUnits.id":
+                    filters["dataViewOrganisationUnits.id"] !== null
+                        ? { in: filters["dataViewOrganisationUnits.id"][1] }
+                        : undefined,
+                "organisationUnits.id":
+                    filters["organisationUnits.id"] !== null ? { in: filters["organisationUnits.id"][1] } : undefined,
+                "userCredentials.disabled":
+                    filters["userCredentials.disabled"] !== undefined
+                        ? { eq: filters["userCredentials.disabled"][1] }
+                        : undefined,
+                "userCredentials.userRoles.id":
+                    filters["userCredentials.userRoles.id"] !== null
+                        ? { in: filters["userCredentials.userRoles.id"][1] }
+                        : undefined,
+                "userGroups.id": filters["userGroups.id"] !== null ? { in: filters["userGroups.id"][1] } : undefined,
+            };
+        }
+
+        return apiToFuture(
+            this.api.models.users.get({
+                fields,
+                page,
+                pageSize,
+                paging: true,
+                filter: {
+                    identifiable: search ? { token: search } : undefined,
+                    ...filterObj,
+                },
+                order: `${sorting.field}:${sorting.order}`,
+            })
+        ).map(({ objects, pager }) => ({
             pager,
             objects: objects.map(user => ({
                 id: user.id,

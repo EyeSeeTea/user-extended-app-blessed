@@ -163,17 +163,24 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const refreshRows = useCallback(
         (
-            _search: string,
-            _paging: TablePagination,
-            _sorting: TableSorting<User>
+            search: string,
+            { page, pageSize }: TablePagination,
+            sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
-            return compositionRoot.users.list().toPromise();
+            return compositionRoot.users
+                .list({
+                    search,
+                    page,
+                    pageSize,
+                    sorting,
+                    filters: props.filters.filters,
+                })
+                .toPromise();
         },
-        [compositionRoot]
+        [compositionRoot, props.filters]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows);
-
     return (
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
@@ -217,4 +224,9 @@ function isStateActionVisible(action: string) {
 type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
 export interface UserListTableProps extends BaseTableProps {
     openSettings: () => void;
+    filters: Record<string, any>;
 }
+/*interface Filters {
+    dataViewOrganisationUnits: any[];
+    organisationUnits: any[];
+}*/
