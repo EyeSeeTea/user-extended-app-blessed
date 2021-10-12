@@ -10,14 +10,6 @@ export interface ListOptions {
     filters?: Record<string, any>;
 }
 
-export interface ListUsersFilters {
-    dataViewOrganisationUnits?: string[];
-    organisationUnits?: string[];
-    userCredentialsDisabled?: string;
-    userCredentials?: string[];
-    userGroups?: string[];
-}
-
 export interface UserRepository {
     getCurrent(): FutureData<User>;
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;

@@ -22,8 +22,8 @@ class FilteredMultiSelectComponent extends React.Component {
         },
     };
 
-    onFilterTextChange({ value }) {
-        this.setState({ filterText: value });
+    onFilterTextChange(event) {
+        this.setState({ filterText: event.target.value });
     }
 
     render = () => {
@@ -34,9 +34,9 @@ class FilteredMultiSelectComponent extends React.Component {
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
                     value={filterText}
-                    onChange={e => this.onFilterTextChange(e)}
-                    hintText={this.getTranslation("search")}
+                    onChange={this.onFilterTextChange}
                     type="search"
+                    hintText={this.getTranslation("search")}
                 />
 
                 <MultiSelect

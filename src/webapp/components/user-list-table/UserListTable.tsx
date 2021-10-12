@@ -181,6 +181,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows);
+
     return (
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
@@ -224,9 +225,5 @@ function isStateActionVisible(action: string) {
 type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
 export interface UserListTableProps extends BaseTableProps {
     openSettings: () => void;
-    filters: Record<string, any>;
+    filters: Record<string, undefined | any[]>;
 }
-/*interface Filters {
-    dataViewOrganisationUnits: any[];
-    organisationUnits: any[];
-}*/
