@@ -11,7 +11,7 @@ import {
     useObjectsTable,
 } from "@eyeseetea/d2-ui-components";
 import { Icon } from "@material-ui/core";
-import { Tune } from "@material-ui/icons";
+import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
@@ -163,13 +163,21 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const refreshRows = useCallback(
         (
-            _search: string,
-            _paging: TablePagination,
-            _sorting: TableSorting<User>
+            search: string,
+            { page, pageSize }: TablePagination,
+            sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
-            return compositionRoot.users.list().toPromise();
+            return compositionRoot.users
+                .list({
+                    search,
+                    page,
+                    pageSize,
+                    sorting,
+                    filters: props.filters.filters,
+                })
+                .toPromise();
         },
-        [compositionRoot]
+        [compositionRoot, props.filters]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows);
@@ -184,10 +192,10 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 };
 
 export const columns: TableColumn<User>[] = [
+    { name: "username", sortable: false, text: i18n.t("Username") },
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
-    { name: "username", sortable: false, text: i18n.t("Username") },
-    { name: "email", sortable: false, text: i18n.t("Email") },
+    { name: "email", sortable: true, text: i18n.t("Email") },
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
     { name: "userRoles", sortable: false, text: i18n.t("Roles"), hidden: true },
@@ -195,7 +203,12 @@ export const columns: TableColumn<User>[] = [
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
     { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
-    { name: "disabled", sortable: false, text: i18n.t("Disabled") },
+    {
+        name: "disabled",
+        sortable: false,
+        text: i18n.t("Disabled"),
+        getValue: row => (row.disabled ? <Check /> : undefined),
+    },
 ];
 
 function checkAccess(requiredKeys: string[]) {
@@ -217,4 +230,5 @@ function isStateActionVisible(action: string) {
 type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
 export interface UserListTableProps extends BaseTableProps {
     openSettings: () => void;
+    filters: Record<string, undefined | any[]>;
 }

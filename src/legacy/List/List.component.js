@@ -399,7 +399,11 @@ export class ListHybrid extends React.Component {
             <div>
                 <div style={styles.listDetailsWrap}>
                     <div style={styles.dataTableWrap}>
-                        <UserListTable loading={this.state.isLoading} openSettings={this._openSettings}>
+                        <UserListTable
+                            loading={this.state.isLoading}
+                            openSettings={this._openSettings}
+                            filters={this.state.filters}
+                        >
                             <Filters onChange={this._onFiltersChange} showSearch={false} />
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>

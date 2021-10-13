@@ -2,7 +2,6 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import IconButton from "material-ui/IconButton";
-import ClearIcon from "material-ui/svg-icons/content/clear";
 import FilterListIcon from "material-ui/svg-icons/content/filter-list";
 import memoize from "memoize-weak";
 import PropTypes from "prop-types";
@@ -203,80 +202,76 @@ export default class Filters extends React.Component {
                     </IconButton>
                 </div>
 
-                <ConfirmationDialog 
+                <ConfirmationDialog
                     title={this.getTranslation("extended_filters")}
-                maxWidth={"lg"}
-                fullWidth={true}
+                    maxWidth={"lg"}
+                    fullWidth={true}
                     open={showExtendedFilters}
                     onCancel={this.closeFilters}
                     cancelText={this.getTranslation("close")}
-                ><div style={{ padding: 10, margin: 10 }}><div className="control-row checkboxes" >
-                        <Checkbox
-                            className="control-checkbox"
-                            label={this.getTranslation("display_only_users_can_manage")}
-                            onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
-                            checked={showOnlyManagedUsers}
-                        />
+                    infoActionText={this.getTranslation("clear_filters")}
+                    onInfoAction={isFiltering ? this.clearFilters : undefined}
+                >
+                    <div style={{ padding: 10, margin: 10 }}>
+                        <div className="control-row checkboxes">
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation("display_only_users_can_manage")}
+                                onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
+                                checked={showOnlyManagedUsers}
+                            />
 
-                        <Checkbox
-                            className="control-checkbox"
-                            label={this.getTranslation("display_only_enabled_users")}
-                            onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
-                            checked={showOnlyActiveUsers}
-                        />
+                            <Checkbox
+                                className="control-checkbox"
+                                label={this.getTranslation("display_only_enabled_users")}
+                                onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
+                                checked={showOnlyActiveUsers}
+                            />
+                        </div>
 
-                        {isFiltering && (
-                            <IconButton
-                                style={styles.clearFiltersButton}
-                                onClick={this.clearFilters}
-                                tooltip={this.getTranslation("clear_filters")}
-                            >
-                                <ClearIcon />
-                            </IconButton>
-                        )}
+                        <div className="control-row">
+                            <div className="user-management-control select-role">
+                                <MultipleFilter
+                                    title={this.getTranslation("filter_role")}
+                                    options={this.state.userRolesAll}
+                                    selected={this.state.userRoles}
+                                    onChange={this.setFilter("userRoles")}
+                                    styles={styles.filterStyles}
+                                />
+                            </div>
+
+                            <div className="user-management-control select-group">
+                                <MultipleFilter
+                                    title={this.getTranslation("filter_group")}
+                                    options={this.state.userGroupsAll}
+                                    selected={this.state.userGroups}
+                                    onChange={this.setFilter("userGroups")}
+                                    styles={styles.filterStyles}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="control-row">
+                            <div className="user-management-control select-organisation-unit">
+                                <OrgUnitsFilter
+                                    title={this.getTranslation("filter_by_organisation_units_capture")}
+                                    selected={this.state.orgUnits}
+                                    onChange={this.setFilter("orgUnits")}
+                                    styles={styles.filterStyles}
+                                />
+                            </div>
+
+                            <div className="user-management-control select-organisation-unit-output">
+                                <OrgUnitsFilter
+                                    title={this.getTranslation("filter_by_organisation_units_output")}
+                                    selected={this.state.orgUnitsOutput}
+                                    onChange={this.setFilter("orgUnitsOutput")}
+                                    styles={styles.filterStyles}
+                                />
+                            </div>
+                        </div>
                     </div>
-
-                    <div className="control-row">
-                        <div className="user-management-control select-role">
-                            <MultipleFilter
-                                title={this.getTranslation("filter_role")}
-                                options={this.state.userRolesAll}
-                                selected={this.state.userRoles}
-                                onChange={this.setFilter("userRoles")}
-                                styles={styles.filterStyles}
-                            />
-                        </div>
-
-                        <div className="user-management-control select-group">
-                            <MultipleFilter
-                                title={this.getTranslation("filter_group")}
-                                options={this.state.userGroupsAll}
-                                selected={this.state.userGroups}
-                                onChange={this.setFilter("userGroups")}
-                                styles={styles.filterStyles}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="control-row">
-                        <div className="user-management-control select-organisation-unit">
-                            <OrgUnitsFilter
-                                title={this.getTranslation("filter_by_organisation_units_capture")}
-                                selected={this.state.orgUnits}
-                                onChange={this.setFilter("orgUnits")}
-                                styles={styles.filterStyles}
-                            />
-                        </div>
-
-                        <div className="user-management-control select-organisation-unit-output">
-                            <OrgUnitsFilter
-                                title={this.getTranslation("filter_by_organisation_units_output")}
-                                selected={this.state.orgUnitsOutput}
-                                onChange={this.setFilter("orgUnitsOutput")}
-                                styles={styles.filterStyles}
-                            />
-                        </div>
-                        </div></div></ConfirmationDialog>
+                </ConfirmationDialog>
             </div>
         );
     };

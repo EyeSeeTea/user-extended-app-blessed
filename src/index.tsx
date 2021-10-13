@@ -61,9 +61,10 @@ async function main() {
     try {
         const d2 = await init({
             baseUrl: baseUrl + "/api",
-            headers: isDev && process.env.REACT_APP_DHIS2_AUTH
-                ? { Authorization: `Basic ${btoa(process.env.REACT_APP_DHIS2_AUTH)}` }
-                : undefined,
+            headers:
+                isDev && process.env.REACT_APP_DHIS2_AUTH
+                    ? { Authorization: `Basic ${btoa(process.env.REACT_APP_DHIS2_AUTH)}` }
+                    : undefined,
         });
 
         const instance = new Instance({ url: baseUrl });

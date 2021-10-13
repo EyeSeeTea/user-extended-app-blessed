@@ -107,7 +107,7 @@ class OrgUnitDialog extends React.Component {
 
         return (
             <ConfirmationDialog
-            open={true}
+                open={true}
                 title={title}
                 maxWidth={"lg"}
                 fullWidth={true}
