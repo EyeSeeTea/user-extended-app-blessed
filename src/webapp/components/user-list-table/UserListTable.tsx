@@ -8,7 +8,7 @@ import {
     TableConfig,
     TablePagination,
     TableSorting,
-    useObjectsTable
+    useObjectsTable,
 } from "@eyeseetea/d2-ui-components";
 import { Icon } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
