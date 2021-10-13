@@ -23,10 +23,6 @@ export default class CopyInUserBatchModelsMultiSelectModel {
     };
 
     getParents(parents) {
-        /*const parentIds = _(parents)
-            .map(obj => obj.id)
-            .compact()
-            .value();*/
         const options = {
             paging: false,
             filter: "id:in:[" + parents.join(",") + "]",
