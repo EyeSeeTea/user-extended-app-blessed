@@ -40,7 +40,7 @@ CopyInUserDialog.contextTypes = {
 
 CopyInUserDialog.propTypes = {
     user: PropTypes.array.isRequired,
-    onRequestClose: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
 };
 
 export default CopyInUserDialog;

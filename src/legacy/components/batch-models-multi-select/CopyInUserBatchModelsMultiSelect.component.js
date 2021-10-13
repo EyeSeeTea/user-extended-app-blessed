@@ -255,7 +255,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 CopyInUserBatchModelsMultiSelectComponent.propTypes = {
     model: PropTypes.object.isRequired,
     parents: PropTypes.arrayOf(PropTypes.string).isRequired,
-    onRequestClose: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
 };
 
 CopyInUserBatchModelsMultiSelectComponent.contextTypes = {
