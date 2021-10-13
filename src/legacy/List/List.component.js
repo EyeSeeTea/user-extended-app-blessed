@@ -471,7 +471,7 @@ export class ListHybrid extends React.Component {
                 {copyUsers.open ? (
                     <CopyInUserDialog
                         user={copyUsers.user}
-                        onRequestClose={() => copyInUserStore.setState({ open: false })}
+                        onCancel={() => copyInUserStore.setState({ open: false })}
                     />
                 ) : null}
 

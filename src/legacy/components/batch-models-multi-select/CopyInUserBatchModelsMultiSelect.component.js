@@ -1,8 +1,6 @@
 import LoadingMask from "d2-ui/lib/loading-mask/LoadingMask.component";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog/Dialog";
-import FlatButton from "material-ui/FlatButton/FlatButton";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
@@ -97,7 +95,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 
     close(snackMessage = null) {
         if (snackMessage) snackActions.show({ message: snackMessage });
-        this.props.onRequestClose();
+        this.props.onCancel();
     }
 
     renderStrategyToggle = () => {
@@ -177,28 +175,6 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         }
     };
 
-    getDialogButtons = () => {
-        const isLoading = this.state.state === "loading";
-
-        return (
-            <React.Fragment>
-                <FlatButton
-                    label={this.getTranslation("cancel")}
-                    onClick={this.props.onRequestClose}
-                    style={this.styles.cancelButton}
-                />
-                ,
-                <RaisedButton
-                    primary
-                    label={this.getTranslation("save")}
-                    onClick={this.copy.bind(this)}
-                    disabled={isLoading}
-                />
-                ,
-            </React.Fragment>
-        );
-    };
-
     //eslint-disable-next-line
     render = () => {
         const isLoading = this.state.state === "loading";
@@ -212,14 +188,15 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             .value();
 
         return (
-            <Dialog
+            <ConfirmationDialog
                 title={title}
-                actions={this.getDialogButtons()}
-                autoScrollBodyContent
-                autoDetectWindowHeight
-                contentStyle={this.styles.dialog}
+                maxWidth={"lg"}
+                fullWidth={true}
                 open={true}
-                onRequestClose={this.props.onRequestClose}
+                onCancel={this.props.onCancel}
+                cancelText={this.getTranslation("cancel")}
+                infoActionText={this.getTranslation("save")}
+                onInfoAction={!isLoading ? this.copy.bind(this) : undefined}
             >
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
@@ -270,7 +247,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                         />
                     </div>
                 </div>
-            </Dialog>
+            </ConfirmationDialog>
         );
     };
 }

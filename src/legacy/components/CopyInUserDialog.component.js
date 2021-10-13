@@ -26,7 +26,7 @@ function CopyInUserDialog(props, context) {
         <CopyInUserBatchModelsMultiSelectComponent
             model={new CopyInUserBatchModelsMultiSelectModel(context.d2, modelOptions)}
             parents={props.user}
-            onRequestClose={props.onRequestClose}
+            onCancel={props.onCancel}
             getTitle={users => getTitle(getTranslation, users)}
             onSuccess={getTranslation("user_configuration_copied")}
             onError={getTranslation("user_configuration_copied_error")}
