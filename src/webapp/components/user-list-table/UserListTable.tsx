@@ -8,7 +8,7 @@ import {
     TableConfig,
     TablePagination,
     TableSorting,
-    useObjectsTable,
+    useObjectsTable
 } from "@eyeseetea/d2-ui-components";
 import { Icon } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
@@ -16,6 +16,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
+import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
@@ -25,7 +26,6 @@ import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.sto
 import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
-import { Filters } from "../../../domain/repositories/UserRepository";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
@@ -228,8 +228,7 @@ function isStateActionVisible(action: string) {
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
-type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
-export interface UserListTableProps extends BaseTableProps {
+export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
-    filters: Filters;
+    filters: ListFilters;
 }
