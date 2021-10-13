@@ -36,6 +36,7 @@ export class UserD2ApiRepository implements UserRepository {
             access: user.access,
         }));
     }
+
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         let filterObj: FilterObject = {};
@@ -109,6 +110,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 }
+
 type FilterObject = Record<string, undefined | null | { eq?: any; in?: undefined }>;
 
 const fields = {

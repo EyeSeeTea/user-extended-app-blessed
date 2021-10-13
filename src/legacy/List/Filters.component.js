@@ -2,7 +2,6 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import IconButton from "material-ui/IconButton";
-import ClearIcon from "material-ui/svg-icons/content/clear";
 import FilterListIcon from "material-ui/svg-icons/content/filter-list";
 import memoize from "memoize-weak";
 import PropTypes from "prop-types";
@@ -210,6 +209,8 @@ export default class Filters extends React.Component {
                     open={showExtendedFilters}
                     onCancel={this.closeFilters}
                     cancelText={this.getTranslation("close")}
+                    infoActionText={this.getTranslation("clear_filters")}
+                    onInfoAction={isFiltering ? this.clearFilters : undefined}
                 >
                     <div style={{ padding: 10, margin: 10 }}>
                         <div className="control-row checkboxes">
@@ -226,16 +227,6 @@ export default class Filters extends React.Component {
                                 onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
                                 checked={showOnlyActiveUsers}
                             />
-
-                            {isFiltering && (
-                                <IconButton
-                                    style={styles.clearFiltersButton}
-                                    onClick={this.clearFilters}
-                                    tooltip={this.getTranslation("clear_filters")}
-                                >
-                                    <ClearIcon />
-                                </IconButton>
-                            )}
                         </div>
 
                         <div className="control-row">

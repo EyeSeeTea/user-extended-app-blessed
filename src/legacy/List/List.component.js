@@ -394,6 +394,7 @@ export class ListHybrid extends React.Component {
         }));
 
         const visibleColumns = _(tableColumns).keyBy("name").at(settings.get("visibleTableColumns")).compact().value();
+
         return (
             <div>
                 <div style={styles.listDetailsWrap}>
