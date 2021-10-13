@@ -402,7 +402,7 @@ export class ListHybrid extends React.Component {
                         <UserListTable
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
-                            filters={this.state.filters}
+                            filters={this.state.filters?.filters}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} />
 
@@ -471,7 +471,7 @@ export class ListHybrid extends React.Component {
                 {copyUsers.open ? (
                     <CopyInUserDialog
                         user={copyUsers.user}
-                        onRequestClose={() => copyInUserStore.setState({ open: false })}
+                        onCancel={() => copyInUserStore.setState({ open: false })}
                     />
                 ) : null}
 

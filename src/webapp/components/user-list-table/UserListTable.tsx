@@ -16,6 +16,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
+import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
@@ -173,7 +174,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     page,
                     pageSize,
                     sorting,
-                    filters: props.filters.filters,
+                    filters: props?.filters,
                 })
                 .toPromise();
         },
@@ -227,8 +228,7 @@ function isStateActionVisible(action: string) {
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
-type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
-export interface UserListTableProps extends BaseTableProps {
+export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
-    filters: Record<string, undefined | any[]>;
+    filters: ListFilters;
 }

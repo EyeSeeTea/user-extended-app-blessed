@@ -25,8 +25,8 @@ function CopyInUserDialog(props, context) {
     return (
         <CopyInUserBatchModelsMultiSelectComponent
             model={new CopyInUserBatchModelsMultiSelectModel(context.d2, modelOptions)}
-            parents={[{ ...props.user }]}
-            onRequestClose={props.onRequestClose}
+            parents={props.user}
+            onCancel={props.onCancel}
             getTitle={users => getTitle(getTranslation, users)}
             onSuccess={getTranslation("user_configuration_copied")}
             onError={getTranslation("user_configuration_copied_error")}
@@ -39,8 +39,8 @@ CopyInUserDialog.contextTypes = {
 };
 
 CopyInUserDialog.propTypes = {
-    user: PropTypes.object.isRequired,
-    onRequestClose: PropTypes.func.isRequired,
+    user: PropTypes.array.isRequired,
+    onCancel: PropTypes.func.isRequired,
 };
 
 export default CopyInUserDialog;
