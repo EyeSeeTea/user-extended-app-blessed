@@ -41,10 +41,9 @@ export class UserD2ApiRepository implements UserRepository {
         let filterObj: FilterObject = {};
         if (filters !== undefined) {
             filterObj = _.mapValues(filters, (items, key) => {
-                if(key === "userCredentials.disabled") {
-                    return items !== undefined ? { eq: items[1] }: undefined;
-                }
-                else {
+                if (key === "userCredentials.disabled") {
+                    return items !== undefined ? { eq: items[1] } : undefined;
+                } else {
                     return items !== null ? { in: items[1] } : undefined;
                 }
             });
@@ -110,7 +109,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 }
-type FilterObject = Record<string, undefined | null | { eq?: any; in?: undefined; }>;
+type FilterObject = Record<string, undefined | null | { eq?: any; in?: undefined }>;
 
 const fields = {
     id: true,
