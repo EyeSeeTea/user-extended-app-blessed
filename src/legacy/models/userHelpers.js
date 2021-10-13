@@ -516,7 +516,7 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
         const newChildOrgUnits = addItems(
             childUser.organisationUnits,
             parentUser.organisationUnits,
-            fields.orgUnits,
+            fields.orgUnitCapture,
             updateStrategy
         );
 

@@ -126,6 +126,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             updateStrategy,
         } = this.state;
         this.setState({ state: "loading" });
+
         const copyAccessElements = {
             userGroups: copyUserGroups,
             userRoles: copyUserRoles,
@@ -262,10 +263,10 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                             onToggle={(ev, newValue) => this.setState({ copyUserRoles: newValue })}
                         />
                         <Toggle
-                            label={"Org Units"}
+                            label={"OU Capture"}
                             style={this.styles.column2Toggle}
-                            checked={this.state.copyOrgUnits === true}
-                            onToggle={(ev, newValue) => this.setState({ copyOrgUnits: newValue })}
+                            checked={this.state.copyOrgUnitsCapture === true}
+                            onToggle={(ev, newValue) => this.setState({ copyOrgUnitsCapture: newValue })}
                         />
                     </div>
                 </div>
@@ -276,7 +277,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
 
 CopyInUserBatchModelsMultiSelectComponent.propTypes = {
     model: PropTypes.object.isRequired,
-    parents: PropTypes.arrayOf(PropTypes.object).isRequired,
+    parents: PropTypes.arrayOf(PropTypes.string).isRequired,
     onRequestClose: PropTypes.func.isRequired,
 };
 
