@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-09-30T20:45:16.406Z\n"
+"POT-Creation-Date: 2021-10-13T07:08:28.546Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -56,13 +56,13 @@ msgstr ""
 msgid "Search by name"
 msgstr ""
 
+msgid "Username"
+msgstr ""
+
 msgid "First name"
 msgstr ""
 
 msgid "Surname"
-msgstr ""
-
-msgid "Username"
 msgstr ""
 
 msgid "Email"
