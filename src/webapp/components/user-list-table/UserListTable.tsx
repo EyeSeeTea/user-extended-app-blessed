@@ -25,6 +25,7 @@ import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.sto
 import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
+import { Filters } from "../../../domain/repositories/UserRepository";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
@@ -173,7 +174,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     page,
                     pageSize,
                     sorting,
-                    filters: props.filters.filters,
+                    filters: props?.filters,
                 })
                 .toPromise();
         },
@@ -230,5 +231,5 @@ function isStateActionVisible(action: string) {
 type BaseTableProps = Pick<ObjectsTableProps<User>, "loading">;
 export interface UserListTableProps extends BaseTableProps {
     openSettings: () => void;
-    filters: Record<string, undefined | any[]>;
+    filters: Filters;
 }

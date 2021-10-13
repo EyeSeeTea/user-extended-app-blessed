@@ -7,8 +7,10 @@ export interface ListOptions {
     pageSize?: number;
     search?: string;
     sorting?: { field: string; order: "asc" | "desc" };
-    filters?: Record<string, any>;
+    filters?: Filters;
 }
+export type Filters = undefined | Record<string, InEqIds>;
+type InEqIds = undefined | null | [string, string[]];
 
 export interface UserRepository {
     getCurrent(): FutureData<User>;
