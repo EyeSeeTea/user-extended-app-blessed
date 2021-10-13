@@ -195,8 +195,8 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                 open={true}
                 onCancel={this.props.onCancel}
                 cancelText={this.getTranslation("cancel")}
-                infoActionText={this.getTranslation("save")}
-                onInfoAction={!isLoading ? this.copy.bind(this) : undefined}
+                saveText={this.getTranslation("save")}
+                onSave={!isLoading ? this.copy.bind(this) : undefined}
             >
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
