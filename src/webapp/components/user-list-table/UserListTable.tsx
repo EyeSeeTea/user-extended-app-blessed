@@ -11,7 +11,7 @@ import {
     useObjectsTable,
 } from "@eyeseetea/d2-ui-components";
 import { Icon } from "@material-ui/core";
-import { Tune } from "@material-ui/icons";
+import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
@@ -203,7 +203,12 @@ export const columns: TableColumn<User>[] = [
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
     { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
-    { name: "disabled", sortable: false, text: i18n.t("Disabled") },
+    {
+        name: "disabled",
+        sortable: false,
+        text: i18n.t("Disabled"),
+        getValue: row => (row.disabled ? <Check /> : undefined),
+    },
 ];
 
 function checkAccess(requiredKeys: string[]) {
