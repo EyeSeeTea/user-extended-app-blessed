@@ -25,7 +25,6 @@ function getTitle(getTranslation, users) {
 function UserRolesDialog(props, context) {
     const { d2 } = context;
     const getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
-
     const modelOptions = {
         parentModel: d2.models.users,
         parentFields: ":owner,userCredentials[id,username,userRoles[id,name],lastLogin, disabled]",

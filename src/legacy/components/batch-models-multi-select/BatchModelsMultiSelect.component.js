@@ -62,7 +62,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
     componentDidMount = () => {
         const { parents, model } = this.props;
         return Promise.all([model.getAllChildren(), model.getParents(parents)])
-            .then(([allChildren, parentsLoaded]) =>
+            .then(([allChildren, parentsLoaded]) => 
                 this.setState({
                     state: "ready",
                     parents: parentsLoaded,
@@ -190,7 +190,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
 
 BatchModelsMultiSelectComponent.propTypes = {
     model: PropTypes.object.isRequired,
-    parents: PropTypes.arrayOf(PropTypes.object).isRequired,
+    parents: PropTypes.arrayOf(PropTypes.string).isRequired,
     onRequestClose: PropTypes.func.isRequired,
 };
 
