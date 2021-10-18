@@ -33,11 +33,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
-    /*
-        onClick: datasets =>  {
-                        deleteUserStore.setState({ datasets })
-                        //deleteUserStore.delete(datasets)},
-    */
+    
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
             columns,
