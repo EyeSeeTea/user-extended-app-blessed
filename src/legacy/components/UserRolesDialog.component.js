@@ -38,7 +38,7 @@ function UserRolesDialog(props, context) {
         <BatchModelsMultiSelectComponent
             model={new BatchModelsMultiSelectModel(context.d2, modelOptions)}
             parents={props.users}
-            onRequestClose={props.onRequestClose}
+            onCancel={props.onCancel}
             getTitle={users => getTitle(getTranslation, users)}
             onSuccess={getTranslation("user_roles_assigned")}
             onError={getTranslation("user_roles_assign_error")}

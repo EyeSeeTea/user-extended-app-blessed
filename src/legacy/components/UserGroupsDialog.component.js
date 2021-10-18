@@ -58,7 +58,7 @@ function UserGroupsDialog(props, context) {
         <BatchModelsMultiSelectComponent
             model={new BatchModelsMultiSelectModel(d2, modelOptions)}
             parents={props.users}
-            onRequestClose={props.onRequestClose}
+            onCancel={props.onCancel}
             onSuccess={getTranslation("user_groups_assigned")}
             onError={getTranslation("user_groups_assign_error")}
             getTitle={users => getTitle(getTranslation, users)}

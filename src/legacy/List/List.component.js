@@ -464,7 +464,7 @@ export class ListHybrid extends React.Component {
                 {assignUserRoles.open ? (
                     <UserRolesDialog
                         users={assignUserRoles.users}
-                        onRequestClose={() => userRolesAssignmentDialogStore.setState({ open: false })}
+                        onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 
@@ -478,7 +478,7 @@ export class ListHybrid extends React.Component {
                 {assignUserGroups.open ? (
                     <UserGroupsDialog
                         users={assignUserGroups.users}
-                        onRequestClose={() => userGroupsAssignmentDialogStore.setState({ open: false })}
+                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 
