@@ -1,8 +1,6 @@
 import LoadingMask from "d2-ui/lib/loading-mask/LoadingMask.component";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog/Dialog";
-import FlatButton from "material-ui/FlatButton/FlatButton";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
@@ -75,7 +73,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
 
     close(snackMessage = null) {
         if (snackMessage) snackActions.show({ message: snackMessage });
-        this.props.onRequestClose();
+        this.props.onCancel();
     }
 
     renderStrategyToggle = () => {
@@ -130,20 +128,6 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         this.setState({ filterText: event.target.value });
     }
 
-    getDialogButtons = () => {
-        return (
-            <React.Fragment>
-                <FlatButton
-                    label={this.getTranslation("cancel")}
-                    onClick={this.props.onRequestClose}
-                    style={this.styles.cancelButton}
-                />
-                ,
-                <RaisedButton primary label={this.getTranslation("save")} onClick={this.save.bind(this)} />,
-            </React.Fragment>
-        );
-    };
-
     //eslint-disable-next-line
     render = () => {
         const isLoading = this.state.state === "loading";
@@ -155,14 +139,15 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             .value();
 
         return (
-            <Dialog
+            <ConfirmationDialog
                 title={title}
-                actions={this.getDialogButtons()}
-                autoScrollBodyContent
-                autoDetectWindowHeight
-                contentStyle={this.styles.dialog}
                 open={true}
-                onRequestClose={this.props.onRequestClose}
+                maxWidth={"lg"}
+                fullWidth={true}
+                onCancel={this.props.onCancel}
+                cancelText={this.getTranslation("cancel")}
+                saveText={this.getTranslation("save")}
+                onSave={!isLoading ? this.save.bind(this) : undefined}
             >
                 <TextField
                     style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
@@ -183,15 +168,15 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
                         filterText={filterText}
                     />
                 </div>
-            </Dialog>
+            </ConfirmationDialog>
         );
     };
 }
 
 BatchModelsMultiSelectComponent.propTypes = {
     model: PropTypes.object.isRequired,
-    parents: PropTypes.arrayOf(PropTypes.object).isRequired,
-    onRequestClose: PropTypes.func.isRequired,
+    parents: PropTypes.arrayOf(PropTypes.string).isRequired,
+    onCancel: PropTypes.func.isRequired,
 };
 
 BatchModelsMultiSelectComponent.contextTypes = {
