@@ -21,13 +21,9 @@ export default class BatchModelsMultiSelectModel {
     };
 
     getParents(parents) {
-        const parentIds = _(parents)
-            .map(obj => obj.id)
-            .compact()
-            .value();
         const options = {
             paging: false,
-            filter: "id:in:[" + parentIds.join(",") + "]",
+            filter: "id:in:[" + parents.join(",") + "]",
             fields: this.parentFields || ":owner",
         };
         return this.parentModel.list(options).then(collection => collection.toArray());
