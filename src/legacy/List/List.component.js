@@ -377,6 +377,10 @@ export class ListHybrid extends React.Component {
         this.setState({ filters }, this.filterList);
     };
 
+    _disableUsersSaved = () => this.setUsersEnableState(this.disableUsers.users, this.disableUsers.action);
+
+    _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
+
     render = () => {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
@@ -463,8 +467,8 @@ export class ListHybrid extends React.Component {
                 {disableUsers.open ? (
                     <ConfirmationDialog
                         isOpen={disableUsers.open}
-                        onSave={() => this.setUsersEnableState(disableUsers.users, disableUsers.action)}
-                        onCancel={() => this.setState({ disableUsers: { open: false } })}
+                        onSave={this._disableUsersSaved}
+                        onCancel={this._disableUsersCancel}
                         title={this.getTranslation(`${disableUsers.action}_title`)}
                         description={this.getTranslation(`confirm_${disableUsers.action}`, {
                             users: getCompactTextForModels(this.context.d2, disableUsers.users, {
