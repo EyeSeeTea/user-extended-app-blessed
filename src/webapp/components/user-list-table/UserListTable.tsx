@@ -33,7 +33,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
-
+    /*
+        onClick: datasets =>  {
+                        deleteUserStore.setState({ datasets })
+                        //deleteUserStore.delete(datasets)},
+    */
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
             columns,
@@ -115,7 +119,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Remove"),
                     icon: <Icon>delete</Icon>,
                     multiple: true,
-                    onClick: datasets => deleteUserStore.delete(datasets),
+                    onClick: datasets => deleteUserStore.setState({ datasets }),
                     isActive: checkAccess(["delete"]),
                 },
                 {
