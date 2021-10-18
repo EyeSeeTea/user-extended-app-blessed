@@ -36,6 +36,7 @@ import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+
 const pageSize = 50;
 
 const initialSorting = ["name", "asc"];
@@ -208,7 +209,6 @@ export class ListHybrid extends React.Component {
 
     setUsersEnableState = async (users, action) => {
         this.setState({ disableUsers: { open: false, users: [], action: "" } });
-
         const newValue = action === "disable";
         const response = await updateUsers(this.context.d2, users, user => {
             return user.userCredentials.disabled !== newValue ? set("userCredentials.disabled", newValue, user) : null;
@@ -233,6 +233,7 @@ export class ListHybrid extends React.Component {
             () => !value.open && this.filterList({ page: this.state.pager.page })
         );
     };
+
     componentWillReceiveProps(newProps) {
         if (this.props.params.modelType !== newProps.params.modelType) {
             this.setState({
