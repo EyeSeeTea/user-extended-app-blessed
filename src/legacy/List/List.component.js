@@ -19,7 +19,7 @@ import TableLayout from "../components/TableLayout.component";
 import UserGroupsDialog from "../components/UserGroupsDialog.component";
 import UserRolesDialog from "../components/UserRolesDialog.component";
 import Settings from "../models/settings";
-import { saveUsers, updateUsers } from "../models/userHelpers";
+import { saveUsers, updateUsers, getExistingUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import { getCompactTextForModels } from "../utils/i18n";
 import copyInUserStore from "./copyInUser.store";
@@ -35,7 +35,7 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 const pageSize = 50;
 
 const initialSorting = ["name", "asc"];
@@ -130,6 +130,11 @@ export class ListHybrid extends React.Component {
             copyUsers: {
                 open: false,
             },
+            disableUsers: {
+                open: false,
+                users: [],
+                action: "",
+            },
         };
     }
 
@@ -175,20 +180,12 @@ export class ListHybrid extends React.Component {
             this.setAssignState("replicateUser", replicateUser);
         });
 
-        const enableStoreDisposable = enableStore.subscribe(({ users, action }) => {
-            const message = this.getTranslation(`confirm_${action}`, {
-                users: getCompactTextForModels(this.context.d2, users, {
-                    i18nKey: "this_and_n_others",
-                    field: "username",
-                    limit: 1,
-                }),
+        const enableStoreDisposable = enableStore.subscribe(async ({ users, action }) => {
+            const existingUsers = await getExistingUsers(this.context.d2, {
+                fields: ":owner",
+                filter: "id:in:[" + users.join(",") + "]",
             });
-
-            snackActions.show({
-                message,
-                action: "confirm",
-                onActionTouchTap: () => this.setUsersEnableState(users, action),
-            });
+            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
         });
 
         const deleteUserStoreDisposable = deleteUserStore.subscribe(() => this.filterList());
@@ -210,6 +207,8 @@ export class ListHybrid extends React.Component {
     };
 
     setUsersEnableState = async (users, action) => {
+        this.setState({ disableUsers: { open: false, users: [], action: "" } });
+
         const newValue = action === "disable";
         const response = await updateUsers(this.context.d2, users, user => {
             return user.userCredentials.disabled !== newValue ? set("userCredentials.disabled", newValue, user) : null;
@@ -234,7 +233,6 @@ export class ListHybrid extends React.Component {
             () => !value.open && this.filterList({ page: this.state.pager.page })
         );
     };
-
     componentWillReceiveProps(newProps) {
         if (this.props.params.modelType !== newProps.params.modelType) {
             this.setState({
@@ -382,8 +380,8 @@ export class ListHybrid extends React.Component {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers } = this.state;
-
+        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, disableUsers } =
+            this.state;
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
         const { styles } = this;
@@ -458,6 +456,23 @@ export class ListHybrid extends React.Component {
                         onOrgUnitAssignmentError={this._orgUnitAssignmentError}
                         filteringByNameLabel={this.getTranslation("filter_organisation_units_output_by_name")}
                         orgUnitsSelectedLabel={this.getTranslation("organisation_units_output_selected")}
+                    />
+                ) : null}
+
+                {disableUsers.open ? (
+                    <ConfirmationDialog
+                        isOpen={disableUsers.open}
+                        onSave={() => this.setUsersEnableState(disableUsers.users, disableUsers.action)}
+                        onCancel={() => this.setState({ disableUsers: { open: false } })}
+                        title={this.getTranslation(`${disableUsers.action}_title`)}
+                        description={this.getTranslation(`confirm_${disableUsers.action}`, {
+                            users: getCompactTextForModels(this.context.d2, disableUsers.users, {
+                                i18nKey: "this_and_n_others",
+                                field: "userCredentials.username",
+                                limit: 1,
+                            }),
+                        })}
+                        saveText={"Confirm"}
                     />
                 ) : null}
 
