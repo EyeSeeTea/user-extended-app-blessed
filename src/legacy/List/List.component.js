@@ -37,6 +37,7 @@ import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import { getExistingUsers } from "../models/userHelpers";
+import i18n from "../../locales";
 
 const pageSize = 50;
 
@@ -503,7 +504,7 @@ export class ListHybrid extends React.Component {
                         isOpen={removeUsers.open}
                         onSave={this._removeUsersSaved}
                         onCancel={this._removeUsersCancel}
-                        title={this.getTranslation("remove_users")}
+                        title={i18n.t("Remove users")}
                         description={this.getTranslation("confirm_delete_users", {
                             users: getCompactTextForModels(this.context.d2, this.state.removeUsers.users, {
                                 i18nKey: "this_and_n_others",
