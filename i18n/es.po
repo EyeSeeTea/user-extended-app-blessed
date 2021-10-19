@@ -11,10 +11,6 @@ msgstr ""
 msgid "Enable users"
 msgstr ""
 
-#, fuzzy
-msgid "Disable users"
-msgstr "Disable users"
-
 msgid "Remove users"
 msgstr "Eliminar usuarios"
 
@@ -101,15 +97,3 @@ msgstr ""
 
 msgid "Disabled"
 msgstr ""
-
-#~ msgid "enable"
-#~ msgstr "Enable users"
-
-#~ msgid "Hello {{name}}"
-#~ msgstr "Hola {{name}}"
-
-#~ msgid "Add"
-#~ msgstr "Añadir"
-
-#~ msgid "List"
-#~ msgstr "Listar"
