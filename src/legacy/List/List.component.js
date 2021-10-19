@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
 import isIterable from "d2-utilizr/lib/isIterable";
 import _ from "lodash";
@@ -8,6 +9,7 @@ import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
+import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
@@ -19,7 +21,7 @@ import TableLayout from "../components/TableLayout.component";
 import UserGroupsDialog from "../components/UserGroupsDialog.component";
 import UserRolesDialog from "../components/UserRolesDialog.component";
 import Settings from "../models/settings";
-import { saveUsers, updateUsers, getExistingUsers } from "../models/userHelpers";
+import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import { getCompactTextForModels } from "../utils/i18n";
 import copyInUserStore from "./copyInUser.store";
@@ -35,8 +37,6 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import i18n from "../../locales";
 
 const pageSize = 50;
 
@@ -406,8 +406,15 @@ export class ListHybrid extends React.Component {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, removeUsers } =
-            this.state;
+        const {
+            assignUserRoles,
+            assignUserGroups,
+            replicateUser,
+            listFilterOptions,
+            copyUsers,
+            removeUsers,
+            disableUsers,
+        } = this.state;
 
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
@@ -490,7 +497,7 @@ export class ListHybrid extends React.Component {
                         isOpen={disableUsers.open}
                         onSave={this._disableUsersSaved}
                         onCancel={this._disableUsersCancel}
-                        title={i18n.t(disableUsers.action)}
+                        title={disableUsers.action === "enable" ? i18n.t("Enable users") : i18n.t("Disable users")}
                         description={this.getTranslation(`confirm_${disableUsers.action}`, {
                             users: getCompactTextForModels(this.context.d2, disableUsers.users, {
                                 i18nKey: "this_and_n_others",
