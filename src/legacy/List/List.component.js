@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
 import isIterable from "d2-utilizr/lib/isIterable";
 import _ from "lodash";
@@ -8,6 +9,7 @@ import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
+import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
@@ -19,7 +21,7 @@ import TableLayout from "../components/TableLayout.component";
 import UserGroupsDialog from "../components/UserGroupsDialog.component";
 import UserRolesDialog from "../components/UserRolesDialog.component";
 import Settings from "../models/settings";
-import { saveUsers, updateUsers } from "../models/userHelpers";
+import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import { getCompactTextForModels } from "../utils/i18n";
 import copyInUserStore from "./copyInUser.store";
@@ -35,9 +37,6 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import { getExistingUsers } from "../models/userHelpers";
-import i18n from "../../locales";
 
 const pageSize = 50;
 
@@ -133,6 +132,11 @@ export class ListHybrid extends React.Component {
             copyUsers: {
                 open: false,
             },
+            disableUsers: {
+                open: false,
+                users: [],
+                action: "",
+            },
             removeUsers: {
                 open: false,
                 users: [],
@@ -182,20 +186,12 @@ export class ListHybrid extends React.Component {
             this.setAssignState("replicateUser", replicateUser);
         });
 
-        const enableStoreDisposable = enableStore.subscribe(({ users, action }) => {
-            const message = this.getTranslation(`confirm_${action}`, {
-                users: getCompactTextForModels(this.context.d2, users, {
-                    i18nKey: "this_and_n_others",
-                    field: "username",
-                    limit: 1,
-                }),
+        const enableStoreDisposable = enableStore.subscribe(async ({ users, action }) => {
+            const existingUsers = await getExistingUsers(this.context.d2, {
+                fields: ":owner",
+                filter: "id:in:[" + users.join(",") + "]",
             });
-
-            snackActions.show({
-                message,
-                action: "confirm",
-                onActionTouchTap: () => this.setUsersEnableState(users, action),
-            });
+            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
         });
 
         const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
@@ -242,6 +238,7 @@ export class ListHybrid extends React.Component {
             });
             snackActions.show({ message });
         }
+        this.setState({ disableUsers: { open: false, users: [], action: "" } });
     };
 
     setAssignState = (key, value) => {
@@ -394,6 +391,10 @@ export class ListHybrid extends React.Component {
         this.setState({ filters }, this.filterList);
     };
 
+    _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
+
+    _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
+
     _removeUsersSaved = () => {
         this.setState({ removeUsers: { open: false, users: [] } });
         deleteUserStore.delete(this.state.removeUsers.users);
@@ -405,13 +406,19 @@ export class ListHybrid extends React.Component {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, removeUsers } =
-            this.state;
+        const {
+            assignUserRoles,
+            assignUserGroups,
+            replicateUser,
+            listFilterOptions,
+            copyUsers,
+            removeUsers,
+            disableUsers,
+        } = this.state;
 
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
         const { styles } = this;
-
         const allColumns = tableColumns.map(c => ({
             text: this.getTranslation(camelCaseToUnderscores(c.name)),
             value: c.name,
@@ -482,6 +489,23 @@ export class ListHybrid extends React.Component {
                         onOrgUnitAssignmentError={this._orgUnitAssignmentError}
                         filteringByNameLabel={this.getTranslation("filter_organisation_units_output_by_name")}
                         orgUnitsSelectedLabel={this.getTranslation("organisation_units_output_selected")}
+                    />
+                ) : null}
+
+                {disableUsers.open ? (
+                    <ConfirmationDialog
+                        isOpen={disableUsers.open}
+                        onSave={this._disableUsersSaved}
+                        onCancel={this._disableUsersCancel}
+                        title={disableUsers.action === "enable" ? i18n.t("Enable users") : i18n.t("Disable users")}
+                        description={this.getTranslation(`confirm_${disableUsers.action}`, {
+                            users: getCompactTextForModels(this.context.d2, disableUsers.users, {
+                                i18nKey: "this_and_n_others",
+                                field: "userCredentials.username",
+                                limit: 1,
+                            }),
+                        })}
+                        saveText={"Confirm"}
                     />
                 ) : null}
 

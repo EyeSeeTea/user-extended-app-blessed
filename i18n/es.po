@@ -1,12 +1,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-10-13T07:08:28.546Z\n"
+"POT-Creation-Date: 2021-10-19T19:21:37.649Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "Enable users"
+msgstr ""
+
+msgid "Remove users"
+msgstr "Eliminar usuarios"
 
 msgid "Settings"
 msgstr ""
@@ -19,9 +25,6 @@ msgstr "Ayuda"
 
 msgid "Details"
 msgstr ""
-
-msgid "Remove users"
-msgstr "Eliminar usuarios"
 
 msgid "Copy in user"
 msgstr ""
@@ -94,12 +97,3 @@ msgstr ""
 
 msgid "Disabled"
 msgstr ""
-
-#~ msgid "Hello {{name}}"
-#~ msgstr "Hola {{name}}"
-
-#~ msgid "Add"
-#~ msgstr "Añadir"
-
-#~ msgid "List"
-#~ msgstr "Listar"

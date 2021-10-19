@@ -5,8 +5,17 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-10-13T07:08:28.546Z\n"
-"PO-Revision-Date: 2021-10-13T07:08:28.546Z\n"
+"POT-Creation-Date: 2021-10-19T19:21:37.649Z\n"
+"PO-Revision-Date: 2021-10-19T19:21:37.649Z\n"
+
+msgid "Enable users"
+msgstr ""
+
+msgid "Disable users"
+msgstr ""
+
+msgid "Remove users"
+msgstr ""
 
 msgid "Settings"
 msgstr ""
@@ -18,9 +27,6 @@ msgid "Help"
 msgstr ""
 
 msgid "Details"
-msgstr ""
-
-msgid "Remove users"
 msgstr ""
 
 msgid "Copy in user"

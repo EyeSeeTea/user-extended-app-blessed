@@ -33,7 +33,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
-    
+
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
             columns,
