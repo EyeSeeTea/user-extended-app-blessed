@@ -11,29 +11,19 @@ export default Store.create({
         const api = d2.Api.getApi();
         const usersText = _m.joinString(
             t,
-            users.map(user => user.username),
+            users.map(user => user.userCredentials.username),
             3,
             ", "
         );
-        const performDelete = () => {
-            const payload = { users: users.map(user => ({ id: user.id })) };
-
-            return api
-                .post(`metadata?importStrategy=DELETE`, payload)
-                .then(response => {
-                    snackActions.show({ message: t("users_deleted", { users: usersText }) });
-                    this.setState(response);
-                })
-                .catch(response => {
-                    snackActions.show({ message: response.message || "Error" });
-                });
-        };
-
-        snackActions.show({
-            message: t("confirm_delete_users", { users: usersText }),
-            action: "confirm",
-            autoHideDuration: 0,
-            onActionTouchTap: performDelete,
-        });
+        const payload = { users };
+        return api
+            .post(`metadata?importStrategy=DELETE`, payload)
+            .then(response => {
+                snackActions.show({ message: t("users_deleted", { users: usersText }) });
+                this.setState(response);
+            })
+            .catch(response => {
+                snackActions.show({ message: response.message || "Error" });
+            });
     },
 });

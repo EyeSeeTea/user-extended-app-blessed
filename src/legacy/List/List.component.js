@@ -137,6 +137,10 @@ export class ListHybrid extends React.Component {
                 users: [],
                 action: "",
             },
+            removeUsers: {
+                open: false,
+                users: [],
+            },
         };
     }
 
@@ -190,7 +194,16 @@ export class ListHybrid extends React.Component {
             this.setState({ disableUsers: { open: true, users: existingUsers, action } });
         });
 
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(() => this.filterList());
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
+            if (datasets !== undefined) {
+                const existingUsers = await getExistingUsers(this.context.d2, {
+                    fields: ":owner",
+                    filter: "id:in:[" + datasets.join(",") + "]",
+                });
+                this.setState({ removeUsers: { open: true, users: existingUsers } });
+            }
+            this.filterList();
+        });
 
         const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
             this.setAssignState("copyUsers", copyUsers);
@@ -382,12 +395,20 @@ export class ListHybrid extends React.Component {
 
     _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
 
+    _removeUsersSaved = () => {
+        this.setState({ removeUsers: { open: false, users: [] } });
+        deleteUserStore.delete(this.state.removeUsers.users);
+    };
+
+    _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
+
     render = () => {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, disableUsers } =
+        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, removeUsers } =
             this.state;
+
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
         const { styles } = this;
@@ -495,6 +516,22 @@ export class ListHybrid extends React.Component {
                     />
                 ) : null}
 
+                {removeUsers.open ? (
+                    <ConfirmationDialog
+                        isOpen={removeUsers.open}
+                        onSave={this._removeUsersSaved}
+                        onCancel={this._removeUsersCancel}
+                        title={i18n.t("Remove users")}
+                        description={this.getTranslation("confirm_delete_users", {
+                            users: getCompactTextForModels(this.context.d2, this.state.removeUsers.users, {
+                                i18nKey: "this_and_n_others",
+                                field: "userCredentials.username",
+                                limit: 1,
+                            }),
+                        })}
+                        saveText={"Confirm"}
+                    />
+                ) : null}
                 {assignUserGroups.open ? (
                     <UserGroupsDialog
                         users={assignUserGroups.users}
