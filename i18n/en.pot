@@ -20,6 +20,12 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
+msgid "disable"
+msgstr "Deshabilitar usuarios"
+
+msgid "enable"
+msgstr "Habilitar usuarios"
+
 msgid "Copy in user"
 msgstr ""
 

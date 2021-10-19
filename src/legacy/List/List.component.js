@@ -36,6 +36,7 @@ import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import i18n from "../../locales";
 
 const pageSize = 50;
 
@@ -208,7 +209,6 @@ export class ListHybrid extends React.Component {
     };
 
     setUsersEnableState = async (users, action) => {
-        this.setState({ disableUsers: { open: false, users: [], action: "" } });
         const newValue = action === "disable";
         const response = await updateUsers(this.context.d2, users, user => {
             return user.userCredentials.disabled !== newValue ? set("userCredentials.disabled", newValue, user) : null;
@@ -225,6 +225,7 @@ export class ListHybrid extends React.Component {
             });
             snackActions.show({ message });
         }
+        this.setState({ disableUsers: { open: false, users: [], action: "" } });
     };
 
     setAssignState = (key, value) => {
@@ -377,7 +378,7 @@ export class ListHybrid extends React.Component {
         this.setState({ filters }, this.filterList);
     };
 
-    _disableUsersSaved = () => this.setUsersEnableState(this.disableUsers.users, this.disableUsers.action);
+    _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
 
     _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
 
@@ -390,7 +391,6 @@ export class ListHybrid extends React.Component {
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
         const { styles } = this;
-
         const allColumns = tableColumns.map(c => ({
             text: this.getTranslation(camelCaseToUnderscores(c.name)),
             value: c.name,
@@ -469,7 +469,7 @@ export class ListHybrid extends React.Component {
                         isOpen={disableUsers.open}
                         onSave={this._disableUsersSaved}
                         onCancel={this._disableUsersCancel}
-                        title={this.getTranslation(`${disableUsers.action}_title`)}
+                        title={i18n.t(disableUsers.action)}
                         description={this.getTranslation(`confirm_${disableUsers.action}`, {
                             users: getCompactTextForModels(this.context.d2, disableUsers.users, {
                                 i18nKey: "this_and_n_others",
