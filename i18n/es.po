@@ -20,6 +20,9 @@ msgstr "Ayuda"
 msgid "Details"
 msgstr ""
 
+msgid "Remove users"
+msgstr "Eliminar usuarios"
+
 msgid "Copy in user"
 msgstr ""
 

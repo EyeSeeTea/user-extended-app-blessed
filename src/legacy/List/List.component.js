@@ -35,6 +35,9 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import { getExistingUsers } from "../models/userHelpers";
+import i18n from "../../locales";
 
 const pageSize = 50;
 
@@ -130,6 +133,10 @@ export class ListHybrid extends React.Component {
             copyUsers: {
                 open: false,
             },
+            removeUsers: {
+                open: false,
+                users: [],
+            },
         };
     }
 
@@ -191,7 +198,16 @@ export class ListHybrid extends React.Component {
             });
         });
 
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(() => this.filterList());
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
+            if (datasets !== undefined) {
+                const existingUsers = await getExistingUsers(this.context.d2, {
+                    fields: ":owner",
+                    filter: "id:in:[" + datasets.join(",") + "]",
+                });
+                this.setState({ removeUsers: { open: true, users: existingUsers } });
+            }
+            this.filterList();
+        });
 
         const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
             this.setAssignState("copyUsers", copyUsers);
@@ -378,11 +394,19 @@ export class ListHybrid extends React.Component {
         this.setState({ filters }, this.filterList);
     };
 
+    _removeUsersSaved = () => {
+        this.setState({ removeUsers: { open: false, users: [] } });
+        deleteUserStore.delete(this.state.removeUsers.users);
+    };
+
+    _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
+
     render = () => {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
-        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers } = this.state;
+        const { assignUserRoles, assignUserGroups, replicateUser, listFilterOptions, copyUsers, removeUsers } =
+            this.state;
 
         const { importUsers } = this.state;
         const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
@@ -475,6 +499,22 @@ export class ListHybrid extends React.Component {
                     />
                 ) : null}
 
+                {removeUsers.open ? (
+                    <ConfirmationDialog
+                        isOpen={removeUsers.open}
+                        onSave={this._removeUsersSaved}
+                        onCancel={this._removeUsersCancel}
+                        title={i18n.t("Remove users")}
+                        description={this.getTranslation("confirm_delete_users", {
+                            users: getCompactTextForModels(this.context.d2, this.state.removeUsers.users, {
+                                i18nKey: "this_and_n_others",
+                                field: "userCredentials.username",
+                                limit: 1,
+                            }),
+                        })}
+                        saveText={"Confirm"}
+                    />
+                ) : null}
                 {assignUserGroups.open ? (
                     <UserGroupsDialog
                         users={assignUserGroups.users}
