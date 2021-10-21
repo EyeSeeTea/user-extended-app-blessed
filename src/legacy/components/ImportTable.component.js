@@ -10,7 +10,12 @@ import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+/*import TableBody from 'material-ui/Table/TableBody';
+import TableCell from 'material-ui/Table/TableCell';
+import TableContainer from 'material-ui/Table/TableContainer';
+import TableHead from 'material-ui/Table/TableHead';
+import TableRow from 'material-ui/Table/TableRow';*/
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import memoize from "memoize-weak";
@@ -457,7 +462,7 @@ class ImportTable extends React.Component {
                     validators,
                 };
             } else {
-                const extraProps = { changeEvent: "onBlur" };
+                const extraProps = { changeevent: "onBlur" };
                 return this.getTextField(field, value, {
                     component: TextField,
                     validators,
@@ -518,16 +523,16 @@ class ImportTable extends React.Component {
         const chipText = (index + 1).toString() + (existingUser ? "-E" : "");
 
         return (
-            <TableRow style={rowStyles}>
-                <TableRowColumn style={styles.tableColumn}>
+            <TableRow>
+                <TableCell>
                     <Chip title={chipTitle} style={chipStyle}>
                         {chipText}
                     </Chip>
-                </TableRowColumn>
+                </TableCell>
 
                 {children}
 
-                <TableRowColumn style={styles.actionsHeader}>
+                <TableCell>
                     <IconButton
                         style={styles.removeIcon}
                         title={this.t("remove_user")}
@@ -535,7 +540,7 @@ class ImportTable extends React.Component {
                     >
                         <FontIcon className="material-icons">delete</FontIcon>
                     </IconButton>
-                </TableRowColumn>
+                </TableCell>
             </TableRow>
         );
     };
@@ -546,9 +551,9 @@ class ImportTable extends React.Component {
     };
 
     renderTableRowColumn = ({ children }) => {
-        return <TableRowColumn style={styles.cell}>{children}</TableRowColumn>;
+        return <TableCell>{children}</TableCell>;
     };
-
+    
     renderTable = () => {
         const { d2 } = this.context;
         const { users } = this.state;
@@ -558,27 +563,27 @@ class ImportTable extends React.Component {
         const getColumnName = header => (_(d2.i18n.translations).has(header) ? this.t(header) : header);
 
         return (
-            <div>
+            <TableContainer>
                 <Table
                     fixedHeader={true}
                     wrapperStyle={styles.tableWrapper}
                     style={styles.table}
                     bodyStyle={styles.tableBody}
                 >
-                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                    <TableHead displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
-                            <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
+                            <TableCell style={styles.tableColumn}>#</TableCell>
                             {headers.map(header => (
-                                <TableHeaderColumn key={header} style={styles.header}>
+                                <TableCell key={header} style={styles.header}>
                                     {getColumnName(header)}
-                                </TableHeaderColumn>
+                                </TableCell>
                             ))}
-                            <TableHeaderColumn style={styles.actionsHeader}></TableHeaderColumn>
+                            <TableCell style={styles.actionsHeader}></TableCell>
                         </TableRow>
-                    </TableHeader>
+                    </TableHead>
 
                     <TableBody displayRowCheckbox={false}>
-                        {_.map(users.valueSeq().toJS(), user => (
+                    {_.map(users.valueSeq().toJS(), user => (
                             <FormBuilder
                                 key={"form-" + user.id}
                                 id={user.id}
@@ -592,13 +597,14 @@ class ImportTable extends React.Component {
                                 fieldWrapper={this.renderTableRowColumn}
                             />
                         ))}
+
                     </TableBody>
                 </Table>
 
                 <div style={styles.addRowButton}>
                     <RaisedButton disabled={!canAddNewUser} label={this.t("add_user")} onClick={this.addRow} />
                 </div>
-            </div>
+            </TableContainer>
         );
     };
 
