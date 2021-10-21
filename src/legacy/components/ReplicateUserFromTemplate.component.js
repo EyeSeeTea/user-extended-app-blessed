@@ -1,10 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog/Dialog";
-import FlatButton from "material-ui/FlatButton/FlatButton";
 import TextField from "material-ui/TextField/TextField";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
@@ -16,16 +13,8 @@ import { getFromTemplate } from "../utils/template";
 import snackActions from "../Snackbar/snack.actions";
 import InfoDialog from "./InfoDialog";
 import LoadingMask from "../loading-mask/LoadingMask.component";
-
-const styles = {
-    dialog: {
-        minWidth: 600,
-        maxWidth: 800,
-    },
-    cancelButton: {
-        marginRight: 16,
-    },
-};
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import i18n from "../../locales";
 
 class ReplicateUserFromTemplate extends React.Component {
     maxUsers = 100;
@@ -81,7 +70,6 @@ class ReplicateUserFromTemplate extends React.Component {
         const n = Math.min(parseInt(usersToCreate) || 1, this.maxUsers);
         return getFromTemplate(template, n);
     }
-
     getValidators = () => {
         return {
             isRequired: {
@@ -138,7 +126,6 @@ class ReplicateUserFromTemplate extends React.Component {
         const { onRequestClose } = this.props;
         const { userToReplicate, usersToCreate, username, password } = this.state;
         const response = await userToReplicate.replicateFromTemplate(usersToCreate, username, password);
-
         if (response.success) {
             const message = this.getTranslation("replicate_successful", {
                 user: userToReplicate.displayName,
@@ -159,14 +146,6 @@ class ReplicateUserFromTemplate extends React.Component {
         });
         const t = this.getTranslation;
 
-        const actions = (
-            <React.Fragment>
-                <FlatButton label={this.getTranslation("close")} onClick={onRequestClose} style={styles.cancelButton} />
-                ,
-                <RaisedButton primary={true} label={t("replicate")} disabled={!isValid} onClick={this.onSave} />,
-            </React.Fragment>
-        );
-
         const fields = [
             this.getTextField("usersToCreate", "number", usersToCreate, {
                 validators: [this.validators.isRequired, this.validators.withinInterval(1, this.maxUsers)],
@@ -181,21 +160,22 @@ class ReplicateUserFromTemplate extends React.Component {
         ];
 
         return (
-            <Dialog
-                open={true}
+            <ConfirmationDialog
+                isOpen={true}
                 title={title}
-                actions={actions}
-                autoScrollBodyContent={true}
-                autoDetectWindowHeight={true}
-                contentStyle={styles.dialog}
-                onRequestClose={onRequestClose}
+                maxWidth={"md"}
+                fullWidth={true}
+                onSave={this.onSave}
+                saveText={t("replicate")}
+                onCancel={onRequestClose}
+                disableSave={isValid}
             >
                 {!userToReplicate ? <LoadingMask /> : null}
 
                 {infoDialog ? (
                     <InfoDialog
                         t={this.getTranslation}
-                        title={this.getTranslation("replicate_error")}
+                        title={i18n.t("Replicate error")}
                         onClose={this.closeInfoDialog}
                         response={infoDialog.response}
                     />
@@ -208,7 +188,7 @@ class ReplicateUserFromTemplate extends React.Component {
                     validateOnRender={validate}
                     validateFullFormOnChanges={true}
                 />
-            </Dialog>
+            </ConfirmationDialog>
         );
     };
 }

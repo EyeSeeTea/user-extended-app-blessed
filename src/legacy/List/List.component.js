@@ -319,7 +319,7 @@ export class ListHybrid extends React.Component {
         if (ReplicateComponent) {
             return (
                 <ReplicateComponent
-                    userToReplicateId={info.user.id}
+                    userToReplicateId={info.user}
                     onRequestClose={this.onReplicateDialogClose}
                     settings={this.state.settings}
                 />

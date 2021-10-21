@@ -1,7 +1,7 @@
 import { pick, merge, unzip, times } from "lodash/fp";
 import { generateUid } from "d2/lib/uid";
 import { getFromTemplate } from "../utils/template";
-import { parseResponse } from "./userHelpers";
+import { postMetadata, parseResponse } from "./userHelpers";
 
 class User {
     constructor(d2, attributes) {
@@ -74,11 +74,7 @@ class User {
             users: userGroup.users.concat(newUsers.map(newUser => ({ id: newUser.id }))),
         }));
         const payload = { users: newUsers, userGroups: userGroupsWithNewUsers };
-
-        return this.api
-            .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-            .then(res => parseResponse(res, payload))
-            .catch(error => ({ success: false, error }));
+        return postMetadata(this.api, payload);
     }
 
     static async getById(d2, userId) {
