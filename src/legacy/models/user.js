@@ -1,7 +1,7 @@
 import { pick, merge, unzip, times } from "lodash/fp";
 import { generateUid } from "d2/lib/uid";
 import { getFromTemplate } from "../utils/template";
-import { postMetadata, parseResponse } from "./userHelpers";
+import { postMetadata } from "./userHelpers";
 
 class User {
     constructor(d2, attributes) {

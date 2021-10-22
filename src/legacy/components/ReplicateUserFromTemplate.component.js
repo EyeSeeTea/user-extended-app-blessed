@@ -70,6 +70,7 @@ class ReplicateUserFromTemplate extends React.Component {
         const n = Math.min(parseInt(usersToCreate) || 1, this.maxUsers);
         return getFromTemplate(template, n);
     }
+
     getValidators = () => {
         return {
             isRequired: {
@@ -126,6 +127,7 @@ class ReplicateUserFromTemplate extends React.Component {
         const { onRequestClose } = this.props;
         const { userToReplicate, usersToCreate, username, password } = this.state;
         const response = await userToReplicate.replicateFromTemplate(usersToCreate, username, password);
+
         if (response.success) {
             const message = this.getTranslation("replicate_successful", {
                 user: userToReplicate.displayName,

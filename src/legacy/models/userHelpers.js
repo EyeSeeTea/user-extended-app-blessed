@@ -541,5 +541,5 @@ export {
     parseResponse,
     getExistingUsers,
     getPayload,
-    postMetadata
+    postMetadata,
 };
