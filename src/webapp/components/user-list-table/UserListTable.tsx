@@ -24,12 +24,12 @@ import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.store";
 import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
+
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
-
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
@@ -37,7 +37,19 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
             columns,
-            details: [],
+            details: [
+                { name: "name", text: i18n.t("Name") },
+                { name: "username", text: i18n.t("Username") },
+                { name: "created", text: i18n.t("Created") },
+                { name: "lastUpdated", text: i18n.t("Last updated") },
+                { name: "lastLogin", text: i18n.t("Last login") },
+                { name: "id", text: i18n.t("ID") },
+                { name: "email", text: i18n.t("Email") },
+                { name: "userRoles", text: i18n.t("Roles") },
+                { name: "userGroups", text: i18n.t("Groups") },
+                { name: "organisationUnits", text: i18n.t("OU Capture") },
+                { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
+        ],
             actions: [
                 {
                     name: "details",

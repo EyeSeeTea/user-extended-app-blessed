@@ -30,9 +30,7 @@ const InfoDialog = ({ t, title, onClose, response }) => {
             maxWidth={"sm"}
             fullWidth={true}
             onCancel={onClose}
-            onSave={() => {
-                navigator.clipboard.writeText(details);
-            }}
+            onSave={() => {navigator.clipboard.writeText(details)}}
             saveText={t("copy_to_clipboard")}
             cancelText={t("close")}
         >
