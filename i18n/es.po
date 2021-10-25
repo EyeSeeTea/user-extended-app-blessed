@@ -24,7 +24,7 @@ msgid "Help"
 msgstr "Ayuda"
 
 msgid "Details"
-msgstr ""
+msgstr "Detalles"
 
 msgid "Copy in user"
 msgstr ""
