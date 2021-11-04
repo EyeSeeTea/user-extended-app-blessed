@@ -11,11 +11,6 @@ import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
-/*import TableBody from 'material-ui/Table/TableBody';
-import TableCell from 'material-ui/Table/TableCell';
-import TableContainer from 'material-ui/Table/TableContainer';
-import TableHead from 'material-ui/Table/TableHead';
-import TableRow from 'material-ui/Table/TableRow';*/
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import memoize from "memoize-weak";
