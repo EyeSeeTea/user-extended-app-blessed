@@ -63,6 +63,7 @@ export class UserD2ApiRepository implements UserRepository {
             created: new Date(user.created),
             userGroups: user.userGroups,
             username: user.userCredentials.username,
+            apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
             userRoles: user.userCredentials.userRoles,
             lastLogin: new Date(user.userCredentials.lastLogin),
             disabled: user.userCredentials.disabled,
