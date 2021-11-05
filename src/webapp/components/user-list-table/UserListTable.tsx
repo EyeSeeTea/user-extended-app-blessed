@@ -103,7 +103,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Edit"),
                     icon: <Icon>edit</Icon>,
                     multiple: false,
-                    onClick: user => goToUserEditPage(user),
+                    onClick: ([userId]) => goToUserEditPage(userId),
                     isActive: checkAccess(["update"]),
                 },
                 {

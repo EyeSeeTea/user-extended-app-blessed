@@ -31,8 +31,9 @@ function lexicographicalCompare(xs, ys) {
     return _(xs).zipWith(ys, compare).find() || 0;
 }
 
-export async function goToUserEditPage(user) {
+export async function goToUserEditPage(userId) {
     const d2 = await getD2();
+    const user = (await d2.models.users.list({ filter: `id:in:[${userId}]` })).toArray().pop();
     const baseUrl = d2.system.systemInfo.contextPath;
     const { major, minor } = d2.system.version;
     // DHIS2 >= 2.30 uses a new React user-app
