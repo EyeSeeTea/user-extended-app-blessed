@@ -26,8 +26,6 @@ import snackActions from "../Snackbar/snack.actions";
 import { getCompactTextForModels } from "../utils/i18n";
 import copyInUserStore from "./copyInUser.store";
 import deleteUserStore from "./deleteUser.store";
-import detailsStore from "./details.store";
-import DetailsBoxWithScroll from "./DetailsBoxWithScroll.component";
 import enableStore from "./enable.store";
 import Filters from "./Filters.component";
 import listActions from "./list.actions";
@@ -61,17 +59,6 @@ export class ListHybrid extends React.Component {
             flexDirection: "column",
             flex: 2,
         },
-
-        detailsBoxWrap: {
-            flex: 1,
-            marginLeft: "1rem",
-            marginRight: "1rem",
-            marginBottom: "1rem",
-            opacity: 1,
-            flexGrow: 0,
-            minWidth: "350px",
-        },
-
         listDetailsWrap: {
             flex: 1,
             display: "flex",
@@ -102,7 +89,6 @@ export class ListHybrid extends React.Component {
                 total: 0,
             },
             isLoading: true,
-            detailsObject: null,
             sorting: initialSorting,
             settingsVisible: false,
             layoutSettingsVisible: false,
@@ -164,10 +150,6 @@ export class ListHybrid extends React.Component {
             this.registerDisposable(sourceStoreDisposable);
         });
 
-        const detailsStoreDisposable = detailsStore.subscribe(detailsObject => {
-            this.setState({ detailsObject });
-        });
-
         const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
             this.setAssignState("orgunitassignment", orgunitassignmentState);
         });
@@ -209,7 +191,6 @@ export class ListHybrid extends React.Component {
             this.setAssignState("copyUsers", copyUsers);
         });
 
-        this.registerDisposable(detailsStoreDisposable);
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
         this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
         this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
@@ -243,7 +224,7 @@ export class ListHybrid extends React.Component {
 
     setAssignState = (key, value) => {
         this.setState(
-            { [key]: value, detailsObject: null },
+            { [key]: value },
             () => !value.open && this.filterList({ page: this.state.pager.page })
         );
     };
@@ -451,14 +432,6 @@ export class ListHybrid extends React.Component {
                         </UserListTable>
                         {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
-
-                    {this.state.detailsObject ? (
-                        <DetailsBoxWithScroll
-                            style={styles.detailsBoxWrap}
-                            detailsObject={this.state.detailsObject}
-                            onClose={listActions.hideDetailsBox}
-                        />
-                    ) : null}
                 </div>
 
                 {this.state.orgunitassignment.open && this.state.orgunitassignment.field === "organisationUnits" ? (

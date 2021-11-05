@@ -1,6 +1,5 @@
 import Action from "d2-ui/lib/action/Action";
 import listStore from "./list.store";
-import detailsStore from "./details.store";
 import { Observable } from "rx";
 
 const listActions = Action.createActionsFromNames([
@@ -11,7 +10,6 @@ const listActions = Action.createActionsFromNames([
     "loadUserGroups",
     "getNextPage",
     "getPreviousPage",
-    "hideDetailsBox",
 ]);
 
 listActions.setListSource.subscribe(action => {
@@ -29,10 +27,6 @@ listActions.getNextPage.subscribe(() => {
 
 listActions.getPreviousPage.subscribe(() => {
     listStore.getPreviousPage();
-});
-
-listActions.hideDetailsBox.subscribe(() => {
-    detailsStore.setState(null);
 });
 
 listActions.loadUserRoles.subscribe(() => {

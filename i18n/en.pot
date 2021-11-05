@@ -14,6 +14,9 @@ msgstr ""
 msgid "Disable users"
 msgstr ""
 
+msgid "Replicate error"
+msgstr ""
+
 msgid "Remove users"
 msgstr ""
 
