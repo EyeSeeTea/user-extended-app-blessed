@@ -11,6 +11,9 @@ msgstr ""
 msgid "Enable users"
 msgstr ""
 
+msgid "Disable users"
+msgstr ""
+
 msgid "Remove users"
 msgstr "Eliminar usuarios"
 

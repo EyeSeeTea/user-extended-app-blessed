@@ -1,4 +1,4 @@
-import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
 import { generateUid } from "d2/lib/uid";
@@ -10,7 +10,6 @@ import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import memoize from "memoize-weak";
@@ -21,6 +20,7 @@ import { fieldImportSuffix, getExistingUsers } from "../models/userHelpers";
 import { getModelValuesByField, getOrgUnitsRoots } from "../utils/dhis2Helpers";
 import { getCompactTextForModels } from "../utils/i18n";
 import { toBuilderValidator, validatePassword, validateUsername } from "../utils/validators";
+import FormBuilder from "./FormBuilder.component";
 import InfoDialog from "./InfoDialog";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 import MultipleSelector from "./MultipleSelector.component";
@@ -43,7 +43,7 @@ const styles = {
         overflow: "visible",
     },
     addRowButton: {
-        marginTop: 20,
+        margin: 20,
         textAlign: "center",
     },
     dialogIcons: {
@@ -518,7 +518,7 @@ class ImportTable extends React.Component {
         const chipText = (index + 1).toString() + (existingUser ? "-E" : "");
 
         return (
-            <TableRow>
+            <TableRow style={rowStyles}>
                 <TableCell>
                     <Chip title={chipTitle} style={chipStyle}>
                         {chipText}
@@ -548,7 +548,7 @@ class ImportTable extends React.Component {
     renderTableRowColumn = ({ children }) => {
         return <TableCell>{children}</TableCell>;
     };
-    
+
     renderTable = () => {
         const { d2 } = this.context;
         const { users } = this.state;
@@ -578,7 +578,7 @@ class ImportTable extends React.Component {
                     </TableHead>
 
                     <TableBody displayRowCheckbox={false}>
-                    {_.map(users.valueSeq().toJS(), user => (
+                        {_.map(users.valueSeq().toJS(), user => (
                             <FormBuilder
                                 key={"form-" + user.id}
                                 id={user.id}
@@ -592,7 +592,6 @@ class ImportTable extends React.Component {
                                 fieldWrapper={this.renderTableRowColumn}
                             />
                         ))}
-
                     </TableBody>
                 </Table>
 
