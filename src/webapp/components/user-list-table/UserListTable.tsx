@@ -168,7 +168,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 },
             },
             paginationOptions: {
-                pageSizeOptions: [10, 25, 50, 100],
+                pageSizeOptions: [10, 25, 50, 100, 500, 1000],
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name"),
