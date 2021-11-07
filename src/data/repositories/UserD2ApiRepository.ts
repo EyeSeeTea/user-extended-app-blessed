@@ -53,6 +53,8 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     private mapUser(user: D2ApiUser): User {
+        const lastLogin = user.userCredentials.lastLogin;
+
         return {
             id: user.id,
             name: user.displayName,
@@ -65,7 +67,7 @@ export class UserD2ApiRepository implements UserRepository {
             username: user.userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
             userRoles: user.userCredentials.userRoles,
-            lastLogin: new Date(user.userCredentials.lastLogin),
+            lastLogin: lastLogin === undefined ? "N/A" : new Date(lastLogin),
             disabled: user.userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
