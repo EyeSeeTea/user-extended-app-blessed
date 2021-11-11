@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import MultipleFilter from "../components/MultipleFilter.component";
 import OrgUnitsFilter from "../components/OrgUnitsFilter.component";
+import OrgUnitsSelectorFilter from "../components/OrgUnitsSelectorFilter";
 import listActions from "./list.actions";
 import listStore from "./list.store";
 
@@ -253,7 +254,8 @@ export default class Filters extends React.Component {
 
                         <div className="control-row">
                             <div className="user-management-control select-organisation-unit">
-                                <OrgUnitsFilter
+                                <OrgUnitsSelectorFilter
+                                    api={this.props.api}
                                     title={this.getTranslation("filter_by_organisation_units_capture")}
                                     selected={this.state.orgUnits}
                                     onChange={this.setFilter("orgUnits")}
