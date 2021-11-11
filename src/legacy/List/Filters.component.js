@@ -7,7 +7,6 @@ import memoize from "memoize-weak";
 import PropTypes from "prop-types";
 import React from "react";
 import MultipleFilter from "../components/MultipleFilter.component";
-import OrgUnitsFilter from "../components/OrgUnitsFilter.component";
 import OrgUnitsSelectorFilter from "../components/OrgUnitsSelectorFilter";
 import listActions from "./list.actions";
 import listStore from "./list.store";
@@ -264,7 +263,8 @@ export default class Filters extends React.Component {
                             </div>
 
                             <div className="user-management-control select-organisation-unit-output">
-                                <OrgUnitsFilter
+                                <OrgUnitsSelectorFilter
+                                    api={this.props.api}
                                     title={this.getTranslation("filter_by_organisation_units_output")}
                                     selected={this.state.orgUnitsOutput}
                                     onChange={this.setFilter("orgUnitsOutput")}
