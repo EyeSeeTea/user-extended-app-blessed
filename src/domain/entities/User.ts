@@ -17,6 +17,7 @@ export interface User {
     lastLogin: Date;
     disabled: boolean;
     access: AccessPermissions;
+    openId: string;
 }
 
 export interface UserRole extends NamedRef {

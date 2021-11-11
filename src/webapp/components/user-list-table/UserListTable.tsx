@@ -222,6 +222,7 @@ export const columns: TableColumn<User>[] = [
         text: i18n.t("Disabled"),
         getValue: row => (row.disabled ? <Check /> : undefined),
     },
+    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
 ];
 
 function checkAccess(requiredKeys: string[]) {
