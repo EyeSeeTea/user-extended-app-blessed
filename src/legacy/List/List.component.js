@@ -223,10 +223,7 @@ export class ListHybrid extends React.Component {
     };
 
     setAssignState = (key, value) => {
-        this.setState(
-            { [key]: value },
-            () => !value.open && this.filterList({ page: this.state.pager.page })
-        );
+        this.setState({ [key]: value }, () => !value.open && this.filterList({ page: this.state.pager.page }));
     };
 
     componentWillReceiveProps(newProps) {

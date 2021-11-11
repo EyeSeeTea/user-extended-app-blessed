@@ -50,7 +50,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
                 { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
-        ],
+            ],
             actions: [
                 {
                     name: "details",
