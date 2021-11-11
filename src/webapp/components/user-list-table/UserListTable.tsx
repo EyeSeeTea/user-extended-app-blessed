@@ -47,7 +47,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     filters: {id: ["in" as ListFilterType, ids]} as ListFilters
                 };
                 compositionRoot.users.list(listOptions).run(
-                    ({ pager, objects }: { pager: Pager, objects: User[]}) => {
+                    ({ objects }: { objects: User[]}) => {
                         console.log(objects) 
                         // state: { users: objects } 
                         history.push({ pathname: `/bulk-edit`, state: { users: objects } });
@@ -58,20 +58,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         },
         [history, compositionRoot, snackbar]
     );
-
-    const editPredictor1 = (ids: string[]) => {
-                const listOptions = {
-                    filters: {id: ["in" as ListFilterType, ids]} as ListFilters
-                };
-                compositionRoot.users.list(listOptions).run(
-                    ({ pager, objects }: { pager: Pager, objects: User[]}) => {
-                        console.log(objects) 
-                        // state: { users: objects } 
-                        props.openBulkEdit(objects);
-                    },
-                    error => snackbar.error(error)
-                );
-        };
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
@@ -281,6 +267,5 @@ function isStateActionVisible(action: string) {
 
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
-    openBulkEdit: (users: User[]) => void;
     filters: ListFilters;
 }
