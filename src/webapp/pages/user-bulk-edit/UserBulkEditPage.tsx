@@ -1,5 +1,7 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
-import { useLoading } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+
+//import { useLoading } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
 import _ from "lodash";
@@ -10,98 +12,130 @@ import { Redirect, useLocation } from "react-router";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeGrid as Grid } from "react-window";
 import styled from "styled-components";
-import { MetadataResponse } from "../../../domain/entities/Metadata";
-import { Predictor } from "../../../domain/entities/Predictor";
+//import { MetadataResponse } from "../../../domain/entities/Metadata"; //will I use the clean architecture? 
+import {  User } from "../../../domain/entities/User";
+
 import i18n from "../../../locales";
 import { ColumnSelectorDialog } from "../../components/column-selector-dialog/ColumnSelectorDialog";
 import { ImportSummary } from "../../components/import-summary/ImportSummary";
 import { PageHeader } from "../../components/page-header/PageHeader";
-import { RenderPredictorImportField } from "../../components/predictor-form/PredictorForm";
-import { predictorFormFields, getPredictorFieldName } from "../../components/predictor-form/utils";
+import { RenderPredictorImportField } from "../../components/user-form/UserForm";
+import { predictorFormFields, getPredictorFieldName } from "../../components/user-form/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useGoBack } from "../../hooks/useGoBack";
 
 const rowHeight = (index: number) => (index === 0 ? 30 : 70);
 const columnWidth = (index: number) => (index === 0 ? 50 : 250);
 
-export interface PredictorBulkEditPageProps {
+/*export interface PredictorBulkEditPageProps {
     type: ActionType;
+}*/
+
+export interface PredictorBulkEditPageProps {
+    users: User[];
 }
 
 export type ActionType = "import" | "bulk-edit";
-
-export const UserBulkEditPage: React.FC<PredictorBulkEditPageProps> = ({ type }) => {
+//: React.FC<PredictorBulkEditPageProps> { users }
+export const UserBulkEditPage = () => {
     const { compositionRoot } = useAppContext();
     const goBack = useGoBack();
-    const loading = useLoading();
+    //const loading = useLoading();
 
-    const location = useLocation<{ predictors: Predictor[] }>();
-    const [predictors] = React.useState<Predictor[]>(location.state?.predictors ?? []);
-    const [summary, setSummary] = useState<MetadataResponse[]>();
+    const location = useLocation<{ users: User[] }>();
+    const [usersToEdit] = React.useState<User[]>(location.state.users ?? []);
+    const [summary, setSummary] = useState<any[]>(); //MetadataResponse
     const [columns, setColumns] = useState<string[]>(basePredictorColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
     const goHome = useCallback(() => goBack(true), [goBack]);
 
     const onSubmit = useCallback(
-        async ({ predictors }: { predictors: Predictor[] }) => {
-            loading.show(true, i18n.t("Saving predictors"));
-            const { data = [], error } = await compositionRoot.predictors.save(predictors).runAsync();
-            if (error) return error ?? i18n.t("Network error");
-            loading.reset();
+        async ({ usersToEdit }: { usersToEdit: User[] }) => {
+            //loading.show(true, i18n.t("Saving predictors"));
+            console.log("here!!");
+            //const { data = [], error } = await compositionRoot.users.save(users).runAsync();
+            //if (error) return error ?? i18n.t("Network error");
+            //loading.reset();
 
-            if (_.some(data, foo => foo.status === "ERROR")) {
+            /*if (_.some(data, foo => foo.status === "ERROR")) {
                 setSummary(data);
             } else {
                 goHome();
-            }
+            }*/
+            //, loading
         },
-        [compositionRoot, goHome, loading]
+        [compositionRoot, goHome]
     );
-
-    if (predictors.length === 0) return <Redirect to="/" />;
-
-    const title = type === "import" ? i18n.t("Import predictors") : i18n.t("Edit predictors");
-    const closeSummary = () => setSummary(undefined);
-
     return (
-        <Wrapper>
-            <PageHeader onBackClick={goBack} title={title}>
-                <IconButton
-                    tooltip={i18n.t("Column settings")}
-                    onClick={() => setColumnSelectorOpen(true)}
-                    style={{ float: "right" }}
-                >
-                    <ViewColumn />
-                </IconButton>
-            </PageHeader>
+        <Form<{ usersToEdit: User[] }>
+            autocomplete="off"
+            onSubmit={onSubmit}
+            initialValues={{ usersToEdit }}
+            render={({ handleSubmit, values, submitError }) => (
+                <StyledForm onSubmit={handleSubmit}>
+                    <MaxHeight>
+                        <AutoSizer>
+                            {({ height, width }: {height: number, width: number}) => (
+                                <Grid
+                                    height={height}
+                                    width={width}
+                                    rowCount={values.usersToEdit.length + 1}
+                                    columnCount={columns.length + 1}
+                                    estimatedColumnWidth={250}
+                                    estimatedRowHeight={70}
+                                    rowHeight={rowHeight}
+                                    columnWidth={columnWidth}
+                                    itemData={{ columns }}
+                                >
+                                    {Row}
+                                </Grid>
+                            )}
+                        </AutoSizer>
+                    </MaxHeight>
 
-            {summary ? <ImportSummary results={summary} onClose={closeSummary} /> : null}
+                    {submitError && (
+                        <NoticeBox title={i18n.t("Error saving users")} error={true}>
+                            {submitError}
+                        </NoticeBox>
+                    )}
 
-            {columnSelectorOpen && (
-                <ColumnSelectorDialog
-                    columns={predictorFormFields}
-                    visibleColumns={columns}
-                    onChange={setColumns}
-                    getName={getPredictorFieldName}
-                    onCancel={() => setColumnSelectorOpen(false)}
-                />
+                    <ButtonsRow middle>
+                        <Button type="submit" primary>
+                            {i18n.t("Save")}
+                        </Button>
+
+                        <Button type="reset" onClick={goHome}>
+                            {i18n.t("Close")}
+                        </Button>
+                    </ButtonsRow>
+                </StyledForm>
             )}
-
-            <Container>
-                <Form<{ predictors: Predictor[] }>
+        />
+    );
+};
+/*
+    <ConfirmationDialog
+                title={i18n.t("Edit users")}
+                open={true}
+                onCancel={() => console.log("cancel")}
+                onSave={() => console.log("save")}
+                maxWidth={"lg"}
+                fullWidth={true}
+            >
+                <Form<{ usersToEdit: User[] }>
                     autocomplete="off"
                     onSubmit={onSubmit}
-                    initialValues={{ predictors }}
+                    initialValues={{ usersToEdit }}
                     render={({ handleSubmit, values, submitError }) => (
                         <StyledForm onSubmit={handleSubmit}>
                             <MaxHeight>
                                 <AutoSizer>
-                                    {({ height, width }) => (
+                                    {({ height, width }: {height: number, width: number}) => (
                                         <Grid
                                             height={height}
                                             width={width}
-                                            rowCount={values.predictors.length + 1}
+                                            rowCount={values.usersToEdit.length + 1}
                                             columnCount={columns.length + 1}
                                             estimatedColumnWidth={250}
                                             estimatedRowHeight={70}
@@ -116,7 +150,7 @@ export const UserBulkEditPage: React.FC<PredictorBulkEditPageProps> = ({ type })
                             </MaxHeight>
 
                             {submitError && (
-                                <NoticeBox title={i18n.t("Error saving predictors")} error={true}>
+                                <NoticeBox title={i18n.t("Error saving users")} error={true}>
                                     {submitError}
                                 </NoticeBox>
                             )}
@@ -133,18 +167,16 @@ export const UserBulkEditPage: React.FC<PredictorBulkEditPageProps> = ({ type })
                         </StyledForm>
                     )}
                 />
-            </Container>
-        </Wrapper>
-    );
-};
 
+
+            </ConfirmationDialog>
+*/
 const basePredictorColumns = [
     "id",
     "name",
-    "scheduling.sequence",
-    "scheduling.variable",
-    "output",
-    "generator.expression",
+    "email",
+    "userCredentials.userRoles",
+    "userCredentials.userGroups",
 ];
 
 const MaxHeight = styled.div`
@@ -172,7 +204,7 @@ interface RowItemProps {
 }
 
 const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
-    const form = useForm<{ predictors: Predictor[] }>();
+    const form = useForm<{ users: User[] }>();
 
     const headerRow = rowIndex === 0;
     const deleteRow = columnIndex === 0;
@@ -180,9 +212,9 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
     const field = data.columns[columnIndex - 1];
 
     const removeRow = useCallback(() => {
-        const original = form.getState().values.predictors;
-        const predictors = [...original.slice(0, row), ...original.slice(row + 1)];
-        form.change("predictors", predictors);
+        const original = form.getState().values.users;
+        const users = [...original.slice(0, row), ...original.slice(row + 1)];
+        form.change("users", users);
     }, [form, row]);
 
     if (deleteRow) {

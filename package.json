@@ -19,6 +19,8 @@
         "@eyeseetea/d2-ui-components": "2.6.7",
         "@material-ui/core": "4.12.3",
         "@material-ui/icons": "4.11.2",
+        "@types/react-virtualized-auto-sizer": "^1.0.1",
+        "@types/react-window": "^1.8.5",
         "axios": "0.21.4",
         "classnames": "2.3.1",
         "d2": "27.0.0-8",
@@ -42,13 +44,17 @@
         "qs": "6.10.1",
         "react": "17.0.2",
         "react-dom": "17.0.2",
+        "react-json-view": "^1.21.3",
         "react-moment": "1.1.1",
         "react-router-dom": "5.3.0",
         "react-scripts": "4.0.3",
+        "react-virtualized-auto-sizer": "^1.0.6",
+        "react-window": "^1.8.6",
         "rx": "4.1.0",
         "rxjs": "6.6.7",
         "styled-components": "5.3.1",
-        "styled-jsx": "4.0.1"
+        "styled-jsx": "4.0.1",
+        "use-deep-compare-effect": "^1.8.1"
     },
     "devDependencies": {
         "@babel/core": "7.15.5",

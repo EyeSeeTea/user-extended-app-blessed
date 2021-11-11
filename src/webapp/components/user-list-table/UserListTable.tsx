@@ -9,14 +9,16 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
+    useSnackbar,
 } from "@eyeseetea/d2-ui-components";
 import { Icon } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
+import { useHistory } from "react-router-dom";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters } from "../../../domain/repositories/UserRepository";
+import { ListFilters, ListFilterType } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
@@ -33,6 +35,43 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
+    const snackbar = useSnackbar();
+    const history = useHistory();
+
+    const editPredictor = useCallback(
+        (ids: string[]) => {
+            if (ids.length === 1) {
+                history.push(`/edit/${ids[0]}`);
+            } else {
+                const listOptions = {
+                    filters: {id: ["in" as ListFilterType, ids]} as ListFilters
+                };
+                compositionRoot.users.list(listOptions).run(
+                    ({ pager, objects }: { pager: Pager, objects: User[]}) => {
+                        console.log(objects) 
+                        // state: { users: objects } 
+                        history.push({ pathname: `/bulk-edit`, state: { users: objects } });
+                    },
+                    error => snackbar.error(error)
+                );
+            }
+        },
+        [history, compositionRoot, snackbar]
+    );
+
+    const editPredictor1 = (ids: string[]) => {
+                const listOptions = {
+                    filters: {id: ["in" as ListFilterType, ids]} as ListFilters
+                };
+                compositionRoot.users.list(listOptions).run(
+                    ({ pager, objects }: { pager: Pager, objects: User[]}) => {
+                        console.log(objects) 
+                        // state: { users: objects } 
+                        props.openBulkEdit(objects);
+                    },
+                    error => snackbar.error(error)
+                );
+        };
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
@@ -102,8 +141,8 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     name: "edit",
                     text: i18n.t("Edit"),
                     icon: <Icon>edit</Icon>,
-                    multiple: false,
-                    onClick: user => goToUserEditPage(user),
+                    multiple: true,
+                    onClick: editPredictor,
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -242,5 +281,6 @@ function isStateActionVisible(action: string) {
 
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
+    openBulkEdit: (users: User[]) => void;
     filters: ListFilters;
 }

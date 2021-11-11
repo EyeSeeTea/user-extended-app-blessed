@@ -24,7 +24,7 @@ export class UserD2ApiRepository implements UserRepository {
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
-
+        console.log(otherFilters)
         return apiToFuture(
             this.api.models.users.get({
                 fields,

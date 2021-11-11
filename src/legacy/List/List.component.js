@@ -35,7 +35,7 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-
+import { UserBulkEditPage  } from "../../webapp/pages/user-bulk-edit/UserBulkEditPage";
 const pageSize = 50;
 
 const initialSorting = ["name", "asc"];
@@ -91,6 +91,11 @@ export class ListHybrid extends React.Component {
             isLoading: true,
             sorting: initialSorting,
             settingsVisible: false,
+            bulkEdit: {
+                open: false,
+                users: []
+            },
+            bulkEditVisible: false,
             layoutSettingsVisible: false,
             sharing: {
                 model: null,
@@ -324,6 +329,14 @@ export class ListHybrid extends React.Component {
         this.setState({ settingsVisible: true });
     };
 
+    _openBulkEdit = (users) => {
+        this.setState({ bulkEdit: {open: true, users }});
+    };
+
+    _closeBulkEdit = () => {
+        this.setState({ bulkEdit: {open: false, users: [] }});
+    };
+
     _closeSettings = newSettings => {
         this.setState({
             settingsVisible: false,
@@ -395,6 +408,7 @@ export class ListHybrid extends React.Component {
             copyUsers,
             removeUsers,
             disableUsers,
+            bulkEdit
         } = this.state;
 
         const { importUsers } = this.state;
@@ -414,6 +428,7 @@ export class ListHybrid extends React.Component {
                         <UserListTable
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
+                            openBulkEdit={this._openBulkEdit}
                             filters={this.state.filters?.filters}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} />
@@ -530,6 +545,8 @@ export class ListHybrid extends React.Component {
                 )}
 
                 {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
+
+                {bulkEdit.open && <UserBulkEditPage users={bulkEdit.users} />}
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 
