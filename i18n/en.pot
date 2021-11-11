@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-10-19T19:21:37.649Z\n"
-"PO-Revision-Date: 2021-10-19T19:21:37.649Z\n"
+"POT-Creation-Date: 2021-11-11T10:23:15.686Z\n"
+"PO-Revision-Date: 2021-11-11T10:23:15.686Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -14,10 +14,10 @@ msgstr ""
 msgid "Disable users"
 msgstr ""
 
-msgid "Replicate error"
+msgid "Remove users"
 msgstr ""
 
-msgid "Remove users"
+msgid "Replicate error"
 msgstr ""
 
 msgid "Settings"
@@ -27,6 +27,39 @@ msgid "Back"
 msgstr ""
 
 msgid "Help"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
+msgid "OU Output"
 msgstr ""
 
 msgid "Details"
@@ -65,10 +98,7 @@ msgstr ""
 msgid "Replicate user from table"
 msgstr ""
 
-msgid "Search by name"
-msgstr ""
-
-msgid "Username"
+msgid "Search by name or username..."
 msgstr ""
 
 msgid "First name"
@@ -77,29 +107,14 @@ msgstr ""
 msgid "Surname"
 msgstr ""
 
-msgid "Email"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Roles"
-msgstr ""
-
-msgid "Groups"
-msgstr ""
-
 msgid "Organisation units"
 msgstr ""
 
 msgid "Data view organisation units"
 msgstr ""
 
-msgid "Last login"
+msgid "Disabled"
 msgstr ""
 
-msgid "Disabled"
+msgid "Open ID"
 msgstr ""

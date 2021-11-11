@@ -31,10 +31,8 @@ export class UserD2ApiRepository implements UserRepository {
                 page,
                 pageSize,
                 paging: true,
-                filter: {
-                    identifiable: search ? { token: search } : undefined,
-                    ...otherFilters,
-                },
+                query: search,
+                filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({

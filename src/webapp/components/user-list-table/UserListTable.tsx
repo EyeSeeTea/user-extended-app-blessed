@@ -49,7 +49,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
                 { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
-        ],
+            ],
             actions: [
                 {
                     name: "details",
@@ -170,7 +170,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeOptions: [10, 25, 50, 100],
                 pageSizeInitialValue: 25,
             },
-            searchBoxLabel: i18n.t("Search by name"),
+            searchBoxLabel: i18n.t("Search by name or username..."),
         };
     }, [props, enableReplicate]);
 
