@@ -416,7 +416,7 @@ export class ListHybrid extends React.Component {
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
                         >
-                            <Filters onChange={this._onFiltersChange} showSearch={false} />
+                            <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>
                                 <ImportExport
