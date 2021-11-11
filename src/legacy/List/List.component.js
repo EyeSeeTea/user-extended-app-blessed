@@ -35,7 +35,7 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-import { UserBulkEditPage  } from "../../webapp/pages/user-bulk-edit/UserBulkEditPage";
+import { UserBulkEditPage } from "../../webapp/pages/user-bulk-edit/UserBulkEditPage";
 const pageSize = 50;
 
 const initialSorting = ["name", "asc"];
@@ -223,10 +223,7 @@ export class ListHybrid extends React.Component {
     };
 
     setAssignState = (key, value) => {
-        this.setState(
-            { [key]: value },
-            () => !value.open && this.filterList({ page: this.state.pager.page })
-        );
+        this.setState({ [key]: value }, () => !value.open && this.filterList({ page: this.state.pager.page }));
     };
 
     componentWillReceiveProps(newProps) {
@@ -414,7 +411,6 @@ export class ListHybrid extends React.Component {
                         <UserListTable
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
-                            openBulkEdit={this._openBulkEdit}
                             filters={this.state.filters?.filters}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} />

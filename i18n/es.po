@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-10-19T19:21:37.649Z\n"
+"POT-Creation-Date: 2021-11-11T11:46:52.240Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -11,20 +11,230 @@ msgstr ""
 msgid "Enable users"
 msgstr ""
 
+msgid "Disable users"
+msgstr ""
+
 msgid "Remove users"
 msgstr "Eliminar usuarios"
 
+msgid "Replicate error"
+msgstr "Replicar error"
+
 msgid "Settings"
+msgstr ""
+
+msgid "Columns to show in table"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Column"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "Deleted"
+msgstr ""
+
+msgid "Ignored"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Identifier"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Import Results"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Predictors"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Summary"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
+msgid "JSON Response"
 msgstr ""
 
 msgid "Back"
 msgstr "Volver"
 
-msgid "Replicate error"
-msgstr "Replicar error"
-
 msgid "Help"
 msgstr "Ayuda"
+
+msgid "Please provide a valid identifier"
+msgstr ""
+
+msgid "Invalid option"
+msgstr ""
+
+msgid "Code"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Output data element"
+msgstr ""
+
+msgid "Output category combo"
+msgstr ""
+
+msgid "Period type"
+msgstr ""
+
+msgid "Annual sample count"
+msgstr ""
+
+msgid "Sequential sample count"
+msgstr ""
+
+msgid "Sequential skip count"
+msgstr ""
+
+msgid "Organisation unit levels"
+msgstr ""
+
+msgid "Predictor groups"
+msgstr ""
+
+msgid "Generator description"
+msgstr ""
+
+msgid "Missing value strategy"
+msgstr ""
+
+msgid "Generator formula"
+msgstr ""
+
+msgid "Sample skip test description"
+msgstr ""
+
+msgid "Sample skip test formula"
+msgstr ""
+
+msgid "Sequence"
+msgstr ""
+
+msgid "Variable"
+msgstr ""
+
+msgid "Daily"
+msgstr ""
+
+msgid "Weekly"
+msgstr ""
+
+msgid "Weekly starting Wednesday"
+msgstr ""
+
+msgid "Weekly starting Thursday"
+msgstr ""
+
+msgid "Weekly starting Saturday"
+msgstr ""
+
+msgid "Weekly starting Sunday"
+msgstr ""
+
+msgid "Biweekly"
+msgstr ""
+
+msgid "Monthly"
+msgstr ""
+
+msgid "Bi-monthly"
+msgstr ""
+
+msgid "Quarterly"
+msgstr ""
+
+msgid "Six-monthly"
+msgstr ""
+
+msgid "Six-monthly starting April"
+msgstr ""
+
+msgid "Six-monthly starting November"
+msgstr ""
+
+msgid "Yearly"
+msgstr ""
+
+msgid "Financial year starting April"
+msgstr ""
+
+msgid "Financial year starting July"
+msgstr ""
+
+msgid "Financial year starting October"
+msgstr ""
+
+msgid "Financial year starting November"
+msgstr ""
+
+msgid "Skip if any value is missing"
+msgstr ""
+
+msgid "Skip if all values are missing"
+msgstr ""
+
+msgid "Never skip"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
+msgid "OU Output"
+msgstr ""
 
 msgid "Details"
 msgstr "Detalles"
@@ -65,28 +275,10 @@ msgstr ""
 msgid "Search by name"
 msgstr ""
 
-msgid "Username"
-msgstr ""
-
 msgid "First name"
 msgstr ""
 
 msgid "Surname"
-msgstr ""
-
-msgid "Email"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Roles"
-msgstr ""
-
-msgid "Groups"
 msgstr ""
 
 msgid "Organisation units"
@@ -95,8 +287,23 @@ msgstr ""
 msgid "Data view organisation units"
 msgstr ""
 
-msgid "Last login"
+msgid "Disabled"
 msgstr ""
 
-msgid "Disabled"
+msgid "Saving predictors"
+msgstr ""
+
+msgid "Network error"
+msgstr ""
+
+msgid "Error saving users"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Edit users"
+msgstr ""
+
+msgid "Delete"
 msgstr ""

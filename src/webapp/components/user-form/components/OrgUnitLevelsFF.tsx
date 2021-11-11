@@ -12,7 +12,7 @@ export const OrgUnitLevelsFF: React.FC<Omit<TransferFFProps, "options">> = props
             compositionRoot.metadata.list("organisationUnitLevels").map(({ objects }) => buildTransferOptions(objects)),
         []
     );*/
-    const options1 = [{label: "test1", value: "test1"}]
+    const options1 = [{ label: "test1", value: "test1" }];
 
     return (
         <TransferFF

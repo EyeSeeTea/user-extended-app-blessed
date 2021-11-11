@@ -1,4 +1,4 @@
-export {}
+export {};
 /*import { FieldState, SingleSelectField, SingleSelectOption } from "@dhis2/ui";
 import _ from "lodash";
 import React, { useCallback } from "react";

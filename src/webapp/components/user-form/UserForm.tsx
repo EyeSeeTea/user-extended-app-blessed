@@ -25,10 +25,7 @@ import {
     predictorRequiredFields,
 } from "./utils";
 
-const useValidations = (
-    field: PredictorFormField,
-): { validation?: (...args: any[]) => any; props?: object } => {
-
+const useValidations = (field: PredictorFormField): { validation?: (...args: any[]) => any; props?: object } => {
     switch (field) {
         case "id":
             return { validation: createPattern(fullUidRegex, i18n.t("Please provide a valid identifier")) };
@@ -58,7 +55,7 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         validate: validation,
         ...validationProps,
     };
-/*
+    /*
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
 */

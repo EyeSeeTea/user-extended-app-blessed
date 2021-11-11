@@ -3,26 +3,12 @@ import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { LegacyAppWrapper } from "../../legacy/LegacyApp";
 import { ListHybrid } from "../../legacy/List/List.component";
 import { UserBulkEditPage, ActionType } from "./user-bulk-edit/UserBulkEditPage";
-/*
-<Route
-                    path="/bulk-edit"
-                    render={() =>(
-                        <LegacyAppWrapper>
-                            <UserBulkEditPage />
-                        </LegacyAppWrapper>
-                    )}
-                />
-*/
+
 export const Router: React.FC = React.memo(() => {
     return (
         <HashRouter>
             <Switch>
-            <Route
-                    path="/bulk-edit"
-                    render={() =>(
-                            <UserBulkEditPage />
-                    )}
-                />
+                <Route path="/bulk-edit" render={() => <UserBulkEditPage />} />
                 <Route
                     path="/"
                     render={() => (
@@ -31,7 +17,6 @@ export const Router: React.FC = React.memo(() => {
                         </LegacyAppWrapper>
                     )}
                 />
-
             </Switch>
         </HashRouter>
     );

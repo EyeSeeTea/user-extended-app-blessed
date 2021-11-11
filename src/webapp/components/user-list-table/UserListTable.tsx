@@ -44,12 +44,12 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 history.push(`/edit/${ids[0]}`);
             } else {
                 const listOptions = {
-                    filters: {id: ["in" as ListFilterType, ids]} as ListFilters
+                    filters: { id: ["in" as ListFilterType, ids] } as ListFilters,
                 };
                 compositionRoot.users.list(listOptions).run(
-                    ({ objects }: { objects: User[]}) => {
-                        console.log(objects) 
-                        // state: { users: objects } 
+                    ({ objects }: { objects: User[] }) => {
+                        console.log(objects);
+                        // state: { users: objects }
                         history.push({ pathname: `/bulk-edit`, state: { users: objects } });
                     },
                     error => snackbar.error(error)
@@ -74,7 +74,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
                 { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
-        ],
+            ],
             actions: [
                 {
                     name: "details",

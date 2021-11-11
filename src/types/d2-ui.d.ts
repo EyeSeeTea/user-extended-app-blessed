@@ -314,7 +314,4 @@ declare module "@dhis2/ui" {
     export function InputFieldFF(props: InputFieldFFProps): React.ReactElement;
     export function integer(value: unknown): string | undefined;
     export function SingleSelectFieldFF(props: SingleSelectFieldFFProps): React.ReactElement;
-
-
-
 }

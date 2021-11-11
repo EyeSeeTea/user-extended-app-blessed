@@ -134,7 +134,7 @@ export const ImportSummary = ({ results, onClose }: ImportSummaryProps) => {
         >
             <DialogContent>
                 {results.map(({ status, typeReports = [] }, idx) => {
-                    const stats = typeReports.map(({ stats }: {stats: any}) => ({
+                    const stats = typeReports.map(({ stats }: { stats: any }) => ({
                         type: i18n.t("Predictors"),
                         ...stats,
                     }));

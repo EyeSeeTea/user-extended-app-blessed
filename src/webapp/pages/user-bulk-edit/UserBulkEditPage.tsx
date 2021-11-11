@@ -12,8 +12,8 @@ import { Redirect, useLocation } from "react-router";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeGrid as Grid } from "react-window";
 import styled from "styled-components";
-//import { MetadataResponse } from "../../../domain/entities/Metadata"; //will I use the clean architecture? 
-import {  User } from "../../../domain/entities/User";
+//import { MetadataResponse } from "../../../domain/entities/Metadata"; //will I use the clean architecture?
+import { User } from "../../../domain/entities/User";
 
 import i18n from "../../../locales";
 import { ColumnSelectorDialog } from "../../components/column-selector-dialog/ColumnSelectorDialog";
@@ -76,7 +76,7 @@ export const UserBulkEditPage = () => {
                 <StyledForm onSubmit={handleSubmit}>
                     <MaxHeight>
                         <AutoSizer>
-                            {({ height, width }: {height: number, width: number}) => (
+                            {({ height, width }: { height: number; width: number }) => (
                                 <Grid
                                     height={height}
                                     width={width}
@@ -171,13 +171,7 @@ export const UserBulkEditPage = () => {
 
             </ConfirmationDialog>
 */
-const basePredictorColumns = [
-    "id",
-    "name",
-    "email",
-    "userCredentials.userRoles",
-    "userCredentials.userGroups",
-];
+const basePredictorColumns = ["id", "name", "email", "userCredentials.userRoles", "userCredentials.userGroups"];
 
 const MaxHeight = styled.div`
     height: 95%;
