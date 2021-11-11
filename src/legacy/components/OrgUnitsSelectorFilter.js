@@ -3,7 +3,7 @@ import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
+import { getOrgUnitsRoots, listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
     constructor(props, context) {
@@ -58,8 +58,16 @@ class OrgUnitsSelectorFilter extends React.Component {
         this.setState({ selected });
     }
 
-    applyAndClose() {
-        this.props.onChange(this.state.selected);
+    async applyAndClose() {
+        const { d2 } = this.context;
+        const orgUnitsPaths = this.state.selected;
+        const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
+        const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
+            paging: false,
+            fields: "id,displayName,shortName,path",
+        });
+
+        this.props.onChange(newSelected);
         this.closeDialog();
     }
 
