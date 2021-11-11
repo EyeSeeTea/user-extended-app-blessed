@@ -48,10 +48,7 @@ class App extends AppWithD2 {
 
     componentWillUnmount = () => {
         super.componentWillUnmount();
-
-        if (this.disposable && this.disposable.dispose) {
-            this.disposable.dispose();
-        }
+        this.disposable.dispose?.();
     };
 
     render = () => {
