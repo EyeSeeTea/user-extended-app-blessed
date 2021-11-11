@@ -5,7 +5,7 @@ import snackStore from "./snack.store";
 
 class SnackBarContainer extends React.Component {
     componentWillUnmount = () => {
-        this.observerDisposables.forEach(disposable => disposable.dispose());
+        this.observerDisposables.forEach(disposable => disposable.dispose?.());
     };
 
     registerDisposable = disposable => {

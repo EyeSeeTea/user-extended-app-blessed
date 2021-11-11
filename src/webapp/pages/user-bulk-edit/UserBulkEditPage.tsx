@@ -43,7 +43,7 @@ export const UserBulkEditPage = () => {
     //const loading = useLoading();
 
     const location = useLocation<{ users: User[] }>();
-    const [usersToEdit] = React.useState<User[]>(location.state.users ?? []);
+    const [usersToEdit] = React.useState<User[]>(location.state?.users ?? []);
     const [summary, setSummary] = useState<any[]>(); //MetadataResponse
     const [columns, setColumns] = useState<string[]>(basePredictorColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
