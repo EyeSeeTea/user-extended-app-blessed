@@ -3,11 +3,12 @@ import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import { getOrgUnitsRoots, listWithInFilter } from "../utils/dhis2Helpers";
+import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
     constructor(props, context) {
         super(props, context);
+
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
         this.openDialog = this.openDialog.bind(this);
         this.closeDialog = this.closeDialog.bind(this);
@@ -17,7 +18,6 @@ class OrgUnitsSelectorFilter extends React.Component {
         this.state = {
             dialogOpen: false,
             selected: props.selected,
-            roots: [],
         };
     }
 
@@ -38,10 +38,6 @@ class OrgUnitsSelectorFilter extends React.Component {
         },
     };
 
-    componentDidMount() {
-        return getOrgUnitsRoots().then(roots => this.setState({ roots }));
-    }
-
     componentWillReceiveProps(newProps) {
         if (newProps.selected !== this.props.selected) this.fieldValue = this.getCompactFieldValue(newProps.selected);
     }
@@ -58,10 +54,15 @@ class OrgUnitsSelectorFilter extends React.Component {
         this.setState({ selected });
     }
 
+    getOuPaths() {
+        return this.state.selected.map(ouOrPath =>
+            typeof ouOrPath === "object" && "path" in ouOrPath ? ouOrPath.path : ouOrPath
+        );
+    }
+
     async applyAndClose() {
         const { d2 } = this.context;
-        const orgUnitsPaths = this.state.selected;
-        const orgUnitIds = orgUnitsPaths.map(path => _.last(path.split("/")));
+        const orgUnitIds = this.getOuPaths().map(path => _.last(path.split("/")));
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
@@ -103,7 +104,7 @@ class OrgUnitsSelectorFilter extends React.Component {
                 >
                     <OrgUnitsSelector
                         api={this.props.api}
-                        selected={this.state.selected}
+                        selected={this.getOuPaths()}
                         onChange={this.onChange}
                         controls={{
                             filterByLevel: true,
