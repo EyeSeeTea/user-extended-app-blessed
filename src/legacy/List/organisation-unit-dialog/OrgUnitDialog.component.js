@@ -1,12 +1,12 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
 import _ from "lodash";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 import React from "react";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
-import OrgUnitForm from "../../components/OrgUnitForm";
 import _m from "../../utils/lodash-mixins";
+import { getOrgUnitsPaths } from "../../utils/dhis2Helpers";
 
 class OrgUnitDialog extends React.Component {
     constructor(props, context) {
@@ -102,13 +102,11 @@ class OrgUnitDialog extends React.Component {
             });
     };
 
-    render = () => {
-        const { title, filteringByNameLabel, orgUnitsSelectedLabel } = this.props;
-
+    render() {
         return (
             <ConfirmationDialog
                 open={true}
-                title={title}
+                title={this.props.title}
                 maxWidth={"lg"}
                 fullWidth={true}
                 onCancel={this.props.onRequestClose}
@@ -117,18 +115,20 @@ class OrgUnitDialog extends React.Component {
             >
                 {this._renderStrategyToggle()}
 
-                <OrgUnitForm
-                    onRequestClose={this.props.onRequestClose}
+                <OrgUnitsSelector
+                    api={this.props.api}
+                    selected={getOrgUnitsPaths(this.state.selected)}
                     onChange={this.onChange}
-                    roots={this.props.roots}
-                    selected={this.state.selected}
-                    intersectionPolicy={true}
-                    filteringByNameLabel={filteringByNameLabel}
-                    orgUnitsSelectedLabel={orgUnitsSelectedLabel}
+                    controls={{
+                        filterByLevel: true,
+                        filterByGroup: true,
+                        filterByProgram: false,
+                        selectAll: false,
+                    }}
                 />
             </ConfirmationDialog>
         );
-    };
+    }
 }
 
 OrgUnitDialog.propTypes = {

@@ -10,6 +10,9 @@ function getOrgUnitsRoots() {
         .toPromise();
 }
 
+const getOrgUnitsPaths = ouOrPaths =>
+    ouOrPaths.map(ouOrPath => (typeof ouOrPath === "object" && "path" in ouOrPath ? ouOrPath.path : ouOrPath));
+
 async function mapPromise(inputValues, mapper) {
     const output = [];
     for (const value of inputValues) {
@@ -76,4 +79,4 @@ async function getModelValuesByField(d2, fields) {
     );
 }
 
-export { getOrgUnitsRoots, mapPromise, getModelValuesByField, listWithInFilter };
+export { getOrgUnitsRoots, mapPromise, getModelValuesByField, listWithInFilter, getOrgUnitsPaths };

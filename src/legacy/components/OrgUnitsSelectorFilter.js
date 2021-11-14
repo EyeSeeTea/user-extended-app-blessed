@@ -3,7 +3,7 @@ import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import { listWithInFilter } from "../utils/dhis2Helpers";
+import { getOrgUnitsPaths, listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
     constructor(props, context) {
@@ -54,15 +54,9 @@ class OrgUnitsSelectorFilter extends React.Component {
         this.setState({ selected });
     }
 
-    getOuPaths() {
-        return this.state.selected.map(ouOrPath =>
-            typeof ouOrPath === "object" && "path" in ouOrPath ? ouOrPath.path : ouOrPath
-        );
-    }
-
     async applyAndClose() {
         const { d2 } = this.context;
-        const orgUnitIds = this.getOuPaths().map(path => _.last(path.split("/")));
+        const orgUnitIds = getOrgUnitsPaths(this.state.selected).map(path => _.last(path.split("/")));
         const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
@@ -104,7 +98,7 @@ class OrgUnitsSelectorFilter extends React.Component {
                 >
                     <OrgUnitsSelector
                         api={this.props.api}
-                        selected={this.getOuPaths()}
+                        selected={getOrgUnitsPaths(this.state.selected)}
                         onChange={this.onChange}
                         controls={{
                             filterByLevel: true,
