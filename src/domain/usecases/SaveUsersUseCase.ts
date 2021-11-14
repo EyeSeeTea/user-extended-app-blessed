@@ -7,7 +7,7 @@ import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
 export class SaveUsersUseCase implements UseCase {
     constructor(private userRepository: UserRepository) {}
 
-    public execute(usersToSave: User[]): FutureData<any> {
+    public execute(usersToSave: User[]): FutureData<MetadataResponse> {
         return this.userRepository.save(usersToSave);
     }
 }

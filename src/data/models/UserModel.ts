@@ -39,11 +39,12 @@ export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     manage: Schema.optional(Schema.boolean),
 });
 
-export const UserRolesModel: Codec<UserRole> = Schema.object({
-    id: Schema.nonEmptyString,
-    name: Schema.nonEmptyString,
-    authorities: Schema.array(Schema.string),
-});
+export const UserRolesModel: Codec<UserRole> = Schema.extend(
+    NamedRefModel,
+    Schema.object({
+        authorities: Schema.array(Schema.string),
+    })
+);
 
 /*
 export interface User {
@@ -74,7 +75,7 @@ export const UserModel: Codec<User> = Schema.object({
     email: Schema.nonEmptyString,
     lastUpdated: Schema.date,
     created: Schema.date,
-    userRoles: UserRolesModel,
+    userRoles: Schema.array(UserRolesModel),
     userGroups: Schema.array(NamedRefModel),
     organisationUnits: Schema.array(NamedRefModel),
     dataViewOrganisationUnits: Schema.array(NamedRefModel),

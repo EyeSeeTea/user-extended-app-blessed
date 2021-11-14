@@ -1,4 +1,4 @@
-import { D2Api, D2UserSchema, SelectedPick, MetadataResponse, Pager } from "@eyeseetea/d2-api/2.34";
+import { D2Api, D2UserSchema, SelectedPick, MetadataResponse } from "@eyeseetea/d2-api/2.34";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
@@ -9,7 +9,6 @@ import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { Instance } from "../entities/Instance";
 import { UserModel } from "../models/UserModel";
-import { ListFilters, ListFilterType } from "../../domain/repositories/UserRepository";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -53,48 +52,16 @@ export class UserD2ApiRepository implements UserRepository {
             return Future.success(this.mapUser(user));
         });
     }
-    public save(usersToSave: User[]): FutureData<any> {
-        Future.success();
-    }
-    /*public save(usersToSave: User[]): FutureData<MetadataResponse> {
+    public save(usersToSave: User[]): FutureData<MetadataResponse> {
         const validations = usersToSave.map(user => UserModel.decode(user));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));
         const errors = _.compact(validations.map(either => either.leftOrDefault("")));
         if (errors.length > 0) {
             return Future.error(errors.join("\n"));
         }
-        //return apiToFuture(this.api.metadata.post({ users }));
-        const userIds = users.map(({ id }) => id);
-        const listOptions = {
-            filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
-        };
-        return apiToFuture(this.api.metadata.post({ users }));
-        /*return this.list(listOptions).run(existingPredictors =>
-                apiToFuture(this.api.metadata.post({ users: existingPredictors }))
-
-            )
-        );*/
-        //const saveMetadata$ = apiToFuture(this.api.metadata.post({ users }));
-
-        /*return apiToFuture(this.api.models.users.get({ fields, filter: { id: { eq: id } } })).flatMap(({ objects }) => {
-            const [user] = objects;
-            if (!user) return Future.error(`User ${id} not found`);
-
-            return Future.success(this.mapUser(user));
-        });*?
-        
-        return this.get(predictors.map(({ id }) => id)).flatMap(existingPredictors =>
-            this.getGroupsToSave(inputPredictors, existingPredictors).flatMap(predictorGroups => {
-                const saveMetadata$ = apiToFuture(this.api.metadata.post({ predictors, predictorGroups }));
-                const saveDataStore$ = this.storageRepository.saveObjectsInCollection<SaveScheduling>(
-                    Namespaces.SCHEDULING,
-                    scheduling
-                );
-
-                return Future.join2(saveMetadata$, saveDataStore$).map(([metadataResponse]) => [metadataResponse]);
-            })
-        );
-    }*/
+        //there's an error with the date being sent as an object or something 
+        return apiToFuture(this.api.metadata.post({ users })).map((metadataResponse) => metadataResponse);
+    }
 
     private mapUser(user: D2ApiUser): User {
         return {

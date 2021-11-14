@@ -1,5 +1,4 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 
 //import { useLoading } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
@@ -12,8 +11,8 @@ import { Redirect, useLocation } from "react-router";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeGrid as Grid } from "react-window";
 import styled from "styled-components";
-//import { MetadataResponse } from "../../../domain/entities/Metadata"; //will I use the clean architecture?
 import { User } from "../../../domain/entities/User";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
 
 import i18n from "../../../locales";
 import { ColumnSelectorDialog } from "../../components/column-selector-dialog/ColumnSelectorDialog";
@@ -44,8 +43,7 @@ export const UserBulkEditPage = () => {
 
     const location = useLocation<{ users: User[] }>();
     const [users] = React.useState<User[]>(location.state?.users ?? []);
-    console.log(users)
-    const [summary, setSummary] = useState<any[]>(); //MetadataResponse
+    const [summary, setSummary] = useState<MetadataResponse[]>();
     const [columns, setColumns] = useState<string[]>(baseUserColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
@@ -54,12 +52,11 @@ export const UserBulkEditPage = () => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             //loading.show(true, i18n.t("Saving predictors"));
-            console.log(users);
-            //const { data = [], error } = await compositionRoot.users.save(users).runAsync();
-            //if (error) return error ?? i18n.t("Network error");
+            const { data = [], error } = await compositionRoot.users.save(users).runAsync();
+            if (error) return error ?? i18n.t("Network error");
             //loading.reset();
 
-            /*if (_.some(data, foo => foo.status === "ERROR")) {
+           /* if (_.some(data, foo => foo.status === "ERROR")) {
                 setSummary(data);
             } else {
                 goHome();

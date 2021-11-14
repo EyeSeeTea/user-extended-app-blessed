@@ -55,7 +55,7 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         validate: validation,
         ...validationProps,
     };
-    console.log(props)
+   // console.log(props)
     /*
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
@@ -83,7 +83,7 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
 export const RenderPredictorImportField: React.FC<{ row: number; field: PredictorFormField }> = ({ row, field }) => {
     const name = `users[${row}.${field}]`;
     const { validation, props: validationProps = {} } = useValidations(field);
-    console.log(field)
+    //console.log(field)
     const props = {
         name,
         placeholder: getPredictorFieldName(field),
