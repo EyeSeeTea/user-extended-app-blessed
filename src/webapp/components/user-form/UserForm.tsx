@@ -7,7 +7,8 @@ import {
     hasValue,
     InputFieldFF,
     integer,
-    SingleSelectFieldFF,
+    MultiSelectFieldFF,
+    CheckboxFieldFF
 } from "@dhis2/ui";
 import React from "react";
 import i18n from "../../../locales";
@@ -20,7 +21,6 @@ import { OrgUnitLevelsFF } from "./components/OrgUnitLevelsFF";
 import {
     getPredictorFieldName,
     missingValueStrategy,
-    periodTypes,
     PredictorFormField,
     predictorRequiredFields,
 } from "./utils";
@@ -47,7 +47,7 @@ const useValidations = (field: PredictorFormField): { validation?: (...args: any
 };
 
 export const RenderPredictorWizardField: React.FC<{ row: number; field: PredictorFormField }> = ({ row, field }) => {
-    const name = `predictors[${row}.${field}]`;
+    const name = `users[${row}].${field}`;
     const { validation, props: validationProps = {} } = useValidations(field);
     const props = {
         name,
@@ -55,39 +55,35 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         validate: validation,
         ...validationProps,
     };
+    console.log(props)
     /*
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
 */
     switch (field) {
         case "id":
-        case "code":
-        case "description":
-        case "name":
-        case "generator.description":
-        case "sampleSkipTest.description":
+        case "email":
+        case "firstName":
+        case "surname":
             return <FormField {...props} component={InputFieldFF} />;
-        case "periodType":
-            return <FormField {...props} component={SingleSelectFieldFF} options={periodTypes} />;
+        case "userGroups":
+        case "userRoles":
+        case "organisationUnits":
+        case "dataViewOrganisationUnits":
+            return <FormField {...props} component={OrgUnitLevelsFF} />;
         case "organisationUnitLevels":
             return <FormField {...props} component={OrgUnitLevelsFF} />;
-        case "generator.missingValueStrategy":
-            return <FormField {...props} component={SingleSelectFieldFF} options={missingValueStrategy} />;
-        case "sequentialSampleCount":
-        case "annualSampleCount":
-        case "sequentialSkipCount":
-        case "scheduling.sequence":
-        case "scheduling.variable":
-            return <FormField {...props} component={NumberInputFF} defaultValue="0" min="0" />;
+            case "disabled":
+                return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         default:
             return null;
     }
 };
 
 export const RenderPredictorImportField: React.FC<{ row: number; field: PredictorFormField }> = ({ row, field }) => {
-    const name = `predictors[${row}.${field}]`;
+    const name = `users[${row}.${field}]`;
     const { validation, props: validationProps = {} } = useValidations(field);
-
+    console.log(field)
     const props = {
         name,
         placeholder: getPredictorFieldName(field),

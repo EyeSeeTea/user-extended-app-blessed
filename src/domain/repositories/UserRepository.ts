@@ -6,6 +6,8 @@ export interface UserRepository {
     getCurrent(): FutureData<User>;
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
     getById(id: string): FutureData<User>;
+    save(users: User[]): FutureData<any>;
+
 }
 
 export interface ListOptions {

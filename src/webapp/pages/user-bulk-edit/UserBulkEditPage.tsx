@@ -43,17 +43,18 @@ export const UserBulkEditPage = () => {
     //const loading = useLoading();
 
     const location = useLocation<{ users: User[] }>();
-    const [usersToEdit] = React.useState<User[]>(location.state?.users ?? []);
+    const [users] = React.useState<User[]>(location.state?.users ?? []);
+    console.log(users)
     const [summary, setSummary] = useState<any[]>(); //MetadataResponse
-    const [columns, setColumns] = useState<string[]>(basePredictorColumns);
+    const [columns, setColumns] = useState<string[]>(baseUserColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
     const goHome = useCallback(() => goBack(true), [goBack]);
 
     const onSubmit = useCallback(
-        async ({ usersToEdit }: { usersToEdit: User[] }) => {
+        async ({ users }: { users: User[] }) => {
             //loading.show(true, i18n.t("Saving predictors"));
-            console.log("here!!");
+            console.log(users);
             //const { data = [], error } = await compositionRoot.users.save(users).runAsync();
             //if (error) return error ?? i18n.t("Network error");
             //loading.reset();
@@ -67,11 +68,38 @@ export const UserBulkEditPage = () => {
         },
         [compositionRoot, goHome]
     );
+    const title = i18n.t("Edit users");
+
+    if (users.length === 0) return <Redirect to="/" />;
+    const closeSummary = () => setSummary(undefined);
+
     return (
-        <Form<{ usersToEdit: User[] }>
+        <Wrapper>
+            <PageHeader onBackClick={goBack} title={title}>
+                <IconButton
+                    tooltip={i18n.t("Column settings")}
+                    onClick={() => setColumnSelectorOpen(true)}
+                    style={{ float: "right" }}
+                >
+                    <ViewColumn />
+                </IconButton>
+            </PageHeader>
+            {summary ? <ImportSummary results={summary} onClose={closeSummary} /> : null}
+
+            {columnSelectorOpen && (
+                <ColumnSelectorDialog
+                    columns={predictorFormFields}
+                    visibleColumns={columns}
+                    onChange={setColumns}
+                    getName={getPredictorFieldName}
+                    onCancel={() => setColumnSelectorOpen(false)}
+                />
+            )}
+        <Container>
+        <Form<{ users: User[] }>
             autocomplete="off"
             onSubmit={onSubmit}
-            initialValues={{ usersToEdit }}
+            initialValues={{ users }}
             render={({ handleSubmit, values, submitError }) => (
                 <StyledForm onSubmit={handleSubmit}>
                     <MaxHeight>
@@ -80,7 +108,7 @@ export const UserBulkEditPage = () => {
                                 <Grid
                                     height={height}
                                     width={width}
-                                    rowCount={values.usersToEdit.length + 1}
+                                    rowCount={values.users.length + 1}
                                     columnCount={columns.length + 1}
                                     estimatedColumnWidth={250}
                                     estimatedRowHeight={70}
@@ -112,66 +140,12 @@ export const UserBulkEditPage = () => {
                 </StyledForm>
             )}
         />
+        </Container>
+        </Wrapper>
     );
 };
-/*
-    <ConfirmationDialog
-                title={i18n.t("Edit users")}
-                open={true}
-                onCancel={() => console.log("cancel")}
-                onSave={() => console.log("save")}
-                maxWidth={"lg"}
-                fullWidth={true}
-            >
-                <Form<{ usersToEdit: User[] }>
-                    autocomplete="off"
-                    onSubmit={onSubmit}
-                    initialValues={{ usersToEdit }}
-                    render={({ handleSubmit, values, submitError }) => (
-                        <StyledForm onSubmit={handleSubmit}>
-                            <MaxHeight>
-                                <AutoSizer>
-                                    {({ height, width }: {height: number, width: number}) => (
-                                        <Grid
-                                            height={height}
-                                            width={width}
-                                            rowCount={values.usersToEdit.length + 1}
-                                            columnCount={columns.length + 1}
-                                            estimatedColumnWidth={250}
-                                            estimatedRowHeight={70}
-                                            rowHeight={rowHeight}
-                                            columnWidth={columnWidth}
-                                            itemData={{ columns }}
-                                        >
-                                            {Row}
-                                        </Grid>
-                                    )}
-                                </AutoSizer>
-                            </MaxHeight>
-
-                            {submitError && (
-                                <NoticeBox title={i18n.t("Error saving users")} error={true}>
-                                    {submitError}
-                                </NoticeBox>
-                            )}
-
-                            <ButtonsRow middle>
-                                <Button type="submit" primary>
-                                    {i18n.t("Save")}
-                                </Button>
-
-                                <Button type="reset" onClick={goHome}>
-                                    {i18n.t("Close")}
-                                </Button>
-                            </ButtonsRow>
-                        </StyledForm>
-                    )}
-                />
-
-
-            </ConfirmationDialog>
-*/
-const basePredictorColumns = ["id", "name", "email", "userCredentials.userRoles", "userCredentials.userGroups"];
+//"userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"
+const baseUserColumns = ["id", "firstName", "surname", "email", "disabled"];
 
 const MaxHeight = styled.div`
     height: 95%;
@@ -199,7 +173,6 @@ interface RowItemProps {
 
 const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
     const form = useForm<{ users: User[] }>();
-
     const headerRow = rowIndex === 0;
     const deleteRow = columnIndex === 0;
     const row = rowIndex - 1;
