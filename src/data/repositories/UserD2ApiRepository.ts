@@ -9,6 +9,7 @@ import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { Instance } from "../entities/Instance";
 import { UserModel } from "../models/UserModel";
+import { ListFilters, ListFilterType } from "../../domain/repositories/UserRepository";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -52,6 +53,26 @@ export class UserD2ApiRepository implements UserRepository {
             return Future.success(this.mapUser(user));
         });
     }
+
+    private getFullUsers(options: ListOptions): FutureData<any[]> {
+        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+
+        const predictorData$ =  apiToFuture(
+            this.api.models.users.get({
+                fields,
+                page,
+                pageSize,
+                paging: false,
+                filter: {
+                    identifiable: search ? { token: search } : undefined,
+                    ...otherFilters,
+                },
+                order: `${sorting.field}:${sorting.order}`,
+            })
+        );
+        return predictorData$.map(({ objects }) => objects);
+    }
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
         const validations = usersToSave.map(user => UserModel.decode(user));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));
@@ -59,8 +80,27 @@ export class UserD2ApiRepository implements UserRepository {
         if (errors.length > 0) {
             return Future.error(errors.join("\n"));
         }
-        //there's an error with the date being sent as an object or something 
-        return apiToFuture(this.api.metadata.post({ users })).map((metadataResponse) => metadataResponse);
+       const userIds = users.map(user => user.id);
+       const listOptions = {
+        filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
+    };
+    return this.getFullUsers(listOptions).flatMap(existingUsers =>
+        { 
+            const usersToSend = existingUsers.map((existingUser, index) => ({ 
+                ...existingUser, 
+                email: usersToSave[index]?.email,
+                firstName: usersToSave[index]?.firstName,
+                surname: usersToSave[index]?.surname,
+                userCredentials: {
+                    ...existingUser.userCredentials,
+                    disabled: usersToSave[index]?.disabled, 
+                    userRoles: usersToSave[index]?.userRoles,
+                    username: usersToSave[index]?.username,
+                    
+                },
+                
+            }));
+        return apiToFuture(this.api.metadata.post({ users: usersToSend })).map(data => data) });
     }
 
     private mapUser(user: D2ApiUser): User {
@@ -70,12 +110,12 @@ export class UserD2ApiRepository implements UserRepository {
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
-            lastUpdated: new Date(user.lastUpdated),
-            created: new Date(user.created),
+            lastUpdated: user.lastUpdated,
+            created: user.created,
             userGroups: user.userGroups,
             username: user.userCredentials.username,
             userRoles: user.userCredentials.userRoles,
-            lastLogin: new Date(user.userCredentials.lastLogin),
+            lastLogin: user.userCredentials.lastLogin,
             disabled: user.userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,

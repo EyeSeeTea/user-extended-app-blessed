@@ -8,13 +8,13 @@ export interface User {
     firstName: string;
     surname: string;
     email: string;
-    lastUpdated: Date;
-    created: Date;
+    lastUpdated: string;
+    created: string;
     userRoles: UserRole[];
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
-    lastLogin: Date;
+    lastLogin: string;
     disabled: boolean;
     access: AccessPermissions;
 }

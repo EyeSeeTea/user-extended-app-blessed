@@ -7,7 +7,6 @@ import { GetUserByIdUseCase } from "./domain/usecases/GetUserByIdUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 
-
 export function getCompositionRoot(instance: Instance) {
     const instanceRepository = new InstanceD2ApiRepository(instance);
     const userRepository = new UserD2ApiRepository(instance);
@@ -20,7 +19,7 @@ export function getCompositionRoot(instance: Instance) {
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
             get: new GetUserByIdUseCase(userRepository),
-            save: new SaveUsersUseCase(userRepository)
+            save: new SaveUsersUseCase(userRepository),
         }),
     };
 }

@@ -49,7 +49,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 compositionRoot.users.list(listOptions).run(
                     ({ objects }: { objects: User[] }) => {
                         console.log(objects);
-                        // state: { users: objects }
                         history.push({ pathname: `/bulk-edit`, state: { users: objects } });
                     },
                     error => snackbar.error(error)

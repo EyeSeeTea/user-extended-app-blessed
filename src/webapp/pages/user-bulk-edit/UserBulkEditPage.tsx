@@ -3,7 +3,6 @@ import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
 //import { useLoading } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
-import _ from "lodash";
 import { IconButton } from "material-ui";
 import React, { useCallback, useState } from "react";
 import { Form, useForm } from "react-final-form";
@@ -43,7 +42,7 @@ export const UserBulkEditPage = () => {
 
     const location = useLocation<{ users: User[] }>();
     const [users] = React.useState<User[]>(location.state?.users ?? []);
-    const [summary, setSummary] = useState<MetadataResponse[]>();
+    const [summary, setSummary] = useState<any>();
     const [columns, setColumns] = useState<string[]>(baseUserColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
@@ -52,11 +51,16 @@ export const UserBulkEditPage = () => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             //loading.show(true, i18n.t("Saving predictors"));
-            const { data = [], error } = await compositionRoot.users.save(users).runAsync();
+            const  { data, error } = await compositionRoot.users.save(users).runAsync();
+            console.log(data)
             if (error) return error ?? i18n.t("Network error");
             //loading.reset();
-
-           /* if (_.some(data, foo => foo.status === "ERROR")) {
+            if (data && data.status === "ERROR") {
+                setSummary(data);
+            } else {
+                goHome();
+            }
+           /*if (_.some(data, foo => foo.status === "ERROR")) {
                 setSummary(data);
             } else {
                 goHome();
