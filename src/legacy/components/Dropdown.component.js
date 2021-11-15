@@ -1,11 +1,10 @@
 import isString from "d2-utilizr/lib/isString";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
 import MenuItem from "material-ui/MenuItem/MenuItem";
 import SelectField from "material-ui/SelectField/SelectField";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 
 /* Selector wrapper.
    When options.length < props.limit -> show a normal SelectField,
@@ -89,14 +88,22 @@ class Dropdown extends React.Component {
 
         return this.state.options.length > limit ? (
             <div style={{ width: fullWidth ? "100%" : "inherit", position: "relative" }}>
-                <Dialog
+                <ConfirmationDialog
+                    open={this.state.dialogOpen}
+                    title={labelText}
+                    maxWidth={"lg"}
+                    fullWidth={true}
+                    onCancel={this.closeDialog}
+                    cancelText={this.getTranslation("cancel")}
+                >
+                    {/*<Dialog
                     title={labelText}
                     open={this.state.dialogOpen}
                     onRequestClose={this.closeDialog}
                     autoScrollBodyContent
                     autoDetectWindowHeight
                     actions={<FlatButton onClick={this.closeDialog} label={this.getTranslation("cancel")} />}
-                >
+                >*/}
                     <TextField
                         floatingLabelText="Filter list"
                         onChange={(e, value) => {
@@ -116,7 +123,8 @@ class Dropdown extends React.Component {
                                     .every(f => o.text.toLocaleLowerCase().includes(f.toLocaleLowerCase()))
                         )
                         .map(o => this.renderDialogOption(o.value, o.text))}
-                </Dialog>
+                    {/*</Dialog>*/}
+                </ConfirmationDialog>
                 <TextField
                     {...other}
                     fullWidth={fullWidth}
