@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
 import _m from "../../utils/lodash-mixins";
-import { getOrgUnitsPaths } from "../../utils/dhis2Helpers";
+import { getOrgUnitsPaths, listWithInFilter } from "../../utils/dhis2Helpers";
 
 class OrgUnitDialog extends React.Component {
     constructor(props, context) {
@@ -79,17 +79,19 @@ class OrgUnitDialog extends React.Component {
         this.setState({ selected });
     }
 
-    save = () => {
+    async save() {
+        const { d2 } = this.context;
         const { selected } = this.state;
+
+        const orgUnitIds = selected.map(path => _.last(path.split("/")));
+        const selectedOus = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
+            paging: false,
+            fields: "id,displayName,shortName,path",
+        });
 
         this.setState({ loading: true });
         this.model
-            .save(
-                this.props.models,
-                selected,
-                selected.map(ou => ou.id),
-                this.state.updateStrategy
-            )
+            .save(this.props.models, selectedOus, orgUnitIds, this.state.updateStrategy)
             .then(() => {
                 this.setState({ loading: false });
                 this.props.onOrgUnitAssignmentSaved();
@@ -100,7 +102,7 @@ class OrgUnitDialog extends React.Component {
                 this.props.onOrgUnitAssignmentError(err);
                 this.props.onRequestClose();
             });
-    };
+    }
 
     render() {
         return (
