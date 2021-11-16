@@ -79,15 +79,6 @@ class MultipleFilter extends React.Component {
 
         return (
             <div style={this.styles.wrapper}>
-                {/*<Dialog
-                    title={title}
-                    actions={dialogButtons}
-                    autoScrollBodyContent={true}
-                    autoDetectWindowHeight={true}
-                    contentStyle={this.styles.dialog}
-                    open={dialogOpen}
-                    onRequestClose={this.closeDialog}
-                >*/}
                 <ConfirmationDialog
                     open={dialogOpen}
                     title={title}
@@ -105,7 +96,6 @@ class MultipleFilter extends React.Component {
                         onChange={this.onChange}
                     />
                 </ConfirmationDialog>
-                {/*</Dialog>*/}
 
                 <TextField
                     value={this.fieldValue}
