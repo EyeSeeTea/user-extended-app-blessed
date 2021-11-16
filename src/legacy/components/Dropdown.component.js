@@ -96,14 +96,6 @@ class Dropdown extends React.Component {
                     onCancel={this.closeDialog}
                     cancelText={this.getTranslation("cancel")}
                 >
-                    {/*<Dialog
-                    title={labelText}
-                    open={this.state.dialogOpen}
-                    onRequestClose={this.closeDialog}
-                    autoScrollBodyContent
-                    autoDetectWindowHeight
-                    actions={<FlatButton onClick={this.closeDialog} label={this.getTranslation("cancel")} />}
-                >*/}
                     <TextField
                         floatingLabelText="Filter list"
                         onChange={(e, value) => {
@@ -123,7 +115,6 @@ class Dropdown extends React.Component {
                                     .every(f => o.text.toLocaleLowerCase().includes(f.toLocaleLowerCase()))
                         )
                         .map(o => this.renderDialogOption(o.value, o.text))}
-                    {/*</Dialog>*/}
                 </ConfirmationDialog>
                 <TextField
                     {...other}
