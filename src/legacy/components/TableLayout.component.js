@@ -53,16 +53,6 @@ class TableLayout extends React.Component {
 
         return (
             <div style={this.styles.wrapper}>
-                {/*<Dialog
-                    *title={title}
-                    actions={this.getDialogButtons()}
-                    autoScrollBodyContent={true}
-                    autoDetectWindowHeight={true}
-                    contentStyle={this.styles.dialog}
-                    *open={true}
-                    bodyStyle={this.styles.body}
-                    onRequestClose={this.cancel}
-                >*/}
                 <ConfirmationDialog
                     open={true}
                     title={title}
@@ -82,7 +72,6 @@ class TableLayout extends React.Component {
                         sortable={true}
                     />
                 </ConfirmationDialog>
-                {/*</Dialog>*/}
             </div>
         );
     };
