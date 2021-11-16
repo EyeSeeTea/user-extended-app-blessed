@@ -171,7 +171,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeOptions: [10, 25, 50, 100, 500, 1000],
                 pageSizeInitialValue: 25,
             },
-            searchBoxLabel: i18n.t("Search by name"),
+            searchBoxLabel: i18n.t("Search by name or username..."),
         };
     }, [props, enableReplicate]);
 
@@ -224,6 +224,7 @@ export const columns: TableColumn<User>[] = [
         text: i18n.t("Disabled"),
         getValue: row => (row.disabled ? <Check /> : undefined),
     },
+    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
 ];
 
 function checkAccess(requiredKeys: string[]) {

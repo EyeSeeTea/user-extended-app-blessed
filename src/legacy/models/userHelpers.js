@@ -159,6 +159,7 @@ function getPlainUser(user, { orgUnitsField }) {
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
         disabled: userCredentials.disabled,
+        openId: userCredentials.openId,
     };
 }
 

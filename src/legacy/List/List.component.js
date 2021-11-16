@@ -67,7 +67,7 @@ export class ListHybrid extends React.Component {
     };
 
     componentWillUnmount = () => {
-        this.observerDisposables.forEach(disposable => disposable.dispose());
+        this.observerDisposables.forEach(disposable => disposable.dispose?.());
     };
 
     registerDisposable = disposable => {

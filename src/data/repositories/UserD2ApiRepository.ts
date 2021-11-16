@@ -31,10 +31,8 @@ export class UserD2ApiRepository implements UserRepository {
                 page,
                 pageSize,
                 paging: true,
-                filter: {
-                    identifiable: search ? { token: search } : undefined,
-                    ...otherFilters,
-                },
+                query: search,
+                filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
@@ -72,6 +70,7 @@ export class UserD2ApiRepository implements UserRepository {
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
+            openId: user.userCredentials.openId ?? "",
         };
     }
 }
@@ -90,6 +89,7 @@ const fields = {
         userRoles: { id: true, name: true, authorities: true },
         lastLogin: true,
         disabled: true,
+        openId: true,
     },
     organisationUnits: { id: true, name: true },
     dataViewOrganisationUnits: { id: true, name: true },
