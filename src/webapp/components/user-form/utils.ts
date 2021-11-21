@@ -3,18 +3,9 @@ import i18n from "../../../locales";
 
 export type PredictorFormField = typeof predictorFormFields[number];
 
-export const predictorFormFields = [
-    "id",
-    "firstName",
-    "surname",
-    "name",
-    "email",
-    "username",
-    "disabled"
+export const predictorFormFields = ["id", "firstName", "surname", "name", "email", "username", "disabled"];
 
-];
-
-export const predictorRequiredFields: PredictorFormField[] = ["id","name"];
+export const predictorRequiredFields: PredictorFormField[] = ["id", "name"];
 
 export const getPredictorName = (field: PredictorFormField) => {
     switch (field) {

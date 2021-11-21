@@ -33,5 +33,5 @@ export const UserModel: Codec<User> = Schema.object({
     dataViewOrganisationUnits: Schema.array(NamedRefModel),
     lastLogin: Schema.nonEmptyString,
     disabled: Schema.boolean,
-    access: AccessPermissionsModel
+    access: AccessPermissionsModel,
 });

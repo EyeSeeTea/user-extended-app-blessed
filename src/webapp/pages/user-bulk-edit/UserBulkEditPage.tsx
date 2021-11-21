@@ -51,8 +51,8 @@ export const UserBulkEditPage = () => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             //loading.show(true, i18n.t("Saving predictors"));
-            const  { data, error } = await compositionRoot.users.save(users).runAsync();
-            console.log(data)
+            const { data, error } = await compositionRoot.users.save(users).runAsync();
+            console.log(data);
             if (error) return error ?? i18n.t("Network error");
             //loading.reset();
             if (data && data.status === "ERROR") {
@@ -60,7 +60,7 @@ export const UserBulkEditPage = () => {
             } else {
                 goHome();
             }
-           /*if (_.some(data, foo => foo.status === "ERROR")) {
+            /*if (_.some(data, foo => foo.status === "ERROR")) {
                 setSummary(data);
             } else {
                 goHome();
@@ -96,52 +96,52 @@ export const UserBulkEditPage = () => {
                     onCancel={() => setColumnSelectorOpen(false)}
                 />
             )}
-        <Container>
-        <Form<{ users: User[] }>
-            autocomplete="off"
-            onSubmit={onSubmit}
-            initialValues={{ users }}
-            render={({ handleSubmit, values, submitError }) => (
-                <StyledForm onSubmit={handleSubmit}>
-                    <MaxHeight>
-                        <AutoSizer>
-                            {({ height, width }: { height: number; width: number }) => (
-                                <Grid
-                                    height={height}
-                                    width={width}
-                                    rowCount={values.users.length + 1}
-                                    columnCount={columns.length + 1}
-                                    estimatedColumnWidth={250}
-                                    estimatedRowHeight={70}
-                                    rowHeight={rowHeight}
-                                    columnWidth={columnWidth}
-                                    itemData={{ columns }}
-                                >
-                                    {Row}
-                                </Grid>
+            <Container>
+                <Form<{ users: User[] }>
+                    autocomplete="off"
+                    onSubmit={onSubmit}
+                    initialValues={{ users }}
+                    render={({ handleSubmit, values, submitError }) => (
+                        <StyledForm onSubmit={handleSubmit}>
+                            <MaxHeight>
+                                <AutoSizer>
+                                    {({ height, width }: { height: number; width: number }) => (
+                                        <Grid
+                                            height={height}
+                                            width={width}
+                                            rowCount={values.users.length + 1}
+                                            columnCount={columns.length + 1}
+                                            estimatedColumnWidth={250}
+                                            estimatedRowHeight={70}
+                                            rowHeight={rowHeight}
+                                            columnWidth={columnWidth}
+                                            itemData={{ columns }}
+                                        >
+                                            {Row}
+                                        </Grid>
+                                    )}
+                                </AutoSizer>
+                            </MaxHeight>
+
+                            {submitError && (
+                                <NoticeBox title={i18n.t("Error saving users")} error={true}>
+                                    {submitError}
+                                </NoticeBox>
                             )}
-                        </AutoSizer>
-                    </MaxHeight>
 
-                    {submitError && (
-                        <NoticeBox title={i18n.t("Error saving users")} error={true}>
-                            {submitError}
-                        </NoticeBox>
+                            <ButtonsRow middle>
+                                <Button type="submit" primary>
+                                    {i18n.t("Save")}
+                                </Button>
+
+                                <Button type="reset" onClick={goHome}>
+                                    {i18n.t("Close")}
+                                </Button>
+                            </ButtonsRow>
+                        </StyledForm>
                     )}
-
-                    <ButtonsRow middle>
-                        <Button type="submit" primary>
-                            {i18n.t("Save")}
-                        </Button>
-
-                        <Button type="reset" onClick={goHome}>
-                            {i18n.t("Close")}
-                        </Button>
-                    </ButtonsRow>
-                </StyledForm>
-            )}
-        />
-        </Container>
+                />
+            </Container>
         </Wrapper>
     );
 };

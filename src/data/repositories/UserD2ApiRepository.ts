@@ -58,7 +58,7 @@ export class UserD2ApiRepository implements UserRepository {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
-        const predictorData$ =  apiToFuture(
+        const predictorData$ = apiToFuture(
             this.api.models.users.get({
                 fields,
                 page,
@@ -80,27 +80,25 @@ export class UserD2ApiRepository implements UserRepository {
         if (errors.length > 0) {
             return Future.error(errors.join("\n"));
         }
-       const userIds = users.map(user => user.id);
-       const listOptions = {
-        filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
-    };
-    return this.getFullUsers(listOptions).flatMap(existingUsers =>
-        { 
-            const usersToSend = existingUsers.map((existingUser, index) => ({ 
-                ...existingUser, 
+        const userIds = users.map(user => user.id);
+        const listOptions = {
+            filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
+        };
+        return this.getFullUsers(listOptions).flatMap(existingUsers => {
+            const usersToSend = existingUsers.map((existingUser, index) => ({
+                ...existingUser,
                 email: usersToSave[index]?.email,
                 firstName: usersToSave[index]?.firstName,
                 surname: usersToSave[index]?.surname,
                 userCredentials: {
                     ...existingUser.userCredentials,
-                    disabled: usersToSave[index]?.disabled, 
+                    disabled: usersToSave[index]?.disabled,
                     userRoles: usersToSave[index]?.userRoles,
                     username: usersToSave[index]?.username,
-                    
                 },
-                
             }));
-        return apiToFuture(this.api.metadata.post({ users: usersToSend })).map(data => data) });
+            return apiToFuture(this.api.metadata.post({ users: usersToSend })).map(data => data);
+        });
     }
 
     private mapUser(user: D2ApiUser): User {

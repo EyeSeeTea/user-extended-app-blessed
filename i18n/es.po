@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-11-11T11:46:52.240Z\n"
+"POT-Creation-Date: 2021-11-15T11:19:02.027Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -95,10 +95,22 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
+msgid "First Name"
+msgstr ""
+
 msgid "Name"
 msgstr ""
 
-msgid "Description"
+msgid "Surname"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Disabled"
 msgstr ""
 
 msgid "Output data element"
@@ -107,97 +119,10 @@ msgstr ""
 msgid "Output category combo"
 msgstr ""
 
-msgid "Period type"
-msgstr ""
-
-msgid "Annual sample count"
-msgstr ""
-
-msgid "Sequential sample count"
-msgstr ""
-
-msgid "Sequential skip count"
-msgstr ""
-
 msgid "Organisation unit levels"
 msgstr ""
 
 msgid "Predictor groups"
-msgstr ""
-
-msgid "Generator description"
-msgstr ""
-
-msgid "Missing value strategy"
-msgstr ""
-
-msgid "Generator formula"
-msgstr ""
-
-msgid "Sample skip test description"
-msgstr ""
-
-msgid "Sample skip test formula"
-msgstr ""
-
-msgid "Sequence"
-msgstr ""
-
-msgid "Variable"
-msgstr ""
-
-msgid "Daily"
-msgstr ""
-
-msgid "Weekly"
-msgstr ""
-
-msgid "Weekly starting Wednesday"
-msgstr ""
-
-msgid "Weekly starting Thursday"
-msgstr ""
-
-msgid "Weekly starting Saturday"
-msgstr ""
-
-msgid "Weekly starting Sunday"
-msgstr ""
-
-msgid "Biweekly"
-msgstr ""
-
-msgid "Monthly"
-msgstr ""
-
-msgid "Bi-monthly"
-msgstr ""
-
-msgid "Quarterly"
-msgstr ""
-
-msgid "Six-monthly"
-msgstr ""
-
-msgid "Six-monthly starting April"
-msgstr ""
-
-msgid "Six-monthly starting November"
-msgstr ""
-
-msgid "Yearly"
-msgstr ""
-
-msgid "Financial year starting April"
-msgstr ""
-
-msgid "Financial year starting July"
-msgstr ""
-
-msgid "Financial year starting October"
-msgstr ""
-
-msgid "Financial year starting November"
 msgstr ""
 
 msgid "Skip if any value is missing"
@@ -209,9 +134,6 @@ msgstr ""
 msgid "Never skip"
 msgstr ""
 
-msgid "Username"
-msgstr ""
-
 msgid "Last updated"
 msgstr ""
 
@@ -219,9 +141,6 @@ msgid "Last login"
 msgstr ""
 
 msgid "ID"
-msgstr ""
-
-msgid "Email"
 msgstr ""
 
 msgid "Roles"
@@ -278,16 +197,10 @@ msgstr ""
 msgid "First name"
 msgstr ""
 
-msgid "Surname"
-msgstr ""
-
 msgid "Organisation units"
 msgstr ""
 
 msgid "Data view organisation units"
-msgstr ""
-
-msgid "Disabled"
 msgstr ""
 
 msgid "Saving predictors"
@@ -296,13 +209,16 @@ msgstr ""
 msgid "Network error"
 msgstr ""
 
+msgid "Edit users"
+msgstr ""
+
+msgid "Column settings"
+msgstr ""
+
 msgid "Error saving users"
 msgstr ""
 
 msgid "Save"
-msgstr ""
-
-msgid "Edit users"
 msgstr ""
 
 msgid "Delete"

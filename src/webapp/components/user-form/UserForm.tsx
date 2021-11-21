@@ -8,7 +8,7 @@ import {
     InputFieldFF,
     integer,
     MultiSelectFieldFF,
-    CheckboxFieldFF
+    CheckboxFieldFF,
 } from "@dhis2/ui";
 import React from "react";
 import i18n from "../../../locales";
@@ -18,12 +18,7 @@ import { NumberInputFF } from "../form/fields/NumberInputFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import { OrgUnitLevelsFF } from "./components/OrgUnitLevelsFF";
 //import { OutputFF } from "./components/OutputFF";
-import {
-    getPredictorFieldName,
-    missingValueStrategy,
-    PredictorFormField,
-    predictorRequiredFields,
-} from "./utils";
+import { getPredictorFieldName, missingValueStrategy, PredictorFormField, predictorRequiredFields } from "./utils";
 
 const useValidations = (field: PredictorFormField): { validation?: (...args: any[]) => any; props?: object } => {
     switch (field) {
@@ -55,7 +50,7 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         validate: validation,
         ...validationProps,
     };
-   // console.log(props)
+    // console.log(props)
     /*
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
@@ -73,8 +68,8 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
             return <FormField {...props} component={OrgUnitLevelsFF} />;
         case "organisationUnitLevels":
             return <FormField {...props} component={OrgUnitLevelsFF} />;
-            case "disabled":
-                return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
+        case "disabled":
+            return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         default:
             return null;
     }
