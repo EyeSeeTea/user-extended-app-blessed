@@ -84,9 +84,14 @@ export class UserD2ApiRepository implements UserRepository {
         const listOptions = {
             filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
         };
+        console.log(usersToSave)
         return this.getFullUsers(listOptions).flatMap(existingUsers => {
+            console.log(existingUsers)
             const usersToSend = existingUsers.map((existingUser, index) => ({
                 ...existingUser,
+                organisationUnits: usersToSave[index]?.organisationUnits,
+                dataViewOrganisationUnits: usersToSave[index]?.dataViewOrganisationUnits,
+                userGroups: usersToSave[index]?.userGroups,
                 email: usersToSave[index]?.email,
                 firstName: usersToSave[index]?.firstName,
                 surname: usersToSave[index]?.surname,
@@ -97,6 +102,7 @@ export class UserD2ApiRepository implements UserRepository {
                     username: usersToSave[index]?.username,
                 },
             }));
+            console.log(usersToSend)
             return apiToFuture(this.api.metadata.post({ users: usersToSend })).map(data => data);
         });
     }

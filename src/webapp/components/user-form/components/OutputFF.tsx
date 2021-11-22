@@ -1,5 +1,4 @@
-export {};
-/*import { FieldState, SingleSelectField, SingleSelectOption } from "@dhis2/ui";
+import { FieldState, SingleSelectField, SingleSelectOption } from "@dhis2/ui";
 import _ from "lodash";
 import React, { useCallback } from "react";
 import { useField } from "react-final-form";
@@ -14,7 +13,7 @@ export const OutputFF: React.FC<CategoryOptionComboFFProps> = ({ input, optionCo
     const { compositionRoot } = useAppContext();
     const { input: optionComboInput } = useField(optionComboField);
 
-    const { data: dataElements = [] } = useFuture(
+    /*const { data: dataElements = [] } = useFuture(
         () =>
             compositionRoot.metadata
                 .list(
@@ -24,47 +23,40 @@ export const OutputFF: React.FC<CategoryOptionComboFFProps> = ({ input, optionCo
                 )
                 .map(({ objects }) => buildOptions(objects as unknown as DataElementWithCategoryOptionCombo[])),
         []
-    );
+    );*/
+    const dataElements = [{ label: "test1", value: "test1" }];
 
     const onChangeDataElement = useCallback(
         ({ selected }) => {
             const dataElement = dataElements.find(item => item.value === selected);
             if (dataElement) {
                 input.onChange({ id: dataElement.value, name: dataElement.label });
-                const categoryOption = dataElement.categoryOptions[0];
+                /*const categoryOption = dataElement.categoryOptions[0];
                 optionComboInput.onChange(
                     categoryOption ? { id: categoryOption.value, name: categoryOption.label } : undefined
-                );
+                );*/
             }
         },
         [dataElements, input, optionComboInput]
     );
 
-    const onChangeOptionCombo = useCallback(
-        ({ selected }) => {
-            const optionCombo = dataElements
-                .find(item => item.value === input.value.id)
-                ?.categoryOptions.find(item => item.value === selected);
-
-            if (optionCombo) {
-                optionComboInput.onChange({ id: optionCombo.value, name: optionCombo.label });
-            }
-        },
-        [dataElements, input, optionComboInput]
-    );
-
+        //categoryOptions: []
     const dataElementItems = _.unionBy(
         dataElements,
-        [{ value: input.value.id, label: i18n.t("Invalid option"), categoryOptions: [] }],
+        [{ value: input.value.id, label: i18n.t("Invalid option") }],
         ({ value }) => value
     );
 
-    const categoryItems = _.unionBy(
+    /*const categoryItems = _.unionBy(
         dataElements.find(({ value }) => value === input.value.id)?.categoryOptions,
         [{ value: optionComboInput.value.id, label: i18n.t("Invalid option") }],
         ({ value }) => value
-    );
-
+    );*/
+    /*
+        {categoryItems.map(({ value, label }) => (
+                        <SingleSelectOption value={value} label={label} key={value} />
+                    ))}
+    */
     return (
         <React.Fragment>
             <SingleSelectField onChange={onChangeDataElement} selected={input.value.id} filterable={true}>
@@ -72,17 +64,6 @@ export const OutputFF: React.FC<CategoryOptionComboFFProps> = ({ input, optionCo
                     <SingleSelectOption value={value} label={label} key={value} />
                 ))}
             </SingleSelectField>
-
-            {(dataElements.find(({ value }) => value === input.value.id)?.categoryOptions.length ?? 0) > 1 && (
-                <React.Fragment>
-                    <Row>{getPredictorFieldName("outputCombo")}</Row>
-                    <SingleSelectField onChange={onChangeOptionCombo} selected={optionComboInput.value.id}>
-                        {categoryItems.map(({ value, label }) => (
-                            <SingleSelectOption value={value} label={label} key={value} />
-                        ))}
-                    </SingleSelectField>
-                </React.Fragment>
-            )}
         </React.Fragment>
     );
 };
@@ -112,4 +93,4 @@ const buildOptions = (
 const Row = styled.div`
     margin: 20px 0;
 `;
-*/
+

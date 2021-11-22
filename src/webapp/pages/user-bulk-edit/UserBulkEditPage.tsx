@@ -53,6 +53,7 @@ export const UserBulkEditPage = () => {
             //loading.show(true, i18n.t("Saving predictors"));
             const { data, error } = await compositionRoot.users.save(users).runAsync();
             console.log(data);
+            console.log(error);
             if (error) return error ?? i18n.t("Network error");
             //loading.reset();
             if (data && data.status === "ERROR") {
@@ -146,7 +147,7 @@ export const UserBulkEditPage = () => {
     );
 };
 //"userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"
-const baseUserColumns = ["id", "firstName", "surname", "email", "disabled"];
+const baseUserColumns = ["id", "firstName", "surname", "email", "disabled", "userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"];
 
 const MaxHeight = styled.div`
     height: 95%;

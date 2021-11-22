@@ -1,31 +1,39 @@
+import React from "react";
 import { TransferOption } from "@dhis2/ui";
 import { NamedRef } from "../../../../domain/entities/Ref";
 import { useAppContext } from "../../../contexts/app-context";
 import { useFuture } from "../../../hooks/useFuture";
 import { TransferFF, TransferFFProps } from "../../form/fields/TransferFF";
+import { D2ModelSchemas } from "@eyeseetea/d2-api/2.34";
 
-export const OrgUnitLevelsFF: React.FC<Omit<TransferFFProps, "options">> = props => {
+export interface OrgUnitLevelsFFProps extends TransferFFProps{
+    modelType: keyof D2ModelSchemas;
+}
+export const OrgUnitLevelsFF: React.FC<Omit<OrgUnitLevelsFFProps, "options">> = props => {
     const { compositionRoot } = useAppContext();
-
-    /*const { data: orgUnitLevels = [] } = useFuture(
+    //buildTransferOptions(objects)
+    const { data: orgUnitLevels = [] } = useFuture(
         () =>
-            compositionRoot.metadata.list("organisationUnitLevels").map(({ objects }) => buildTransferOptions(objects)),
+            compositionRoot.metadata.list(props.modelType).map(({objects}) => buildTransferOptions(objects)),
         []
-    );*/
-    const options1 = [{ label: "test1", value: "test1" }];
-
+    );
+    const options = [{value: "test", label: "test"}]
     return (
+        <React.Fragment>
         <TransferFF
             {...props}
             filterable
             filterablePicked
             selectedWidth="100%"
             optionsWidth="100%"
-            options={options1}
+            options={orgUnitLevels}
         />
+        
+        </React.Fragment>
     );
 };
 
 const buildTransferOptions = (options: NamedRef[]): TransferOption[] => {
+    console.log(options)
     return options.map(({ id, name }) => ({ value: id, label: name }));
 };

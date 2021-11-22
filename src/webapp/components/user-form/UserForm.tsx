@@ -17,7 +17,7 @@ import { FormField } from "../form/fields/FormField";
 import { NumberInputFF } from "../form/fields/NumberInputFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import { OrgUnitLevelsFF } from "./components/OrgUnitLevelsFF";
-//import { OutputFF } from "./components/OutputFF";
+import { OutputFF } from "./components/OutputFF";
 import { getPredictorFieldName, missingValueStrategy, PredictorFormField, predictorRequiredFields } from "./utils";
 
 const useValidations = (field: PredictorFormField): { validation?: (...args: any[]) => any; props?: object } => {
@@ -55,6 +55,8 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
 */
+//            return <FormField {...props} component={OutputFF} optionComboField={`users[${row}].${field}`} />;
+//model type for dataViewOrganisationUnits ? 
     switch (field) {
         case "id":
         case "email":
@@ -62,12 +64,13 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         case "surname":
             return <FormField {...props} component={InputFieldFF} />;
         case "userGroups":
+            return <FormField {...props} component={OrgUnitLevelsFF} modelType="userGroups" />;
         case "userRoles":
+            return <FormField {...props} component={OrgUnitLevelsFF} modelType="userRoles" />;
         case "organisationUnits":
+            return <FormField {...props} component={OrgUnitLevelsFF} modelType="organisationUnits" />;
         case "dataViewOrganisationUnits":
-            return <FormField {...props} component={OrgUnitLevelsFF} />;
-        case "organisationUnitLevels":
-            return <FormField {...props} component={OrgUnitLevelsFF} />;
+            return <FormField {...props} component={OrgUnitLevelsFF} modelType="organisationUnitGroups" />;
         case "disabled":
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         default:
@@ -76,7 +79,7 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
 };
 
 export const RenderPredictorImportField: React.FC<{ row: number; field: PredictorFormField }> = ({ row, field }) => {
-    const name = `users[${row}.${field}]`;
+    const name = `users[${row}].${field}`;
     const { validation, props: validationProps = {} } = useValidations(field);
     //console.log(field)
     const props = {
@@ -87,11 +90,10 @@ export const RenderPredictorImportField: React.FC<{ row: number; field: Predicto
     };
 
     switch (field) {
-        case "organisationUnitLevels":
-        case "predictorGroups":
-        case "generator.expression":
-        case "sampleSkipTest.expression":
-        case "output":
+        case "userGroups":
+        case "userRoles":
+        case "organisationUnits":
+        case "dataViewOrganisationUnits":
             return (
                 <PreviewInputFF {...props}>
                     <RenderPredictorWizardField row={row} field={field} />

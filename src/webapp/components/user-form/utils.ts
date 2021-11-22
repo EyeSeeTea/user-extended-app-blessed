@@ -25,6 +25,14 @@ export const getPredictorName = (field: PredictorFormField) => {
             return i18n.t("Email");
         case "disabled":
             return i18n.t("Disabled");
+        case "userRoles":
+            return i18n.t("User Roles");
+        case "userGroups":
+            return i18n.t("User Groups");
+        case "organisationUnits":
+            return i18n.t("Organisation Units");
+        case "dataViewOrganisationUnits":
+            return i18n.t("Data View Organisation Units");
         case "output":
             return i18n.t("Output data element");
         case "outputCombo":
