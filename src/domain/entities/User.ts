@@ -10,7 +10,7 @@ export interface User {
     email: string;
     lastUpdated: string;
     created: string;
-    userRoles: UserRole[];
+    userRoles: NamedRef[];
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
@@ -32,10 +32,11 @@ export interface AccessPermissions {
     manage?: boolean;
 }
 
-export const isSuperAdmin = (user: User): boolean => {
+/*export const isSuperAdmin = (user: User): boolean => {
     return _.some(user.userRoles, ({ authorities }) => authorities.includes("ALL"));
 };
-
+*/
 export const hasReplicateAuthority = (user: User): boolean => {
-    return _.some(user.userRoles, ({ authorities }) => authorities.includes("F_REPLICATE_USER"));
+    return true;
+    //return _.some(user.userRoles, ({ authorities }) => authorities.includes("F_REPLICATE_USER"));
 };

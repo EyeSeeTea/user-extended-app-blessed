@@ -11,12 +11,12 @@ export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     manage: Schema.optional(Schema.boolean),
 });
 
-export const UserRolesModel: Codec<UserRole> = Schema.extend(
+/*export const UserRolesModel: Codec<UserRole> = Schema.extend(
     NamedRefModel,
     Schema.object({
         authorities: Schema.array(Schema.string),
     })
-);
+);*/
 
 export const UserModel: Codec<User> = Schema.object({
     id: Schema.nonEmptyString,
@@ -27,7 +27,7 @@ export const UserModel: Codec<User> = Schema.object({
     email: Schema.nonEmptyString,
     lastUpdated: Schema.nonEmptyString,
     created: Schema.nonEmptyString,
-    userRoles: Schema.array(UserRolesModel),
+    userRoles: Schema.array(NamedRefModel),
     userGroups: Schema.array(NamedRefModel),
     organisationUnits: Schema.array(NamedRefModel),
     dataViewOrganisationUnits: Schema.array(NamedRefModel),

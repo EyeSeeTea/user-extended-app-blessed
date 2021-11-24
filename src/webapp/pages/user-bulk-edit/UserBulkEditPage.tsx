@@ -147,7 +147,7 @@ export const UserBulkEditPage = () => {
     );
 };
 //"userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"
-const baseUserColumns = ["id", "firstName", "surname", "email", "disabled", "userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"];
+const baseUserColumns = ["id", "firstName", "surname", "email", "disabled", "userRoles", "userGroups", "organisationUnits", "organisationUnits"];
 
 const MaxHeight = styled.div`
     height: 95%;

@@ -17,7 +17,8 @@ export const OrgUnitLevelsFF: React.FC<Omit<OrgUnitLevelsFFProps, "options">> = 
             compositionRoot.metadata.list(props.modelType).map(({objects}) => buildTransferOptions(objects)),
         []
     );
-    const options = [{value: "test", label: "test"}]
+    console.log(orgUnitLevels)
+
     return (
         <React.Fragment>
         <TransferFF
@@ -32,8 +33,10 @@ export const OrgUnitLevelsFF: React.FC<Omit<OrgUnitLevelsFFProps, "options">> = 
         </React.Fragment>
     );
 };
-
+interface OptionType extends NamedRef {
+    authorities?: string[];
+}
 const buildTransferOptions = (options: NamedRef[]): TransferOption[] => {
     console.log(options)
-    return options.map(({ id, name }) => ({ value: id, label: name }));
+    return options.map(({ id, name}) => ({ value: id, label: name }));
 };

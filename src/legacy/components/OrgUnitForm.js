@@ -186,7 +186,7 @@ class OrgUnitForm extends React.Component {
                         onUpdateSelection={this.onChange}
                     />
                     <div style={{ marginTop: 16 }}>
-                        <OrgUnitSelectAll selected={selectedPaths} onUpdateSelection={this.onChange} />
+                    <OrgUnitSelectAll selected={selectedPaths} onUpdateSelection={this.onChange} />
                     </div>
                 </div>
                 <div className="organisation-unit-tree__selected">
