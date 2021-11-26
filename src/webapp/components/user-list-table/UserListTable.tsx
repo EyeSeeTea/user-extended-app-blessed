@@ -44,7 +44,9 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "lastUpdated", text: i18n.t("Last updated") },
                 { name: "lastLogin", text: i18n.t("Last login") },
                 { name: "id", text: i18n.t("ID") },
+                { name: "apiUrl", text: i18n.t("API URL") },
                 { name: "email", text: i18n.t("Email") },
+                { name: "openId", text: i18n.t("Open ID") },
                 { name: "userRoles", text: i18n.t("Roles") },
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
@@ -103,7 +105,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Edit"),
                     icon: <Icon>edit</Icon>,
                     multiple: false,
-                    onClick: user => goToUserEditPage(user),
+                    onClick: ([userId]) => goToUserEditPage(userId),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -167,7 +169,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 },
             },
             paginationOptions: {
-                pageSizeOptions: [10, 25, 50, 100],
+                pageSizeOptions: [10, 25, 50, 100, 500, 1000],
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
@@ -209,8 +211,10 @@ export const columns: TableColumn<User>[] = [
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
     { name: "email", sortable: true, text: i18n.t("Email") },
+    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
+    { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
     { name: "userRoles", sortable: false, text: i18n.t("Roles"), hidden: true },
     { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
@@ -222,7 +226,6 @@ export const columns: TableColumn<User>[] = [
         text: i18n.t("Disabled"),
         getValue: row => (row.disabled ? <Check /> : undefined),
     },
-    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
 ];
 
 function checkAccess(requiredKeys: string[]) {

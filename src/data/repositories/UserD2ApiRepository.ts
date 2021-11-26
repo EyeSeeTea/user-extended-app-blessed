@@ -51,6 +51,8 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     private mapUser(user: D2ApiUser): User {
+        const { userCredentials } = user;
+
         return {
             id: user.id,
             name: user.displayName,
@@ -60,14 +62,15 @@ export class UserD2ApiRepository implements UserRepository {
             lastUpdated: new Date(user.lastUpdated),
             created: new Date(user.created),
             userGroups: user.userGroups,
-            username: user.userCredentials.username,
-            userRoles: user.userCredentials.userRoles,
-            lastLogin: new Date(user.userCredentials.lastLogin),
-            disabled: user.userCredentials.disabled,
+            username: userCredentials.username,
+            apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
+            userRoles: userCredentials.userRoles,
+            lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
+            disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
-            openId: user.userCredentials.openId ?? "",
+            openId: userCredentials.openId,
         };
     }
 }

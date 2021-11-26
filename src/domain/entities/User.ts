@@ -10,14 +10,15 @@ export interface User {
     email: string;
     lastUpdated: Date;
     created: Date;
+    apiUrl: string;
     userRoles: UserRole[];
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
-    lastLogin: Date;
+    lastLogin?: Date;
     disabled: boolean;
     access: AccessPermissions;
-    openId: string;
+    openId?: string;
 }
 
 export interface UserRole extends NamedRef {

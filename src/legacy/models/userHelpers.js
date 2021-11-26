@@ -78,7 +78,7 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                     dbField,
                     values,
                     { fields: fields.join(","), paging: false },
-                    { useInOperator: false }
+                    { useInOperator: true }
                 );
 
                 return _(listOfModels)

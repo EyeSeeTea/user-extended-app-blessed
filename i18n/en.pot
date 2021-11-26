@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-11T10:23:15.686Z\n"
-"PO-Revision-Date: 2021-11-11T10:23:15.686Z\n"
+"POT-Creation-Date: 2021-11-26T07:59:41.934Z\n"
+"PO-Revision-Date: 2021-11-26T07:59:41.934Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -47,7 +47,13 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
+msgid "API URL"
+msgstr ""
+
 msgid "Email"
+msgstr ""
+
+msgid "Open ID"
 msgstr ""
 
 msgid "Roles"
@@ -114,7 +120,4 @@ msgid "Data view organisation units"
 msgstr ""
 
 msgid "Disabled"
-msgstr ""
-
-msgid "Open ID"
 msgstr ""
