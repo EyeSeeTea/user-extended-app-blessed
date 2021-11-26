@@ -1,8 +1,9 @@
+import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
-import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
+import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
 import { getOrgUnitsPaths, listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
@@ -56,8 +57,9 @@ class OrgUnitsSelectorFilter extends React.Component {
 
     async applyAndClose() {
         const { d2 } = this.context;
-        const orgUnitIds = getOrgUnitsPaths(this.state.selected).map(path => _.last(path.split("/")));
-        const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
+        const paths = getOrgUnitsPaths(this.state.selected);
+
+        const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", extractIdsFromPaths(paths), {
             paging: false,
             fields: "id,displayName,shortName,path",
         });

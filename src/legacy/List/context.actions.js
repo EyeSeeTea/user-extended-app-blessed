@@ -1,5 +1,4 @@
 import { getInstance as getD2 } from "d2/lib/d2";
-import _ from "lodash";
 import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
 import _m from "../utils/lodash-mixins";
 import orgUnitAssignmentDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
@@ -26,6 +25,8 @@ export async function assignToOrgUnits(userIds, field, titleKey) {
 }
 
 export async function goToUserEditPage(userId) {
+    const d2 = await getD2();
+    const baseUrl = d2.system.systemInfo.contextPath;
     const url = `${baseUrl}/dhis-web-user/index.html#/users/edit/${userId}`;
     window.open(url, "_blank");
 }

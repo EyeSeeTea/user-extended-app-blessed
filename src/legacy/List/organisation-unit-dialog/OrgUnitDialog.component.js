@@ -4,9 +4,10 @@ import _ from "lodash";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 import React from "react";
+import { extractIdsFromPaths } from "../../../domain/entities/OrgUnit";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
-import _m from "../../utils/lodash-mixins";
 import { getOrgUnitsPaths, listWithInFilter } from "../../utils/dhis2Helpers";
+import _m from "../../utils/lodash-mixins";
 
 class OrgUnitDialog extends React.Component {
     constructor(props, context) {
@@ -83,7 +84,7 @@ class OrgUnitDialog extends React.Component {
         const { d2 } = this.context;
         const { selected } = this.state;
 
-        const orgUnitIds = selected.map(path => _.last(path.split("/")));
+        const orgUnitIds = extractIdsFromPaths(selected);
         const selectedOus = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
