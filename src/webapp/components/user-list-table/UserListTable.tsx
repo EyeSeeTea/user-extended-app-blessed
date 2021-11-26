@@ -10,11 +10,12 @@ import {
     TableSorting,
     useObjectsTable,
 } from "@eyeseetea/d2-ui-components";
-import { Icon } from "@material-ui/core";
+import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
+import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
@@ -215,10 +216,32 @@ export const columns: TableColumn<User>[] = [
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
     { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
-    { name: "userRoles", sortable: false, text: i18n.t("Roles"), hidden: true },
-    { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
-    { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
-    { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
+    {
+        name: "userRoles",
+        sortable: false,
+        text: i18n.t("Roles"),
+        getValue: user => buildEllipsizedList(user.userRoles),
+        hidden: true,
+    },
+    {
+        name: "userGroups",
+        sortable: false,
+        text: i18n.t("Groups"),
+        getValue: user => buildEllipsizedList(user.userGroups),
+        hidden: true,
+    },
+    {
+        name: "organisationUnits",
+        sortable: false,
+        text: i18n.t("Organisation units"),
+        getValue: user => buildEllipsizedList(user.organisationUnits),
+    },
+    {
+        name: "dataViewOrganisationUnits",
+        sortable: false,
+        text: i18n.t("Data view organisation units"),
+        getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+    },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {
         name: "disabled",
@@ -247,4 +270,22 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+}
+
+function buildEllipsizedList(items: NamedRef[], limit = 3) {
+    const names = items.map(item => item.name);
+    const overflow = items.length - limit;
+    const hasOverflow = overflow > 0;
+
+    const buildList = (items: string[]) => items.map((item, idx) => <li key={`org-unit-${idx}`}>{item}</li>);
+
+    return (
+        <Tooltip title={buildList(names)} disableHoverListener={!hasOverflow}>
+            <ul>
+                {buildList(_.take(names, limit))}
+
+                {hasOverflow && <li>{i18n.t("And {{overflow}} more...", { overflow })}</li>}
+            </ul>
+        </Tooltip>
+    );
 }

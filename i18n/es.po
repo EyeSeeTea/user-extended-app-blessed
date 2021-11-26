@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-11-26T07:59:41.934Z\n"
+"POT-Creation-Date: 2021-11-26T08:24:28.513Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -120,4 +120,7 @@ msgid "Data view organisation units"
 msgstr ""
 
 msgid "Disabled"
+msgstr ""
+
+msgid "And {{overflow}} more..."
 msgstr ""
