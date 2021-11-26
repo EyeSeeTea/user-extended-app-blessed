@@ -14,7 +14,7 @@ import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
@@ -25,13 +25,13 @@ import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.store";
 import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
-
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
-    const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
+
+    const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
 
@@ -196,7 +196,20 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         [compositionRoot, props.filters]
     );
 
-    const tableProps = useObjectsTable(baseConfig, refreshRows);
+    const refreshAllIds = useCallback(
+        (search: string, sorting: TableSorting<User>): Promise<string[]> => {
+            return compositionRoot.users
+                .listAllIds({
+                    search,
+                    sorting,
+                    filters: props?.filters,
+                })
+                .toPromise();
+        },
+        [compositionRoot, props.filters]
+    );
+
+    const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
     return (
         <React.Fragment>

@@ -4,6 +4,7 @@ import { UserD2ApiRepository } from "./data/repositories/UserD2ApiRepository";
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceVersionUseCase } from "./domain/usecases/GetInstanceVersionUseCase";
 import { GetUserByIdUseCase } from "./domain/usecases/GetUserByIdUseCase";
+import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
 
 export function getCompositionRoot(instance: Instance) {
@@ -17,6 +18,7 @@ export function getCompositionRoot(instance: Instance) {
         users: getExecute({
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
+            listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUserByIdUseCase(userRepository),
         }),
     };
