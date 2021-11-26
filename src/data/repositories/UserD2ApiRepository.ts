@@ -30,7 +30,6 @@ export class UserD2ApiRepository implements UserRepository {
                 fields,
                 page,
                 pageSize,
-                paging: true,
                 query: search,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
@@ -39,6 +38,21 @@ export class UserD2ApiRepository implements UserRepository {
             pager,
             objects: objects.map(user => this.mapUser(user)),
         }));
+    }
+
+    public listAllIds(options: ListOptions): FutureData<string[]> {
+        const { search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+
+        return apiToFuture(
+            this.api.models.users.get({
+                fields: { id: true },
+                paging: false,
+                query: search,
+                filter: otherFilters,
+                order: `${sorting.field}:${sorting.order}`,
+            })
+        ).map(({ objects }) => objects.map(user => user.id));
     }
 
     public getById(id: string): FutureData<User> {
