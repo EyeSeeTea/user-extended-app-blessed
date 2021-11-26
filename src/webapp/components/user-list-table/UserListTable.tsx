@@ -9,7 +9,6 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
-    useSnackbar,
 } from "@eyeseetea/d2-ui-components";
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
@@ -216,9 +215,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
 
-            <ObjectsList {...tableProps}>
-                {props.children}
-            </ObjectsList>
+            <ObjectsList {...tableProps}>{props.children}</ObjectsList>
         </React.Fragment>
     );
 };
