@@ -15,10 +15,10 @@ export interface User {
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
-    lastLogin: Date;
+    lastLogin?: Date;
     disabled: boolean;
     access: AccessPermissions;
-    openId: string;
+    openId?: string;
 }
 
 export interface UserRole extends NamedRef {

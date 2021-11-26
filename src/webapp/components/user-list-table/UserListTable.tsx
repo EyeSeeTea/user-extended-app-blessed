@@ -28,22 +28,13 @@ import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
-interface UserView extends User {
-    lastLoginView?: string;
-}
-
-const getUserView = (user: User) => ({
-    ...user,
-    lastLoginView: user.lastLogin.getTime() === 0 ? "N/A" : user.lastLogin.toISOString(),
-});
-
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
 
-    const baseConfig = useMemo((): TableConfig<UserView> => {
+    const baseConfig = useMemo((): TableConfig<User> => {
         return {
             columns,
             details: [
@@ -51,10 +42,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "username", text: i18n.t("Username") },
                 { name: "created", text: i18n.t("Created") },
                 { name: "lastUpdated", text: i18n.t("Last updated") },
-                { name: "lastLoginView", text: i18n.t("Last login") },
+                { name: "lastLogin", text: i18n.t("Last login"), getValue: user => user.lastLogin ?? "-" },
                 { name: "id", text: i18n.t("ID") },
                 { name: "apiUrl", text: i18n.t("Api URL") },
                 { name: "email", text: i18n.t("Email") },
+                { name: "openId", text: i18n.t("Open ID") },
                 { name: "userRoles", text: i18n.t("Roles") },
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
@@ -189,7 +181,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             search: string,
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
-        ): Promise<{ objects: UserView[]; pager: Pager }> => {
+        ): Promise<{ objects: User[]; pager: Pager }> => {
             return compositionRoot.users
                 .list({
                     search,
@@ -203,8 +195,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         [compositionRoot, props.filters]
     );
 
-    const { rows, ...rest } = useObjectsTable(baseConfig, refreshRows);
-    const tableProps = { ...rest, rows: rows.map(getUserView) };
+    const tableProps = useObjectsTable(baseConfig, refreshRows);
 
     return (
         <React.Fragment>
@@ -215,11 +206,12 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     );
 };
 
-export const columns: TableColumn<UserView>[] = [
+export const columns: TableColumn<User>[] = [
     { name: "username", sortable: false, text: i18n.t("Username") },
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
     { name: "email", sortable: true, text: i18n.t("Email") },
+    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
     { name: "apiUrl", sortable: false, text: i18n.t("Api URL"), hidden: true },
@@ -227,18 +219,17 @@ export const columns: TableColumn<UserView>[] = [
     { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
     { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
-    { name: "lastLoginView", sortable: false, text: i18n.t("Last login") },
+    { name: "lastLogin", sortable: false, text: i18n.t("Last login"), getValue: user => user.lastLogin ?? "-" },
     {
         name: "disabled",
         sortable: false,
         text: i18n.t("Disabled"),
         getValue: row => (row.disabled ? <Check /> : undefined),
     },
-    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
 ];
 
 function checkAccess(requiredKeys: string[]) {
-    return (users: UserView[]) =>
+    return (users: User[]) =>
         _(users).every(user => {
             const permissions = _(user.access).pickBy().keys().value();
             return _(requiredKeys).difference(permissions).isEmpty();
@@ -249,7 +240,7 @@ function isStateActionVisible(action: string) {
     const currentUserHasUpdateAccessOn = checkAccess(["update"]);
     const requiredDisabledValue = action === "enable";
 
-    return (users: UserView[]) =>
+    return (users: User[]) =>
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
