@@ -30,7 +30,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields,
                 page,
                 pageSize,
-                query: search,
+                query: search !== "" ? search : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
@@ -48,7 +48,7 @@ export class UserD2ApiRepository implements UserRepository {
             this.api.models.users.get({
                 fields: { id: true },
                 paging: false,
-                query: search,
+                query: search !== "" ? search : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })

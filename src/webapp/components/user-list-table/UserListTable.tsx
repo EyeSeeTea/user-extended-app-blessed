@@ -31,10 +31,8 @@ import { useAppContext } from "../../contexts/app-context";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
-    const snackbar = useSnackbar();
 
     const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
-    const [allIds, setAllIds] = useState<string[]>([]);
 
     const enableReplicate = hasReplicateAuthority(currentUser);
 
@@ -186,17 +184,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
-            compositionRoot.users
-                .listAllIds({
-                    search,
-                    sorting,
-                    filters: props?.filters,
-                })
-                .run(
-                    ids => setAllIds(ids),
-                    error => snackbar.error(error)
-                );
-
             return compositionRoot.users
                 .list({
                     search,
@@ -207,16 +194,29 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 })
                 .toPromise();
         },
-        [compositionRoot, snackbar, props.filters]
+        [compositionRoot, props.filters]
     );
 
-    const tableProps = useObjectsTable(baseConfig, refreshRows);
+    const refreshAllIds = useCallback(
+        (search: string, sorting: TableSorting<User>): Promise<string[]> => {
+            return compositionRoot.users
+                .listAllIds({
+                    search,
+                    sorting,
+                    filters: props?.filters,
+                })
+                .toPromise();
+        },
+        [compositionRoot, props.filters]
+    );
+
+    const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
     return (
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
 
-            <ObjectsList {...tableProps} ids={allIds}>
+            <ObjectsList {...tableProps}>
                 {props.children}
             </ObjectsList>
         </React.Fragment>
