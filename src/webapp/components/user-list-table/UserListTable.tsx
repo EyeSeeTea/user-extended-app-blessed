@@ -28,13 +28,22 @@ import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
+interface UserView extends User {
+    lastLoginView?: string;
+}
+
+const getUserView = (user: User) => ({
+    ...user,
+    lastLoginView: user.lastLogin.getTime() === 0 ? "N/A" : user.lastLogin.toISOString(),
+});
+
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
     const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
 
-    const baseConfig = useMemo((): TableConfig<User> => {
+    const baseConfig = useMemo((): TableConfig<UserView> => {
         return {
             columns,
             details: [
@@ -42,7 +51,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "username", text: i18n.t("Username") },
                 { name: "created", text: i18n.t("Created") },
                 { name: "lastUpdated", text: i18n.t("Last updated") },
-                { name: "lastLogin", text: i18n.t("Last login") },
+                { name: "lastLoginView", text: i18n.t("Last login") },
                 { name: "id", text: i18n.t("ID") },
                 { name: "apiUrl", text: i18n.t("Api URL") },
                 { name: "email", text: i18n.t("Email") },
@@ -180,7 +189,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             search: string,
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
-        ): Promise<{ objects: User[]; pager: Pager }> => {
+        ): Promise<{ objects: UserView[]; pager: Pager }> => {
             return compositionRoot.users
                 .list({
                     search,
@@ -194,7 +203,8 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         [compositionRoot, props.filters]
     );
 
-    const tableProps = useObjectsTable(baseConfig, refreshRows);
+    const { rows, ...rest } = useObjectsTable(baseConfig, refreshRows);
+    const tableProps = { ...rest, rows: rows.map(getUserView) };
 
     return (
         <React.Fragment>
@@ -205,7 +215,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     );
 };
 
-export const columns: TableColumn<User>[] = [
+export const columns: TableColumn<UserView>[] = [
     { name: "username", sortable: false, text: i18n.t("Username") },
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
@@ -217,7 +227,7 @@ export const columns: TableColumn<User>[] = [
     { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
     { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
-    { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
+    { name: "lastLoginView", sortable: false, text: i18n.t("Last login") },
     {
         name: "disabled",
         sortable: false,
@@ -228,7 +238,7 @@ export const columns: TableColumn<User>[] = [
 ];
 
 function checkAccess(requiredKeys: string[]) {
-    return (users: User[]) =>
+    return (users: UserView[]) =>
         _(users).every(user => {
             const permissions = _(user.access).pickBy().keys().value();
             return _(requiredKeys).difference(permissions).isEmpty();
@@ -239,7 +249,7 @@ function isStateActionVisible(action: string) {
     const currentUserHasUpdateAccessOn = checkAccess(["update"]);
     const requiredDisabledValue = action === "enable";
 
-    return (users: User[]) =>
+    return (users: UserView[]) =>
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 

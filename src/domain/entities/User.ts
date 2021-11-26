@@ -15,7 +15,7 @@ export interface User {
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
-    lastLogin: Date | string;
+    lastLogin: Date;
     disabled: boolean;
     access: AccessPermissions;
     openId: string;
