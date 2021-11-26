@@ -1,10 +1,10 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import isString from "d2-utilizr/lib/isString";
 import MenuItem from "material-ui/MenuItem/MenuItem";
 import SelectField from "material-ui/SelectField/SelectField";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 
 /* Selector wrapper.
    When options.length < props.limit -> show a normal SelectField,

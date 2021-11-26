@@ -4,7 +4,7 @@ import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
-import { getOrgUnitsPaths, listWithInFilter } from "../utils/dhis2Helpers";
+import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
     constructor(props, context) {
@@ -51,20 +51,19 @@ class OrgUnitsSelectorFilter extends React.Component {
         this.setState({ dialogOpen: false });
     }
 
-    onChange(selected) {
-        this.setState({ selected });
-    }
+    async onChange(paths) {
+        const ids = extractIdsFromPaths(paths);
 
-    async applyAndClose() {
-        const { d2 } = this.context;
-        const paths = getOrgUnitsPaths(this.state.selected);
-
-        const newSelected = await listWithInFilter(d2.models.organisationUnits, "id", extractIdsFromPaths(paths), {
+        const selected = await listWithInFilter(this.context.d2.models.organisationUnits, "id", ids, {
             paging: false,
             fields: "id,displayName,shortName,path",
         });
 
-        this.props.onChange(newSelected);
+        this.setState({ selected });
+    }
+
+    async applyAndClose() {
+        this.props.onChange(this.state.selected);
         this.closeDialog();
     }
 
@@ -100,7 +99,7 @@ class OrgUnitsSelectorFilter extends React.Component {
                 >
                     <OrgUnitsSelector
                         api={this.props.api}
-                        selected={getOrgUnitsPaths(this.state.selected)}
+                        selected={this.state.selected.map(ou => ou.path)}
                         onChange={this.onChange}
                         controls={{
                             filterByLevel: true,

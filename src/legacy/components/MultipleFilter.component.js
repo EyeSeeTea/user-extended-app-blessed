@@ -1,9 +1,9 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import FilteredMultiSelect from "./FilteredMultiSelect.component";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 
 class MultipleFilter extends React.Component {
     constructor(props, context) {

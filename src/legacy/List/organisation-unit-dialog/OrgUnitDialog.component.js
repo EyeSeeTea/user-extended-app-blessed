@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { extractIdsFromPaths } from "../../../domain/entities/OrgUnit";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
-import { getOrgUnitsPaths, listWithInFilter } from "../../utils/dhis2Helpers";
+import { listWithInFilter } from "../../utils/dhis2Helpers";
 import _m from "../../utils/lodash-mixins";
 
 class OrgUnitDialog extends React.Component {
@@ -31,10 +31,9 @@ class OrgUnitDialog extends React.Component {
             }),
         };
         this.model = new BatchModelsMultiSelectModel(this.context.d2, modelOptions);
-        const selected = this.getCommonOrgUnits(props.models, props.field);
 
         this.state = {
-            selected: selected,
+            selected: this.getCommonOrgUnits(props.models, props.field),
             updateStrategy: props.models.length > 1 ? "merge" : "replace",
         };
 
@@ -44,7 +43,7 @@ class OrgUnitDialog extends React.Component {
     }
 
     getCommonOrgUnits(objects, orgUnitField) {
-        return _.intersectionBy(...objects.map(obj => obj[orgUnitField].toArray()), "id");
+        return _.intersectionBy(...objects.map(obj => obj[orgUnitField].toArray()), "id").map(ou => ou.path);
     }
 
     _renderStrategyToggle = () => {
@@ -81,11 +80,8 @@ class OrgUnitDialog extends React.Component {
     }
 
     async save() {
-        const { d2 } = this.context;
-        const { selected } = this.state;
-
-        const orgUnitIds = extractIdsFromPaths(selected);
-        const selectedOus = await listWithInFilter(d2.models.organisationUnits, "id", orgUnitIds, {
+        const orgUnitIds = extractIdsFromPaths(this.state.selected);
+        const selectedOus = await listWithInFilter(this.context.d2.models.organisationUnits, "id", orgUnitIds, {
             paging: false,
             fields: "id,displayName,shortName,path",
         });
@@ -120,7 +116,7 @@ class OrgUnitDialog extends React.Component {
 
                 <OrgUnitsSelector
                     api={this.props.api}
-                    selected={getOrgUnitsPaths(this.state.selected)}
+                    selected={this.state.selected}
                     onChange={this.onChange}
                     controls={{
                         filterByLevel: true,

@@ -42,7 +42,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "username", text: i18n.t("Username") },
                 { name: "created", text: i18n.t("Created") },
                 { name: "lastUpdated", text: i18n.t("Last updated") },
-                { name: "lastLogin", text: i18n.t("Last login"), getValue: user => user.lastLogin ?? "-" },
+                { name: "lastLogin", text: i18n.t("Last login") },
                 { name: "id", text: i18n.t("ID") },
                 { name: "apiUrl", text: i18n.t("Api URL") },
                 { name: "email", text: i18n.t("Email") },
@@ -219,7 +219,7 @@ export const columns: TableColumn<User>[] = [
     { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
     { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
     { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
-    { name: "lastLogin", sortable: false, text: i18n.t("Last login"), getValue: user => user.lastLogin ?? "-" },
+    { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {
         name: "disabled",
         sortable: false,
