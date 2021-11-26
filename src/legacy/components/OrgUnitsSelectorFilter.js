@@ -92,15 +92,15 @@ class OrgUnitsSelectorFilter extends React.Component {
                     open={dialogOpen}
                     maxWidth={"lg"}
                     fullWidth={true}
-                    onCancel={this.closeDialog}
-                    cancelText={t("cancel")}
-                    onSave={this.applyAndClose}
-                    saveText={t("apply")}
+                    onCancel={this.applyAndClose}
+                    cancelText={t("close")}
                 >
                     <OrgUnitsSelector
                         api={this.props.api}
                         selected={this.state.selected.map(ou => ou.path)}
                         onChange={this.onChange}
+                        fullWidth={true}
+                        withElevation={false}
                         controls={{
                             filterByLevel: true,
                             filterByGroup: true,

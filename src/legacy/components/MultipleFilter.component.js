@@ -84,10 +84,8 @@ class MultipleFilter extends React.Component {
                     title={title}
                     maxWidth={"lg"}
                     fullWidth={true}
-                    onCancel={this.closeDialog}
-                    cancelText={this.getTranslation("cancel")}
-                    onSave={this.applyAndClose}
-                    saveText={this.getTranslation("apply")}
+                    onCancel={this.applyAndClose}
+                    cancelText={this.getTranslation("close")}
                 >
                     <FilteredMultiSelect
                         options={options}
