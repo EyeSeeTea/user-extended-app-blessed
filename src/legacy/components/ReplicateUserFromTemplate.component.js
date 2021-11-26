@@ -56,11 +56,8 @@ class ReplicateUserFromTemplate extends React.Component {
         this.setState({ [field]: value, validate: true });
     };
 
-    onUpdateFormStatus = formStatus => {
-        const asyncValidating = "asyncValidating" in formStatus && formStatus.asyncValidating;
-        const isValid = !asyncValidating && formStatus.valid;
-        this.setState({ isValid, validate: false });
-    };
+    onUpdateFormStatus = ({ asyncValidating = false, valid }) =>
+        this.setState({ isValid: !asyncValidating && valid, validate: false });
 
     closeInfoDialog = () => {
         this.setState({ infoDialog: null });
