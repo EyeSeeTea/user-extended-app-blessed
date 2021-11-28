@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-26T08:24:28.513Z\n"
-"PO-Revision-Date: 2021-11-26T08:24:28.513Z\n"
+"POT-Creation-Date: 2021-11-28T21:59:31.014Z\n"
+"PO-Revision-Date: 2021-11-28T21:59:31.014Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Ok"
 msgstr ""
 
-msgid "Predictors"
+msgid "Users"
 msgstr ""
 
 msgid "Import"
@@ -89,10 +89,7 @@ msgstr ""
 msgid "Please provide a valid identifier"
 msgstr ""
 
-msgid "Invalid option"
-msgstr ""
-
-msgid "Code"
+msgid "Please provide a valid email"
 msgstr ""
 
 msgid "First Name"
@@ -125,13 +122,10 @@ msgstr ""
 msgid "Data View Organisation Units"
 msgstr ""
 
-msgid "Output data element"
+msgid "Open ID"
 msgstr ""
 
-msgid "Output category combo"
-msgstr ""
-
-msgid "Organisation unit levels"
+msgid "Api URL"
 msgstr ""
 
 msgid "Last updated"
@@ -144,9 +138,6 @@ msgid "ID"
 msgstr ""
 
 msgid "API URL"
-msgstr ""
-
-msgid "Open ID"
 msgstr ""
 
 msgid "Roles"
@@ -206,23 +197,32 @@ msgstr ""
 msgid "Organisation units"
 msgstr ""
 
-msgid "Organisation units"
+msgid "Data view organisation units"
 msgstr ""
 
-msgid "Save"
+msgid "And {{overflow}} more..."
+msgstr ""
+
+msgid "Saving users"
+msgstr ""
+
+msgid "Network error"
+msgstr ""
+
+msgid "Edit users"
+msgstr ""
+
+msgid "Column settings"
+msgstr ""
+
+msgid "Error saving users"
 msgstr ""
 
 msgid "Add user"
 msgstr ""
 
-msgid "Please provide a valid email"
+msgid "Save"
 msgstr ""
 
 msgid "Delete"
-msgstr ""
-
-msgid "Disabled"
-msgstr ""
-
-msgid "And {{overflow}} more..."
 msgstr ""

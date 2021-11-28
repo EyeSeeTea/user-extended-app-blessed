@@ -92,9 +92,6 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-msgid "Created"
-msgstr ""
-
 msgid "Last updated"
 msgstr ""
 
@@ -165,9 +162,6 @@ msgid "Search by name or username..."
 msgstr ""
 
 msgid "First name"
-msgstr ""
-
-msgid "Organisation units"
 msgstr ""
 
 msgid "Organisation units"
