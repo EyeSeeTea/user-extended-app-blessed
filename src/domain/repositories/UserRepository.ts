@@ -1,3 +1,4 @@
+import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
 import { FutureData } from "../entities/Future";
 import { PaginatedResponse } from "../entities/PaginatedResponse";
 import { User } from "../entities/User";
@@ -7,7 +8,7 @@ export interface UserRepository {
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
     listAllIds(options: ListOptions): FutureData<string[]>;
     getById(id: string): FutureData<User>;
-    save(users: User[]): FutureData<any>;
+    save(users: User[]): FutureData<MetadataResponse>;
 }
 
 export interface ListOptions {

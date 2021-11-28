@@ -7,6 +7,7 @@ import { useAppContext } from "../contexts/app-context";
 
 export const Router: React.FC = React.memo(() => {
     const { api } = useAppContext();
+
     return (
         <HashRouter>
             <Switch>

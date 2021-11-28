@@ -66,7 +66,7 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    private getFullUsers(options: ListOptions): FutureData<any[]> {
+    private getFullUsers(options: ListOptions): FutureData<D2ApiUser[]> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
@@ -119,7 +119,7 @@ export class UserD2ApiRepository implements UserRepository {
             });
         });
     }
-    private getGroupsToSave(users: User[], existing: User[]) {
+    private getGroupsToSave(users: User[], existing: D2ApiUser[]) {
         const userIds = users.map(({ id }) => id);
         const groupDictionary = _(users)
             .flatMap(({ id, userGroups }) => userGroups.map(group => ({ id, group })))
