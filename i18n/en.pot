@@ -86,7 +86,6 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-<<<<<<< HEAD
 msgid "Please provide a valid identifier"
 msgstr ""
 
@@ -135,35 +134,6 @@ msgstr ""
 msgid "Organisation unit levels"
 msgstr ""
 
-msgid "Predictor groups"
-msgstr ""
-
-msgid "Skip if any value is missing"
-msgstr ""
-
-msgid "Skip if all values are missing"
-msgstr ""
-
-msgid "Never skip"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Last login"
-msgstr ""
-
-msgid "ID"
-=======
-msgid "Name"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
 msgid "Last updated"
 msgstr ""
 
@@ -176,11 +146,7 @@ msgstr ""
 msgid "API URL"
 msgstr ""
 
-msgid "Email"
-msgstr ""
-
 msgid "Open ID"
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Roles"
@@ -240,26 +206,7 @@ msgstr ""
 msgid "Organisation units"
 msgstr ""
 
-<<<<<<< HEAD
-msgid "Data view organisation units"
-msgstr ""
-
-msgid "Saving predictors"
-msgstr ""
-
-msgid "Network error"
-msgstr ""
-
-msgid "Edit users"
-msgstr ""
-
-msgid "Column settings"
-msgstr ""
-
-msgid "Error saving users"
-=======
 msgid "Organisation units"
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Save"
@@ -271,12 +218,11 @@ msgstr ""
 msgid "Please provide a valid email"
 msgstr ""
 
-<<<<<<< HEAD
 msgid "Delete"
-=======
+msgstr ""
+
 msgid "Disabled"
 msgstr ""
 
 msgid "And {{overflow}} more..."
->>>>>>> release/1.0.0
 msgstr ""

@@ -86,75 +86,6 @@ msgstr "Volver"
 msgid "Help"
 msgstr "Ayuda"
 
-<<<<<<< HEAD
-msgid "Please provide a valid identifier"
-msgstr ""
-
-msgid "Invalid option"
-msgstr ""
-
-msgid "Code"
-msgstr ""
-
-msgid "First Name"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Surname"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Email"
-msgstr ""
-
-msgid "Disabled"
-msgstr ""
-
-msgid "User Roles"
-msgstr ""
-
-msgid "User Groups"
-msgstr ""
-
-msgid "Organisation Units"
-msgstr ""
-
-msgid "Data View Organisation Units"
-msgstr ""
-
-msgid "Output data element"
-msgstr ""
-
-msgid "Output category combo"
-msgstr ""
-
-msgid "Organisation unit levels"
-msgstr ""
-
-msgid "Predictor groups"
-msgstr ""
-
-msgid "Skip if any value is missing"
-msgstr ""
-
-msgid "Skip if all values are missing"
-msgstr ""
-
-msgid "Never skip"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Last login"
-msgstr ""
-
-msgid "ID"
-=======
 msgid "Name"
 msgstr ""
 
@@ -180,7 +111,6 @@ msgid "Email"
 msgstr ""
 
 msgid "Open ID"
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Roles"
@@ -231,11 +161,7 @@ msgstr ""
 msgid "Replicate user from table"
 msgstr ""
 
-<<<<<<< HEAD
-msgid "Search by name"
-=======
 msgid "Search by name or username..."
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "First name"
@@ -244,37 +170,14 @@ msgstr ""
 msgid "Organisation units"
 msgstr ""
 
-<<<<<<< HEAD
-msgid "Data view organisation units"
-msgstr ""
-
-msgid "Saving predictors"
-msgstr ""
-
-msgid "Network error"
-msgstr ""
-
-msgid "Edit users"
-msgstr ""
-
-msgid "Column settings"
-msgstr ""
-
-msgid "Error saving users"
-=======
 msgid "Organisation units"
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Save"
 msgstr ""
 
-<<<<<<< HEAD
-msgid "Delete"
-=======
 msgid "Disabled"
 msgstr ""
 
 msgid "And {{overflow}} more..."
->>>>>>> release/1.0.0
 msgstr ""
