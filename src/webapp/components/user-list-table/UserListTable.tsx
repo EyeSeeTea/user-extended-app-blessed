@@ -39,24 +39,26 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
 
-    const editPredictor = useCallback(
+    const editUsers = useCallback(
         (ids: string[]) => {
             if (ids.length === 1) {
-                history.push(`/edit/${ids[0]}`);
+                goToUserEditPage();
             } else {
                 const listOptions = {
                     filters: { id: ["in" as ListFilterType, ids] } as ListFilters,
                 };
                 compositionRoot.users.list(listOptions).run(
                     ({ objects }: { objects: User[] }) => {
-                        console.log(objects);
-                        history.push({ pathname: `/bulk-edit`, state: { users: objects } });
+                        history.push({
+                            pathname: `/bulk-edit`,
+                            state: { users: objects, maxImportUsers: props.maxImportUsers },
+                        });
                     },
                     error => snackbar.error(error)
                 );
             }
         },
-        [history, compositionRoot, snackbar]
+        [history, compositionRoot, snackbar, props.maxImportUsers]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -130,7 +132,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Edit"),
                     icon: <Icon>edit</Icon>,
                     multiple: true,
-                    onClick: editPredictor,
+                    onClick: editUsers,
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -199,7 +201,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
         };
-    }, [props, enableReplicate]);
+    }, [props, enableReplicate, editUsers]);
 
     const refreshRows = useCallback(
         (
@@ -307,6 +309,7 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+    maxImportUsers: number;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {

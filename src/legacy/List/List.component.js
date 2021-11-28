@@ -35,7 +35,6 @@ import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
-import { UserBulkEditPage } from "../../webapp/pages/user-bulk-edit/UserBulkEditPage";
 const pageSize = 50;
 
 const initialSorting = ["name", "asc"];
@@ -412,6 +411,7 @@ export class ListHybrid extends React.Component {
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            maxImportUsers={this.maxImportUsers}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 

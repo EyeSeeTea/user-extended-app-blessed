@@ -231,11 +231,7 @@ msgstr ""
 msgid "Replicate user from table"
 msgstr ""
 
-<<<<<<< HEAD
-msgid "Search by name"
-=======
 msgid "Search by name or username..."
->>>>>>> release/1.0.0
 msgstr ""
 
 msgid "First name"
@@ -267,6 +263,12 @@ msgid "Organisation units"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "Add user"
+msgstr ""
+
+msgid "Please provide a valid email"
 msgstr ""
 
 <<<<<<< HEAD

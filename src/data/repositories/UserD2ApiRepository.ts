@@ -1,4 +1,4 @@
-import { D2Api, D2UserSchema, SelectedPick, MetadataResponse, PostOptions, MetadataPayloadBase, D2ApiDefinition } from "@eyeseetea/d2-api/2.34";
+import { D2Api, D2UserSchema, SelectedPick, MetadataResponse } from "@eyeseetea/d2-api/2.34";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
@@ -11,10 +11,6 @@ import { Instance } from "../entities/Instance";
 import { UserModel } from "../models/UserModel";
 import { ListFilters, ListFilterType } from "../../domain/repositories/UserRepository";
 
-interface MetadataPost {
-    data:Partial<MetadataPayloadBase<D2ApiDefinition["schemas"]>>;
-    options: Partial<PostOptions>
-}
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
 
@@ -74,7 +70,7 @@ export class UserD2ApiRepository implements UserRepository {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
-        const predictorData$ = apiToFuture(
+        const userData$ = apiToFuture(
             this.api.models.users.get({
                 fields,
                 page,
@@ -87,16 +83,13 @@ export class UserD2ApiRepository implements UserRepository {
                 order: `${sorting.field}:${sorting.order}`,
             })
         );
-        return predictorData$.map(({ objects }) => objects);
+        return userData$.map(({ objects }) => objects);
     }
-   
+
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
-        console.log(usersToSave)
         const validations = usersToSave.map(user => UserModel.decode(user));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));
-        console.log(users)
         const errors = _.compact(validations.map(either => either.leftOrDefault("")));
-        console.log(errors)
 
         if (errors.length > 0) {
             return Future.error(errors.join("\n"));
@@ -107,32 +100,23 @@ export class UserD2ApiRepository implements UserRepository {
         };
 
         return this.getFullUsers(listOptions).flatMap(existingUsers => {
-            console.log(existingUsers)
             return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
                 const usersToSend = existingUsers.map((existingUser, index) => ({
                     ...existingUser,
-                    organisationUnits: usersToSave[index]?.organisationUnits,
-                    dataViewOrganisationUnits: usersToSave[index]?.dataViewOrganisationUnits,
-                    email: usersToSave[index]?.email,
-                    firstName: usersToSave[index]?.firstName,
-                    surname: usersToSave[index]?.surname,
+                    organisationUnits: users[index]?.organisationUnits,
+                    dataViewOrganisationUnits: users[index]?.dataViewOrganisationUnits,
+                    email: users[index]?.email,
+                    firstName: users[index]?.firstName,
+                    surname: users[index]?.surname,
                     userCredentials: {
                         ...existingUser.userCredentials,
-                        disabled: usersToSave[index]?.disabled,
-                        userRoles: usersToSave[index]?.userRoles,
-                        username: usersToSave[index]?.username,
+                        disabled: users[index]?.disabled,
+                        userRoles: users[index]?.userRoles,
+                        username: users[index]?.username,
                     },
                 }));
-                 return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
-            })
-           
-            /*console.log(usersToSend)
-            //importStrategy=UPDATE&mergeMode=REPLACE
-            const payload: MetadataPost  = {
-                data: { users: usersToSend }, 
-                options: { importStrategy: "UPDATE", mergeMode: "REPLACE"}  
-            }
-            return apiToFuture(this.api.metadata.post({ users: usersToSend })).map(data => data);*/
+                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
+            });
         });
     }
     private getGroupsToSave(users: User[], existing: User[]) {
@@ -167,8 +151,7 @@ export class UserD2ApiRepository implements UserRepository {
                 })
                 .filter(group => {
                     const newIds = group.users.map(({ id }) => id);
-                    const oldIds =
-                        userGroups.find(({ id }) => id === group.id)?.users.map(({ id }) => id) ?? [];
+                    const oldIds = userGroups.find(({ id }) => id === group.id)?.users.map(({ id }) => id) ?? [];
 
                     return !_.isEqual(_.sortBy(oldIds), _.sortBy(newIds));
                 })
@@ -177,26 +160,29 @@ export class UserD2ApiRepository implements UserRepository {
 
     private mapUser(user: D2ApiUser): User {
         const { userCredentials } = user;
-        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities)).flatten().uniq().value()
+        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
+            .flatten()
+            .uniq()
+            .value();
         return {
             id: user.id,
             name: user.displayName,
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
-            lastUpdated: new Date(user.lastUpdated),
-            created: new Date(user.created),
+            lastUpdated: user.lastUpdated,
+            created: user.created,
             userGroups: user.userGroups,
             username: user.userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
-            userRoles: user.userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name})),
-            lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
+            userRoles: user.userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
+            lastLogin: userCredentials.lastLogin ? userCredentials.lastLogin : undefined,
             disabled: user.userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
             openId: userCredentials.openId,
-            authorities
+            authorities,
         };
     }
 }

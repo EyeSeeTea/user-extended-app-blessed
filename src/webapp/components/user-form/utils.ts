@@ -1,18 +1,30 @@
 import _ from "lodash";
 import i18n from "../../../locales";
 
-export type PredictorFormField = typeof predictorFormFields[number];
+export type UserFormField = typeof userFormFields[number];
 
-export const predictorFormFields = ["id", "firstName", "surname", "name", "email", "username", "disabled"];
+export const userFormFields = [
+    "id",
+    "firstName",
+    "surname",
+    "name",
+    "email",
+    "username",
+    "disabled",
+    "openId",
+    "apiUrl",
+    "dataViewOrganisationUnits",
+    "organisationUnits",
+    "userGroups",
+    "userRoles",
+];
 
-export const predictorRequiredFields: PredictorFormField[] = ["id", "name"];
+export const userRequiredFields: UserFormField[] = ["id", "name"];
 
-export const getPredictorName = (field: PredictorFormField) => {
+export const getUserName = (field: UserFormField) => {
     switch (field) {
         case "id":
             return i18n.t("Identifier");
-        case "code":
-            return i18n.t("Code");
         case "firstName":
             return i18n.t("First Name");
         case "name":
@@ -33,25 +45,15 @@ export const getPredictorName = (field: PredictorFormField) => {
             return i18n.t("Organisation Units");
         case "dataViewOrganisationUnits":
             return i18n.t("Data View Organisation Units");
-        case "output":
-            return i18n.t("Output data element");
-        case "outputCombo":
-            return i18n.t("Output category combo");
-        case "organisationUnitLevels":
-            return i18n.t("Organisation unit levels");
-        case "predictorGroups":
-            return i18n.t("Predictor groups");
+        case "openId":
+            return i18n.t("Open ID");
+        case "apiUrl":
+            return i18n.t("Api URL");
     }
 };
 
-export const getPredictorFieldName = (field: PredictorFormField) => {
-    const name = getPredictorName(field);
-    const required = predictorRequiredFields.includes(field);
+export const getUserFieldName = (field: UserFormField) => {
+    const name = getUserName(field);
+    const required = userRequiredFields.includes(field);
     return _.compact([name, required ? "(*)" : undefined]).join(" ");
 };
-
-export const missingValueStrategy = [
-    { value: "SKIP_IF_ANY_VALUE_MISSING", label: i18n.t("Skip if any value is missing") },
-    { value: "SKIP_IF_ALL_VALUES_MISSING", label: i18n.t("Skip if all values are missing") },
-    { value: "NEVER_SKIP", label: i18n.t("Never skip") },
-];

@@ -177,54 +177,6 @@ declare module "@dhis2/ui" {
         onFilterChangePicked?: (...args: any[]) => any;
     };
 
-    export type MultiSelectProps = {
-        children: React.ReactNode;
-        className: string;
-        /** Required if `clearable` prop is `true` */
-        clearText: string;
-        /** Adds a 'clear' option to the menu */
-        clearable: boolean;
-        dataTest: string;
-        dense: boolean;
-        disabled: boolean;
-        empty: React.ReactNode;
-        error: boolean;
-        filterPlaceholder: string;
-        /** Adds a 'filter' field to the menu */
-        filterable: boolean;
-        initialFocus: boolean;
-        inputMaxHeight: string;
-        loading: boolean;
-        loadingText: string;
-        maxHeight: string;
-        /** Required if `filterable` prop is `true` */
-        noMatchText: string;
-        placeholder: string;
-        prefix: string;
-        selected: string[];
-        tabIndex: string;
-        valid: boolean;
-        warning: boolean;
-        onBlur?: (data: { value?: string; name?: string }, event: FocusEvent) => void;
-        onChange?: (data: { value?: string; name?: string }, event: ChangeEvent) => void;
-        onFocus?: (data: { value?: string; name?: string }, event: FocusEvent) => void;
-    };
-
-    export type MultiSelectFieldFFProps = MultiSelectProps & {
-        input: FinalFormInput;
-        meta: FinalFormMeta;
-        error?: boolean;
-        loading?: boolean;
-        options?: {
-            label?: string;
-            value?: string;
-        }[];
-        showLoadingStatus?: boolean;
-        showValidStatus?: boolean;
-        valid?: boolean;
-        validationText?: string;
-    };
-
     export type SingleSelectFieldProps = {
         className?: string;
         clearText?: string | ((...args: any[]) => any);
@@ -433,7 +385,6 @@ declare module "@dhis2/ui" {
     export function Button(props: ButtonProps): React.ReactElement;
     export function Transfer(props: TransferProps): React.ReactElement;
     export function MultiSelect(props: MultiSelectProps): React.ReactElement;
-    export function MultiSelectFieldFF(props: MultiSelectFieldFFProps): React.ReactElement;
     export function SingleSelectFieldFF(props: SingleSelectFieldFFProps): React.ReactElement;
     export function SingleSelectField(props: SingleSelectFieldProps): React.ReactElement;
     export function SingleSelectOption(props: SingleSelectOptionProps): React.ReactElement;
@@ -453,7 +404,6 @@ declare module "@dhis2/ui" {
     export function composeValidators(
         ...validators: ((value: unknown) => string | undefined)[]
     ): (value: unknown) => string | undefined;
-    export function integer(value: unknown): string | undefined;
     export function boolean(value: unknown): string | undefined;
     export function alphaNumeric(value: unknown): string | undefined;
     export function email(value: unknown): string | undefined;
@@ -461,7 +411,6 @@ declare module "@dhis2/ui" {
     export function string(value: unknown): string | undefined;
     export function url(value: unknown): string | undefined;
     export function hasValue(value: unknown): string | undefined;
-    export function createMinNumber(min: number): (value: unknown) => string | undefined;
     export function createPattern(pattern: RegExp, message?: string): (value: unknown) => string | undefined;
     export function createMaxCharacterLength(bound: number): (value: unknown) => string | undefined;
     export function createMinCharacterLength(bound: number): (value: unknown) => string | undefined;

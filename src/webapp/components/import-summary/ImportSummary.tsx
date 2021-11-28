@@ -16,9 +16,7 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import { useCallback } from "react";
 import ReactJson from "react-json-view";
-import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-
-//import { MetadataResponse, MetadataResponseStats } from "../../../domain/entities/Metadata";
+import { MetadataResponse, MetadataResponseStats } from "../../../domain/entities/Metadata";
 import i18n from "../../../locales";
 
 const useStyles = makeStyles(theme => ({
@@ -55,8 +53,8 @@ export const formatStatusTag = (value: string) => {
 
     return <b style={{ color }}>{text}</b>;
 };
-//stats: Array<MetadataResponseStats & { type: string }>
-const buildSummaryTable = (stats: Array<any & { type: string }>) => {
+
+const buildSummaryTable = (stats: Array<MetadataResponseStats & { type: string }>) => {
     return (
         <Table>
             <TableHead>
@@ -112,7 +110,7 @@ interface ErrorMessage {
 }
 
 interface ImportSummaryProps {
-    results: any[]; //MetadataResponse
+    results: MetadataResponse[];
     onClose: () => void;
 }
 
@@ -134,8 +132,8 @@ export const ImportSummary = ({ results, onClose }: ImportSummaryProps) => {
         >
             <DialogContent>
                 {results.map(({ status, typeReports = [] }, idx) => {
-                    const stats = typeReports.map(({ stats }: { stats: any }) => ({
-                        type: i18n.t("Predictors"),
+                    const stats = typeReports.map(({ stats }) => ({
+                        type: i18n.t("Users"),
                         ...stats,
                     }));
 

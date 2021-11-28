@@ -12,17 +12,6 @@ export class ListMetadataUseCase implements UseCase {
         options: ListOptions & { paging?: boolean } = {},
         fields: {} = {}
     ): FutureData<{ pager: Pager; objects: Metadata[] }> {
-        //const { paging = true } = options;
         return this.metadataRepository.list(type, options, fields);
-
-        /* console.log(options)
-        if (paging) {
-            return this.metadataRepository.list(type, options, fields);
-        } else {
-            return this.metadataRepository.listAll([type], fields, options.filter).map(metadata => ({
-                pager: { page: 1, pageCount: 1, pageSize: metadata[type]?.length, total: metadata[type]?.length },
-                objects: metadata[type] ?? [],
-            }));
-        }*/
     }
 }

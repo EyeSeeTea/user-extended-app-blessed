@@ -1,6 +1,7 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
 
-//import { useLoading } from "@eyeseetea/d2-ui-components";
+import { useLoading } from "@eyeseetea/d2-ui-components";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton } from "material-ui";
@@ -10,39 +11,29 @@ import { Redirect, useLocation } from "react-router";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeGrid as Grid } from "react-window";
 import styled from "styled-components";
-import { User } from "../../../domain/entities/User";
-import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { User, defaultUser } from "../../../domain/entities/User";
 
 import i18n from "../../../locales";
 import { ColumnSelectorDialog } from "../../components/column-selector-dialog/ColumnSelectorDialog";
 import { ImportSummary } from "../../components/import-summary/ImportSummary";
 import { PageHeader } from "../../components/page-header/PageHeader";
-import { RenderPredictorImportField } from "../../components/user-form/UserForm";
-import { predictorFormFields, getPredictorFieldName } from "../../components/user-form/utils";
+import { RenderUserImportField } from "../../components/user-form/UserForm";
+import { userFormFields, getUserFieldName } from "../../components/user-form/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useGoBack } from "../../hooks/useGoBack";
+import { generateUid } from "../../../utils/uid";
 
 const rowHeight = (index: number) => (index === 0 ? 30 : 70);
 const columnWidth = (index: number) => (index === 0 ? 50 : 250);
 
-/*export interface PredictorBulkEditPageProps {
-    type: ActionType;
-}*/
-
-export interface PredictorBulkEditPageProps {
-    users: User[];
-}
-
-export type ActionType = "import" | "bulk-edit";
-//: React.FC<PredictorBulkEditPageProps> { users }
 export const UserBulkEditPage = () => {
     const { compositionRoot } = useAppContext();
     const goBack = useGoBack();
-    //const loading = useLoading();
+    const loading = useLoading();
 
-    const location = useLocation<{ users: User[] }>();
-    const [users] = React.useState<User[]>(location.state?.users ?? []);
-    const [summary, setSummary] = useState<any>();
+    const location = useLocation<{ users: User[]; maxImportUsers: number }>();
+    const [users, setUsers] = React.useState<User[]>(location.state?.users ?? []);
+    const [summary, setSummary] = useState<MetadataResponse[]>();
     const [columns, setColumns] = useState<string[]>(baseUserColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
@@ -50,27 +41,32 @@ export const UserBulkEditPage = () => {
 
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
-            //loading.show(true, i18n.t("Saving predictors"));
+            loading.show(true, i18n.t("Saving users"));
             const { data, error } = await compositionRoot.users.save(users).runAsync();
-            console.log(data);
-            console.log(error);
             if (error) return error ?? i18n.t("Network error");
-            //loading.reset();
+            loading.reset();
             if (data && data.status === "ERROR") {
-                setSummary(data);
+                setSummary([data]);
             } else {
                 goHome();
             }
-            /*if (_.some(data, foo => foo.status === "ERROR")) {
-                setSummary(data);
-            } else {
-                goHome();
-            }*/
-            //, loading
         },
-        [compositionRoot, goHome]
+        [compositionRoot, goHome, loading]
     );
+
+    const addRow = useCallback(() => {
+        const newUser = {
+            ...defaultUser,
+            id: generateUid(),
+            username: "",
+            password: `District123$`,
+        };
+
+        setUsers(users => users.concat(newUser));
+    }, []);
+
     const title = i18n.t("Edit users");
+    const canAddNewUser = users.length < (location.state?.maxImportUsers || 200);
 
     if (users.length === 0) return <Redirect to="/" />;
     const closeSummary = () => setSummary(undefined);
@@ -90,10 +86,10 @@ export const UserBulkEditPage = () => {
 
             {columnSelectorOpen && (
                 <ColumnSelectorDialog
-                    columns={predictorFormFields}
+                    columns={userFormFields}
                     visibleColumns={columns}
                     onChange={setColumns}
-                    getName={getPredictorFieldName}
+                    getName={getUserFieldName}
                     onCancel={() => setColumnSelectorOpen(false)}
                 />
             )}
@@ -131,6 +127,12 @@ export const UserBulkEditPage = () => {
                             )}
 
                             <ButtonsRow middle>
+                                <Button disabled={!canAddNewUser} name={i18n.t("Add user")} onClick={addRow} primary>
+                                    {i18n.t("Add user")}
+                                </Button>
+                            </ButtonsRow>
+
+                            <ButtonsRow middle>
                                 <Button type="submit" primary>
                                     {i18n.t("Save")}
                                 </Button>
@@ -146,7 +148,7 @@ export const UserBulkEditPage = () => {
         </Wrapper>
     );
 };
-//"userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"
+
 const baseUserColumns = [
     "id",
     "firstName",
@@ -156,7 +158,7 @@ const baseUserColumns = [
     "userRoles",
     "userGroups",
     "organisationUnits",
-    "organisationUnits",
+    "dataViewOrganisationUnits",
 ];
 
 const MaxHeight = styled.div`
@@ -211,14 +213,14 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
     if (headerRow) {
         return (
             <CenteredContent>
-                <Title>{getPredictorFieldName(field)}</Title>
+                <Title>{getUserFieldName(field)}</Title>
             </CenteredContent>
         );
     }
 
     return (
         <Item>
-            <RenderPredictorImportField row={row} field={field} />
+            <RenderUserImportField row={row} field={field} />
         </Item>
     );
 };

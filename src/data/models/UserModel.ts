@@ -20,12 +20,14 @@ export const UserModel: Codec<User> = Schema.object({
     email: Schema.nonEmptyString,
     lastUpdated: Schema.nonEmptyString,
     created: Schema.nonEmptyString,
+    apiUrl: Schema.nonEmptyString,
     userRoles: Schema.array(NamedRefModel),
     userGroups: Schema.array(NamedRefModel),
     organisationUnits: Schema.array(NamedRefModel),
     dataViewOrganisationUnits: Schema.array(NamedRefModel),
-    lastLogin: Schema.nonEmptyString,
+    lastLogin: Schema.optional(Schema.nonEmptyString),
     disabled: Schema.boolean,
     access: AccessPermissionsModel,
-    authorities: Schema.array(Schema.nonEmptyString)
+    authorities: Schema.array(Schema.nonEmptyString),
+    openId: Schema.optional(Schema.string),
 });
