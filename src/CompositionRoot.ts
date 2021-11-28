@@ -14,7 +14,6 @@ export function getCompositionRoot(instance: Instance) {
     const userRepository = new UserD2ApiRepository(instance);
     const metadataRepository = new MetadataD2ApiRepository(instance);
 
-
     return {
         instance: getExecute({
             getVersion: new GetInstanceVersionUseCase(instanceRepository),

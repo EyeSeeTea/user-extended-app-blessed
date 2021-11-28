@@ -29,7 +29,7 @@ export const TransferFF = ({
 
     const onChange = useCallback(
         ({ selected }: { selected: string[] }) => {
-            input.onChange(selected.map(id => ({ id, name: options.find(item => item.value === id)?.label ?? "", })));
+            input.onChange(selected.map(id => ({ id, name: options.find(item => item.value === id)?.label ?? "" })));
         },
         [input, options]
     );

@@ -55,8 +55,8 @@ export const RenderPredictorWizardField: React.FC<{ row: number; field: Predicto
         case "output":
             return <FormField {...props} component={OutputFF} optionComboField={`predictors[${row}.outputCombo]`} />;
 */
-//            return <FormField {...props} component={OutputFF} optionComboField={`users[${row}].${field}`} />;
-//model type for dataViewOrganisationUnits ? 
+    //            return <FormField {...props} component={OutputFF} optionComboField={`users[${row}].${field}`} />;
+    //model type for dataViewOrganisationUnits ?
     switch (field) {
         case "id":
         case "email":

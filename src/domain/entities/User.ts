@@ -17,9 +17,6 @@ export interface User {
     lastLogin: string;
     disabled: boolean;
     access: AccessPermissions;
-}
-
-export interface UserRole extends NamedRef {
     authorities: string[];
 }
 
@@ -32,11 +29,10 @@ export interface AccessPermissions {
     manage?: boolean;
 }
 
-/*export const isSuperAdmin = (user: User): boolean => {
-    return _.some(user.userRoles, ({ authorities }) => authorities.includes("ALL"));
+export const isSuperAdmin = (user: User): boolean => {
+    return _.some(user.authorities, (authorities) => authorities.includes("ALL"));
 };
-*/
+
 export const hasReplicateAuthority = (user: User): boolean => {
-    return true;
-    //return _.some(user.userRoles, ({ authorities }) => authorities.includes("F_REPLICATE_USER"));
+    return _.some(user.authorities, (authorities) => authorities.includes("F_REPLICATE_USER"));
 };

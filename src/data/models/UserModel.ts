@@ -1,4 +1,4 @@
-import { User, UserRole, AccessPermissions } from "../../domain/entities/User";
+import { User, AccessPermissions } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
 import { NamedRefModel } from "./DHIS2Model";
 
@@ -10,13 +10,6 @@ export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     write: Schema.optional(Schema.boolean),
     manage: Schema.optional(Schema.boolean),
 });
-
-/*export const UserRolesModel: Codec<UserRole> = Schema.extend(
-    NamedRefModel,
-    Schema.object({
-        authorities: Schema.array(Schema.string),
-    })
-);*/
 
 export const UserModel: Codec<User> = Schema.object({
     id: Schema.nonEmptyString,
@@ -34,4 +27,5 @@ export const UserModel: Codec<User> = Schema.object({
     lastLogin: Schema.nonEmptyString,
     disabled: Schema.boolean,
     access: AccessPermissionsModel,
+    authorities: Schema.array(Schema.nonEmptyString)
 });

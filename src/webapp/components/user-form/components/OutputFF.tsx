@@ -40,7 +40,7 @@ export const OutputFF: React.FC<CategoryOptionComboFFProps> = ({ input, optionCo
         [dataElements, input, optionComboInput]
     );
 
-        //categoryOptions: []
+    //categoryOptions: []
     const dataElementItems = _.unionBy(
         dataElements,
         [{ value: input.value.id, label: i18n.t("Invalid option") }],
@@ -93,4 +93,3 @@ const buildOptions = (
 const Row = styled.div`
     margin: 20px 0;
 `;
-

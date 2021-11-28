@@ -25,7 +25,7 @@ export class MetadataD2ApiRepository implements MetadataRepository {
             this.api.models[type].get({
                 filter: options.filter ? { identifiable: { token: options.filter } } : undefined,
                 fields: { ...fieldOptions, id: true, name: true, code: true },
-                paging: false
+                paging: false,
                 //pageSize: options.pageSize ?? 25,
                 //page: options.page ?? 1,
             })

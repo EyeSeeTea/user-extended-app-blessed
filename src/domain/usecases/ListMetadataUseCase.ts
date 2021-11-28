@@ -15,7 +15,7 @@ export class ListMetadataUseCase implements UseCase {
         //const { paging = true } = options;
         return this.metadataRepository.list(type, options, fields);
 
-       /* console.log(options)
+        /* console.log(options)
         if (paging) {
             return this.metadataRepository.list(type, options, fields);
         } else {
