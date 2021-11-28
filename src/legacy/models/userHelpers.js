@@ -78,7 +78,7 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                     dbField,
                     values,
                     { fields: fields.join(","), paging: false },
-                    { useInOperator: false }
+                    { useInOperator: true }
                 );
 
                 return _(listOfModels)
@@ -159,6 +159,7 @@ function getPlainUser(user, { orgUnitsField }) {
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
         disabled: userCredentials.disabled,
+        openId: userCredentials.openId,
     };
 }
 

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-24T11:38:00.676Z\n"
-"PO-Revision-Date: 2021-11-24T11:38:00.676Z\n"
+"POT-Creation-Date: 2021-11-26T08:24:28.513Z\n"
+"PO-Revision-Date: 2021-11-26T08:24:28.513Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -86,6 +86,7 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+<<<<<<< HEAD
 msgid "Please provide a valid identifier"
 msgstr ""
 
@@ -153,6 +154,33 @@ msgid "Last login"
 msgstr ""
 
 msgid "ID"
+=======
+msgid "Name"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "API URL"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Open ID"
+>>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Roles"
@@ -203,7 +231,11 @@ msgstr ""
 msgid "Replicate user from table"
 msgstr ""
 
+<<<<<<< HEAD
 msgid "Search by name"
+=======
+msgid "Search by name or username..."
+>>>>>>> release/1.0.0
 msgstr ""
 
 msgid "First name"
@@ -212,6 +244,7 @@ msgstr ""
 msgid "Organisation units"
 msgstr ""
 
+<<<<<<< HEAD
 msgid "Data view organisation units"
 msgstr ""
 
@@ -228,10 +261,20 @@ msgid "Column settings"
 msgstr ""
 
 msgid "Error saving users"
+=======
+msgid "Organisation units"
+>>>>>>> release/1.0.0
 msgstr ""
 
 msgid "Save"
 msgstr ""
 
+<<<<<<< HEAD
 msgid "Delete"
+=======
+msgid "Disabled"
+msgstr ""
+
+msgid "And {{overflow}} more..."
+>>>>>>> release/1.0.0
 msgstr ""

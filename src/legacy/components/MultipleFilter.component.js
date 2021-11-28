@@ -1,7 +1,5 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
@@ -16,7 +14,6 @@ class MultipleFilter extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.applyAndClose = this.applyAndClose.bind(this);
         this.fieldValue = this.getCompactFieldValue(props.options, props.selected);
-        this.dialogButtons = this.getDialogButtons();
 
         this.state = {
             dialogOpen: false,
@@ -63,20 +60,6 @@ class MultipleFilter extends React.Component {
         this.closeDialog();
     };
 
-    getDialogButtons = () => {
-        return (
-            <React.Fragment>
-                <FlatButton
-                    label={this.getTranslation("cancel")}
-                    onClick={this.closeDialog}
-                    style={this.styles.cancelButton}
-                />
-                ,
-                <RaisedButton primary label={this.getTranslation("apply")} onClick={this.applyAndClose} />,
-            </React.Fragment>
-        );
-    };
-
     getCompactFieldValue(options, selected, limit = 3) {
         const names = _(options).keyBy("value").at(selected).map("text").value();
 
@@ -93,18 +76,16 @@ class MultipleFilter extends React.Component {
     render = () => {
         const { title, options, styles } = this.props;
         const { dialogOpen, selected } = this.state;
-        const { dialogButtons } = this;
 
         return (
             <div style={this.styles.wrapper}>
-                <Dialog
-                    title={title}
-                    actions={dialogButtons}
-                    autoScrollBodyContent={true}
-                    autoDetectWindowHeight={true}
-                    contentStyle={this.styles.dialog}
+                <ConfirmationDialog
                     open={dialogOpen}
-                    onRequestClose={this.closeDialog}
+                    title={title}
+                    maxWidth={"lg"}
+                    fullWidth={true}
+                    onCancel={this.applyAndClose}
+                    cancelText={this.getTranslation("close")}
                 >
                     <FilteredMultiSelect
                         options={options}
@@ -112,7 +93,7 @@ class MultipleFilter extends React.Component {
                         onRequestClose={this.closeDialog}
                         onChange={this.onChange}
                     />
-                </Dialog>
+                </ConfirmationDialog>
 
                 <TextField
                     value={this.fieldValue}

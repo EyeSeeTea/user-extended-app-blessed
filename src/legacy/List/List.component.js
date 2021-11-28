@@ -413,7 +413,7 @@ export class ListHybrid extends React.Component {
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
                         >
-                            <Filters onChange={this._onFiltersChange} showSearch={false} />
+                            <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>
                                 <ImportExport
@@ -433,6 +433,7 @@ export class ListHybrid extends React.Component {
 
                 {this.state.orgunitassignment.open && this.state.orgunitassignment.field === "organisationUnits" ? (
                     <OrgUnitDialog
+                        api={this.props.api}
                         models={this.state.orgunitassignment.users}
                         open={true}
                         onRequestClose={this._closeOrgUnitDialog}
@@ -449,6 +450,7 @@ export class ListHybrid extends React.Component {
                 {this.state.orgunitassignment.open &&
                 this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
                     <OrgUnitDialog
+                        api={this.props.api}
                         models={this.state.orgunitassignment.users}
                         open={true}
                         onRequestClose={this._closeOrgUnitDialog}

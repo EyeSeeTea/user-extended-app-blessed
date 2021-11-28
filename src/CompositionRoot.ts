@@ -5,6 +5,7 @@ import { MetadataD2ApiRepository } from "./data/repositories/MetadataD2ApiReposi
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceVersionUseCase } from "./domain/usecases/GetInstanceVersionUseCase";
 import { GetUserByIdUseCase } from "./domain/usecases/GetUserByIdUseCase";
+import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
@@ -21,6 +22,7 @@ export function getCompositionRoot(instance: Instance) {
         users: getExecute({
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
+            listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUserByIdUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
         }),

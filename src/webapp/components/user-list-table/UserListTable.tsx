@@ -11,12 +11,13 @@ import {
     useObjectsTable,
     useSnackbar,
 } from "@eyeseetea/d2-ui-components";
-import { Icon } from "@material-ui/core";
+import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { useHistory } from "react-router-dom";
 import _ from "lodash";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters, ListFilterType } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
@@ -26,13 +27,13 @@ import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.store";
 import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
-
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
-    const [dialogProps, _openDialog] = React.useState<ConfirmationDialogProps>();
+
+    const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -68,7 +69,9 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 { name: "lastUpdated", text: i18n.t("Last updated") },
                 { name: "lastLogin", text: i18n.t("Last login") },
                 { name: "id", text: i18n.t("ID") },
+                { name: "apiUrl", text: i18n.t("API URL") },
                 { name: "email", text: i18n.t("Email") },
+                { name: "openId", text: i18n.t("Open ID") },
                 { name: "userRoles", text: i18n.t("Roles") },
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
@@ -191,10 +194,10 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 },
             },
             paginationOptions: {
-                pageSizeOptions: [10, 25, 50, 100],
+                pageSizeOptions: [10, 25, 50, 100, 500, 1000],
                 pageSizeInitialValue: 25,
             },
-            searchBoxLabel: i18n.t("Search by name"),
+            searchBoxLabel: i18n.t("Search by name or username..."),
         };
     }, [props, enableReplicate]);
 
@@ -217,7 +220,20 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         [compositionRoot, props.filters]
     );
 
-    const tableProps = useObjectsTable(baseConfig, refreshRows);
+    const refreshAllIds = useCallback(
+        (search: string, sorting: TableSorting<User>): Promise<string[]> => {
+            return compositionRoot.users
+                .listAllIds({
+                    search,
+                    sorting,
+                    filters: props?.filters,
+                })
+                .toPromise();
+        },
+        [compositionRoot, props.filters]
+    );
+
+    const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
     return (
         <React.Fragment>
@@ -233,12 +249,36 @@ export const columns: TableColumn<User>[] = [
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
     { name: "email", sortable: true, text: i18n.t("Email") },
+    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
-    { name: "userRoles", sortable: false, text: i18n.t("Roles"), hidden: true },
-    { name: "userGroups", sortable: false, text: i18n.t("Groups"), hidden: true },
-    { name: "organisationUnits", sortable: false, text: i18n.t("Organisation units") },
-    { name: "dataViewOrganisationUnits", sortable: false, text: i18n.t("Data view organisation units") },
+    { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
+    {
+        name: "userRoles",
+        sortable: false,
+        text: i18n.t("Roles"),
+        getValue: user => buildEllipsizedList(user.userRoles),
+        hidden: true,
+    },
+    {
+        name: "userGroups",
+        sortable: false,
+        text: i18n.t("Groups"),
+        getValue: user => buildEllipsizedList(user.userGroups),
+        hidden: true,
+    },
+    {
+        name: "organisationUnits",
+        sortable: false,
+        text: i18n.t("Organisation units"),
+        getValue: user => buildEllipsizedList(user.organisationUnits),
+    },
+    {
+        name: "dataViewOrganisationUnits",
+        sortable: false,
+        text: i18n.t("Data view organisation units"),
+        getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+    },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {
         name: "disabled",
@@ -267,4 +307,22 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+}
+
+function buildEllipsizedList(items: NamedRef[], limit = 3) {
+    const names = items.map(item => item.name);
+    const overflow = items.length - limit;
+    const hasOverflow = overflow > 0;
+
+    const buildList = (items: string[]) => items.map((item, idx) => <li key={`org-unit-${idx}`}>{item}</li>);
+
+    return (
+        <Tooltip title={buildList(names)} disableHoverListener={!hasOverflow}>
+            <ul>
+                {buildList(_.take(names, limit))}
+
+                {hasOverflow && <li>{i18n.t("And {{overflow}} more...", { overflow })}</li>}
+            </ul>
+        </Tooltip>
+    );
 }

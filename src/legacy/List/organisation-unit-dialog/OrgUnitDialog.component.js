@@ -1,11 +1,12 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { getOwnedPropertyJSON } from "d2/lib/model/helpers/json";
 import _ from "lodash";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 import React from "react";
+import { extractIdsFromPaths } from "../../../domain/entities/OrgUnit";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
-import OrgUnitForm from "../../components/OrgUnitForm";
+import { listWithInFilter } from "../../utils/dhis2Helpers";
 import _m from "../../utils/lodash-mixins";
 
 class OrgUnitDialog extends React.Component {
@@ -30,10 +31,9 @@ class OrgUnitDialog extends React.Component {
             }),
         };
         this.model = new BatchModelsMultiSelectModel(this.context.d2, modelOptions);
-        const selected = this.getCommonOrgUnits(props.models, props.field);
 
         this.state = {
-            selected: selected,
+            selected: this.getCommonOrgUnits(props.models, props.field),
             updateStrategy: props.models.length > 1 ? "merge" : "replace",
         };
 
@@ -43,7 +43,7 @@ class OrgUnitDialog extends React.Component {
     }
 
     getCommonOrgUnits(objects, orgUnitField) {
-        return _.intersectionBy(...objects.map(obj => obj[orgUnitField].toArray()), "id");
+        return _.intersectionBy(...objects.map(obj => obj[orgUnitField].toArray()), "id").map(ou => ou.path);
     }
 
     _renderStrategyToggle = () => {
@@ -79,17 +79,16 @@ class OrgUnitDialog extends React.Component {
         this.setState({ selected });
     }
 
-    save = () => {
-        const { selected } = this.state;
+    async save() {
+        const orgUnitIds = extractIdsFromPaths(this.state.selected);
+        const selectedOus = await listWithInFilter(this.context.d2.models.organisationUnits, "id", orgUnitIds, {
+            paging: false,
+            fields: "id,displayName,shortName,path",
+        });
 
         this.setState({ loading: true });
         this.model
-            .save(
-                this.props.models,
-                selected,
-                selected.map(ou => ou.id),
-                this.state.updateStrategy
-            )
+            .save(this.props.models, selectedOus, orgUnitIds, this.state.updateStrategy)
             .then(() => {
                 this.setState({ loading: false });
                 this.props.onOrgUnitAssignmentSaved();
@@ -100,15 +99,13 @@ class OrgUnitDialog extends React.Component {
                 this.props.onOrgUnitAssignmentError(err);
                 this.props.onRequestClose();
             });
-    };
+    }
 
-    render = () => {
-        const { title, filteringByNameLabel, orgUnitsSelectedLabel } = this.props;
-
+    render() {
         return (
             <ConfirmationDialog
                 open={true}
-                title={title}
+                title={this.props.title}
                 maxWidth={"lg"}
                 fullWidth={true}
                 onCancel={this.props.onRequestClose}
@@ -117,18 +114,20 @@ class OrgUnitDialog extends React.Component {
             >
                 {this._renderStrategyToggle()}
 
-                <OrgUnitForm
-                    onRequestClose={this.props.onRequestClose}
-                    onChange={this.onChange}
-                    roots={this.props.roots}
+                <OrgUnitsSelector
+                    api={this.props.api}
                     selected={this.state.selected}
-                    intersectionPolicy={true}
-                    filteringByNameLabel={filteringByNameLabel}
-                    orgUnitsSelectedLabel={orgUnitsSelectedLabel}
+                    onChange={this.onChange}
+                    controls={{
+                        filterByLevel: true,
+                        filterByGroup: true,
+                        filterByProgram: false,
+                        selectAll: false,
+                    }}
                 />
             </ConfirmationDialog>
         );
-    };
+    }
 }
 
 OrgUnitDialog.propTypes = {

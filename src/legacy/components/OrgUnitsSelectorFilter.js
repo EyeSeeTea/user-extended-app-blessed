@@ -1,16 +1,15 @@
+import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
-import { getOrgUnitsRoots } from "../utils/dhis2Helpers";
-import OrgUnitForm from "./OrgUnitForm";
+import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
+import { listWithInFilter } from "../utils/dhis2Helpers";
 
-class OrgUnitsFilter extends React.Component {
+class OrgUnitsSelectorFilter extends React.Component {
     constructor(props, context) {
         super(props, context);
+
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
         this.openDialog = this.openDialog.bind(this);
         this.closeDialog = this.closeDialog.bind(this);
@@ -20,7 +19,6 @@ class OrgUnitsFilter extends React.Component {
         this.state = {
             dialogOpen: false,
             selected: props.selected,
-            roots: [],
         };
     }
 
@@ -41,44 +39,33 @@ class OrgUnitsFilter extends React.Component {
         },
     };
 
-    componentDidMount = () => {
-        return getOrgUnitsRoots().then(roots => this.setState({ roots }));
-    };
-
     componentWillReceiveProps(newProps) {
         if (newProps.selected !== this.props.selected) this.fieldValue = this.getCompactFieldValue(newProps.selected);
     }
 
-    openDialog = () => {
+    openDialog() {
         this.setState({ dialogOpen: true, selected: this.props.selected });
-    };
+    }
 
-    closeDialog = () => {
+    closeDialog() {
         this.setState({ dialogOpen: false });
-    };
+    }
 
-    onChange(selected) {
+    async onChange(paths) {
+        const ids = extractIdsFromPaths(paths);
+
+        const selected = await listWithInFilter(this.context.d2.models.organisationUnits, "id", ids, {
+            paging: false,
+            fields: "id,displayName,shortName,path",
+        });
+
         this.setState({ selected });
     }
 
-    applyAndClose = () => {
+    async applyAndClose() {
         this.props.onChange(this.state.selected);
         this.closeDialog();
-    };
-
-    getDialogButtons = () => {
-        return (
-            <React.Fragment>
-                <FlatButton
-                    label={this.getTranslation("cancel")}
-                    onClick={this.closeDialog}
-                    style={this.styles.cancelButton}
-                />
-                ,
-                <RaisedButton primary label={this.getTranslation("apply")} onClick={this.applyAndClose} />,
-            </React.Fragment>
-        );
-    };
+    }
 
     getCompactFieldValue(selected, { limit = 3 } = {}) {
         const names = selected.map(ou => ou.displayName);
@@ -93,40 +80,35 @@ class OrgUnitsFilter extends React.Component {
         }
     }
 
-    render = () => {
+    render() {
         const { title, styles } = this.props;
         const { dialogOpen } = this.state;
         const t = this.getTranslation.bind(this);
 
         return (
             <div style={this.styles.wrapper}>
-                <Dialog
+                <ConfirmationDialog
                     title={title}
-                    actions={this.getDialogButtons()}
-                    autoScrollBodyContent={true}
-                    autoDetectWindowHeight={true}
-                    contentStyle={this.styles.dialog}
                     open={dialogOpen}
-                    onRequestClose={this.closeDialog}
+                    maxWidth={"lg"}
+                    fullWidth={true}
+                    onCancel={this.applyAndClose}
+                    cancelText={t("close")}
                 >
-                    <OrgUnitForm
-                        onRequestClose={this.closeDialog}
+                    <OrgUnitsSelector
+                        api={this.props.api}
+                        selected={this.state.selected.map(ou => ou.path)}
                         onChange={this.onChange}
-                        roots={this.state.roots}
-                        selected={this.state.selected}
-                        intersectionPolicy={true}
-                        filteringByNameLabel={
-                            title.includes("organisation units capture")
-                                ? t("filter_organisation_units_capture_by_name")
-                                : t("filter_organisation_units_output_by_name")
-                        }
-                        orgUnitsSelectedLabel={
-                            title.includes("organisation units capture")
-                                ? t("organisation_units_capture_selected")
-                                : t("organisation_units_output_selected")
-                        }
+                        fullWidth={true}
+                        withElevation={false}
+                        controls={{
+                            filterByLevel: true,
+                            filterByGroup: true,
+                            filterByProgram: false,
+                            selectAll: false,
+                        }}
                     />
-                </Dialog>
+                </ConfirmationDialog>
 
                 <TextField
                     value={this.fieldValue}
@@ -138,18 +120,19 @@ class OrgUnitsFilter extends React.Component {
                 />
             </div>
         );
-    };
+    }
 }
 
-OrgUnitsFilter.propTypes = {
+OrgUnitsSelectorFilter.propTypes = {
     title: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     selected: PropTypes.arrayOf(PropTypes.object).isRequired,
     styles: PropTypes.object,
+    api: PropTypes.object,
 };
 
-OrgUnitsFilter.contextTypes = {
+OrgUnitsSelectorFilter.contextTypes = {
     d2: PropTypes.any,
 };
 
-export default OrgUnitsFilter;
+export default OrgUnitsSelectorFilter;

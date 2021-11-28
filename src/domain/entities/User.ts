@@ -8,15 +8,17 @@ export interface User {
     firstName: string;
     surname: string;
     email: string;
-    lastUpdated: string;
-    created: string;
+    lastUpdated: Date;
+    created: Date;
+    apiUrl: string;
     userRoles: NamedRef[];
     userGroups: NamedRef[];
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
-    lastLogin: string;
+    lastLogin?: Date;
     disabled: boolean;
     access: AccessPermissions;
+    openId?: string;
     authorities: string[];
 }
 

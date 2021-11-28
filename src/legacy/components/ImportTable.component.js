@@ -1,4 +1,4 @@
-import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
 import { generateUid } from "d2/lib/uid";
@@ -10,7 +10,6 @@ import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from "material-ui/Table";
 import TextField from "material-ui/TextField/TextField";
 import Toggle from "material-ui/Toggle/Toggle";
 import memoize from "memoize-weak";
@@ -21,6 +20,7 @@ import { fieldImportSuffix, getExistingUsers } from "../models/userHelpers";
 import { getModelValuesByField, getOrgUnitsRoots } from "../utils/dhis2Helpers";
 import { getCompactTextForModels } from "../utils/i18n";
 import { toBuilderValidator, validatePassword, validateUsername } from "../utils/validators";
+import FormBuilder from "./FormBuilder.component";
 import InfoDialog from "./InfoDialog";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 import MultipleSelector from "./MultipleSelector.component";
@@ -43,7 +43,7 @@ const styles = {
         overflow: "visible",
     },
     addRowButton: {
-        marginTop: 20,
+        margin: 20,
         textAlign: "center",
     },
     dialogIcons: {
@@ -457,7 +457,7 @@ class ImportTable extends React.Component {
                     validators,
                 };
             } else {
-                const extraProps = { changeEvent: "onBlur" };
+                const extraProps = { changeevent: "onBlur" };
                 return this.getTextField(field, value, {
                     component: TextField,
                     validators,
@@ -519,15 +519,15 @@ class ImportTable extends React.Component {
 
         return (
             <TableRow style={rowStyles}>
-                <TableRowColumn style={styles.tableColumn}>
+                <TableCell>
                     <Chip title={chipTitle} style={chipStyle}>
                         {chipText}
                     </Chip>
-                </TableRowColumn>
+                </TableCell>
 
                 {children}
 
-                <TableRowColumn style={styles.actionsHeader}>
+                <TableCell>
                     <IconButton
                         style={styles.removeIcon}
                         title={this.t("remove_user")}
@@ -535,7 +535,7 @@ class ImportTable extends React.Component {
                     >
                         <FontIcon className="material-icons">delete</FontIcon>
                     </IconButton>
-                </TableRowColumn>
+                </TableCell>
             </TableRow>
         );
     };
@@ -546,7 +546,7 @@ class ImportTable extends React.Component {
     };
 
     renderTableRowColumn = ({ children }) => {
-        return <TableRowColumn style={styles.cell}>{children}</TableRowColumn>;
+        return <TableCell>{children}</TableCell>;
     };
 
     renderTable = () => {
@@ -558,24 +558,24 @@ class ImportTable extends React.Component {
         const getColumnName = header => (_(d2.i18n.translations).has(header) ? this.t(header) : header);
 
         return (
-            <div>
+            <TableContainer>
                 <Table
                     fixedHeader={true}
                     wrapperStyle={styles.tableWrapper}
                     style={styles.table}
                     bodyStyle={styles.tableBody}
                 >
-                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                    <TableHead displaySelectAll={false} adjustForCheckbox={false}>
                         <TableRow>
-                            <TableHeaderColumn style={styles.tableColumn}>#</TableHeaderColumn>
+                            <TableCell style={styles.tableColumn}>#</TableCell>
                             {headers.map(header => (
-                                <TableHeaderColumn key={header} style={styles.header}>
+                                <TableCell key={header} style={styles.header}>
                                     {getColumnName(header)}
-                                </TableHeaderColumn>
+                                </TableCell>
                             ))}
-                            <TableHeaderColumn style={styles.actionsHeader}></TableHeaderColumn>
+                            <TableCell style={styles.actionsHeader}></TableCell>
                         </TableRow>
-                    </TableHeader>
+                    </TableHead>
 
                     <TableBody displayRowCheckbox={false}>
                         {_.map(users.valueSeq().toJS(), user => (
@@ -598,7 +598,7 @@ class ImportTable extends React.Component {
                 <div style={styles.addRowButton}>
                     <RaisedButton disabled={!canAddNewUser} label={this.t("add_user")} onClick={this.addRow} />
                 </div>
-            </div>
+            </TableContainer>
         );
     };
 

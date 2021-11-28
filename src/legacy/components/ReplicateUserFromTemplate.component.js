@@ -27,12 +27,12 @@ class ReplicateUserFromTemplate extends React.Component {
         this.validators = this.getValidators();
 
         this.state = {
-            isValid: false,
+            isValid: true,
             usersToCreate: 1,
             username: "",
             password: "",
             existingUsernames: null,
-            validate: false,
+            validate: true,
             infoDialog: null,
         };
     }
@@ -56,10 +56,8 @@ class ReplicateUserFromTemplate extends React.Component {
         this.setState({ [field]: value, validate: true });
     };
 
-    onUpdateFormStatus = formStatus => {
-        const isValid = !formStatus.asyncValidating && formStatus.valid;
-        this.setState({ isValid, validate: false });
-    };
+    onUpdateFormStatus = ({ asyncValidating = false, valid }) =>
+        this.setState({ isValid: !asyncValidating && valid, validate: false });
 
     closeInfoDialog = () => {
         this.setState({ infoDialog: null });
@@ -170,7 +168,7 @@ class ReplicateUserFromTemplate extends React.Component {
                 onSave={this.onSave}
                 saveText={t("replicate")}
                 onCancel={onRequestClose}
-                disableSave={isValid}
+                disableSave={!isValid}
             >
                 {!userToReplicate ? <LoadingMask /> : null}
 

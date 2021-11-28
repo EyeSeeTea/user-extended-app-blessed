@@ -36,17 +36,29 @@ export class UserD2ApiRepository implements UserRepository {
                 fields,
                 page,
                 pageSize,
-                paging: true,
-                filter: {
-                    identifiable: search ? { token: search } : undefined,
-                    ...otherFilters,
-                },
+                query: search !== "" ? search : undefined,
+                filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
             pager,
             objects: objects.map(user => this.mapUser(user)),
         }));
+    }
+
+    public listAllIds(options: ListOptions): FutureData<string[]> {
+        const { search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+
+        return apiToFuture(
+            this.api.models.users.get({
+                fields: { id: true },
+                paging: false,
+                query: search !== "" ? search : undefined,
+                filter: otherFilters,
+                order: `${sorting.field}:${sorting.order}`,
+            })
+        ).map(({ objects }) => objects.map(user => user.id));
     }
 
     public getById(id: string): FutureData<User> {
@@ -164,23 +176,26 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     private mapUser(user: D2ApiUser): User {
-        const authorities = _(user.userCredentials.userRoles.map(userRole => userRole.authorities)).flatten().uniq().value()
+        const { userCredentials } = user;
+        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities)).flatten().uniq().value()
         return {
             id: user.id,
             name: user.displayName,
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
-            lastUpdated: user.lastUpdated,
-            created: user.created,
+            lastUpdated: new Date(user.lastUpdated),
+            created: new Date(user.created),
             userGroups: user.userGroups,
             username: user.userCredentials.username,
+            apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
             userRoles: user.userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name})),
-            lastLogin: user.userCredentials.lastLogin,
+            lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: user.userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
+            openId: userCredentials.openId,
             authorities
         };
     }
@@ -200,6 +215,7 @@ const fields = {
         userRoles: { id: true, name: true, authorities: true },
         lastLogin: true,
         disabled: true,
+        openId: true,
     },
     organisationUnits: { id: true, name: true },
     dataViewOrganisationUnits: { id: true, name: true },

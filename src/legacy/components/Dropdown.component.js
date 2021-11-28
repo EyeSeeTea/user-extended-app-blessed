@@ -1,6 +1,5 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import isString from "d2-utilizr/lib/isString";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
 import MenuItem from "material-ui/MenuItem/MenuItem";
 import SelectField from "material-ui/SelectField/SelectField";
 import TextField from "material-ui/TextField";
@@ -89,13 +88,13 @@ class Dropdown extends React.Component {
 
         return this.state.options.length > limit ? (
             <div style={{ width: fullWidth ? "100%" : "inherit", position: "relative" }}>
-                <Dialog
-                    title={labelText}
+                <ConfirmationDialog
                     open={this.state.dialogOpen}
-                    onRequestClose={this.closeDialog}
-                    autoScrollBodyContent
-                    autoDetectWindowHeight
-                    actions={<FlatButton onClick={this.closeDialog} label={this.getTranslation("cancel")} />}
+                    title={labelText}
+                    maxWidth={"lg"}
+                    fullWidth={true}
+                    onCancel={this.closeDialog}
+                    cancelText={this.getTranslation("cancel")}
                 >
                     <TextField
                         floatingLabelText="Filter list"
@@ -116,7 +115,7 @@ class Dropdown extends React.Component {
                                     .every(f => o.text.toLocaleLowerCase().includes(f.toLocaleLowerCase()))
                         )
                         .map(o => this.renderDialogOption(o.value, o.text))}
-                </Dialog>
+                </ConfirmationDialog>
                 <TextField
                     {...other}
                     fullWidth={fullWidth}
