@@ -30,10 +30,7 @@ export const UserBulkEditPage = () => {
     const loading = useLoading();
 
     const location = useLocation();
-    const { users: locationUsers = [], maxImportUsers = 200 } = location.state as {
-        users: User[];
-        maxImportUsers: number;
-    };
+    const { users: locationUsers = [] } = location.state as { users: User[] };
 
     const [users, setUsers] = useState<User[]>(locationUsers);
     const [summary, setSummary] = useState<MetadataResponse[]>();
@@ -69,7 +66,6 @@ export const UserBulkEditPage = () => {
     }, []);
 
     const title = i18n.t("Edit users");
-    const canAddNewUser = users.length < maxImportUsers;
 
     if (users.length === 0) return <Navigate replace to="/" />;
     const closeSummary = () => setSummary(undefined);
@@ -130,7 +126,7 @@ export const UserBulkEditPage = () => {
                             )}
 
                             <ButtonsRow middle>
-                                <Button disabled={!canAddNewUser} name={i18n.t("Add user")} onClick={addRow} primary>
+                                <Button name={i18n.t("Add user")} onClick={addRow} primary>
                                     {i18n.t("Add user")}
                                 </Button>
                             </ButtonsRow>

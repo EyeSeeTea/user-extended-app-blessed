@@ -288,7 +288,6 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
-    maxImportUsers: number;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
