@@ -121,6 +121,7 @@ export class UserD2ApiRepository implements UserRepository {
             });
         });
     }
+    
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
         const userIds = users.map(({ id }) => id);
         const groupDictionary = _(users)
