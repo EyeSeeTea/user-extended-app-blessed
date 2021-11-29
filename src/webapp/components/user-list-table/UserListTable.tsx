@@ -9,17 +9,15 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
-    useSnackbar,
 } from "@eyeseetea/d2-ui-components";
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters, ListFilterType } from "../../../domain/repositories/UserRepository";
+import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
@@ -36,27 +34,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
-    const snackbar = useSnackbar();
-    const navigate = useNavigate();
 
-    const editUsers = useCallback(
-        (ids: string[]) => {
-            if (ids.length === 1) {
-                goToUserEditPage();
-            } else {
-                const listOptions = {
-                    filters: { id: ["in" as ListFilterType, ids] } as ListFilters,
-                };
-                compositionRoot.users.list(listOptions).run(
-                    ({ objects }: { objects: User[] }) => {
-                        navigate(`/bulk-edit`, { state: { users: objects, maxImportUsers: props.maxImportUsers } });
-                    },
-                    error => snackbar.error(error)
-                );
-            }
-        },
-        [navigate, compositionRoot, snackbar, props.maxImportUsers]
-    );
+    // TODO: Add bulk edit
+    const editUsers = useCallback((ids: string[]) => {
+        goToUserEditPage(ids[0]);
+    }, []);
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
@@ -128,7 +110,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     name: "edit",
                     text: i18n.t("Edit"),
                     icon: <Icon>edit</Icon>,
-                    multiple: true,
+                    multiple: false,
                     onClick: editUsers,
                     isActive: checkAccess(["update"]),
                 },

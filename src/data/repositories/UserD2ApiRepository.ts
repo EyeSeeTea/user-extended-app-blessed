@@ -8,7 +8,7 @@ import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { Instance } from "../entities/Instance";
-import { UserModel } from "../models/UserModel";
+import { ApiUserModel, UserModel } from "../models/UserModel";
 import { ListFilters, ListFilterType } from "../../domain/repositories/UserRepository";
 
 export class UserD2ApiRepository implements UserRepository {
@@ -158,44 +158,49 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 
-    private mapUser(user: D2ApiUser): User {
-        const { userCredentials } = user;
+    private mapUser(input: D2ApiUser): User {
+        const { userCredentials, ...user } = ApiUserModel.unsafeDecode(input);
         const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
             .flatten()
             .uniq()
             .value();
-        return {
+
+        return UserModel.unsafeDecode({
+            ...user,
             id: user.id,
-            name: user.displayName,
+            name: user.name,
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
             lastUpdated: user.lastUpdated,
             created: user.created,
             userGroups: user.userGroups,
-            username: user.userCredentials.username,
+            username: userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
-            userRoles: user.userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
+            userRoles: userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
             lastLogin: userCredentials.lastLogin ? userCredentials.lastLogin : undefined,
-            disabled: user.userCredentials.disabled,
+            disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
             openId: userCredentials.openId,
             authorities,
-        };
+        });
     }
 }
 
 const fields = {
     id: true,
-    displayName: true,
+    name: true,
     firstName: true,
     surname: true,
     email: true,
     lastUpdated: true,
     created: true,
     userGroups: { id: true, name: true },
+    organisationUnits: { id: true, name: true },
+    dataViewOrganisationUnits: { id: true, name: true },
+    access: true,
     userCredentials: {
         username: true,
         userRoles: { id: true, name: true, authorities: true },
@@ -203,9 +208,6 @@ const fields = {
         disabled: true,
         openId: true,
     },
-    organisationUnits: { id: true, name: true },
-    dataViewOrganisationUnits: { id: true, name: true },
-    access: true,
 } as const;
 
-type D2ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+export type D2ApiUser = SelectedPick<D2UserSchema, typeof fields>;
