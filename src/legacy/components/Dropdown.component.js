@@ -83,7 +83,7 @@ class Dropdown extends React.Component {
         );
     };
 
-    render = () => {
+    render() {
         const { labelText, limit, fullWidth, ...other } = this.props;
 
         return this.state.options.length > limit ? (
@@ -143,7 +143,7 @@ class Dropdown extends React.Component {
                 {this.renderOptions()}
             </SelectField>
         );
-    };
+    }
 
     renderOptions = () => {
         const options = this.state.options.map((option, index) => (

@@ -1,27 +1,25 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
-
-import { useLoading } from "@eyeseetea/d2-ui-components";
 import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { useLoading } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton } from "material-ui";
 import React, { useCallback, useState } from "react";
 import { Form, useForm } from "react-final-form";
-import { Redirect, useLocation } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeGrid as Grid } from "react-window";
 import styled from "styled-components";
-import { User, defaultUser } from "../../../domain/entities/User";
-
+import { defaultUser, User } from "../../../domain/entities/User";
 import i18n from "../../../locales";
+import { generateUid } from "../../../utils/uid";
 import { ColumnSelectorDialog } from "../../components/column-selector-dialog/ColumnSelectorDialog";
 import { ImportSummary } from "../../components/import-summary/ImportSummary";
 import { PageHeader } from "../../components/page-header/PageHeader";
 import { RenderUserImportField } from "../../components/user-form/UserForm";
-import { userFormFields, getUserFieldName } from "../../components/user-form/utils";
+import { getUserFieldName, userFormFields } from "../../components/user-form/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useGoBack } from "../../hooks/useGoBack";
-import { generateUid } from "../../../utils/uid";
 
 const rowHeight = (index: number) => (index === 0 ? 30 : 70);
 const columnWidth = (index: number) => (index === 0 ? 50 : 250);
@@ -31,8 +29,13 @@ export const UserBulkEditPage = () => {
     const goBack = useGoBack();
     const loading = useLoading();
 
-    const location = useLocation<{ users: User[]; maxImportUsers: number }>();
-    const [users, setUsers] = React.useState<User[]>(location.state?.users ?? []);
+    const location = useLocation();
+    const { users: locationUsers = [], maxImportUsers = 200 } = location.state as {
+        users: User[];
+        maxImportUsers: number;
+    };
+
+    const [users, setUsers] = useState<User[]>(locationUsers);
     const [summary, setSummary] = useState<MetadataResponse[]>();
     const [columns, setColumns] = useState<string[]>(baseUserColumns);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
@@ -66,9 +69,9 @@ export const UserBulkEditPage = () => {
     }, []);
 
     const title = i18n.t("Edit users");
-    const canAddNewUser = users.length < (location.state?.maxImportUsers || 200);
+    const canAddNewUser = users.length < maxImportUsers;
 
-    if (users.length === 0) return <Redirect to="/" />;
+    if (users.length === 0) return <Navigate replace to="/" />;
     const closeSummary = () => setSummary(undefined);
 
     return (

@@ -2,7 +2,7 @@ import React from "react";
 import CircularProgress from "material-ui/CircularProgress";
 
 export default class LoadingMask extends React.Component {
-    render = () => {
+    render() {
         const { style } = this.props;
         const loadingStatusMask = {
             left: "45%",
@@ -12,5 +12,5 @@ export default class LoadingMask extends React.Component {
         };
 
         return <CircularProgress mode="indeterminate" size={90} style={loadingStatusMask} />;
-    };
+    }
 }

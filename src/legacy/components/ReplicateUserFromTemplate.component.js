@@ -138,7 +138,7 @@ class ReplicateUserFromTemplate extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         const { onRequestClose } = this.props;
         const { infoDialog, userToReplicate, usersToCreate, username, password, isValid, validate } = this.state;
         const title = this.getTranslation("replicate_user_title", {
@@ -190,7 +190,7 @@ class ReplicateUserFromTemplate extends React.Component {
                 />
             </ConfirmationDialog>
         );
-    };
+    }
 }
 
 ReplicateUserFromTemplate.contextTypes = {

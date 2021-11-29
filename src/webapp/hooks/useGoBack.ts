@@ -1,14 +1,14 @@
 import { useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const useGoBack = (defaultRoute = "/") => {
-    const history = useHistory();
+    const navigate = useNavigate();
 
     return useCallback(
         (force = false) => {
-            if (force || history.length <= 2) history.push(defaultRoute);
-            else history.goBack();
+            if (force) navigate(defaultRoute);
+            else navigate(-1);
         },
-        [history, defaultRoute]
+        [navigate, defaultRoute]
     );
 };

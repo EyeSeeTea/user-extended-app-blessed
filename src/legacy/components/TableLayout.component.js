@@ -47,7 +47,7 @@ class TableLayout extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         const { options, selected } = this.props;
         const title = this.getTranslation("layout_settings");
 
@@ -74,7 +74,7 @@ class TableLayout extends React.Component {
                 </ConfirmationDialog>
             </div>
         );
-    };
+    }
 }
 
 TableLayout.propTypes = {

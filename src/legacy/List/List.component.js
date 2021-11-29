@@ -379,7 +379,7 @@ export class ListHybrid extends React.Component {
 
     _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
 
-    render = () => {
+    render() {
         if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
@@ -547,7 +547,7 @@ export class ListHybrid extends React.Component {
                 )}
             </div>
         );
-    };
+    }
 
     _closeOrgUnitDialog = () => {
         orgUnitDialogStore.setState(

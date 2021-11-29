@@ -48,7 +48,7 @@ class ReplicateUserFromTable extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
         const title = this.t("replicate_user_title", {
@@ -69,7 +69,7 @@ class ReplicateUserFromTable extends React.Component {
                 settings={this.props.settings}
             />
         );
-    };
+    }
 }
 
 ReplicateUserFromTable.contextTypes = {

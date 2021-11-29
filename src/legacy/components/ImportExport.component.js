@@ -114,7 +114,7 @@ class ImportExport extends React.Component {
             });
     };
 
-    render = () => {
+    render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
         const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate } = this;
         const { t } = this;
@@ -146,7 +146,7 @@ class ImportExport extends React.Component {
                 </Popover>
             </div>
         );
-    };
+    }
 }
 
 export default ImportExport;

@@ -14,9 +14,9 @@ import {
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
-import { useHistory } from "react-router-dom";
 import _ from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters, ListFilterType } from "../../../domain/repositories/UserRepository";
@@ -37,7 +37,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const editUsers = useCallback(
         (ids: string[]) => {
@@ -49,16 +49,13 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 };
                 compositionRoot.users.list(listOptions).run(
                     ({ objects }: { objects: User[] }) => {
-                        history.push({
-                            pathname: `/bulk-edit`,
-                            state: { users: objects, maxImportUsers: props.maxImportUsers },
-                        });
+                        navigate(`/bulk-edit`, { state: { users: objects, maxImportUsers: props.maxImportUsers } });
                     },
                     error => snackbar.error(error)
                 );
             }
         },
-        [history, compositionRoot, snackbar, props.maxImportUsers]
+        [navigate, compositionRoot, snackbar, props.maxImportUsers]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {

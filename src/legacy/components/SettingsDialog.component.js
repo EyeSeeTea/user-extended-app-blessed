@@ -108,7 +108,7 @@ export default class SettingsDialog extends React.Component {
         this.props.onRequestClose();
     };
 
-    render = () => {
+    render() {
         const { settings, formStatuses } = this.state;
         const saveIsEnabled = settings && _(formStatuses).values().every();
 
@@ -132,5 +132,5 @@ export default class SettingsDialog extends React.Component {
                 </div>
             </ConfirmationDialog>
         );
-    };
+    }
 }
