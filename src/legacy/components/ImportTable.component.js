@@ -680,7 +680,7 @@ class ImportTable extends React.Component {
         return users.valueSeq().some(user => existingUsernames.has(user.username));
     };
 
-    render = () => {
+    render() {
         const { onRequestClose } = this.props;
         const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } =
             this.state;
@@ -729,7 +729,7 @@ class ImportTable extends React.Component {
                 )}
             </Dialog>
         );
-    };
+    }
 }
 
 ImportTable.contextTypes = {

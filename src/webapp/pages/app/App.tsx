@@ -1,5 +1,5 @@
 import { HeaderBar } from "@dhis2/ui";
-import { SnackbarProvider } from "@eyeseetea/d2-ui-components";
+import { LoadingProvider, SnackbarProvider } from "@eyeseetea/d2-ui-components";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 import _ from "lodash";
 //@ts-ignore
@@ -51,15 +51,17 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
         <MuiThemeProvider theme={muiTheme}>
             <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                 <SnackbarProvider>
-                    <HeaderBar appName="User Extended App" />
+                    <LoadingProvider>
+                        <HeaderBar appName="User Extended App" />
 
-                    <div id="app" className="content">
-                        <AppContext.Provider value={appContext}>
-                            <Router />
-                        </AppContext.Provider>
-                    </div>
+                        <div id="app" className="content">
+                            <AppContext.Provider value={appContext}>
+                                <Router />
+                            </AppContext.Provider>
+                        </div>
 
-                    <Share visible={showShareButton} />
+                        <Share visible={showShareButton} />
+                    </LoadingProvider>
                 </SnackbarProvider>
             </OldMuiThemeProvider>
         </MuiThemeProvider>

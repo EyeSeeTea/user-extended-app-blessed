@@ -1,7 +1,6 @@
 import Store from "d2-ui/lib/store/Store";
 import { getInstance as getD2 } from "d2/lib/d2";
 import { Observable, Subject } from "rx";
-import appState from "../App/appStateStore";
 import { getUserList } from "../models/userList";
 
 export const columns = [
@@ -19,12 +18,6 @@ export const columns = [
     { name: "disabled", sortable: false },
 ];
 
-const columnObservable = appState
-    .filter(appState => appState.sideBar && appState.sideBar.currentSubSection)
-    .map(appState => appState.sideBar.currentSubSection)
-    .distinctUntilChanged()
-    .map(() => columns);
-
 export default Store.create({
     listSourceSubject: new Subject(),
     listRolesSubject: new Subject(),
@@ -32,25 +25,6 @@ export default Store.create({
     listOrgUnitsSubject: new Subject(),
 
     initialise() {
-        this.listSourceSubject
-            .concatAll()
-            .combineLatest(columnObservable)
-            .subscribe(([usersResponse, columns]) => {
-                this.setState({
-                    tableColumns: columns,
-                    pager: usersResponse.pager,
-                    list: usersResponse.users.map(user => ({
-                        ...user,
-                        ...(!user.userCredentials
-                            ? {}
-                            : {
-                                  username: user.userCredentials.username,
-                                  lastLogin: user.userCredentials.lastLogin,
-                                  userRoles: user.userCredentials.userRoles,
-                              }),
-                    })),
-                });
-            });
         return this;
     },
 

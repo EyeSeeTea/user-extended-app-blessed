@@ -73,7 +73,7 @@ class MultipleFilter extends React.Component {
         }
     }
 
-    render = () => {
+    render() {
         const { title, options, styles } = this.props;
         const { dialogOpen, selected } = this.state;
 
@@ -105,7 +105,7 @@ class MultipleFilter extends React.Component {
                 />
             </div>
         );
-    };
+    }
 }
 
 MultipleFilter.propTypes = {

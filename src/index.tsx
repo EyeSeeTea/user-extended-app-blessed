@@ -76,7 +76,7 @@ async function main() {
         initDeprecatedI18n(d2, userSettings);
 
         ReactDOM.render(
-            <Provider config={{ baseUrl, apiVersion: 37 }}>
+            <Provider config={{ baseUrl, apiVersion: 30 }}>
                 <App api={api} d2={d2} instance={instance} />
             </Provider>,
             document.getElementById("root")

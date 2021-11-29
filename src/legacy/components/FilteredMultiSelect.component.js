@@ -27,7 +27,7 @@ class FilteredMultiSelectComponent extends React.Component {
         this.setState({ filterText: event.target.value });
     }
 
-    render = () => {
+    render() {
         const { options, selected, onChange } = this.props;
         const { filterText } = this.state;
 
@@ -50,7 +50,7 @@ class FilteredMultiSelectComponent extends React.Component {
                 />
             </div>
         );
-    };
+    }
 }
 
 FilteredMultiSelectComponent.propTypes = {

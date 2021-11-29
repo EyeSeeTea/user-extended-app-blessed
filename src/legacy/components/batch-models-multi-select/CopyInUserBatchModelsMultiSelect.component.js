@@ -142,7 +142,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         this.setState({ selectedIds });
     }
 
-    render = () => {
+    render() {
         switch (this.state.state) {
             case "loading":
                 return (
@@ -157,7 +157,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
             default:
                 throw new Error(`Unknown state: ${this.state.state}`);
         }
-    };
+    }
 
     onFilterTextChange(event) {
         this.setState({ filterText: event.target.value });
@@ -176,7 +176,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
     };
 
     //eslint-disable-next-line
-    render = () => {
+    render() {
         const isLoading = this.state.state === "loading";
         const { parents, allChildren, filterText, selectedIds } = this.state;
         const title = this.props.getTitle(parents, allChildren);
@@ -249,7 +249,7 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
                 </div>
             </ConfirmationDialog>
         );
-    };
+    }
 }
 
 CopyInUserBatchModelsMultiSelectComponent.propTypes = {

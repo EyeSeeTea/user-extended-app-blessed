@@ -48,7 +48,7 @@ class SnackBarContainer extends React.Component {
         });
     };
 
-    render = () => {
+    render() {
         if (!this.state.snack) {
             return null;
         }
@@ -70,7 +70,7 @@ class SnackBarContainer extends React.Component {
                 onRequestClose={this._closeSnackbar}
             />
         );
-    };
+    }
 }
 
 export default SnackBarContainer;

@@ -107,7 +107,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
         this.setState({ selectedIds });
     }
 
-    render = () => {
+    render() {
         switch (this.state.state) {
             case "loading":
                 return (
@@ -122,14 +122,14 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             default:
                 throw new Error(`Unknown state: ${this.state.state}`);
         }
-    };
+    }
 
     onFilterTextChange(event) {
         this.setState({ filterText: event.target.value });
     }
 
     //eslint-disable-next-line
-    render = () => {
+    render() {
         const isLoading = this.state.state === "loading";
         const { parents, allChildren, filterText, selectedIds } = this.state;
         const title = this.props.getTitle(parents, allChildren);
@@ -170,7 +170,7 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
                 </div>
             </ConfirmationDialog>
         );
-    };
+    }
 }
 
 BatchModelsMultiSelectComponent.propTypes = {

@@ -125,7 +125,7 @@ class MultipleSelector extends React.Component {
         }
     };
 
-    render = () => {
+    render() {
         const { field } = this.props;
         const title = this.getTranslation(this.titleByField[field]);
 
@@ -142,7 +142,7 @@ class MultipleSelector extends React.Component {
                 {this.renderForm()}
             </Dialog>
         );
-    };
+    }
 }
 
 MultipleSelector.propTypes = {
