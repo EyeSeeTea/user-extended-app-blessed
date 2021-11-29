@@ -1,4 +1,4 @@
-import { D2Api, D2UserSchema, SelectedPick, MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.34";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
@@ -8,8 +8,7 @@ import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { Instance } from "../entities/Instance";
-import { ApiUserModel, UserModel } from "../models/UserModel";
-import { ListFilters, ListFilterType } from "../../domain/repositories/UserRepository";
+import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -20,7 +19,7 @@ export class UserD2ApiRepository implements UserRepository {
 
     @cache()
     public getCurrent(): FutureData<User> {
-        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.mapUser(user));
+        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
@@ -38,7 +37,7 @@ export class UserD2ApiRepository implements UserRepository {
             })
         ).map(({ objects, pager }) => ({
             pager,
-            objects: objects.map(user => this.mapUser(user)),
+            objects: objects.map(user => this.toDomainUser(user)),
         }));
     }
 
@@ -62,11 +61,11 @@ export class UserD2ApiRepository implements UserRepository {
             const [user] = objects;
             if (!user) return Future.error(`User ${id} not found`);
 
-            return Future.success(this.mapUser(user));
+            return Future.success(this.toDomainUser(user));
         });
     }
 
-    private getFullUsers(options: ListOptions): FutureData<D2ApiUser[]> {
+    private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
@@ -87,39 +86,42 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
-        const validations = usersToSave.map(user => UserModel.decode(user));
+        const validations = usersToSave.map(user => ApiUserModel.decode(this.toApiUser(user)));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));
         const errors = _.compact(validations.map(either => either.leftOrDefault("")));
 
         if (errors.length > 0) {
             return Future.error(errors.join("\n"));
         }
-        const userIds = users.map(user => user.id);
-        const listOptions = {
-            filters: { id: ["in" as ListFilterType, userIds] } as ListFilters,
-        };
 
-        return this.getFullUsers(listOptions).flatMap(existingUsers => {
+        const userIds = users.map(user => user.id);
+
+        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
             return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = existingUsers.map((existingUser, index) => ({
-                    ...existingUser,
-                    organisationUnits: users[index]?.organisationUnits,
-                    dataViewOrganisationUnits: users[index]?.dataViewOrganisationUnits,
-                    email: users[index]?.email,
-                    firstName: users[index]?.firstName,
-                    surname: users[index]?.surname,
-                    userCredentials: {
-                        ...existingUser.userCredentials,
-                        disabled: users[index]?.disabled,
-                        userRoles: users[index]?.userRoles,
-                        username: users[index]?.username,
-                    },
-                }));
+                const usersToSend = existingUsers.map((existingUser, index) => {
+                    const user = users[index];
+
+                    return {
+                        ...existingUser,
+                        organisationUnits: user?.organisationUnits,
+                        dataViewOrganisationUnits: user?.dataViewOrganisationUnits,
+                        email: user?.email,
+                        firstName: user?.firstName,
+                        surname: user?.surname,
+                        userCredentials: {
+                            ...existingUser.userCredentials,
+                            disabled: user?.userCredentials.disabled,
+                            userRoles: user?.userCredentials.userRoles,
+                            username: user?.userCredentials.username,
+                        },
+                    };
+                });
+
                 return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
             });
         });
     }
-    private getGroupsToSave(users: User[], existing: D2ApiUser[]) {
+    private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
         const userIds = users.map(({ id }) => id);
         const groupDictionary = _(users)
             .flatMap(({ id, userGroups }) => userGroups.map(group => ({ id, group })))
@@ -158,34 +160,56 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 
-    private mapUser(input: D2ApiUser): User {
-        const { userCredentials, ...user } = ApiUserModel.unsafeDecode(input);
+    private toDomainUser(input: ApiUser): User {
+        const { userCredentials, ...user } = input;
         const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
             .flatten()
             .uniq()
             .value();
 
-        return UserModel.unsafeDecode({
-            ...user,
+        return {
             id: user.id,
             name: user.name,
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
-            lastUpdated: user.lastUpdated,
-            created: user.created,
+            lastUpdated: new Date(user.lastUpdated),
+            created: new Date(user.created),
             userGroups: user.userGroups,
             username: userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
             userRoles: userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
-            lastLogin: userCredentials.lastLogin ? userCredentials.lastLogin : undefined,
+            lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
             openId: userCredentials.openId,
             authorities,
-        });
+        };
+    }
+
+    private toApiUser(input: User): ApiUser {
+        return {
+            id: input.id,
+            name: input.name,
+            firstName: input.firstName,
+            surname: input.surname,
+            email: input.email,
+            lastUpdated: input.lastUpdated.toISOString(),
+            created: input.created.toISOString(),
+            userGroups: input.userGroups,
+            organisationUnits: input.organisationUnits,
+            dataViewOrganisationUnits: input.dataViewOrganisationUnits,
+            access: input.access,
+            userCredentials: {
+                username: input.username,
+                userRoles: input.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name, authorities: [] })),
+                lastLogin: input.lastLogin?.toISOString() ?? "",
+                disabled: input.disabled,
+                openId: input.openId ?? "",
+            },
+        };
     }
 }
 
@@ -210,4 +234,4 @@ const fields = {
     },
 } as const;
 
-export type D2ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;

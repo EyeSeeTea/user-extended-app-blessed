@@ -1,6 +1,6 @@
 import { User, AccessPermissions } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
-import { D2ApiUser } from "../repositories/UserD2ApiRepository";
+import { ApiUser } from "../repositories/UserD2ApiRepository";
 import { NamedRefModel } from "./DHIS2Model";
 
 export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
@@ -12,8 +12,6 @@ export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     manage: Schema.optionalSafe(Schema.boolean, false),
 });
 
-const dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-
 export const UserModel: Codec<User> = Schema.object({
     id: Schema.nonEmptyString,
     name: Schema.nonEmptyString,
@@ -21,21 +19,21 @@ export const UserModel: Codec<User> = Schema.object({
     firstName: Schema.nonEmptyString,
     surname: Schema.nonEmptyString,
     email: Schema.string,
-    lastUpdated: Schema.stringDate(dateFormat),
-    created: Schema.stringDate(dateFormat),
+    lastUpdated: Schema.date,
+    created: Schema.date,
     apiUrl: Schema.nonEmptyString,
     userRoles: Schema.array(NamedRefModel),
     userGroups: Schema.array(NamedRefModel),
     organisationUnits: Schema.array(NamedRefModel),
     dataViewOrganisationUnits: Schema.array(NamedRefModel),
-    lastLogin: Schema.optional(Schema.stringDate(dateFormat)),
+    lastLogin: Schema.optional(Schema.date),
     disabled: Schema.boolean,
     access: AccessPermissionsModel,
     authorities: Schema.array(Schema.nonEmptyString),
     openId: Schema.optional(Schema.string),
 });
 
-export const ApiUserModel: Codec<D2ApiUser> = Schema.object({
+export const ApiUserModel: Codec<ApiUser> = Schema.object({
     id: Schema.string,
     name: Schema.string,
     firstName: Schema.string,

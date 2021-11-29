@@ -9,12 +9,14 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
+    useSnackbar,
 } from "@eyeseetea/d2-ui-components";
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
@@ -34,11 +36,23 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
+    const snackbar = useSnackbar();
+    const navigate = useNavigate();
 
-    // TODO: Add bulk edit
-    const editUsers = useCallback((ids: string[]) => {
-        goToUserEditPage(ids[0]);
-    }, []);
+    const editUsers = useCallback(
+        (ids: string[]) => {
+            if (ids.length === 1) {
+                goToUserEditPage(ids[0]);
+                return;
+            }
+
+            compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
+                ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
+                error => snackbar.error(error)
+            );
+        },
+        [navigate, compositionRoot, snackbar]
+    );
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
@@ -64,6 +78,14 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Details"),
                     multiple: false,
                     primary: true,
+                },
+                {
+                    name: "edit",
+                    text: i18n.t("Edit"),
+                    icon: <Icon>edit</Icon>,
+                    multiple: true,
+                    onClick: editUsers,
+                    isActive: checkAccess(["update"]),
                 },
                 {
                     name: "copy_in_user",
@@ -104,14 +126,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     icon: <Icon>group_add</Icon>,
                     multiple: true,
                     onClick: users => userGroupsAssignmentDialogStore.setState({ users, open: true }),
-                    isActive: checkAccess(["update"]),
-                },
-                {
-                    name: "edit",
-                    text: i18n.t("Edit"),
-                    icon: <Icon>edit</Icon>,
-                    multiple: false,
-                    onClick: editUsers,
                     isActive: checkAccess(["update"]),
                 },
                 {

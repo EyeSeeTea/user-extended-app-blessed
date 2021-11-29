@@ -1,6 +1,6 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
 import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
-import { useLoading } from "@eyeseetea/d2-ui-components";
+import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton } from "material-ui";
@@ -28,6 +28,7 @@ export const UserBulkEditPage = () => {
     const { compositionRoot } = useAppContext();
     const goBack = useGoBack();
     const loading = useLoading();
+    const snackbar = useSnackbar();
 
     const location = useLocation();
     const { users: locationUsers = [] } = location.state as { users: User[] };
@@ -42,16 +43,22 @@ export const UserBulkEditPage = () => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             loading.show(true, i18n.t("Saving users"));
+
             const { data, error } = await compositionRoot.users.save(users).runAsync();
-            if (error) return error ?? i18n.t("Network error");
             loading.reset();
+
+            if (error) {
+                snackbar.error(error);
+                return error;
+            }
+
             if (data && data.status === "ERROR") {
                 setSummary([data]);
             } else {
                 goHome();
             }
         },
-        [compositionRoot, goHome, loading]
+        [compositionRoot, snackbar, goHome, loading]
     );
 
     const addRow = useCallback(() => {
@@ -148,17 +155,7 @@ export const UserBulkEditPage = () => {
     );
 };
 
-const baseUserColumns = [
-    "id",
-    "firstName",
-    "surname",
-    "email",
-    "disabled",
-    "userRoles",
-    "userGroups",
-    "organisationUnits",
-    "dataViewOrganisationUnits",
-];
+const baseUserColumns = ["firstName", "surname", "email", "userRoles", "userGroups", "organisationUnits"];
 
 const MaxHeight = styled.div`
     height: 95%;
