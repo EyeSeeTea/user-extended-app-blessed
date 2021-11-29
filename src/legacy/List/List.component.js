@@ -1,7 +1,4 @@
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
-import isIterable from "d2-utilizr/lib/isIterable";
-import _ from "lodash";
 import set from "lodash/fp/set";
 import log from "loglevel";
 import IconButton from "material-ui/IconButton";
@@ -17,7 +14,6 @@ import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import SettingsDialog from "../components/SettingsDialog.component";
-import TableLayout from "../components/TableLayout.component";
 import UserGroupsDialog from "../components/UserGroupsDialog.component";
 import UserRolesDialog from "../components/UserRolesDialog.component";
 import Settings from "../models/settings";
@@ -28,25 +24,15 @@ import copyInUserStore from "./copyInUser.store";
 import deleteUserStore from "./deleteUser.store";
 import enableStore from "./enable.store";
 import Filters from "./Filters.component";
-import listActions from "./list.actions";
-import listStore from "./list.store";
 import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
 import userGroupsAssignmentDialogStore from "./userGroups.store";
 import userRolesAssignmentDialogStore from "./userRoles.store";
 
-const pageSize = 50;
-
 const initialSorting = ["name", "asc"];
 
 export class ListHybrid extends React.Component {
-    static propTypes = {
-        params: PropTypes.shape({
-            modelType: PropTypes.string.isRequired,
-        }),
-    };
-
     static contextTypes = {
         d2: PropTypes.object.isRequired,
     };
@@ -83,7 +69,6 @@ export class ListHybrid extends React.Component {
 
         this.state = {
             listFilterOptions: {},
-            dataRows: null,
             filters: {},
             pager: {
                 total: 0,
@@ -91,7 +76,7 @@ export class ListHybrid extends React.Component {
             isLoading: true,
             sorting: initialSorting,
             settingsVisible: false,
-            layoutSettingsVisible: false,
+            visibleColumns: [],
             sharing: {
                 model: null,
                 open: false,
@@ -134,20 +119,10 @@ export class ListHybrid extends React.Component {
         this.observerDisposables = [];
 
         Settings.build(this.context.d2).then(settings => {
-            const sourceStoreDisposable = listStore.subscribe(listStoreValue => {
-                if (!isIterable(listStoreValue.list)) {
-                    return; // Received value is not iterable, keep waiting
-                }
-
-                this.setState({
-                    dataRows: listStoreValue.list,
-                    pager: listStoreValue.pager,
-                    tableColumns: listStoreValue.tableColumns,
-                    settings: this.state.settings || settings,
-                    isLoading: false,
-                });
+            this.setState({
+                settings: this.state.settings || settings,
+                isLoading: false,
             });
-            this.registerDisposable(sourceStoreDisposable);
         });
 
         const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
@@ -251,28 +226,11 @@ export class ListHybrid extends React.Component {
         });
     };
 
-    filterList = ({ page = 1 } = {}) => {
+    filterList = () => {
         const order = this.state.sorting ? this.state.sorting[0] + ":i" + this.state.sorting[1] : null;
         const { filters } = this.state;
 
-        const options = {
-            modelType: this.props.params.modelType,
-            order: order,
-            ...filters,
-        };
-
-        const paginatedOptions = {
-            ...options,
-            paging: true,
-            page: page,
-            pageSize: pageSize,
-        };
-
-        listActions.filter(paginatedOptions).subscribe(
-            () => {},
-            error => log.error(error)
-        );
-        this.setState({ isLoading: true, listFilterOptions: options });
+        this.setState({ isLoading: true, listFilterOptions: { order: order, ...filters } });
     };
 
     convertObjsToMenuItems = objs => {
@@ -328,21 +286,8 @@ export class ListHybrid extends React.Component {
         });
     };
 
-    _openLayoutSettings = () => {
-        this.setState({ layoutSettingsVisible: true });
-    };
-
-    _closeLayoutSettings = () => {
-        this.setState({ layoutSettingsVisible: false });
-    };
-
-    _setLayoutSettings = selectedColumns => {
-        const newSettings = this.state.settings.set({ visibleTableColumns: selectedColumns });
-        this.setState({ settings: newSettings });
-    };
-
-    _saveLayoutSettings = () => {
-        this.state.settings.save().then(this._closeLayoutSettings);
+    _updateVisibleColumns = visibleColumns => {
+        this.setState({ visibleColumns });
     };
 
     _openImportTable = importResult => {
@@ -381,7 +326,6 @@ export class ListHybrid extends React.Component {
     _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
 
     render() {
-        if (!this.state.dataRows) return null;
         const { d2 } = this.context;
 
         const {
@@ -392,34 +336,27 @@ export class ListHybrid extends React.Component {
             copyUsers,
             removeUsers,
             disableUsers,
+            importUsers,
+            settings,
+            settingsVisible,
         } = this.state;
-
-        const { importUsers } = this.state;
-        const { settings, settingsVisible, layoutSettingsVisible, tableColumns } = this.state;
-        const { styles } = this;
-        const allColumns = tableColumns.map(c => ({
-            text: this.getTranslation(camelCaseToUnderscores(c.name)),
-            value: c.name,
-        }));
-
-        const visibleColumns = _(tableColumns).keyBy("name").at(settings.get("visibleTableColumns")).compact().value();
 
         return (
             <div>
-                <div style={styles.listDetailsWrap}>
-                    <div style={styles.dataTableWrap}>
+                <div style={this.styles.listDetailsWrap}>
+                    <div style={this.styles.dataTableWrap}>
                         <UserListTable
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            onChangeVisibleColumns={this._updateVisibleColumns}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>
                                 <ImportExport
                                     d2={d2}
-                                    columns={settings.get("visibleTableColumns")}
-                                    allColumns={allColumns}
+                                    columns={this.state.visibleColumns}
                                     filterOptions={listFilterOptions}
                                     onImport={this._openImportTable}
                                     maxUsers={this.maxImportUsers}
@@ -427,7 +364,6 @@ export class ListHybrid extends React.Component {
                                 />
                             </div>
                         </UserListTable>
-                        {this.state.dataRows.length || this.state.isLoading ? null : <div>No results found</div>}
                     </div>
                 </div>
 
@@ -511,22 +447,13 @@ export class ListHybrid extends React.Component {
                         saveText={"Confirm"}
                     />
                 ) : null}
+
                 {assignUserGroups.open ? (
                     <UserGroupsDialog
                         users={assignUserGroups.users}
                         onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
-
-                {layoutSettingsVisible && (
-                    <TableLayout
-                        options={allColumns}
-                        selected={visibleColumns.map(c => c.name)}
-                        onChange={this._setLayoutSettings}
-                        onSave={this._saveLayoutSettings}
-                        onClose={this._closeLayoutSettings}
-                    />
-                )}
 
                 {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 

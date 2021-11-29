@@ -16,7 +16,7 @@ export const Router: React.FC = React.memo(() => {
                     path="/"
                     element={
                         <LegacyAppWrapper>
-                            <ListHybrid params={{ groupName: "userSection", modelType: "user" }} api={api} />
+                            <ListHybrid api={api} />
                         </LegacyAppWrapper>
                     }
                 />

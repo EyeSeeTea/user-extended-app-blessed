@@ -193,6 +193,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
+            onReorderColumns: props.onChangeVisibleColumns,
         };
     }, [props, enableReplicate, editUsers]);
 
@@ -302,6 +303,7 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+    onChangeVisibleColumns: (columns: string[]) => void;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
