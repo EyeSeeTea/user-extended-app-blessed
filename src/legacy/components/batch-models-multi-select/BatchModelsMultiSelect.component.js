@@ -98,38 +98,22 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
 
     save = () => {
         const { parents, allChildren, selectedIds, updateStrategy } = this.state;
+        this.setState({ state: "loading" });
         this.props.model
             .save(parents, allChildren, selectedIds, updateStrategy)
             .then(() => this.close(this.props.onSuccess))
             .catch(() => this.close(this.props.onError));
     };
+
     onChange(selectedIds) {
         this.setState({ selectedIds });
     }
-
-    render = () => {
-        switch (this.state.state) {
-            case "loading":
-                return (
-                    <div style={this.styles.loadingMask}>
-                        <LoadingMask />
-                    </div>
-                );
-            case "error":
-                return <div style={this.styles.loadingMask}>{this.state.error}</div>;
-            case "ready":
-                return this.renderForm();
-            default:
-                throw new Error(`Unknown state: ${this.state.state}`);
-        }
-    };
 
     onFilterTextChange(event) {
         this.setState({ filterText: event.target.value });
     }
 
-    //eslint-disable-next-line
-    render = () => {
+    render() {
         const isLoading = this.state.state === "loading";
         const { parents, allChildren, filterText, selectedIds } = this.state;
         const title = this.props.getTitle(parents, allChildren);
@@ -138,39 +122,48 @@ export default class BatchModelsMultiSelectComponent extends React.Component {
             .map(obj => ({ value: obj.id, text: obj.name }))
             .value();
 
-        return (
-            <ConfirmationDialog
-                title={title}
-                open={true}
-                maxWidth={"lg"}
-                fullWidth={true}
-                onCancel={this.props.onCancel}
-                cancelText={this.getTranslation("cancel")}
-                saveText={this.getTranslation("save")}
-                onSave={!isLoading ? this.save.bind(this) : undefined}
-            >
-                <TextField
-                    style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
-                    value={filterText}
-                    onChange={this.onFilterTextChange.bind(this)}
-                    type="search"
-                    hintText={`${this.getTranslation("search_by_name")}`}
-                />
+        switch (this.state.state) {
+            case "loading":
+                return <LoadingMask />;
+            case "error":
+                return <div style={this.styles.loadingMask}>{this.state.error}</div>;
+            case "ready":
+                return (
+                    <ConfirmationDialog
+                        title={title}
+                        open={true}
+                        maxWidth={"lg"}
+                        fullWidth={true}
+                        onCancel={this.props.onCancel}
+                        cancelText={this.getTranslation("cancel")}
+                        saveText={this.getTranslation("save")}
+                        onSave={!isLoading ? this.save.bind(this) : undefined}
+                    >
+                        <TextField
+                            style={{ marginLeft: 15, marginTop: 5, marginBottom: -15 }}
+                            value={filterText}
+                            onChange={this.onFilterTextChange.bind(this)}
+                            type="search"
+                            hintText={`${this.getTranslation("search_by_name")}`}
+                        />
 
-                {this.renderStrategyToggle()}
+                        {this.renderStrategyToggle()}
 
-                <div style={this.styles.contents}>
-                    <MultiSelect
-                        isLoading={isLoading}
-                        options={options}
-                        onChange={this.onChange.bind(this)}
-                        selected={selectedIds}
-                        filterText={filterText}
-                    />
-                </div>
-            </ConfirmationDialog>
-        );
-    };
+                        <div style={this.styles.contents}>
+                            <MultiSelect
+                                isLoading={isLoading}
+                                options={options}
+                                onChange={this.onChange.bind(this)}
+                                selected={selectedIds}
+                                filterText={filterText}
+                            />
+                        </div>
+                    </ConfirmationDialog>
+                );
+            default:
+                throw new Error(`Unknown state: ${this.state.state}`);
+        }
+    }
 }
 
 BatchModelsMultiSelectComponent.propTypes = {
