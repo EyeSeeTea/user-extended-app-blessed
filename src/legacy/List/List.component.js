@@ -51,7 +51,7 @@ export class ListHybrid extends React.Component {
         d2: PropTypes.object.isRequired,
     };
 
-    maxImportUsers = 200;
+    maxImportUsers = 500;
 
     styles = {
         dataTableWrap: {
