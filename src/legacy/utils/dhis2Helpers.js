@@ -1,13 +1,34 @@
 import _ from "lodash";
 import _m from "./lodash-mixins";
+import { getInstance } from "d2/lib/d2";
 
-import appStateStore from "../App/appStateStore";
+const orgUnitListOptions = {
+    fields: ":all,shortName,displayName,path,children[id,shortName,displayName,path,children::isNotEmpty]",
+    paging: false,
+};
 
-function getOrgUnitsRoots() {
-    return appStateStore
-        .map(appState => appState.userOrganisationUnits.toArray())
-        .first()
-        .toPromise();
+async function getOrgUnitsRoots(disableCache = false) {
+    if (!disableCache && getOrgUnitsRoots.currentUserOrganisationUnits) {
+        return getOrgUnitsRoots.currentUserOrganisationUnits;
+    }
+
+    const d2 = await getInstance();
+    const organisationUnitsCollection = await d2.currentUser.getOrganisationUnits(orgUnitListOptions);
+
+    if (d2.currentUser.authorities.has("ALL") && !organisationUnitsCollection.size) {
+        const rootLevelOrgUnits = await d2.models.organisationUnits.list({
+            ...orgUnitListOptions,
+            level: 1,
+        });
+
+        getOrgUnitsRoots.currentUserOrganisationUnits = rootLevelOrgUnits.toArray();
+
+        return rootLevelOrgUnits;
+    }
+
+    getOrgUnitsRoots.currentUserOrganisationUnits = organisationUnitsCollection.toArray();
+
+    return organisationUnitsCollection.toArray();
 }
 
 async function mapPromise(inputValues, mapper) {
