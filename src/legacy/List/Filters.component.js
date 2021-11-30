@@ -168,7 +168,7 @@ export default class Filters extends React.Component {
 
     checkboxHandler = (ev, isChecked) => isChecked;
 
-    render = () => {
+    render() {
         const {
             userGroups,
             userRoles,
@@ -276,5 +276,5 @@ export default class Filters extends React.Component {
                 </ConfirmationDialog>
             </div>
         );
-    };
+    }
 }

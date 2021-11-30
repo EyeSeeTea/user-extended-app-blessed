@@ -17,7 +17,7 @@ class App extends AppWithD2 {
         });
     }
 
-    render = () => {
+    render() {
         if (!this.state.d2) {
             return <LoadingMask />;
         }
@@ -30,7 +30,7 @@ class App extends AppWithD2 {
                 <SnackbarContainer />
             </React.Fragment>
         );
-    };
+    }
 }
 
 App.propTypes = {

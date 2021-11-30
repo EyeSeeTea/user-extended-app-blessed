@@ -77,7 +77,7 @@ class MultiSelect extends React.Component {
         return Promise.resolve();
     };
 
-    render = () => {
+    render() {
         const { errors, label, sortable, height, filterText } = this.props;
         const { styles } = this;
         const SelectedGroupEditor = sortable ? GroupEditorWithOrdering : GroupEditor;
@@ -105,7 +105,7 @@ class MultiSelect extends React.Component {
                 />
             </div>
         );
-    };
+    }
 }
 
 export default MultiSelect;

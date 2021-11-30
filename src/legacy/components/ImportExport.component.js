@@ -23,12 +23,6 @@ class ImportExport extends React.Component {
         onImport: PropTypes.func.isRequired,
         maxUsers: PropTypes.number.isRequired,
         settings: PropTypes.object.isRequired,
-        allColumns: PropTypes.arrayOf(
-            PropTypes.shape({
-                text: PropTypes.string.isRequired,
-                value: PropTypes.string.isRequired,
-            })
-        ).isRequired,
     };
 
     state = { isMenuOpen: false, anchorEl: null, isProcessing: false };
@@ -114,7 +108,7 @@ class ImportExport extends React.Component {
             });
     };
 
-    render = () => {
+    render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
         const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate } = this;
         const { t } = this;
@@ -146,7 +140,7 @@ class ImportExport extends React.Component {
                 </Popover>
             </div>
         );
-    };
+    }
 }
 
 export default ImportExport;

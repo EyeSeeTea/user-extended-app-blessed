@@ -46,7 +46,7 @@ export function generateUid(): string {
     return randomChars;
 }
 
-const fullUidRegex = /^[a-zA-Z]{1}[a-zA-Z0-9]{10}$/;
+export const fullUidRegex = /^[a-zA-Z]{1}[a-zA-Z0-9]{10}$/;
 const uidRegex = /[a-zA-Z]{1}[a-zA-Z0-9]{10}/g;
 
 export function isValidUid(code: string | undefined | null): boolean {

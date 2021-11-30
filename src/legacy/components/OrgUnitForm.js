@@ -124,7 +124,7 @@ class OrgUnitForm extends React.Component {
         return <div>{this.context.d2.i18n.getTranslation("no_roots_found")}</div>;
     };
 
-    render = () => {
+    render() {
         if (!this.state.rootOrgUnits) {
             //eslint-disable-next-line
             return <div>this.context.d2.i18n.getTranslation('determining_your_root_orgunits')</div>;
@@ -195,7 +195,7 @@ class OrgUnitForm extends React.Component {
                 {this.renderRoots()}
             </div>
         );
-    };
+    }
 }
 
 OrgUnitForm.propTypes = {
