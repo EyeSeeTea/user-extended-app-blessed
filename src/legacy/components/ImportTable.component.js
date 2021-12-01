@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
@@ -5,7 +6,6 @@ import { generateUid } from "d2/lib/uid";
 import { OrderedMap } from "immutable";
 import _ from "lodash";
 import Chip from "material-ui/Chip";
-import Dialog from "material-ui/Dialog/Dialog";
 import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
@@ -682,26 +682,20 @@ class ImportTable extends React.Component {
 
     render() {
         const { onRequestClose } = this.props;
-        const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } =
-            this.state;
+        const { infoDialog, isLoading, isImporting } = this.state;
         const { multipleSelector, orgUnitRoots } = this.state;
-
-        const duplicatedUsernamesExist = this.getDuplicatedUsernamesExist(users, existingUsernames);
-        const showProcessButton = !users.isEmpty() && areUsersValid;
-        const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
         const dialogTitle = this.renderDialogTitle();
 
         return (
-            <Dialog
+            <ConfirmationDialog
                 open={true}
-                modal={true}
                 title={dialogTitle}
-                actions={actions}
-                autoScrollBodyContent={true}
-                autoDetectWindowHeight={true}
-                contentStyle={styles.dialog}
-                bodyStyle={styles.dialogBody}
-                onRequestClose={onRequestClose}
+                maxWidth={"lg"}
+                fullWidth={true}
+                cancelText={this.t("close")}
+                onCancel={onRequestClose}
+                saveText={this.t(this.props.actionText)}
+                onSave={this.onSave}
             >
                 {isImporting && <ModalLoadingMask />}
 
@@ -727,7 +721,7 @@ class ImportTable extends React.Component {
                         response={infoDialog.response}
                     />
                 )}
-            </Dialog>
+            </ConfirmationDialog>
         );
     }
 }
