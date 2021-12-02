@@ -1,6 +1,6 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import PropTypes from "prop-types";
-import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 import OrgUnitForm from "./OrgUnitForm";
@@ -13,7 +13,6 @@ class MultipleSelector extends React.Component {
         super(props, context);
 
         this.getTranslation = context.d2.i18n.getTranslation.bind(context.d2.i18n);
-        this.dialogButtons = this.getDialogButtons();
 
         this.state = {
             selected: props.selected,
@@ -130,17 +129,18 @@ class MultipleSelector extends React.Component {
         const title = this.getTranslation(this.titleByField[field]);
 
         return (
-            <Dialog
-                title={title}
-                actions={this.dialogButtons}
-                autoScrollBodyContent={true}
-                autoDetectWindowHeight={true}
-                contentStyle={this.styles.dialog}
+            <ConfirmationDialog
                 open={true}
-                onRequestClose={this.closeDialog}
+                title={title}
+                maxWidth={"lg"}
+                fullWidth={true}
+                cancelText={this.getTranslation("close")}
+                onCancel={this.closeDialog}
+                saveText={this.getTranslation("apply")}
+                onSave={this.applyAndClose}
             >
                 {this.renderForm()}
-            </Dialog>
+            </ConfirmationDialog>
         );
     }
 }
