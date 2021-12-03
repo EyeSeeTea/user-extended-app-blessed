@@ -6,7 +6,6 @@ import { generateUid } from "d2/lib/uid";
 import { OrderedMap } from "immutable";
 import _ from "lodash";
 import Chip from "material-ui/Chip";
-import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
@@ -123,7 +122,6 @@ class ImportTable extends React.Component {
                 (...args) =>
                     this.onUpdateFormStatus(userId, ...args)
         );
-        this.getActionsByState = memoize(this.getActionsByState.bind(this));
         this.getOnTextFieldClicked = memoize(
             (...args) =>
                 () =>
@@ -173,26 +171,6 @@ class ImportTable extends React.Component {
             modelValuesByField,
             orgUnitRoots,
         });
-    };
-
-    getActionsByState = (allowOverwrite, showOverwriteToggle, showProcessButton) => {
-        const { onRequestClose, actionText, templateUser } = this.props;
-
-        return (
-            <React.Fragment>
-                {showOverwriteToggle && !templateUser && (
-                    <Toggle
-                        label={this.t("overwrite_existing_users")}
-                        labelPosition="right"
-                        toggled={allowOverwrite}
-                        onToggle={this.toggleAllowOverwrite}
-                        style={styles.overwriteToggle}
-                    />
-                )}
-                <FlatButton label={this.t("close")} onClick={onRequestClose} style={styles.cancelButton} />
-                <RaisedButton primary={true} label={actionText} disabled={!showProcessButton} onClick={this.onSave} />
-            </React.Fragment>
-        );
     };
 
     getUser = userId => {
@@ -674,10 +652,6 @@ class ImportTable extends React.Component {
                 )}
             </div>
         );
-    };
-
-    getDuplicatedUsernamesExist = (users, existingUsernames) => {
-        return users.valueSeq().some(user => existingUsernames.has(user.username));
     };
 
     render() {
