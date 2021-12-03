@@ -655,21 +655,31 @@ class ImportTable extends React.Component {
     };
 
     render() {
-        const { onRequestClose } = this.props;
-        const { infoDialog, isLoading, isImporting } = this.state;
-        const { multipleSelector, orgUnitRoots } = this.state;
-        const dialogTitle = this.renderDialogTitle();
+        const { onRequestClose, actionText, templateUser } = this.props;
+        const {
+            infoDialog,
+            users,
+            isLoading,
+            existingUsernames,
+            allowOverwrite,
+            areUsersValid,
+            isImporting,
+            multipleSelector,
+            orgUnitRoots,
+        } = this.state;
+        const showOverwriteToggle = users.valueSeq().some(user => existingUsernames.has(user.username));
 
         return (
             <ConfirmationDialog
                 open={true}
-                title={dialogTitle}
+                title={this.renderDialogTitle()}
                 maxWidth={"lg"}
                 fullWidth={true}
                 cancelText={this.t("close")}
                 onCancel={onRequestClose}
-                saveText={this.t(this.props.actionText)}
+                saveText={this.t(actionText)}
                 onSave={this.onSave}
+                disableSave={users.isEmpty() || !areUsersValid}
             >
                 {isImporting && <ModalLoadingMask />}
 
@@ -693,6 +703,16 @@ class ImportTable extends React.Component {
                         title={this.t("metadata_error")}
                         onClose={this.closeInfoDialog}
                         response={infoDialog.response}
+                    />
+                )}
+
+                {showOverwriteToggle && !templateUser && (
+                    <Toggle
+                        label={this.t("overwrite_existing_users")}
+                        labelPosition="right"
+                        toggled={allowOverwrite}
+                        onToggle={this.toggleAllowOverwrite}
+                        style={styles.overwriteToggle}
                     />
                 )}
             </ConfirmationDialog>
