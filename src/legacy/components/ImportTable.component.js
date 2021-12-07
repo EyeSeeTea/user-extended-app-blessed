@@ -677,7 +677,7 @@ class ImportTable extends React.Component {
                 fullWidth={true}
                 cancelText={this.t("close")}
                 onCancel={onRequestClose}
-                saveText={this.t(actionText)}
+                saveText={actionText}
                 onSave={this.onSave}
                 disableSave={users.isEmpty() || !areUsersValid}
             >

@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import i18n from "../../locales";
 import LoadingMask from "../loading-mask/LoadingMask.component";
 import User from "../models/user";
 import snackActions from "../Snackbar/snack.actions";
@@ -16,14 +17,10 @@ class ReplicateUserFromTable extends React.Component {
         "dataViewOrganisationUnits",
     ];
 
-    constructor(props, context) {
+    constructor(props) {
         super(props);
-        const { d2 } = context;
-        this.t = d2.i18n.getTranslation.bind(d2.i18n);
 
-        this.state = {
-            userToReplicate: null,
-        };
+        this.state = { userToReplicate: null };
     }
 
     componentDidMount = async () => {
@@ -37,7 +34,7 @@ class ReplicateUserFromTable extends React.Component {
         const response = await userToReplicate.replicateFromPlainFields(users);
 
         if (response.success) {
-            const message = this.t("replicate_successful", {
+            const message = i18n.t("User {{user}} replicated successfully {{n}} times", {
                 user: userToReplicate.displayName,
                 n: users.length,
             });
@@ -51,7 +48,7 @@ class ReplicateUserFromTable extends React.Component {
     render() {
         const { onRequestClose } = this.props;
         const { userToReplicate } = this.state;
-        const title = this.t("replicate_user_title", {
+        const title = i18n.t("Replicate {{user}}", {
             user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : "",
         });
 
@@ -63,7 +60,7 @@ class ReplicateUserFromTable extends React.Component {
                 onSave={this.replicateUsers}
                 maxUsers={100}
                 templateUser={userToReplicate}
-                actionText={this.t("replicate")}
+                actionText={i18n.t("Replicate")}
                 onRequestClose={onRequestClose}
                 columns={this.columns}
                 settings={this.props.settings}

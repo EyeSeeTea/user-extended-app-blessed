@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-29T09:22:31.420Z\n"
-"PO-Revision-Date: 2021-11-29T09:22:31.420Z\n"
+"POT-Creation-Date: 2021-12-07T09:36:35.426Z\n"
+"PO-Revision-Date: 2021-12-07T09:36:35.426Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -17,6 +17,27 @@ msgstr ""
 msgid "Remove users"
 msgstr ""
 
+msgid "Copy to clipboard"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "User {{user}} replicated successfully {{n}} times"
+msgstr ""
+
+msgid "Replicate {{user}}"
+msgstr ""
+
+msgid "Replicate"
+msgstr ""
+
+msgid "Value should be between {{min}} and {{max}}"
+msgstr ""
+
+msgid "Username. Example for two users: admin.$index -> admin.1, admin.2"
+msgstr ""
+
 msgid "Replicate error"
 msgstr ""
 
@@ -24,9 +45,6 @@ msgid "Settings"
 msgstr ""
 
 msgid "Columns to show in table"
-msgstr ""
-
-msgid "Close"
 msgstr ""
 
 msgid "Column"
