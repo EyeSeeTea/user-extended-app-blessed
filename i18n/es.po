@@ -26,13 +26,11 @@ msgstr ""
 msgid "User {{user}} replicated successfully {{n}} times"
 msgstr ""
 
-#, fuzzy
 msgid "Replicate {{user}}"
-msgstr "Replicar error"
+msgstr "Replicar {{user}}"
 
-#, fuzzy
 msgid "Replicate"
-msgstr "Replicar error"
+msgstr "Replicar"
 
 msgid "Value should be between {{min}} and {{max}}"
 msgstr ""
