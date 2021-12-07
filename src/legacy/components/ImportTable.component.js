@@ -1,3 +1,4 @@
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
@@ -5,8 +6,6 @@ import { generateUid } from "d2/lib/uid";
 import { OrderedMap } from "immutable";
 import _ from "lodash";
 import Chip from "material-ui/Chip";
-import Dialog from "material-ui/Dialog/Dialog";
-import FlatButton from "material-ui/FlatButton/FlatButton";
 import FontIcon from "material-ui/FontIcon";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
@@ -123,7 +122,6 @@ class ImportTable extends React.Component {
                 (...args) =>
                     this.onUpdateFormStatus(userId, ...args)
         );
-        this.getActionsByState = memoize(this.getActionsByState.bind(this));
         this.getOnTextFieldClicked = memoize(
             (...args) =>
                 () =>
@@ -173,26 +171,6 @@ class ImportTable extends React.Component {
             modelValuesByField,
             orgUnitRoots,
         });
-    };
-
-    getActionsByState = (allowOverwrite, showOverwriteToggle, showProcessButton) => {
-        const { onRequestClose, actionText, templateUser } = this.props;
-
-        return (
-            <React.Fragment>
-                {showOverwriteToggle && !templateUser && (
-                    <Toggle
-                        label={this.t("overwrite_existing_users")}
-                        labelPosition="right"
-                        toggled={allowOverwrite}
-                        onToggle={this.toggleAllowOverwrite}
-                        style={styles.overwriteToggle}
-                    />
-                )}
-                <FlatButton label={this.t("close")} onClick={onRequestClose} style={styles.cancelButton} />
-                <RaisedButton primary={true} label={actionText} disabled={!showProcessButton} onClick={this.onSave} />
-            </React.Fragment>
-        );
     };
 
     getUser = userId => {
@@ -676,32 +654,32 @@ class ImportTable extends React.Component {
         );
     };
 
-    getDuplicatedUsernamesExist = (users, existingUsernames) => {
-        return users.valueSeq().some(user => existingUsernames.has(user.username));
-    };
-
     render() {
-        const { onRequestClose } = this.props;
-        const { infoDialog, users, isLoading, existingUsernames, allowOverwrite, areUsersValid, isImporting } =
-            this.state;
-        const { multipleSelector, orgUnitRoots } = this.state;
-
-        const duplicatedUsernamesExist = this.getDuplicatedUsernamesExist(users, existingUsernames);
-        const showProcessButton = !users.isEmpty() && areUsersValid;
-        const actions = this.getActionsByState(allowOverwrite, duplicatedUsernamesExist, showProcessButton);
-        const dialogTitle = this.renderDialogTitle();
+        const { onRequestClose, actionText, templateUser } = this.props;
+        const {
+            infoDialog,
+            users,
+            isLoading,
+            existingUsernames,
+            allowOverwrite,
+            areUsersValid,
+            isImporting,
+            multipleSelector,
+            orgUnitRoots,
+        } = this.state;
+        const showOverwriteToggle = users.valueSeq().some(user => existingUsernames.has(user.username));
 
         return (
-            <Dialog
+            <ConfirmationDialog
                 open={true}
-                modal={true}
-                title={dialogTitle}
-                actions={actions}
-                autoScrollBodyContent={true}
-                autoDetectWindowHeight={true}
-                contentStyle={styles.dialog}
-                bodyStyle={styles.dialogBody}
-                onRequestClose={onRequestClose}
+                title={this.renderDialogTitle()}
+                maxWidth={"lg"}
+                fullWidth={true}
+                cancelText={this.t("close")}
+                onCancel={onRequestClose}
+                saveText={actionText}
+                onSave={this.onSave}
+                disableSave={users.isEmpty() || !areUsersValid}
             >
                 {isImporting && <ModalLoadingMask />}
 
@@ -727,7 +705,17 @@ class ImportTable extends React.Component {
                         response={infoDialog.response}
                     />
                 )}
-            </Dialog>
+
+                {showOverwriteToggle && !templateUser && (
+                    <Toggle
+                        label={this.t("overwrite_existing_users")}
+                        labelPosition="right"
+                        toggled={allowOverwrite}
+                        onToggle={this.toggleAllowOverwrite}
+                        style={styles.overwriteToggle}
+                    />
+                )}
+            </ConfirmationDialog>
         );
     }
 }

@@ -2,6 +2,7 @@ import React from "react";
 import _ from "lodash";
 import PropTypes from "prop-types";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import i18n from "../../locales";
 
 const styles = {
     contents: {
@@ -13,9 +14,9 @@ function prettyJson(obj) {
     return obj ? JSON.stringify(obj, null, 2) : null;
 }
 
-const InfoDialog = ({ t, title, onClose, response }) => {
+const InfoDialog = ({ title, onClose, response }) => {
     const details = _([
-        t("metadata_error_description"),
+        i18n.t("There was an error while posting metadata. Those are the details:"),
         response.error || "Unknown error",
         prettyJson(response.payload),
         prettyJson(response.response),
@@ -33,8 +34,8 @@ const InfoDialog = ({ t, title, onClose, response }) => {
             onSave={() => {
                 navigator.clipboard.writeText(details);
             }}
-            saveText={t("copy_to_clipboard")}
-            cancelText={t("close")}
+            saveText={i18n.t("Copy to clipboard")}
+            cancelText={i18n.t("Close")}
         >
             <pre style={styles.contents}>{details}</pre>
         </ConfirmationDialog>

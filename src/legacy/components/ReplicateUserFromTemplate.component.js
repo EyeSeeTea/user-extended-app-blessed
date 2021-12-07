@@ -1,20 +1,19 @@
-import React from "react";
-import PropTypes from "prop-types";
-import _ from "lodash";
-import TextField from "material-ui/TextField/TextField";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
 import Validators from "d2-ui/lib/forms/Validators";
 import camelCaseToUnderscores from "d2-utilizr/lib/camelCaseToUnderscores";
-
-import { toBuilderValidator, validateValues, validateUsername, validatePassword } from "../utils/validators";
+import _ from "lodash";
+import TextField from "material-ui/TextField/TextField";
+import PropTypes from "prop-types";
+import React from "react";
+import i18n from "../../locales";
+import LoadingMask from "../loading-mask/LoadingMask.component";
 import User from "../models/user";
 import { getExistingUsers } from "../models/userHelpers";
-import { getFromTemplate } from "../utils/template";
 import snackActions from "../Snackbar/snack.actions";
+import { getFromTemplate } from "../utils/template";
+import { toBuilderValidator, validatePassword, validateUsername, validateValues } from "../utils/validators";
 import InfoDialog from "./InfoDialog";
-import LoadingMask from "../loading-mask/LoadingMask.component";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import i18n from "../../locales";
 
 class ReplicateUserFromTemplate extends React.Component {
     maxUsers = 100;
@@ -77,7 +76,7 @@ class ReplicateUserFromTemplate extends React.Component {
             },
             withinInterval: (min, max) => ({
                 validator: value => value && value >= min && value <= max,
-                message: this.getTranslation("validate_interval_error_message", { min, max }),
+                message: i18n.t("Value should be between {{min}} and {{max}}", { min, max }),
             }),
             isValidUsername: toBuilderValidator(
                 usernameTemplate => {
@@ -127,7 +126,7 @@ class ReplicateUserFromTemplate extends React.Component {
         const response = await userToReplicate.replicateFromTemplate(usersToCreate, username, password);
 
         if (response.success) {
-            const message = this.getTranslation("replicate_successful", {
+            const message = i18n.t("User {{user}} replicated successfully {{n}} times", {
                 user: userToReplicate.displayName,
                 n: usersToCreate,
             });
@@ -141,10 +140,9 @@ class ReplicateUserFromTemplate extends React.Component {
     render() {
         const { onRequestClose } = this.props;
         const { infoDialog, userToReplicate, usersToCreate, username, password, isValid, validate } = this.state;
-        const title = this.getTranslation("replicate_user_title", {
+        const title = i18n.t("Replicate {{user}}", {
             user: userToReplicate ? `${userToReplicate.displayName} (${userToReplicate.username})` : "",
         });
-        const t = this.getTranslation;
 
         const fields = [
             this.getTextField("usersToCreate", "number", usersToCreate, {
@@ -152,7 +150,9 @@ class ReplicateUserFromTemplate extends React.Component {
             }),
             this.getTextField("username", "string", username, {
                 validators: [this.validators.isValidUsername],
-                label: this.getTranslation("username_replicate_field"),
+                label: i18n.t("Username. Example for two users: admin.$index -> admin.1, admin.2", {
+                    nsSeparator: false,
+                }),
             }),
             this.getTextField("password", "string", password, {
                 validators: [this.validators.isValidPassword],
@@ -166,7 +166,7 @@ class ReplicateUserFromTemplate extends React.Component {
                 maxWidth={"md"}
                 fullWidth={true}
                 onSave={this.onSave}
-                saveText={t("replicate")}
+                saveText={i18n.t("Replicate")}
                 onCancel={onRequestClose}
                 disableSave={!isValid}
             >
@@ -174,7 +174,6 @@ class ReplicateUserFromTemplate extends React.Component {
 
                 {infoDialog ? (
                     <InfoDialog
-                        t={this.getTranslation}
                         title={i18n.t("Replicate error")}
                         onClose={this.closeInfoDialog}
                         response={infoDialog.response}
