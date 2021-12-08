@@ -1,26 +1,40 @@
-*.iml
-.idea/*
-package-lock.json
-node_modules*
-.sass-cache
-src/css/*
-coverage/*
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
 manifest.webapp
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
 *.zip
 
-# TODO: Jshint is a dependency of the git hook which installs these files on install...
-.jshintignore
-.jshintrc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Build folders 'build' for building the project 'target' being for the Maven deploy
-build/*
-target/*
+src/locales/
+src/react-app.d.ts
+src/react-app-env.d.ts
+bak
+.eslintcache
 
-npm-debug.log
-stats.json
+# cypress
+cypress/screenshots/
+cypress/videos/
+cypress/fixtures/
 
-.vscode*
-
-# Ignore config.js
-config.js
-app-config.json
+# IntelliJ
+.idea/*
