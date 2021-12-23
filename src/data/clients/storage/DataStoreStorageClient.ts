@@ -20,16 +20,19 @@ export class DataStoreStorageClient extends StorageClient {
     public getObject<T extends object>(key: string): FutureData<T | undefined> {
         return apiToFuture(this.dataStore.get<T>(key));
     }
+
     public getOrCreateObject<T extends object>(key: string, defaultValue: T): FutureData<T> {
         return this.getObject<T>(key).flatMap(value => {
             if (!value) return this.saveObject(key, defaultValue).map(() => defaultValue);
             return Future.success(value);
         });
     }
+
     public saveObject<T extends object>(key: string, value: T): FutureData<void> {
         return apiToFuture(this.dataStore.save(key, value));
     }
+
     public removeObject(key: string): FutureData<void> {
-        return apiToFuture(this.dataStore.delete(key)).map(() => {});
+        return apiToFuture(this.dataStore.delete(key)).map(() => undefined);
     }
 }

@@ -35,11 +35,11 @@ export abstract class StorageClient {
         const advancedProperties = NamespaceProperties[key] ?? [];
         const baseElements = elements.map(element => _.omit(element, advancedProperties));
         return this.getObject<T[]>(key)
-            .map(value => <Ref[]>(value ?? []))
-            .map(oldData => {
+            .map(value => value ?? [])
+            .flatMap((oldData: Ref[]) => {
                 const cleanData = oldData.filter(item => !elements.some(element => item.id === element.id));
                 // Save base elements directly into collection: model
-                this.saveObject(key, [...cleanData, ...baseElements]).map(() => {
+                return this.saveObject(key, [...cleanData, ...baseElements]).map(() => {
                     // Save advanced properties to its own key: model-id
                     if (advancedProperties.length > 0) {
                         for (const element of elements) {
@@ -47,6 +47,7 @@ export abstract class StorageClient {
                             this.saveObject(`${key}-${element.id}`, advancedElement);
                         }
                     }
+                    return undefined;
                 });
             });
     }
@@ -55,12 +56,12 @@ export abstract class StorageClient {
         const advancedProperties = NamespaceProperties[key] ?? [];
         const baseElement = _.omit(element, advancedProperties);
         return this.getObject<T[]>(key)
-            .map(value => <Ref[]>(value ?? []))
-            .map(oldData => {
+            .map(value => value ?? [])
+            .flatMap((oldData: Ref[]) => {
                 const foundIndex = _.findIndex(oldData, item => item.id === element.id);
                 const arrayIndex = foundIndex === -1 ? oldData.length : foundIndex;
                 // Save base element directly into collection: model
-                this.saveObject(key, [
+                return this.saveObject(key, [
                     ...oldData.slice(0, arrayIndex),
                     baseElement,
                     ...oldData.slice(arrayIndex + 1),
@@ -70,30 +71,33 @@ export abstract class StorageClient {
                         const advancedElement = _.pick(element, advancedProperties);
                         this.saveObject(`${key}-${element.id}`, advancedElement);
                     }
+                    return undefined;
                 });
             });
     }
 
     public removeObjectInCollection(key: string, id: string): FutureData<void> {
         return this.getObject(key)
-            .map(value => <Ref[]>(value ?? []))
-            .map(oldData => {
+            .map(value => (value ?? []) as Ref[])
+            .flatMap(oldData => {
                 const newData = _.reject(oldData, { id });
-                this.saveObject(key, newData).map(() => {
+                return this.saveObject(key, newData).map(() => {
                     const advancedProperties = NamespaceProperties[key] ?? [];
                     if (advancedProperties.length > 0) this.removeObject(`${key}-${id}`);
+                    return undefined;
                 });
             });
     }
 
     public removeObjectsInCollection(key: string, ids: string[]): FutureData<void> {
         return this.getObject(key)
-            .map(value => <Ref[]>(value ?? []))
-            .map(oldData => {
+            .map(value => value ?? [])
+            .flatMap(oldData => {
                 const newData = _.reject(oldData, ({ id }) => ids.includes(id));
-                this.saveObject(key, newData).map(() => {
+                return this.saveObject(key, newData).map(() => {
                     const advancedProperties = NamespaceProperties[key] ?? [];
                     if (advancedProperties.length > 0) for (const id of ids) this.removeObject(`${key}-${id}`);
+                    return undefined;
                 });
             });
     }
