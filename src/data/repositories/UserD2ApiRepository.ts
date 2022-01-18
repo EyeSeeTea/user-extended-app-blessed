@@ -65,6 +65,12 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
+    public getByIds(ids: string[]): FutureData<User[]> {
+        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) => {
+            return Future.success(objects.map(user=>this.toDomainUser(user)));
+        });
+    }
+
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
         const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));

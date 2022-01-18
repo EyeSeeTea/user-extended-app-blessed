@@ -8,6 +8,7 @@ export interface UserRepository {
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
     listAllIds(options: ListOptions): FutureData<string[]>;
     getById(id: string): FutureData<User>;
+    getByIds(ids: string[]): FutureData<User[]>;
     save(users: User[]): FutureData<MetadataResponse>;
 }
 

@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
+import { UserRolesSelector } from "../../webapp/components/user-roles-selector/UserRolesSelector";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
 import ImportTable from "../components/ImportTable.component";
@@ -417,10 +418,31 @@ export class ListHybrid extends React.Component {
                     />
                 ) : null}
 
-                {assignUserRoles.open ? (
+                {/*{assignUserRoles.open ? (
                     <UserRolesDialog
                         users={assignUserRoles.users}
                         onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
+                    />
+                ) : null}
+
+                {assignUserGroups.open ? (
+                    <UserGroupsDialog
+                        users={assignUserGroups.users}
+                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
+                    />
+                ) : null}*/}
+
+                {assignUserRoles.open ? (
+                    <UserRolesSelector
+                        users={assignUserRoles.users}
+                        onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
+                    />
+                ) : null}
+
+                {assignUserGroups.open ? (
+                    <UserGroupsDialog
+                        users={assignUserGroups.users}
+                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 
@@ -445,13 +467,6 @@ export class ListHybrid extends React.Component {
                             }),
                         })}
                         saveText={"Confirm"}
-                    />
-                ) : null}
-
-                {assignUserGroups.open ? (
-                    <UserGroupsDialog
-                        users={assignUserGroups.users}
-                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 
