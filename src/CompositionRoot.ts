@@ -25,7 +25,7 @@ export function getCompositionRoot(instance: Instance) {
             list: new ListUsersUseCase(userRepository),
             listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUserByIdUseCase(userRepository),
-            getAll: new GetUsersByIdUseCase(userRepository),
+            getMany: new GetUsersByIdUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
         }),
         metadata: getExecute({

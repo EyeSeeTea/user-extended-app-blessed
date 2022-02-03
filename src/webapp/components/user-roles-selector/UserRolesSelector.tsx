@@ -1,63 +1,74 @@
-import { Transfer } from "@dhis2/ui";
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import { useState } from "react";
-import { Future } from "../../../domain/entities/Future";
+import { Transfer, TransferOption } from "@dhis2/ui";
+import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
+import _, { intersection } from "lodash";
+import { useState, useEffect } from "react";
+import { NamedRef } from "../../../domain/entities/Ref";
 import { User } from "../../../domain/entities/User";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
+import { ellipsizedList } from "../../utils/list";
 
 export interface UserRolesSelectorProps {
-  users:User[];
-  onCancel:()=>void;
+    ids: string[];
+    onCancel: () => void;
 }
 
 export const UserRolesSelector: React.FC<UserRolesSelectorProps> = props => {
-  const { compositionRoot } = useAppContext();
-  const [selected, setSelected] = useState(["username","firstName","surname","email","dataViewOrganisationUnits","lastLogin","disabled","created"]);
+    const snackbar = useSnackbar();
+    const { compositionRoot } = useAppContext();
+    const [users, setUsers] = useState([] as User[]);
+    const [userRoles, setUserRoles] = useState([] as TransferOption[]);
+    const [selectedRoles, setSelectedRoles] = useState([""]);
+    const { ids } = props;
+    useEffect(() => {
+        compositionRoot.metadata
+            .list("userRoles")
+            .map(({ objects }) => buildTransferOptions(objects))
+            .run(
+                roles => setUserRoles(roles),
+                error => snackbar.error(error)
+            );
+        compositionRoot.users.getMany(ids).run(
+            users => {
+                setUsers(users);
+                setSelectedRoles(_.intersection(...users.map(user => user.userRoles.map(({ id }) => id))));
+            },
+            error => snackbar.error(error)
+        );
+    }, [ids]);
 
-  console.log(compositionRoot.users.getCurrent());
+    const onChange = (payload: { selected: string[] }) => setSelectedRoles(payload.selected);
 
-  const onChange = (payload:{ selected: string[] }) => setSelected(payload.selected)
-  const userRoles=[
-    {label: "Username", value: "username"},
-    {label: "First name", value: "firstName"},
-    {label: "Surname", value: "surname"},
-    {label: "Email", value: "email"},
-    {label: "Open ID", value: "openId"},
-    {label: "Created", value: "created"},
-    {label: "Last updated", value: "lastUpdated"},
-    {label: "API URL", value: "apiUrl"},
-    {label: "Roles", value: "userRoles"},
-    {label: "Groups", value: "userGroups"},
-    {label: "Organisation units", value: "organisationUnits"},
-    {label: "Data view organisation units", value: "dataViewOrganisationUnits"},
-    {label: "Last login", value: "lastLogin"},
-    {label: "Disabled", value: "disabled"}];
+    return (
+        <ConfirmationDialog
+            isOpen={true}
+            title={getTitle(users)}
+            onCancel={props.onCancel}
+            maxWidth={"lg"}
+            fullWidth={true}
+            onSave={() => {
+                //todo
+            }}
+        >
+            <Transfer
+                options={userRoles}
+                selected={selectedRoles}
+                onChange={onChange}
+                filterable={true}
+                filterablePicked={true}
+                selectedWidth="100%"
+                optionsWidth="100%"
+                height="400px"
+            />
+        </ConfirmationDialog>
+    );
+};
 
-  return (
-    <ConfirmationDialog
-      isOpen={true}
-      title={getTitle(props.users)} //todo:+" "+user.name
-      onCancel={props.onCancel}
-      maxWidth={"lg"}
-      fullWidth={true}
-      onSave={()=>{/*todo*/}}
-    >
-      <Transfer  //todo implement search role by name
-        options={userRoles}
-        selected={selected}
-        onChange={onChange}
-        filterable={true}
-        filterablePicked={true}
-        selectedWidth="100%"
-        optionsWidth="100%"
-        height="400px"
-        />
-  </ConfirmationDialog>)};
-
-  const getPayload=():void=>{}
-
-  const getTitle=(users:User[]):string=>{
+const getTitle = (users: User[]): string => {
     const usernames = users && users.map(user => user.username);
-    return i18n.t("Assign roles") + users[0]?.username;
-  }
+    return i18n.t("Assign roles: ") + (usernames ? ellipsizedList(usernames) : "...");
+};
+
+const buildTransferOptions = (options: NamedRef[]): TransferOption[] => {
+    return options.map(({ id, name }) => ({ value: id, label: name }));
+};

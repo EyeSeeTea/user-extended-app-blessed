@@ -434,7 +434,7 @@ export class ListHybrid extends React.Component {
 
                 {assignUserRoles.open ? (
                     <UserRolesSelector
-                        users={assignUserRoles.users}
+                        ids={assignUserRoles.users}
                         onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
