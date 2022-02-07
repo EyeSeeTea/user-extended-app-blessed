@@ -2,8 +2,9 @@ import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
+import { NamedRef } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { ListOptions, UserRepository } from "../../domain/repositories/UserRepository";
+import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
@@ -128,6 +129,54 @@ export class UserD2ApiRepository implements UserRepository {
                 return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
             });
         });
+    }
+
+    public updateRoles(
+        usersToUpdate: User[],
+        rolesToUpdate: NamedRef[],
+        updateStrategy: UpdateStrategy
+    ): FutureData<MetadataResponse> {
+        const commonRoles = _.intersectionBy(
+            ...usersToUpdate.map(user => user.userRoles.map(role => role)),
+            ({ id }) => id
+        );
+        return this.save(
+            usersToUpdate.map(user => {
+                if (usersToUpdate.length > 1 && updateStrategy == "merge") {
+                    return {
+                        ...user,
+                        userRoles: _.uniqBy(
+                            [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...rolesToUpdate],
+                            ({ id }) => id
+                        ),
+                    };
+                } else return { ...user, userRoles: rolesToUpdate };
+            })
+        );
+    }
+
+    public updateGroups(
+        usersToUpdate: User[],
+        groupsToUpdate: NamedRef[],
+        updateStrategy: UpdateStrategy
+    ): FutureData<MetadataResponse> {
+        const commonGroups = _.intersectionBy(
+            ...usersToUpdate.map(user => user.userGroups.map(group => group)),
+            ({ id }) => id
+        );
+        return this.save(
+            usersToUpdate.map(user => {
+                if (usersToUpdate.length > 1 && updateStrategy == "merge") {
+                    return {
+                        ...user,
+                        userGroups: _.uniqBy(
+                            [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...groupsToUpdate],
+                            ({ id }) => id
+                        ),
+                    };
+                } else return { ...user, userGroups: groupsToUpdate };
+            })
+        );
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
