@@ -9,14 +9,13 @@ import React from "react";
 import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import { UserRolesSelector } from "../../webapp/components/user-roles-selector/UserRolesSelector";
+import { UserGroupsSelector } from "../../webapp/components/user-groups-selector/UserGroupsSelector";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import SettingsDialog from "../components/SettingsDialog.component";
-import UserGroupsDialog from "../components/UserGroupsDialog.component";
-import UserRolesDialog from "../components/UserRolesDialog.component";
 import Settings from "../models/settings";
 import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
@@ -418,20 +417,6 @@ export class ListHybrid extends React.Component {
                     />
                 ) : null}
 
-                {/*{assignUserRoles.open ? (
-                    <UserRolesDialog
-                        users={assignUserRoles.users}
-                        onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
-                    />
-                ) : null}
-
-                {assignUserGroups.open ? (
-                    <UserGroupsDialog
-                        users={assignUserGroups.users}
-                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
-                    />
-                ) : null}*/}
-
                 {assignUserRoles.open ? (
                     <UserRolesSelector
                         ids={assignUserRoles.users}
@@ -441,9 +426,10 @@ export class ListHybrid extends React.Component {
                 ) : null}
 
                 {assignUserGroups.open ? (
-                    <UserGroupsDialog
-                        users={assignUserGroups.users}
+                    <UserGroupsSelector
+                        ids={assignUserGroups.users}
                         onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
+                        onSave={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 

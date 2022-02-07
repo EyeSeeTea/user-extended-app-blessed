@@ -3,16 +3,13 @@ import { Transfer, TransferOption, SegmentedControl, SegmentedControlOption } fr
 import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { User } from "../../../domain/entities/User";
+import { Metadata } from "../../../domain/entities/Metadata";
+import { UpdateStrategy } from "../../../domain/repositories/UserRepository";
 import { useAppContext } from "../../contexts/app-context";
 import { ellipsizedList } from "../../utils/list";
-import { Metadata } from "../../../domain/entities/Metadata";
 import i18n from "../../../locales";
 import styled from "styled-components";
-import _, { update } from "lodash";
-
-const updateStrategy = ["merge" as const, "replace" as const];
-
-export type UpdateStrategy = typeof updateStrategy[number];
+import _ from "lodash";
 
 export const UserRolesSelector: React.FC<UserRolesSelectorProps> = props => {
     const oneUserOptions: SegmentedControlOption[] = [
@@ -78,43 +75,19 @@ export const UserRolesSelector: React.FC<UserRolesSelectorProps> = props => {
             fullWidth={true}
             onSave={() => {
                 if (users.length > 0) {
-                    switch (updateStrategy) {
-                        case "replace":
-                            setUsers(
-                                users.map(user => {
-                                    user.userRoles = userRoles.filter(role => selectedRoles.includes(role.id));
-                                    return user;
-                                })
-                            );
-                            break;
-                        case "merge":
-                            {
-                                const removedRoles = _.intersection(
-                                    ...users.map(user => user.userRoles.map(({ id }) => id))
-                                ).filter(id => !selectedRoles.includes(id));
-                                setUsers(
-                                    users.map(user => {
-                                        user.userRoles = _.union(
-                                            user.userRoles.filter(role => !removedRoles.includes(role.id)),
-                                            userRoles.filter(role => selectedRoles.includes(role.id))
-                                        );
-                                        return user;
-                                    })
-                                );
-                            }
-                            break;
-                        default:
-                            snackbar.error(i18n.t("Unknown strategy: ") + updateStrategy);
-                            break;
-                    }
-                    compositionRoot.users.save(users).run(
-                        () => {
-                            snackbar.success(i18n.t("User roles assigned."));
-                            setUsers([]);
-                            onSave();
-                        },
-                        error => snackbar.error(i18n.t("Error assigning user roles: ") + error)
-                    );
+                    compositionRoot.users
+                        .updateRoles(
+                            users,
+                            userRoles.filter(role => selectedRoles.includes(role.id)),
+                            updateStrategy
+                        )
+                        .run(
+                            () => {
+                                snackbar.success(i18n.t("User roles assigned."));
+                                onSave();
+                            },
+                            error => snackbar.error(i18n.t("Error assigning user roles: ") + error)
+                        );
                 } else onCancel();
             }}
         >
@@ -132,6 +105,8 @@ export const UserRolesSelector: React.FC<UserRolesSelectorProps> = props => {
                 onChange={(payload: { selected: string[] }) => setSelectedRoles(payload.selected)}
                 filterable={true}
                 filterablePicked={true}
+                filterPlaceholder={i18n.t("Search role")}
+                filterPlaceholderPicked={i18n.t("Search role")}
                 selectedWidth="100%"
                 optionsWidth="100%"
                 height="400px"
