@@ -29,7 +29,7 @@ export class DataStoreStorageClient extends StorageClient {
     }
 
     public saveObject<T extends object>(key: string, value: T): FutureData<void> {
-        return apiToFuture(this.dataStore.save(key, value));
+        return apiToFuture(this.dataStore.save(key, value)).map(() => undefined);
     }
 
     public removeObject(key: string): FutureData<void> {
