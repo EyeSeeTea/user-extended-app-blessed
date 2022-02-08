@@ -11,29 +11,29 @@ import i18n from "../../../locales";
 import styled from "styled-components";
 import _ from "lodash";
 
-export const UserGroupsSelector: React.FC<UserGroupsSelectorProps> = props => {
-    const oneUserOptions: SegmentedControlOption[] = [
-        {
-            label: i18n.t("Merge"),
-            value: "merge",
-            disabled: true,
-        },
-        {
-            label: i18n.t("Replace"),
-            value: "replace",
-        },
-    ];
-    const defaultOptions: SegmentedControlOption[] = [
-        {
-            label: i18n.t("Merge"),
-            value: "merge",
-        },
-        {
-            label: i18n.t("Replace"),
-            value: "replace",
-        },
-    ];
+const oneUserOptions: SegmentedControlOption[] = [
+    {
+        label: i18n.t("Merge"),
+        value: "merge",
+        disabled: true,
+    },
+    {
+        label: i18n.t("Replace"),
+        value: "replace",
+    },
+];
+const defaultOptions: SegmentedControlOption[] = [
+    {
+        label: i18n.t("Merge"),
+        value: "merge",
+    },
+    {
+        label: i18n.t("Replace"),
+        value: "replace",
+    },
+];
 
+export const UserGroupsSelector: React.FC<UserGroupsSelectorProps> = props => {
     const snackbar = useSnackbar();
     const { compositionRoot } = useAppContext();
     const { ids, onCancel, onSave } = props;
@@ -64,7 +64,7 @@ export const UserGroupsSelector: React.FC<UserGroupsSelectorProps> = props => {
             },
             error => snackbar.error(i18n.t("Error loading users: ") + error)
         );
-    }, [ids]);
+    }, [ids, compositionRoot.metadata, compositionRoot.users, snackbar]);
 
     return (
         <ConfirmationDialog

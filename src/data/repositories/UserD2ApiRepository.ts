@@ -142,7 +142,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
         return this.save(
             usersToUpdate.map(user => {
-                if (usersToUpdate.length > 1 && updateStrategy == "merge") {
+                if (usersToUpdate.length > 1 && updateStrategy === "merge") {
                     return {
                         ...user,
                         userRoles: _.uniqBy(
@@ -166,7 +166,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
         return this.save(
             usersToUpdate.map(user => {
-                if (usersToUpdate.length > 1 && updateStrategy == "merge") {
+                if (usersToUpdate.length > 1 && updateStrategy === "merge") {
                     return {
                         ...user,
                         userGroups: _.uniqBy(
