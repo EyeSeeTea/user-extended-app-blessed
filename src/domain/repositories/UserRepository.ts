@@ -8,11 +8,10 @@ export interface UserRepository {
     getCurrent(): FutureData<User>;
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
     listAllIds(options: ListOptions): FutureData<string[]>;
-    getById(id: string): FutureData<User>;
     getByIds(ids: string[]): FutureData<User[]>;
     save(users: User[]): FutureData<MetadataResponse>;
-    updateRoles(users: User[], roles: NamedRef[], updateStrategy: UpdateStrategy): FutureData<MetadataResponse>;
-    updateGroups(users: User[], groups: NamedRef[], updateStrategy: UpdateStrategy): FutureData<MetadataResponse>;
+    updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse>;
+    updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse>;
 }
 
 export interface ListOptions {

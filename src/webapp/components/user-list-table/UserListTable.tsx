@@ -1,6 +1,4 @@
 import {
-    ConfirmationDialog,
-    ConfirmationDialogProps,
     ObjectsList,
     ObjectsTableProps,
     Pager,
@@ -9,7 +7,7 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
-    useSnackbar,
+    useSnackbar
 } from "@eyeseetea/d2-ui-components";
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
@@ -25,15 +23,17 @@ import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
 import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
-import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.store";
-import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
+import {
+    MultiSelectorDialog,
+    MultiSelectorDialogProps
+} from "../multi-selector-dialog/MultiSelectorDialog";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
 
-    const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
+    const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -117,7 +117,12 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Assign roles"),
                     multiple: true,
                     icon: <Icon>assignment</Icon>,
-                    onClick: users => userRolesAssignmentDialogStore.setState({ users, open: true }),
+                    onClick: ids =>
+                        openMultiSelectorDialog({
+                            type: "userRoles",
+                            ids,
+                            onClose: () => openMultiSelectorDialog(undefined),
+                        }),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -125,7 +130,12 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Assign groups"),
                     icon: <Icon>group_add</Icon>,
                     multiple: true,
-                    onClick: users => userGroupsAssignmentDialogStore.setState({ users, open: true }),
+                    onClick: ids =>
+                        openMultiSelectorDialog({
+                            type: "userGroups",
+                            ids,
+                            onClose: () => openMultiSelectorDialog(undefined),
+                        }),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -233,7 +243,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     return (
         <React.Fragment>
-            {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
+            {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
             <ObjectsList {...tableProps}>{props.children}</ObjectsList>
         </React.Fragment>

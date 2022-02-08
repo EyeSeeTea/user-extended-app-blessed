@@ -57,20 +57,9 @@ export class UserD2ApiRepository implements UserRepository {
         ).map(({ objects }) => objects.map(user => user.id));
     }
 
-    public getById(id: string): FutureData<User> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { eq: id } } })).flatMap(({ objects }) => {
-            const [user] = objects;
-            if (!user) return Future.error(`User ${id} not found`);
-
-            return Future.success(this.toDomainUser(user));
-        });
-    }
-
     public getByIds(ids: string[]): FutureData<User[]> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(
-            ({ objects }) => {
-                return Future.success(objects.map(user => this.toDomainUser(user)));
-            }
+        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) =>
+            Future.success(objects.map(user => this.toDomainUser(user)))
         );
     }
 
@@ -131,52 +120,31 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    public updateRoles(
-        usersToUpdate: User[],
-        rolesToUpdate: NamedRef[],
-        updateStrategy: UpdateStrategy
-    ): FutureData<MetadataResponse> {
-        const commonRoles = _.intersectionBy(
-            ...usersToUpdate.map(user => user.userRoles.map(role => role)),
-            ({ id }) => id
-        );
-        return this.save(
-            usersToUpdate.map(user => {
-                if (usersToUpdate.length > 1 && updateStrategy === "merge") {
-                    return {
-                        ...user,
-                        userRoles: _.uniqBy(
-                            [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...rolesToUpdate],
-                            ({ id }) => id
-                        ),
-                    };
-                } else return { ...user, userRoles: rolesToUpdate };
-            })
-        );
+    public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userRoles: strategy === "merge" ? _.uniqBy([...user.userRoles, ...update], ({ id }) => id) : update,
+                };
+            });
+
+            return this.save(users);
+        });
     }
 
-    public updateGroups(
-        usersToUpdate: User[],
-        groupsToUpdate: NamedRef[],
-        updateStrategy: UpdateStrategy
-    ): FutureData<MetadataResponse> {
-        const commonGroups = _.intersectionBy(
-            ...usersToUpdate.map(user => user.userGroups.map(group => group)),
-            ({ id }) => id
-        );
-        return this.save(
-            usersToUpdate.map(user => {
-                if (usersToUpdate.length > 1 && updateStrategy === "merge") {
-                    return {
-                        ...user,
-                        userGroups: _.uniqBy(
-                            [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...groupsToUpdate],
-                            ({ id }) => id
-                        ),
-                    };
-                } else return { ...user, userGroups: groupsToUpdate };
-            })
-        );
+    public updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userGroups:
+                        strategy === "merge" ? _.uniqBy([...user.userGroups, ...update], ({ id }) => id) : update,
+                };
+            });
+
+            return this.save(users);
+        });
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {

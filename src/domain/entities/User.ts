@@ -21,6 +21,7 @@ export interface User {
     openId?: string;
     authorities: string[];
 }
+
 export const defaultUser: User = {
     id: "",
     name: "",

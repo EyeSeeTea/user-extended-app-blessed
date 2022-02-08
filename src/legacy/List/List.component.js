@@ -8,8 +8,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
-import { UserRolesSelector } from "../../webapp/components/user-roles-selector/UserRolesSelector";
-import { UserGroupsSelector } from "../../webapp/components/user-groups-selector/UserGroupsSelector";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
 import ImportTable from "../components/ImportTable.component";
@@ -27,8 +25,6 @@ import Filters from "./Filters.component";
 import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 import replicateUserStore from "./replicateUser.store";
-import userGroupsAssignmentDialogStore from "./userGroups.store";
-import userRolesAssignmentDialogStore from "./userRoles.store";
 
 const initialSorting = ["name", "asc"];
 
@@ -88,12 +84,6 @@ export class ListHybrid extends React.Component {
             orgunitassignment: {
                 open: false,
             },
-            assignUserRoles: {
-                open: false,
-            },
-            assignUserGroups: {
-                open: false,
-            },
             replicateUser: {
                 open: false,
             },
@@ -129,16 +119,6 @@ export class ListHybrid extends React.Component {
             this.setAssignState("orgunitassignment", orgunitassignmentState);
         });
 
-        const userRolesAssignmentDialogStoreDisposable = userRolesAssignmentDialogStore.subscribe(assignUserRoles => {
-            this.setAssignState("assignUserRoles", assignUserRoles);
-        });
-
-        const userGroupsAssignmentDialogStoreDisposable = userGroupsAssignmentDialogStore.subscribe(
-            assignUserGroups => {
-                this.setAssignState("assignUserGroups", assignUserGroups);
-            }
-        );
-
         const replicateUserDialogStoreDisposable = replicateUserStore.subscribe(replicateUser => {
             this.setAssignState("replicateUser", replicateUser);
         });
@@ -167,8 +147,6 @@ export class ListHybrid extends React.Component {
         });
 
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
-        this.registerDisposable(userRolesAssignmentDialogStoreDisposable);
-        this.registerDisposable(userGroupsAssignmentDialogStoreDisposable);
         this.registerDisposable(replicateUserDialogStoreDisposable);
         this.registerDisposable(deleteUserStoreDisposable);
         this.registerDisposable(enableStoreDisposable);
@@ -329,8 +307,6 @@ export class ListHybrid extends React.Component {
         const { d2 } = this.context;
 
         const {
-            assignUserRoles,
-            assignUserGroups,
             replicateUser,
             listFilterOptions,
             copyUsers,
@@ -414,22 +390,6 @@ export class ListHybrid extends React.Component {
                             }),
                         })}
                         saveText={"Confirm"}
-                    />
-                ) : null}
-
-                {assignUserRoles.open ? (
-                    <UserRolesSelector
-                        ids={assignUserRoles.users}
-                        onCancel={() => userRolesAssignmentDialogStore.setState({ open: false })}
-                        onSave={() => userRolesAssignmentDialogStore.setState({ open: false })}
-                    />
-                ) : null}
-
-                {assignUserGroups.open ? (
-                    <UserGroupsSelector
-                        ids={assignUserGroups.users}
-                        onCancel={() => userGroupsAssignmentDialogStore.setState({ open: false })}
-                        onSave={() => userGroupsAssignmentDialogStore.setState({ open: false })}
                     />
                 ) : null}
 

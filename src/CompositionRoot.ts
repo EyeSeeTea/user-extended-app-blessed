@@ -4,14 +4,13 @@ import { MetadataD2ApiRepository } from "./data/repositories/MetadataD2ApiReposi
 import { UserD2ApiRepository } from "./data/repositories/UserD2ApiRepository";
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceVersionUseCase } from "./domain/usecases/GetInstanceVersionUseCase";
-import { GetUserByIdUseCase } from "./domain/usecases/GetUserByIdUseCase";
-import { GetUsersByIdUseCase } from "./domain/usecases/GetUsersByIdUseCase";
+import { GetUsersByIdsUseCase } from "./domain/usecases/GetUsersByIdsUseCase";
 import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
-import { UpdateUsersRolesUseCase } from "./domain/usecases/UpdateUsersRolesUseCase";
 import { UpdateUsersGroupsUseCase } from "./domain/usecases/UpdateUsersGroupsUseCase";
+import { UpdateUsersRolesUseCase } from "./domain/usecases/UpdateUsersRolesUseCase";
 
 export function getCompositionRoot(instance: Instance) {
     const instanceRepository = new InstanceD2ApiRepository(instance);
@@ -26,8 +25,7 @@ export function getCompositionRoot(instance: Instance) {
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
             listAllIds: new ListAllUserIdsUseCase(userRepository),
-            get: new GetUserByIdUseCase(userRepository),
-            getMany: new GetUsersByIdUseCase(userRepository),
+            get: new GetUsersByIdsUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
             updateRoles: new UpdateUsersRolesUseCase(userRepository),
             updateGroups: new UpdateUsersGroupsUseCase(userRepository),
