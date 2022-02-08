@@ -7,7 +7,7 @@ import {
     TablePagination,
     TableSorting,
     useObjectsTable,
-    useSnackbar
+    useSnackbar,
 } from "@eyeseetea/d2-ui-components";
 import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
@@ -25,10 +25,7 @@ import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
-import {
-    MultiSelectorDialog,
-    MultiSelectorDialogProps
-} from "../multi-selector-dialog/MultiSelectorDialog";
+import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
     const { compositionRoot, currentUser } = useAppContext();
