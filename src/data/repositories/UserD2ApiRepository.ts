@@ -7,14 +7,19 @@ import { ListOptions, UserRepository } from "../../domain/repositories/UserRepos
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
+import { Namespaces } from "../clients/storage/Namespaces";
+import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
+    private storageClient: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
+        this.storageClient = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -120,6 +125,14 @@ export class UserD2ApiRepository implements UserRepository {
                 return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
             });
         });
+    }
+
+    public getColumns(): FutureData<string[]> {
+        return this.storageClient.getObject<string[]>(Namespaces.CONFIG).map(value => value ?? []);
+    }
+
+    public saveColumns(columns: string[]): FutureData<void> {
+        return this.storageClient.saveObject<string[]>(Namespaces.CONFIG, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
