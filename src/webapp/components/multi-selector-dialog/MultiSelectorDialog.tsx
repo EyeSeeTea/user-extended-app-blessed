@@ -29,22 +29,22 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
 
         const update = items.filter(({ id }) => selected.includes(id));
 
-        compositionRoot.users.updateRoles(ids, update, updateStrategy).run(
+        compositionRoot.users.updateProp(type, ids, update, updateStrategy).run(
             () => onClose(),
             error => snackbar.error(error)
         );
-    }, [ids, onClose, snackbar, updateStrategy, items, users, selected, compositionRoot]);
+    }, [type, ids, onClose, snackbar, updateStrategy, items, users, selected, compositionRoot]);
 
     useEffect(() => {
         return Future.joinObj({
-            roles: compositionRoot.metadata.list(type).map(({ objects }) => objects),
+            items: compositionRoot.metadata.list(type).map(({ objects }) => objects),
             users: compositionRoot.users.get(ids),
         }).run(
-            ({ roles, users }) => {
-                const roleIds = users.map(user => user.userRoles.map(({ id }) => id));
+            ({ items, users }) => {
+                const roleIds = users.map(user => user[type].map(({ id }) => id));
                 const commonRoles = _.intersection(...roleIds);
 
-                setItems(roles);
+                setItems(items);
                 setUsers(users);
                 setSelected(commonRoles);
                 setUpdateStrategy(users.length > 1 ? "merge" : "replace");

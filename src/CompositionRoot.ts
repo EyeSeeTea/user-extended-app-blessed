@@ -9,8 +9,7 @@ import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
-import { UpdateUsersGroupsUseCase } from "./domain/usecases/UpdateUsersGroupsUseCase";
-import { UpdateUsersRolesUseCase } from "./domain/usecases/UpdateUsersRolesUseCase";
+import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
 
 export function getCompositionRoot(instance: Instance) {
     const instanceRepository = new InstanceD2ApiRepository(instance);
@@ -27,8 +26,7 @@ export function getCompositionRoot(instance: Instance) {
             listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUsersByIdsUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
-            updateRoles: new UpdateUsersRolesUseCase(userRepository),
-            updateGroups: new UpdateUsersGroupsUseCase(userRepository),
+            updateProp: new UpdateUserPropUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),
