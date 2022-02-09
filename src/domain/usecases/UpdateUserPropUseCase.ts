@@ -7,7 +7,12 @@ import { UpdateStrategy, UserRepository } from "../repositories/UserRepository";
 export class UpdateUserPropUseCase implements UseCase {
     constructor(private userRepository: UserRepository) {}
 
-    public execute(prop: "userRoles" | "userGroups", ids: string[], roles: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+    public execute(
+        prop: "userRoles" | "userGroups",
+        ids: string[],
+        roles: NamedRef[],
+        strategy: UpdateStrategy
+    ): FutureData<MetadataResponse> {
         switch (prop) {
             case "userRoles":
                 return this.userRepository.updateRoles(ids, roles, strategy);

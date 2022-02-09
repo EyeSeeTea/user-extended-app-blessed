@@ -1,5 +1,5 @@
 import { SegmentedControl, Transfer, TransferOption } from "@dhis2/ui";
-import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog, useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
@@ -14,6 +14,7 @@ import { ellipsizedList } from "../../utils/list";
 export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, ids, onClose }) => {
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
+    const loading = useLoading();
 
     const [users, setUsers] = useState<User[]>([]);
     const [items, setItems] = useState<NamedRef[]>([]);
@@ -27,13 +28,17 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
             return;
         }
 
+        loading.show(true, i18n.t("Saving users"));
         const update = items.filter(({ id }) => selected.includes(id));
 
         compositionRoot.users.updateProp(type, ids, update, updateStrategy).run(
-            () => onClose(),
+            () => {
+                onClose();
+                loading.reset();
+            },
             error => snackbar.error(error)
         );
-    }, [type, ids, onClose, snackbar, updateStrategy, items, users, selected, compositionRoot]);
+    }, [type, ids, onClose, snackbar, updateStrategy, items, users, selected, compositionRoot, loading]);
 
     useEffect(() => {
         return Future.joinObj({
@@ -64,6 +69,7 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
         >
             <Container>
                 <Label>{i18n.t("Update strategy: ", { nsSeparator: false })}</Label>
+
                 <SegmentedControl
                     options={[
                         {
@@ -77,9 +83,10 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
                         },
                     ]}
                     selected={updateStrategy}
-                    onChange={data => setUpdateStrategy((data.value as UpdateStrategy) ?? "merge")}
+                    onChange={({ value }) => setUpdateStrategy(value ?? "merge")}
                 />
             </Container>
+
             <Transfer
                 options={buildTransferOptions(items)}
                 selected={selected}
@@ -117,6 +124,7 @@ const Container = styled.div`
 
 const Label = styled.span`
     margin-right: 16px;
+    font-weight: bold;
 `;
 
 export interface MultiSelectorDialogProps {

@@ -183,10 +183,10 @@ declare module "@dhis2/ui" {
         disabled?: boolean;
     };
 
-    export type SegmentedControlProps = {
+    export type SegmentedControlProps<T extends string> = {
         options: SegmentedControlOption[];
-        selected: string;
-        onChange: (data: { value?: string }, event: ChangeEvent) => void;
+        selected: T;
+        onChange: (data: { value?: T }, event: ChangeEvent) => void;
     };
 
     export type SingleSelectFieldProps = {
@@ -397,7 +397,7 @@ declare module "@dhis2/ui" {
     export function Button(props: ButtonProps): React.ReactElement;
     export function Transfer(props: TransferProps): React.ReactElement;
     export function MultiSelect(props: MultiSelectProps): React.ReactElement;
-    export function SegmentedControl(props: SegmentedControlProps): React.ReactElement;
+    export function SegmentedControl<T extends string>(props: SegmentedControlProps<T>): React.ReactElement;
     export function SingleSelectFieldFF(props: SingleSelectFieldFFProps): React.ReactElement;
     export function SingleSelectField(props: SingleSelectFieldProps): React.ReactElement;
     export function SingleSelectOption(props: SingleSelectOptionProps): React.ReactElement;
