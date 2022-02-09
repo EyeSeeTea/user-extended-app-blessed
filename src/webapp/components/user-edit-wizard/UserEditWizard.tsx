@@ -11,6 +11,9 @@ import { User } from "../../../domain/entities/User";
 import { useGoBack } from "../../hooks/useGoBack";
 import { UserEditWizardStep, UserEditWizardStepProps } from "./UserEditWizardStep";
 
+// Get user fields from: http://192.168.0.240:8086/api/users/{uid}.json
+// Missing fields in ../user-form/utils
+// if externalAccess only disable password
 const steps: WizardStep[] = [
     {
         key: `general-info`,
@@ -18,44 +21,56 @@ const steps: WizardStep[] = [
         component: UserEditWizardStep,
         props: {
             fields: [
+                "id",
                 "name",
-                "code",
-                "description",
-                "periodType",
-                "output",
-                "organisationUnitLevels",
-                "userGroups",
+                "username",
+                "firstName",
+                "surname",
+                "password",
+                "disabled",
+                "openId",
+                "apiUrl"
             ],
         },
     },
     {
-        key: `generator`,
-        label: i18n.t("Generator"),
-        component: UserEditWizardStep,
-        props: { fields: ["generator.description", "generator.expression", "generator.missingValueStrategy"] },
-    },
-    {
-        key: `sample`,
-        label: i18n.t("Samples"),
+        key: `contact`,
+        label: i18n.t("Contact"),
         component: UserEditWizardStep,
         props: {
             fields: [
-                "sequentialSampleCount",
-                "annualSampleCount",
-                "sequentialSkipCount",
-                "sampleSkipTest.description",
-                "sampleSkipTest.expression",
+                "email",
+                "phoneNumber",
+                "whatsApp",
+                "facebookMessenger",
+                "skype",
+                "telegram",
+                "twitter"
             ],
         },
     },
     {
-        key: `scheduling`,
-        label: i18n.t("Scheduling"),
+        key: `roles`,
+        label: i18n.t("Roles"),
         component: UserEditWizardStep,
-        props: {
-            fields: ["scheduling.sequence", "scheduling.variable"],
+        props: { 
+            fields: [
+                "userGroups",
+                "userRoles"
+            ]
         },
     },
+    {
+        key: `units`,
+        label: i18n.t("Units"),
+        component: UserEditWizardStep,
+        props: { 
+            fields: [
+                "dataViewOrganisationUnits",
+                "organisationUnits"
+            ]
+        },
+    }
 ];
 
 interface WizardStep {

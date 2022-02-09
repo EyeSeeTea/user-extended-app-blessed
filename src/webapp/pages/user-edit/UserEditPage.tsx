@@ -46,9 +46,10 @@ export const UserEditPage: React.FC = () => {
         [compositionRoot, goBack]
     );
 
-    const openMaintenance = useCallback(() => {
+    // Fix redirect?
+    const openUserManagement = useCallback(() => {
         window
-            ?.open(`${baseUrl}/dhis-web-maintenance/index.html#/edit/otherSection/user/${id}`, "_blank")
+            ?.open(`${baseUrl}/dhis-web-user/index.html#/users/edit/${id}`, "_blank")
             ?.focus();
     }, [baseUrl, id]);
 
@@ -72,8 +73,8 @@ export const UserEditPage: React.FC = () => {
         <Wrapper>
             <PageHeader onBackClick={goBack} title={title}>
                 {isValidEdit && (
-                    <MaintenanceButton icon={<OpenInNew />} onClick={openMaintenance}>
-                        {i18n.t("Open in maintenance")}
+                    <MaintenanceButton icon={<OpenInNew />} onClick={openUserManagement}>
+                        {i18n.t("Open in user management")}
                     </MaintenanceButton>
                 )}
             </PageHeader>
