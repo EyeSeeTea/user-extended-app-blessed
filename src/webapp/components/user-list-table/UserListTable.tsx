@@ -262,7 +262,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }, [tableProps.columns, visibleColumns]);
 
     useEffect(() => {
-        compositionRoot.users.getColumns().run(
+        return compositionRoot.users.getColumns().run(
             columns => {
                 setVisibleColumns(columns);
                 onChangeVisibleColumns(columns);
