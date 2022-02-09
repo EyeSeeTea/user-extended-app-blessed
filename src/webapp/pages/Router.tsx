@@ -4,6 +4,7 @@ import { LegacyAppWrapper } from "../../legacy/LegacyApp";
 import { ListHybrid } from "../../legacy/List/List.component";
 import { useAppContext } from "../contexts/app-context";
 import { UserBulkEditPage } from "./user-bulk-edit/UserBulkEditPage";
+import { UserEditPage } from "./user-edit/UserEditPage";
 
 export const Router: React.FC = React.memo(() => {
     const { api } = useAppContext();
@@ -12,6 +13,7 @@ export const Router: React.FC = React.memo(() => {
         <HashRouter>
             <Routes>
                 <Route path="/bulk-edit" element={<UserBulkEditPage />} />
+                <Route path="/edit/:id" element={<UserEditPage />} />
                 <Route
                     path="/"
                     element={

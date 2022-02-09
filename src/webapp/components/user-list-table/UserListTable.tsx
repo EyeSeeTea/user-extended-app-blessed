@@ -20,7 +20,9 @@ import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
-import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
+// Remove unused import
+// import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
+import { assignToOrgUnits } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
 import enableStore from "../../../legacy/List/enable.store";
@@ -42,8 +44,10 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
     const editUsers = useCallback(
         (ids: string[]) => {
             if (ids.length === 1) {
-                goToUserEditPage(ids[0]);
-                return;
+                // goToUserEditPage(ids[0]);
+                // return;
+                // Change to appropiete redirect
+                navigate(`/edit/${ids[0]}`)
             }
 
             compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(

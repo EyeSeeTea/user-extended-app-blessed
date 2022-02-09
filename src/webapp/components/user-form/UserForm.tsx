@@ -120,3 +120,30 @@ export const RenderUserImportField: React.FC<{ row: number; field: UserFormField
             return <RenderUserWizardField row={row} field={field} />;
     }
 };
+
+export const RenderUserImportField2: React.FC<{ row: number; field: UserFormField }> = ({ row, field }) => {
+    const name = `users[${row}].${field}`;
+
+    const { validation, props: validationProps = {} } = useValidations(field);
+    const props = {
+        name,
+        placeholder: getUserFieldName(field),
+        validate: validation,
+        ...validationProps,
+    };
+
+    // Complex field PopUp 
+    switch (field) {
+        case "userGroups":
+        case "userRoles":
+        case "organisationUnits":
+        case "dataViewOrganisationUnits":
+            return (
+                <PreviewInputFF {...props}>
+                    <RenderUserWizardField row={row} field={field} />
+                </PreviewInputFF>
+            );
+        default:
+            return <RenderUserWizardField row={row} field={field} />;
+    }
+};
