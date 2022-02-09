@@ -30,8 +30,12 @@ import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
-export const UserListTable: React.FC<UserListTableProps> = props => {
-    const { onChangeVisibleColumns } = props;
+export const UserListTable: React.FC<UserListTableProps> = ({
+    openSettings,
+    onChangeVisibleColumns,
+    filters,
+    children,
+}) => {
     const { compositionRoot, currentUser } = useAppContext();
 
     const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
@@ -65,7 +69,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 error => snackbar.error(error)
             );
         },
-        [compositionRoot.users, visibleColumns, snackbar]
+        [compositionRoot, visibleColumns, snackbar]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -188,7 +192,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     name: "open-settings",
                     text: i18n.t("Settings"),
                     icon: <Tune />,
-                    onClick: () => props.openSettings(),
+                    onClick: () => openSettings(),
                 },
             ],
             // TODO: Bug in ObjectsList
@@ -209,7 +213,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             searchBoxLabel: i18n.t("Search by name or username..."),
             onReorderColumns: saveReorderedColumns,
         };
-    }, [props, enableReplicate, editUsers, saveReorderedColumns]);
+    }, [openSettings, enableReplicate, editUsers, saveReorderedColumns]);
 
     const refreshRows = useCallback(
         (
@@ -223,11 +227,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     page,
                     pageSize,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters]
     );
 
     const refreshAllIds = useCallback(
@@ -236,26 +240,23 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 .listAllIds({
                     search,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
     const columnsToShow = useMemo<TableColumn<User>[]>(() => {
-        if (!visibleColumns || _.isEmpty(visibleColumns)) return tableProps.columns;
-        console.log("visibleColumns in show");
-        console.log(visibleColumns);
         const indexes = _(visibleColumns)
             .map((columnName, idx) => [columnName, idx] as [string, number])
             .fromPairs()
             .value();
 
         return _(tableProps.columns)
-            .map(column => ({ ...column, hidden: !visibleColumns.includes(column.name) }))
+            .map(column => ({ ...column, hidden: !visibleColumns?.includes(column.name) }))
             .sortBy(column => indexes[column.name] || 0)
             .value();
     }, [tableProps.columns, visibleColumns]);
@@ -264,17 +265,18 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
         compositionRoot.users.getColumns().run(
             columns => {
                 setVisibleColumns(columns);
+                onChangeVisibleColumns(columns);
             },
             error => snackbar.error(error)
         );
-    }, [compositionRoot.users, snackbar]);
+    }, [compositionRoot, snackbar, onChangeVisibleColumns]);
 
     return (
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
-                {props.children}
+                {children}
             </ObjectsList>
         </React.Fragment>
     );
