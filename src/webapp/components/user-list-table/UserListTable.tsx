@@ -15,7 +15,7 @@ import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
@@ -31,9 +31,11 @@ import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 
 export const UserListTable: React.FC<UserListTableProps> = props => {
+    const { onChangeVisibleColumns } = props;
     const { compositionRoot, currentUser } = useAppContext();
 
     const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
+    const [visibleColumns, setVisibleColumns] = useState<string[]>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -52,6 +54,18 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             );
         },
         [navigate, compositionRoot, snackbar]
+    );
+
+    const saveReorderedColumns = useCallback(
+        (columnKeys: Array<keyof User>) => {
+            if (!visibleColumns) return;
+
+            compositionRoot.users.saveColumns(columnKeys).run(
+                () => {},
+                error => snackbar.error(error)
+            );
+        },
+        [compositionRoot.users, visibleColumns, snackbar]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -193,9 +207,9 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
-            onReorderColumns: props.onChangeVisibleColumns,
+            onReorderColumns: saveReorderedColumns,
         };
-    }, [props, enableReplicate, editUsers]);
+    }, [props, enableReplicate, editUsers, saveReorderedColumns]);
 
     const refreshRows = useCallback(
         (
@@ -231,11 +245,37 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
+    const columnsToShow = useMemo<TableColumn<User>[]>(() => {
+        if (!visibleColumns || _.isEmpty(visibleColumns)) return tableProps.columns;
+        console.log("visibleColumns in show");
+        console.log(visibleColumns);
+        const indexes = _(visibleColumns)
+            .map((columnName, idx) => [columnName, idx] as [string, number])
+            .fromPairs()
+            .value();
+
+        return _(tableProps.columns)
+            .map(column => ({ ...column, hidden: !visibleColumns.includes(column.name) }))
+            .sortBy(column => indexes[column.name] || 0)
+            .value();
+    }, [tableProps.columns, visibleColumns]);
+
+    useEffect(() => {
+        compositionRoot.users.getColumns().run(
+            columns => {
+                setVisibleColumns(columns);
+            },
+            error => snackbar.error(error)
+        );
+    }, [compositionRoot.users, snackbar]);
+
     return (
         <React.Fragment>
             {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
 
-            <ObjectsList {...tableProps}>{props.children}</ObjectsList>
+            <ObjectsList<User> {...tableProps} columns={columnsToShow}>
+                {props.children}
+            </ObjectsList>
         </React.Fragment>
     );
 };
