@@ -19,6 +19,7 @@ import { getUserFieldName, UserFormField, userRequiredFields } from "./utils";
 import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../contexts/app-context";
 
+// TODO: new fields validators
 const useValidations = (field: UserFormField): { validation?: (...args: any[]) => any; props?: object } => {
     switch (field) {
         case "id":
@@ -62,13 +63,22 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
     switch (field) {
         case "id":
         case "email":
+        case "phoneNumber":
+        case "whatsApp":
+        case "facebookMessenger":
+        case "skype":
+        case "telegram":
+        case "twitter":
         case "firstName":
         case "surname":
         case "name":
         case "openId":
+        case "ldapId":
         case "apiUrl":
         case "username":
             return <FormField {...props} component={InputFieldFF} />;
+        case "password":
+            return <FormField {...props} component={InputFieldFF} type="password"/>;
         case "userGroups":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":
@@ -88,6 +98,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
                     }}
                 />
             );
+        case "externalAuth":
         case "disabled":
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         default:

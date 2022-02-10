@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-12-07T09:36:35.426Z\n"
+"POT-Creation-Date: 2022-02-09T13:47:12.697Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -104,6 +104,27 @@ msgstr "Volver"
 msgid "Help"
 msgstr "Ayuda"
 
+msgid "General info"
+msgstr ""
+
+msgid "Contact"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Units"
+msgstr ""
+
+msgid "Error saving user"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
 msgid "Please provide a valid identifier"
 msgstr ""
 
@@ -123,6 +144,12 @@ msgid "Username"
 msgstr ""
 
 msgid "Email"
+msgstr ""
+
+msgid "Phone Number"
+msgstr ""
+
+msgid "WhatsApp"
 msgstr ""
 
 msgid "Disabled"
@@ -156,9 +183,6 @@ msgid "ID"
 msgstr ""
 
 msgid "API URL"
-msgstr ""
-
-msgid "Roles"
 msgstr ""
 
 msgid "Groups"
@@ -236,8 +260,21 @@ msgstr ""
 msgid "Add user"
 msgstr ""
 
-msgid "Save"
+msgid "Delete"
 msgstr ""
 
-msgid "Delete"
+msgid "Edit user"
+msgstr ""
+
+#, fuzzy
+msgid "New user"
+msgstr "Eliminar usuarios"
+
+msgid "Network error"
+msgstr ""
+
+msgid "Unable to load user {{id}}"
+msgstr ""
+
+msgid "Open in user management"
 msgstr ""

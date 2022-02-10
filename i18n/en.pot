@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-12-07T09:36:35.426Z\n"
-"PO-Revision-Date: 2021-12-07T09:36:35.426Z\n"
+"POT-Creation-Date: 2022-02-09T13:47:12.697Z\n"
+"PO-Revision-Date: 2022-02-09T13:47:12.697Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -104,6 +104,27 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+msgid "General info"
+msgstr ""
+
+msgid "Contact"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Units"
+msgstr ""
+
+msgid "Error saving user"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
 msgid "Please provide a valid identifier"
 msgstr ""
 
@@ -123,6 +144,12 @@ msgid "Username"
 msgstr ""
 
 msgid "Email"
+msgstr ""
+
+msgid "Phone Number"
+msgstr ""
+
+msgid "WhatsApp"
 msgstr ""
 
 msgid "Disabled"
@@ -156,9 +183,6 @@ msgid "ID"
 msgstr ""
 
 msgid "API URL"
-msgstr ""
-
-msgid "Roles"
 msgstr ""
 
 msgid "Groups"
@@ -236,8 +260,20 @@ msgstr ""
 msgid "Add user"
 msgstr ""
 
-msgid "Save"
+msgid "Delete"
 msgstr ""
 
-msgid "Delete"
+msgid "Edit user"
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Network error"
+msgstr ""
+
+msgid "Unable to load user {{id}}"
+msgstr ""
+
+msgid "Open in user management"
 msgstr ""

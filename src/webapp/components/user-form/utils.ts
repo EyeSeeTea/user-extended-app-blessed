@@ -3,15 +3,25 @@ import i18n from "../../../locales";
 
 export type UserFormField = typeof userFormFields[number];
 
+// Warning: will afect bulk-edit
 export const userFormFields = [
     "id",
     "firstName",
     "surname",
     "name",
+    "password",
     "email",
+    "phoneNumber",
+    "whatsApp",
+    "facebookMessenger",
+    "skype",
+    "telegram",
+    "twitter",
     "username",
     "disabled",
+    "externalAuth",
     "openId",
+    "ldapId",
     "apiUrl",
     "dataViewOrganisationUnits",
     "organisationUnits",
@@ -29,14 +39,30 @@ export const getUserName = (field: UserFormField) => {
             return i18n.t("First Name");
         case "name":
             return i18n.t("Name");
+        case "password":
+            return i18n.t("Password");
         case "surname":
             return i18n.t("Surname");
         case "username":
             return i18n.t("Username");
         case "email":
             return i18n.t("Email");
+        case "phoneNumber":
+            return i18n.t("Phone Number");
+        case "whatsApp":
+            return "WhatsApp";
+        case "facebookMessenger":
+            return "Facebook Messenger";
+        case "skype":
+            return "Skype";
+        case "telegram":
+            return "Telegram";
+        case "twitter":
+            return "Twitter";
         case "disabled":
             return i18n.t("Disabled");
+        case "externalAuth":
+            return i18n.t("External authentication only (OpenID or LDAP)");
         case "userRoles":
             return i18n.t("User Roles");
         case "userGroups":
@@ -47,6 +73,8 @@ export const getUserName = (field: UserFormField) => {
             return i18n.t("Data View Organisation Units");
         case "openId":
             return i18n.t("Open ID");
+        case "ldapId":
+            return i18n.t("LDAP identifier");
         case "apiUrl":
             return i18n.t("Api URL");
     }
