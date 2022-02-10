@@ -46,7 +46,6 @@ export const UserEditPage: React.FC = () => {
         [compositionRoot, goBack]
     );
 
-    // Fix redirect?
     const openUserManagement = useCallback(() => {
         window
             ?.open(`${baseUrl}/dhis-web-user/index.html#/users/edit/${id}`, "_blank")

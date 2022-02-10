@@ -78,7 +78,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
         case "username":
             return <FormField {...props} component={InputFieldFF} />;
         case "password":
-            return <FormField {...props} component={InputFieldFF} type="password"/>;
+            return <FormField {...props} component={InputFieldFF} type="password" />;
         case "userGroups":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":

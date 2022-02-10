@@ -30,7 +30,7 @@ const steps: WizardStep[] = [
                 "disabled",
                 "openId",
                 "ldapId",
-                "apiUrl"
+                "apiUrl",
             ],
         },
     },
@@ -65,7 +65,7 @@ const steps: WizardStep[] = [
         key: `units`,
         label: i18n.t("Units"),
         component: UserEditWizardStep,
-        props: { 
+        props: {
             fields: [
                 "dataViewOrganisationUnits",
                 "organisationUnits"

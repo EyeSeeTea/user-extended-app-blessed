@@ -108,6 +108,12 @@ export class UserD2ApiRepository implements UserRepository {
                         email: user?.email,
                         firstName: user?.firstName,
                         surname: user?.surname,
+                        phoneNumber: user?.phoneNumber,
+                        whatsApp: user?.whatsApp,
+                        facebookMessenger: user?.facebookMessenger,
+                        skype: user?.skype,
+                        telegram: user?.telegram,
+                        twitter: user?.twitter,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,

@@ -50,15 +50,15 @@ export const getUserName = (field: UserFormField) => {
         case "phoneNumber":
             return i18n.t("Phone Number");
         case "whatsApp":
-            return "WhatsApp";
+            return i18n.t("WhatsApp");
         case "facebookMessenger":
-            return "Facebook Messenger";
+            return i18n.t("Facebook Messenger");
         case "skype":
-            return "Skype";
+            return i18n.t("Skype");
         case "telegram":
-            return "Telegram";
+            return i18n.t("Telegram");
         case "twitter":
-            return "Twitter";
+            return i18n.t("Twitter");
         case "disabled":
             return i18n.t("Disabled");
         case "externalAuth":
