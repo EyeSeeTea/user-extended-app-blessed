@@ -13,7 +13,7 @@ import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
@@ -25,6 +25,7 @@ import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
+import { useReload } from "../../hooks/useReload";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -34,9 +35,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     children,
 }) => {
     const { compositionRoot, currentUser } = useAppContext();
+    const [reloadKey, reload] = useReload();
 
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
-    const [visibleColumns, setVisibleColumns] = useState<string[]>();
+    const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -137,7 +139,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                         openMultiSelectorDialog({
                             type: "userRoles",
                             ids,
-                            onClose: () => openMultiSelectorDialog(undefined),
+                            onClose: () => {
+                                openMultiSelectorDialog(undefined);
+                                reload();
+                            },
                         }),
                     isActive: checkAccess(["update"]),
                 },
@@ -150,7 +155,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                         openMultiSelectorDialog({
                             type: "userGroups",
                             ids,
-                            onClose: () => openMultiSelectorDialog(undefined),
+                            onClose: () => {
+                                openMultiSelectorDialog(undefined);
+                                reload();
+                            },
                         }),
                     isActive: checkAccess(["update"]),
                 },
@@ -221,7 +229,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             searchBoxLabel: i18n.t("Search by name or username..."),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload]);
 
     const refreshRows = useCallback(
         (
@@ -229,6 +237,8 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
+            console.debug("Reloading", reloadKey);
+
             return compositionRoot.users
                 .list({
                     search,
@@ -239,7 +249,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 })
                 .toPromise();
         },
-        [compositionRoot, filters]
+        [compositionRoot, filters, reloadKey]
     );
 
     const refreshAllIds = useCallback(
@@ -257,10 +267,17 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
-    const columnsToShow = useMemo<TableColumn<User>[]>(
-        () => _.compact(visibleColumns?.map(id => tableProps.columns.find(({ name }) => id === name))),
-        [tableProps.columns, visibleColumns]
-    );
+    const columnsToShow = useMemo<TableColumn<User>[]>(() => {
+        const indexes = _(visibleColumns)
+            .map((columnName, idx) => [columnName, idx] as [string, number])
+            .fromPairs()
+            .value();
+
+        return _(tableProps.columns)
+            .map(column => ({ ...column, hidden: !visibleColumns?.includes(column.name) }))
+            .sortBy(column => indexes[column.name] || 0)
+            .value();
+    }, [tableProps.columns, visibleColumns]);
 
     useEffect(
         () =>

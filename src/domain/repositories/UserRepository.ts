@@ -12,8 +12,8 @@ export interface UserRepository {
     save(users: User[]): FutureData<MetadataResponse>;
     updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse>;
     updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse>;
-    getColumns(): FutureData<string[]>;
-    saveColumns(columns: string[]): FutureData<void>;
+    getColumns(): FutureData<Array<keyof User>>;
+    saveColumns(columns: Array<keyof User>): FutureData<void>;
 }
 
 export interface ListOptions {

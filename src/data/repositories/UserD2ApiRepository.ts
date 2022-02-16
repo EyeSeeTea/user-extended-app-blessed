@@ -158,12 +158,12 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    public getColumns(): FutureData<string[]> {
-        return this.userStorage.getOrCreateObject<string[]>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    public getColumns(): FutureData<Array<keyof User>> {
+        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
     }
 
-    public saveColumns(columns: string[]): FutureData<void> {
-        return this.userStorage.saveObject<string[]>(Namespaces.VISIBLE_COLUMNS, columns);
+    public saveColumns(columns: Array<keyof User>): FutureData<void> {
+        return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -281,4 +281,12 @@ const fields = {
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
 
-const defaultColumns = ["username", "firstName", "surname", "email", "organisationUnits", "lastLogin", "disabled"];
+const defaultColumns: Array<keyof User> = [
+    "username",
+    "firstName",
+    "surname",
+    "email",
+    "organisationUnits",
+    "lastLogin",
+    "disabled",
+];
