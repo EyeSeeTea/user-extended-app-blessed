@@ -60,16 +60,17 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [navigate, compositionRoot, snackbar]
     );
 
-    const saveReorderedColumns = useCallback(
-        (columnKeys: Array<keyof User>) => {
+    const onReorderColumns = useCallback(
+        (columns: Array<keyof User>) => {
             if (!visibleColumns) return;
 
-            compositionRoot.users.saveColumns(columnKeys).run(
+            onChangeVisibleColumns(columns);
+            compositionRoot.users.saveColumns(columns).run(
                 () => {},
                 error => snackbar.error(error)
             );
         },
-        [compositionRoot, visibleColumns, snackbar]
+        [compositionRoot, visibleColumns, onChangeVisibleColumns, snackbar]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -211,9 +212,9 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
-            onReorderColumns: saveReorderedColumns,
+            onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, saveReorderedColumns]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns]);
 
     const refreshRows = useCallback(
         (
@@ -249,27 +250,22 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
-    const columnsToShow = useMemo<TableColumn<User>[]>(() => {
-        const indexes = _(visibleColumns)
-            .map((columnName, idx) => [columnName, idx] as [string, number])
-            .fromPairs()
-            .value();
+    const columnsToShow = useMemo<TableColumn<User>[]>(
+        () => _.compact(visibleColumns?.map(id => tableProps.columns.find(({ name }) => id === name))),
+        [tableProps.columns, visibleColumns]
+    );
 
-        return _(tableProps.columns)
-            .map(column => ({ ...column, hidden: !visibleColumns?.includes(column.name) }))
-            .sortBy(column => indexes[column.name] || 0)
-            .value();
-    }, [tableProps.columns, visibleColumns]);
-
-    useEffect(() => {
-        return compositionRoot.users.getColumns().run(
-            columns => {
-                setVisibleColumns(columns);
-                onChangeVisibleColumns(columns);
-            },
-            error => snackbar.error(error)
-        );
-    }, [compositionRoot, snackbar, onChangeVisibleColumns]);
+    useEffect(
+        () =>
+            compositionRoot.users.getColumns().run(
+                columns => {
+                    setVisibleColumns(columns);
+                    onChangeVisibleColumns(columns);
+                },
+                error => snackbar.error(error)
+            ),
+        [compositionRoot, snackbar, onChangeVisibleColumns]
+    );
 
     return (
         <React.Fragment>

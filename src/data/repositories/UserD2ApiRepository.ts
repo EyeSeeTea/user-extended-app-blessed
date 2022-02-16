@@ -15,11 +15,11 @@ import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
-    private storageClient: StorageClient;
+    private userStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
-        this.storageClient = new DataStoreStorageClient("user", instance);
+        this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -134,11 +134,11 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public getColumns(): FutureData<string[]> {
-        return this.storageClient.getObject<string[]>(Namespaces.CONFIG).map(value => value ?? []);
+        return this.userStorage.getOrCreateObject<string[]>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
     }
 
     public saveColumns(columns: string[]): FutureData<void> {
-        return this.storageClient.saveObject<string[]>(Namespaces.CONFIG, columns);
+        return this.userStorage.saveObject<string[]>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -255,3 +255,5 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+
+const defaultColumns = ["username", "firstName", "surname", "email", "organisationUnits", "lastLogin", "disabled"];
