@@ -103,8 +103,9 @@ export class UserD2ApiRepository implements UserRepository {
 
         return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
             return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = existingUsers.map((existingUser, index) => {
-                    const user = users[index];
+                const usersToSend = existingUsers.map(existingUser => {
+                    const user = users.find(user => user.id === existingUser.id);
+                    if (!user) return undefined;
 
                     return {
                         ...existingUser,
@@ -122,7 +123,12 @@ export class UserD2ApiRepository implements UserRepository {
                     };
                 });
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
+                return apiToFuture(
+                    this.api.metadata.post({
+                        users: _.compact(usersToSend),
+                        userGroups,
+                    })
+                ).map(data => data);
             });
         });
     }
