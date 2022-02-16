@@ -13,7 +13,7 @@ import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
@@ -27,10 +27,16 @@ import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 
-export const UserListTable: React.FC<UserListTableProps> = props => {
+export const UserListTable: React.FC<UserListTableProps> = ({
+    openSettings,
+    onChangeVisibleColumns,
+    filters,
+    children,
+}) => {
     const { compositionRoot, currentUser } = useAppContext();
 
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
+    const [visibleColumns, setVisibleColumns] = useState<string[]>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -49,6 +55,19 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             );
         },
         [navigate, compositionRoot, snackbar]
+    );
+
+    const onReorderColumns = useCallback(
+        (columns: Array<keyof User>) => {
+            if (!visibleColumns) return;
+
+            onChangeVisibleColumns(columns);
+            compositionRoot.users.saveColumns(columns).run(
+                () => {},
+                error => snackbar.error(error)
+            );
+        },
+        [compositionRoot, visibleColumns, onChangeVisibleColumns, snackbar]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -181,7 +200,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     name: "open-settings",
                     text: i18n.t("Settings"),
                     icon: <Tune />,
-                    onClick: () => props.openSettings(),
+                    onClick: () => openSettings(),
                 },
             ],
             // TODO: Bug in ObjectsList
@@ -200,9 +219,9 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
-            onReorderColumns: props.onChangeVisibleColumns,
+            onReorderColumns,
         };
-    }, [props, enableReplicate, editUsers]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns]);
 
     const refreshRows = useCallback(
         (
@@ -216,11 +235,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     page,
                     pageSize,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters]
     );
 
     const refreshAllIds = useCallback(
@@ -229,20 +248,39 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 .listAllIds({
                     search,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
+
+    const columnsToShow = useMemo<TableColumn<User>[]>(
+        () => _.compact(visibleColumns?.map(id => tableProps.columns.find(({ name }) => id === name))),
+        [tableProps.columns, visibleColumns]
+    );
+
+    useEffect(
+        () =>
+            compositionRoot.users.getColumns().run(
+                columns => {
+                    setVisibleColumns(columns);
+                    onChangeVisibleColumns(columns);
+                },
+                error => snackbar.error(error)
+            ),
+        [compositionRoot, snackbar, onChangeVisibleColumns]
+    );
 
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            <ObjectsList {...tableProps}>{props.children}</ObjectsList>
+            <ObjectsList<User> {...tableProps} columns={columnsToShow}>
+                {children}
+            </ObjectsList>
         </React.Fragment>
     );
 };

@@ -8,14 +8,19 @@ import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/reposi
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
+import { Namespaces } from "../clients/storage/Namespaces";
+import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
+    private userStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
+        this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -96,8 +101,9 @@ export class UserD2ApiRepository implements UserRepository {
 
         return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
             return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = existingUsers.map((existingUser, index) => {
-                    const user = users[index];
+                const usersToSend = existingUsers.map(existingUser => {
+                    const user = users.find(user => user.id === existingUser.id);
+                    if (!user) return undefined;
 
                     return {
                         ...existingUser,
@@ -115,7 +121,12 @@ export class UserD2ApiRepository implements UserRepository {
                     };
                 });
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
+                return apiToFuture(
+                    this.api.metadata.post({
+                        users: _.compact(usersToSend),
+                        userGroups,
+                    })
+                ).map(data => data);
             });
         });
     }
@@ -145,6 +156,14 @@ export class UserD2ApiRepository implements UserRepository {
 
             return this.save(users);
         });
+    }
+
+    public getColumns(): FutureData<string[]> {
+        return this.userStorage.getOrCreateObject<string[]>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    }
+
+    public saveColumns(columns: string[]): FutureData<void> {
+        return this.userStorage.saveObject<string[]>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -261,3 +280,5 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+
+const defaultColumns = ["username", "firstName", "surname", "email", "organisationUnits", "lastLogin", "disabled"];
