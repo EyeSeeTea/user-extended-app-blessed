@@ -2,8 +2,9 @@ import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
+import { NamedRef } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { ListOptions, UserRepository } from "../../domain/repositories/UserRepository";
+import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
@@ -61,13 +62,10 @@ export class UserD2ApiRepository implements UserRepository {
         ).map(({ objects }) => objects.map(user => user.id));
     }
 
-    public getById(id: string): FutureData<User> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { eq: id } } })).flatMap(({ objects }) => {
-            const [user] = objects;
-            if (!user) return Future.error(`User ${id} not found`);
-
-            return Future.success(this.toDomainUser(user));
-        });
+    public getByIds(ids: string[]): FutureData<User[]> {
+        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) =>
+            Future.success(objects.map(user => this.toDomainUser(user)))
+        );
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -133,12 +131,39 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    public getColumns(): FutureData<string[]> {
-        return this.userStorage.getOrCreateObject<string[]>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userRoles: strategy === "merge" ? _.uniqBy([...user.userRoles, ...update], ({ id }) => id) : update,
+                };
+            });
+
+            return this.save(users);
+        });
     }
 
-    public saveColumns(columns: string[]): FutureData<void> {
-        return this.userStorage.saveObject<string[]>(Namespaces.VISIBLE_COLUMNS, columns);
+    public updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userGroups:
+                        strategy === "merge" ? _.uniqBy([...user.userGroups, ...update], ({ id }) => id) : update,
+                };
+            });
+
+            return this.save(users);
+        });
+    }
+
+    public getColumns(): FutureData<Array<keyof User>> {
+        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    }
+
+    public saveColumns(columns: Array<keyof User>): FutureData<void> {
+        return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -256,4 +281,12 @@ const fields = {
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
 
-const defaultColumns = ["username", "firstName", "surname", "email", "organisationUnits", "lastLogin", "disabled"];
+const defaultColumns: Array<keyof User> = [
+    "username",
+    "firstName",
+    "surname",
+    "email",
+    "organisationUnits",
+    "lastLogin",
+    "disabled",
+];

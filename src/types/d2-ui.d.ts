@@ -177,6 +177,18 @@ declare module "@dhis2/ui" {
         onFilterChangePicked?: (...args: any[]) => any;
     };
 
+    export type SegmentedControlOption = {
+        label: string;
+        value: string;
+        disabled?: boolean;
+    };
+
+    export type SegmentedControlProps<T extends string> = {
+        options: SegmentedControlOption[];
+        selected: T;
+        onChange: (data: { value?: T }, event: ChangeEvent) => void;
+    };
+
     export type SingleSelectFieldProps = {
         className?: string;
         clearText?: string | ((...args: any[]) => any);
@@ -385,6 +397,7 @@ declare module "@dhis2/ui" {
     export function Button(props: ButtonProps): React.ReactElement;
     export function Transfer(props: TransferProps): React.ReactElement;
     export function MultiSelect(props: MultiSelectProps): React.ReactElement;
+    export function SegmentedControl<T extends string>(props: SegmentedControlProps<T>): React.ReactElement;
     export function SingleSelectFieldFF(props: SingleSelectFieldFFProps): React.ReactElement;
     export function SingleSelectField(props: SingleSelectFieldProps): React.ReactElement;
     export function SingleSelectOption(props: SingleSelectOptionProps): React.ReactElement;
