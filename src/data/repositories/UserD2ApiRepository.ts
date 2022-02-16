@@ -7,14 +7,19 @@ import { ListOptions, UserRepository } from "../../domain/repositories/UserRepos
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
+import { Namespaces } from "../clients/storage/Namespaces";
+import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
+    private userStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
+        this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -126,6 +131,14 @@ export class UserD2ApiRepository implements UserRepository {
                 ).map(data => data);
             });
         });
+    }
+
+    public getColumns(): FutureData<string[]> {
+        return this.userStorage.getOrCreateObject<string[]>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    }
+
+    public saveColumns(columns: string[]): FutureData<void> {
+        return this.userStorage.saveObject<string[]>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -242,3 +255,5 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+
+const defaultColumns = ["username", "firstName", "surname", "email", "organisationUnits", "lastLogin", "disabled"];

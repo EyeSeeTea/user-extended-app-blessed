@@ -9,6 +9,8 @@ export interface UserRepository {
     listAllIds(options: ListOptions): FutureData<string[]>;
     getById(id: string): FutureData<User>;
     save(users: User[]): FutureData<MetadataResponse>;
+    getColumns(): FutureData<string[]>;
+    saveColumns(columns: string[]): FutureData<void>;
 }
 
 export interface ListOptions {
