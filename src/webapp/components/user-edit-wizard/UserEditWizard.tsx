@@ -18,59 +18,42 @@ const steps: WizardStep[] = [
         component: UserEditWizardStep,
         props: {
             fields: [
-                "id",
-                "name",
                 "username",
                 "firstName",
                 "surname",
                 "password",
+                "email",
                 "accountExpiry",
                 "externalAuth",
-                "disabled",
                 "openId",
                 "ldapId",
-                "uiLocale",
-                "dbLocale",
-                "apiUrl"
             ],
         },
     },
+
     {
-        key: `contact`,
-        label: i18n.t("Contact"),
+        key: `assignment`,
+        label: i18n.t("Assignment"),
+        component: UserEditWizardStep,
+        props: {
+            fields: ["userRoles", "organisationUnits", "dataViewOrganisationUnits", "userGroups"],
+        },
+    },
+    {
+        key: `other`,
+        label: i18n.t("Other information"),
         component: UserEditWizardStep,
         props: {
             fields: [
-                "email",
+                "uiLocale",
+                "dbLocale",
                 "phoneNumber",
                 "whatsApp",
                 "facebookMessenger",
                 "skype",
                 "telegram",
-                "twitter"
+                "twitter",
             ],
-        },
-    },
-    {
-        key: `roles`,
-        label: i18n.t("Roles"),
-        component: UserEditWizardStep,
-        props: {
-            fields: [
-                "userRoles",
-                "userGroups"
-            ]
-        },
-    },
-    {
-        key: `units`,
-        label: i18n.t("Units"),
-        component: UserEditWizardStep,
-        props: {
-            fields: [
-                "organisationUnits",
-                "dataViewOrganisationUnits"
-            ]
         },
     },
 ];
