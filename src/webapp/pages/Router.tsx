@@ -12,8 +12,10 @@ export const Router: React.FC = React.memo(() => {
     return (
         <HashRouter>
             <Routes>
-                <Route path="/bulk-edit" element={<UserBulkEditPage />} />
-                <Route path="/edit/:id" element={<UserEditPage />} />
+                <Route path="/bulk-edit" element={<UserBulkEditPage isEdit={true} />} />
+                <Route path="/edit/:id" element={<UserEditPage type="edit" />} />
+                <Route path="/new" element={<UserEditPage type="new" />} />
+
                 <Route
                     path="/"
                     element={

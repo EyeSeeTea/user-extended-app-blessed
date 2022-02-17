@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2022-02-10T11:38:08.228Z\n"
-"PO-Revision-Date: 2022-02-10T11:38:08.228Z\n"
+"POT-Creation-Date: 2022-02-17T08:02:57.121Z\n"
+"PO-Revision-Date: 2022-02-17T08:02:57.121Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -107,13 +107,10 @@ msgstr ""
 msgid "General info"
 msgstr ""
 
-msgid "Contact"
+msgid "Assignment"
 msgstr ""
 
-msgid "Roles"
-msgstr ""
-
-msgid "Units"
+msgid "Other information"
 msgstr ""
 
 msgid "Error saving user"
@@ -131,6 +128,24 @@ msgstr ""
 msgid "Please provide a valid email"
 msgstr ""
 
+msgid "Password should contain at least one lowercase letter"
+msgstr ""
+
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr ""
+
+msgid "Password should contain at least one number"
+msgstr ""
+
+msgid "Password should have at least one special character"
+msgstr ""
+
+msgid "Please provide a valid phone number"
+msgstr ""
+
+msgid "Please provide a valid international phone number (+0123456789)"
+msgstr ""
+
 msgid "First Name"
 msgstr ""
 
@@ -138,6 +153,9 @@ msgid "Name"
 msgstr ""
 
 msgid "Password"
+msgstr ""
+
+msgid "Account expiration date"
 msgstr ""
 
 msgid "Surname"
@@ -191,6 +209,12 @@ msgstr ""
 msgid "LDAP identifier"
 msgstr ""
 
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
+msgstr ""
+
 msgid "Api URL"
 msgstr ""
 
@@ -204,6 +228,9 @@ msgid "ID"
 msgstr ""
 
 msgid "API URL"
+msgstr ""
+
+msgid "Roles"
 msgstr ""
 
 msgid "Groups"

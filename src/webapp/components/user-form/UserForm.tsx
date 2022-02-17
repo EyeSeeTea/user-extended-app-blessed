@@ -1,5 +1,4 @@
 import {
-    alphaNumeric,
     CheckboxFieldFF,
     composeValidators,
     createMaxCharacterLength,
@@ -31,10 +30,6 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
         case "apiUrl":
             return {
                 validation: composeValidators(string, createMinCharacterLength(1), createMaxCharacterLength(255)),
-            };
-        case "username":
-            return {
-                validation: composeValidators(alphaNumeric, createMinCharacterLength(1), createMaxCharacterLength(255)),
             };
         // Why not use @dhis2/ui email validator?
         case "email":
@@ -75,7 +70,11 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
     }
 };
 
-export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField }> = ({ row, field }) => {
+export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField; isEdit: boolean }> = ({
+    row,
+    field,
+    isEdit,
+}) => {
     const { api, compositionRoot } = useAppContext();
     const { validation, props: validationProps = {} } = useValidations(field);
     const [locales, setLocales] = useState<Locale[]>([]);
@@ -108,12 +107,11 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
         case "twitter":
         case "firstName":
         case "surname":
-        case "name":
         case "openId":
         case "ldapId":
-        case "apiUrl":
-        case "username":
             return <FormField {...props} component={InputFieldFF} />;
+        case "username":
+            return <FormField {...props} component={InputFieldFF} disabled={isEdit} />;
         // TODO: Add repeat password validation
         // TODO: if externalAccessOnly disable password
         case "password":
@@ -158,7 +156,11 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
     }
 };
 
-export const RenderUserImportField: React.FC<{ row: number; field: UserFormField }> = ({ row, field }) => {
+export const RenderUserImportField: React.FC<{ row: number; field: UserFormField; isEdit: boolean }> = ({
+    row,
+    field,
+    isEdit,
+}) => {
     const name = `users[${row}].${field}`;
 
     const { validation, props: validationProps = {} } = useValidations(field);
@@ -176,10 +178,10 @@ export const RenderUserImportField: React.FC<{ row: number; field: UserFormField
         case "dataViewOrganisationUnits":
             return (
                 <PreviewInputFF {...props}>
-                    <RenderUserWizardField row={row} field={field} />
+                    <RenderUserWizardField row={row} field={field} isEdit={isEdit} />
                 </PreviewInputFF>
             );
         default:
-            return <RenderUserWizardField row={row} field={field} />;
+            return <RenderUserWizardField row={row} field={field} isEdit={isEdit} />;
     }
 };

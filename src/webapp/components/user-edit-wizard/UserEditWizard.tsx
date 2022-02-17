@@ -62,16 +62,17 @@ interface WizardStep {
     key: string;
     label: string;
     component: FunctionComponent<UserEditWizardStepProps>;
-    props: UserEditWizardStepProps;
+    props: Omit<UserEditWizardStepProps, "isEdit">;
 }
 
 export interface UserEditWizardProps {
     user: User;
+    isEdit: boolean;
     onCancel: () => void;
     onSave: (user: User) => Promise<string | undefined>;
 }
 
-export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, onCancel }) => {
+export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, onCancel, isEdit }) => {
     const goBack = useGoBack();
 
     const onSubmit = useCallback(
@@ -102,7 +103,7 @@ export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, on
 
                     <Wizard onCancel={onCancel}>
                         {steps.map(({ component: Component, props, key }) => (
-                            <Component key={key} {...props} />
+                            <Component key={key} isEdit={isEdit} {...props} />
                         ))}
                     </Wizard>
                 </form>

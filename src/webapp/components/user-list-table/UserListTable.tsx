@@ -50,7 +50,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     error => snackbar.error(error)
                 );
             }
-
         },
         [navigate, compositionRoot, snackbar]
     );
@@ -195,8 +194,9 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
             onReorderColumns: props.onChangeVisibleColumns,
+            onActionButtonClick: () => navigate("/new"),
         };
-    }, [props, enableReplicate, editUsers]);
+    }, [props, enableReplicate, editUsers, navigate]);
 
     const refreshRows = useCallback(
         (

@@ -15,14 +15,17 @@ import { useAppContext } from "../../contexts/app-context";
 import { useGoBack } from "../../hooks/useGoBack";
 
 export interface UserEditPageParams {
-    type: "new" | "edit";
     id?: string;
 }
 
-export const UserEditPage: React.FC = () => {
+export interface UserEditPageProps {
+    type: "new" | "edit";
+}
+
+export const UserEditPage: React.FC<UserEditPageProps> = ({ type }) => {
     const { baseUrl } = useConfig();
     const { compositionRoot } = useAppContext();
-    const { type = "edit", id } = useParams();
+    const { id } = useParams();
     // Check type User
     const location = useLocation() as any;
 
@@ -47,9 +50,7 @@ export const UserEditPage: React.FC = () => {
     );
 
     const openUserManagement = useCallback(() => {
-        window
-            ?.open(`${baseUrl}/dhis-web-user/index.html#/users/edit/${id}`, "_blank")
-            ?.focus();
+        window?.open(`${baseUrl}/dhis-web-user/index.html#/users/edit/${id}`, "_blank")?.focus();
     }, [baseUrl, id]);
 
     useEffect(() => {
@@ -62,7 +63,7 @@ export const UserEditPage: React.FC = () => {
         compositionRoot.users
             .get(id)
             .toPromise()
-            .then((user) => {
+            .then(user => {
                 if (!user) snackbar.error(i18n.t("Unable to load user {{id}}", { id }));
                 else setUser(user);
             });
@@ -79,7 +80,12 @@ export const UserEditPage: React.FC = () => {
             </PageHeader>
 
             {user !== undefined ? (
-                <UserEditWizard user={user} onCancel={goBack} onSave={saveUser} />
+                <UserEditWizard
+                    user={user}
+                    onCancel={goBack}
+                    onSave={saveUser}
+                    isEdit={type === "edit" && isValidEdit}
+                />
             ) : null}
         </Wrapper>
     );
