@@ -36,7 +36,10 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
                 onClose();
                 loading.reset();
             },
-            error => snackbar.error(error)
+            error => {
+                snackbar.error(error);
+                loading.reset();
+            }
         );
     }, [type, ids, onClose, snackbar, updateStrategy, items, users, selected, compositionRoot, loading]);
 
