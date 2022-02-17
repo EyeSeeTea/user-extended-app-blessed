@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2022-02-09T09:43:58.960Z\n"
-"PO-Revision-Date: 2022-02-09T09:43:58.960Z\n"
+"POT-Creation-Date: 2022-02-17T08:36:44.940Z\n"
+"PO-Revision-Date: 2022-02-17T08:36:44.940Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -96,6 +96,12 @@ msgid "Messages"
 msgstr ""
 
 msgid "JSON Response"
+msgstr ""
+
+msgid "Saving users"
+msgstr ""
+
+msgid "Update strategy: "
 msgstr ""
 
 msgid "Merge"
@@ -234,9 +240,6 @@ msgid "Data view organisation units"
 msgstr ""
 
 msgid "And {{overflow}} more..."
-msgstr ""
-
-msgid "Saving users"
 msgstr ""
 
 msgid "Edit users"

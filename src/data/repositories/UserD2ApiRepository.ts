@@ -133,13 +133,21 @@ export class UserD2ApiRepository implements UserRepository {
 
     public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
         return this.getByIds(ids).flatMap(storedUsers => {
-            const commonRoles=_.intersectionBy(
-                ...storedUsers.map(user=>user.userRoles.map(role=>role)),({id})=>id
+            const commonRoles = _.intersectionBy(
+                ...storedUsers.map(user => user.userRoles.map(role => role)),
+                ({ id }) => id
             );
+
             const users = storedUsers.map(user => {
                 return {
                     ...user,
-                    userRoles: strategy === "merge" ? _.uniqBy([..._.differenceBy(user.userRoles,commonRoles,({id})=>id), ...update], ({ id }) => id) : update,
+                    userRoles:
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
                 };
             });
 
@@ -149,14 +157,21 @@ export class UserD2ApiRepository implements UserRepository {
 
     public updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
         return this.getByIds(ids).flatMap(storedUsers => {
-            const commonGroups=_.intersectionBy(
-                ...storedUsers.map(user=>user.userGroups.map(group=>group)),({id})=>id
+            const commonGroups = _.intersectionBy(
+                ...storedUsers.map(user => user.userGroups.map(group => group)),
+                ({ id }) => id
             );
+
             const users = storedUsers.map(user => {
                 return {
                     ...user,
                     userGroups:
-                        strategy === "merge" ? _.uniqBy([..._.differenceBy(user.userGroups,commonGroups,({id})=>id), ...update], ({ id }) => id) : update,
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
                 };
             });
 
