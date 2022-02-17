@@ -228,7 +228,6 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             searchBoxLabel: i18n.t("Search by name or username..."),
             onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
-
         };
     }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
 
