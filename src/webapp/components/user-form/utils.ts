@@ -3,20 +3,12 @@ import i18n from "../../../locales";
 
 export type UserFormField = typeof userFormFields[number];
 
-// Warning: will afect bulk-edit
 export const userFormFields = [
     "id",
     "firstName",
     "surname",
     "password",
-    "accountExpiry",
     "email",
-    "phoneNumber",
-    "whatsApp",
-    "facebookMessenger",
-    "skype",
-    "telegram",
-    "twitter",
     "username",
     "disabled",
     "externalAuth",
@@ -28,6 +20,12 @@ export const userFormFields = [
     "organisationUnits",
     "userGroups",
     "userRoles",
+    "phoneNumber",
+    "whatsApp",
+    "facebookMessenger",
+    "skype",
+    "telegram",
+    "twitter",
 ];
 
 export const userRequiredFields: UserFormField[] = ["id", "name"];

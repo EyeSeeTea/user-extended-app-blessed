@@ -27,4 +27,16 @@ export class MetadataD2ApiRepository implements MetadataRepository {
             })
         );
     }
+
+    public getOrgUnitPathsByIds(ids: string[]): FutureData<{ id: string; name: string; path: string }[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true, path: true },
+                filter: { id: { in: ids } },
+                paging: false,
+            })
+        ).map(({ objects }) => {
+            return objects;
+        });
+    }
 }

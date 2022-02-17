@@ -5,6 +5,7 @@ import { UserD2ApiRepository } from "./data/repositories/UserD2ApiRepository";
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceLocalesUseCase } from "./domain/usecases/GetInstanceLocalesUseCase";
 import { GetInstanceVersionUseCase } from "./domain/usecases/GetInstanceVersionUseCase";
+import { GetOrgUnitPathsUseCase } from "./domain/usecases/GetOrgUnitPathsUseCase";
 import { GetUserByIdUseCase } from "./domain/usecases/GetUserByIdUseCase";
 import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
@@ -30,6 +31,7 @@ export function getCompositionRoot(instance: Instance) {
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),
+            getOrgUnitPaths: new GetOrgUnitPathsUseCase(metadataRepository),
         }),
     };
 }

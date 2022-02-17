@@ -9,14 +9,15 @@ import {
     SingleSelectFieldFF,
     string,
 } from "@dhis2/ui";
-import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React, { useEffect, useState } from "react";
+import { useFormState } from "react-final-form";
 import { Locale } from "../../../domain/entities/Locale";
 import i18n from "../../../locales";
 import { fullUidRegex } from "../../../utils/uid";
 import { useAppContext } from "../../contexts/app-context";
 import { FormField } from "../form/fields/FormField";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
+import { OrgUnitSelectorFF } from "./components/OrgUnitSelectorFF";
 import { UserRoleGroupFF } from "./components/UserRoleGroupFF";
 import { getUserFieldName, UserFormField, userRequiredFields } from "./utils";
 
@@ -31,7 +32,6 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
             return {
                 validation: composeValidators(string, createMinCharacterLength(1), createMaxCharacterLength(255)),
             };
-        // Why not use @dhis2/ui email validator?
         case "email":
             return {
                 validation: createPattern(
@@ -39,7 +39,6 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
                     i18n.t("Please provide a valid email")
                 ),
             };
-        // TODO: Password length is admin set option /api/systemSettings/minPasswordLength
         case "password":
             return {
                 validation: composeValidators(
@@ -75,7 +74,8 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
     field,
     isEdit,
 }) => {
-    const { api, compositionRoot } = useAppContext();
+    const { compositionRoot } = useAppContext();
+    const { values } = useFormState();
     const { validation, props: validationProps = {} } = useValidations(field);
     const [locales, setLocales] = useState<Locale[]>([]);
 
@@ -112,11 +112,16 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
             return <FormField {...props} component={InputFieldFF} />;
         case "username":
             return <FormField {...props} component={InputFieldFF} disabled={isEdit} />;
-        // TODO: Add repeat password validation
-        // TODO: if externalAccessOnly disable password
         case "password":
-            return <FormField {...props} component={InputFieldFF} type="password" />;
-        // TODO?: converted to date field?
+            return (
+                <FormField
+                    {...props}
+                    component={InputFieldFF}
+                    type="password"
+                    disabled={values.users[row].externalAuth === true}
+                />
+            );
+        // TODO: Convert to date field
         case "accountExpiry":
             return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
         case "userGroups":
@@ -125,20 +130,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
             return <FormField {...props} component={UserRoleGroupFF} modelType="userRoles" />;
         case "organisationUnits":
         case "dataViewOrganisationUnits":
-            return (
-                <FormField
-                    {...props}
-                    component={OrgUnitsSelector}
-                    api={api}
-                    // selected={}
-                    controls={{
-                        filterByLevel: true,
-                        filterByGroup: true,
-                        filterByProgram: false,
-                        selectAll: false,
-                    }}
-                />
-            );
+            return <FormField {...props} component={OrgUnitSelectorFF} />;
         case "externalAuth":
         case "disabled":
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
