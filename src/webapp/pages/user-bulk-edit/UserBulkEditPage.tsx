@@ -1,5 +1,5 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
-import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
 import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";

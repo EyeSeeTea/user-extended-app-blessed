@@ -1,4 +1,4 @@
-import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
 import { FutureData } from "../entities/Future";
 import { PaginatedResponse } from "../entities/PaginatedResponse";
 import { User } from "../entities/User";
