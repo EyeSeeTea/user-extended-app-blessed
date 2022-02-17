@@ -61,9 +61,9 @@ export const UserEditPage: React.FC<UserEditPageProps> = ({ type }) => {
         }
 
         compositionRoot.users
-            .get(id)
+            .get([id])
             .toPromise()
-            .then(user => {
+            .then(([user]) => {
                 if (!user) snackbar.error(i18n.t("Unable to load user {{id}}", { id }));
                 else setUser(user);
             });
