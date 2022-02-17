@@ -28,6 +28,7 @@ export interface User {
     ldapId?: string;
     externalAuth: boolean;
     password: string;
+    accountExpiry: string;
     authorities: string[];
 }
 export const defaultUser: User = {
@@ -57,6 +58,7 @@ export const defaultUser: User = {
     ldapId: "",
     externalAuth: false,
     password: "",
+    accountExpiry: "",
     authorities: [""],
 };
 export interface AccessPermissions {

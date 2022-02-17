@@ -77,8 +77,12 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
         case "apiUrl":
         case "username":
             return <FormField {...props} component={InputFieldFF} />;
+        // TODO: Add repeat password validation
         case "password":
             return <FormField {...props} component={InputFieldFF} type="password" />;
+        // TODO?: converted to date field?
+        case "accountExpiry":
+            return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
         case "userGroups":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":

@@ -123,6 +123,7 @@ export class UserD2ApiRepository implements UserRepository {
                             ldapId: user?.userCredentials.ldapId,
                             externalAuth: user?.userCredentials.externalAuth,
                             password: user?.userCredentials.password,
+                            accountExpiry: user?.userCredentials.accountExpiry,
                         },
                     };
                 });
@@ -205,6 +206,7 @@ export class UserD2ApiRepository implements UserRepository {
             ldapId: userCredentials.ldapId,
             externalAuth: userCredentials.externalAuth,
             password: userCredentials.password,
+            accountExpiry: userCredentials.accountExpiry,
             authorities,
         };
     }
@@ -237,6 +239,7 @@ export class UserD2ApiRepository implements UserRepository {
                 ldapId: input.ldapId ?? "",
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
+                accountExpiry: input.accountExpiry ?? "",
             },
         };
     }
@@ -269,6 +272,7 @@ const fields = {
         ldapId: true,
         externalAuth: true,
         password: true,
+        accountExpiry: true,
     },
 } as const;
 
