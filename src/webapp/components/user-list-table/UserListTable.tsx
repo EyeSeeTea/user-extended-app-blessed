@@ -41,7 +41,6 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const editUsers = useCallback(
         (ids: string[]) => {
-            // Correct fix? Catch length <= 0?
             if (ids.length === 1) {
                 navigate(`/edit/${ids[0]}`);
             } else {
