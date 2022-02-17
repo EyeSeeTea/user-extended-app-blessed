@@ -1,4 +1,4 @@
-import { User, AccessPermissions } from "../../domain/entities/User";
+import { AccessPermissions, User } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
 import { ApiUser } from "../repositories/UserD2ApiRepository";
 import { NamedRefModel } from "./DHIS2Model";
@@ -19,7 +19,6 @@ export const UserModel: Codec<User> = Schema.object({
     firstName: Schema.nonEmptyString,
     surname: Schema.nonEmptyString,
     email: Schema.string,
-    // Schema.optional() ?
     phoneNumber: Schema.string,
     whatsApp: Schema.string,
     facebookMessenger: Schema.string,

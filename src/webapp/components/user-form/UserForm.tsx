@@ -1,24 +1,25 @@
 import {
+    alphaNumeric,
+    CheckboxFieldFF,
     composeValidators,
     createMaxCharacterLength,
     createMinCharacterLength,
     createPattern,
     hasValue,
     InputFieldFF,
-    string,
-    alphaNumeric,
-    CheckboxFieldFF,
     SingleSelectFieldFF,
+    string,
 } from "@dhis2/ui";
-import React from "react";
+import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
+import React, { useEffect, useState } from "react";
+import { Locale } from "../../../domain/entities/Locale";
 import i18n from "../../../locales";
 import { fullUidRegex } from "../../../utils/uid";
+import { useAppContext } from "../../contexts/app-context";
 import { FormField } from "../form/fields/FormField";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import { UserRoleGroupFF } from "./components/UserRoleGroupFF";
-import { getUserFieldName, UserFormField, userRequiredFields, uiLocaleFields, dbLocaleFields } from "./utils";
-import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import { useAppContext } from "../../contexts/app-context";
+import { getUserFieldName, UserFormField, userRequiredFields } from "./utils";
 
 const useValidations = (field: UserFormField): { validation?: (...args: any[]) => any; props?: object } => {
     switch (field) {
@@ -47,28 +48,25 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
         case "password":
             return {
                 validation: composeValidators(
-                    string, createMinCharacterLength(8), createMaxCharacterLength(255),
+                    string,
+                    createMinCharacterLength(8),
+                    createMaxCharacterLength(255),
                     createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
                     createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
                     createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
                     createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
-                    ),
+                ),
             };
         case "phoneNumber":
             return {
-                validation:
-                    createPattern(
-                        /^\+?[0-9 \-()]+$/,
-                        i18n.t("Please provide a valid phone number")
-                        ),
+                validation: createPattern(/^\+?[0-9 \-()]+$/, i18n.t("Please provide a valid phone number")),
             };
         case "whatsApp":
             return {
-                validation:
-                    createPattern(
-                        /^\+[0-9 ]+$/,
-                        i18n.t("Please provide a valid international phone number (+0123456789)")
-                        ),
+                validation: createPattern(
+                    /^\+[0-9 ]+$/,
+                    i18n.t("Please provide a valid international phone number (+0123456789)")
+                ),
             };
         default: {
             const required = userRequiredFields.includes(field);
@@ -78,15 +76,26 @@ const useValidations = (field: UserFormField): { validation?: (...args: any[]) =
 };
 
 export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField }> = ({ row, field }) => {
-    const name = `users[${row}].${field}`;
-    const { api } = useAppContext();
+    const { api, compositionRoot } = useAppContext();
     const { validation, props: validationProps = {} } = useValidations(field);
+    const [locales, setLocales] = useState<Locale[]>([]);
+
+    const name = `users[${row}].${field}`;
     const props = {
         name,
         placeholder: getUserFieldName(field),
         validate: validation,
         ...validationProps,
     };
+
+    useEffect(() => {
+        if (field !== "uiLocale" && field !== "dbLocale") return;
+
+        compositionRoot.instance.getLocales(field).run(
+            locales => setLocales(locales),
+            error => console.error(error)
+        );
+    }, [field, compositionRoot]);
 
     switch (field) {
         case "id":
@@ -136,9 +145,14 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
         case "disabled":
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         case "uiLocale":
-            return <FormField {...props} component={SingleSelectFieldFF} options={uiLocaleFields} />;   
         case "dbLocale":
-            return <FormField {...props} component={SingleSelectFieldFF} options={dbLocaleFields} />;   
+            return (
+                <FormField
+                    {...props}
+                    component={SingleSelectFieldFF}
+                    options={locales.map(({ locale, name }) => ({ value: locale, label: name }))}
+                />
+            );
         default:
             return null;
     }
