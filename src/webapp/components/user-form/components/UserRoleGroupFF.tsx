@@ -4,7 +4,7 @@ import { NamedRef } from "../../../../domain/entities/Ref";
 import { useAppContext } from "../../../contexts/app-context";
 import { useFuture } from "../../../hooks/useFuture";
 import { TransferFF, TransferFFProps } from "../../form/fields/TransferFF";
-import { D2ModelSchemas } from "@eyeseetea/d2-api/2.34";
+import { D2ModelSchemas } from "@eyeseetea/d2-api/2.36";
 
 export interface UserRoleGroupFFProps extends TransferFFProps {
     modelType: keyof D2ModelSchemas;

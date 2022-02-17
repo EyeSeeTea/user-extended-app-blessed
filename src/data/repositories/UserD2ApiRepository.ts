@@ -1,4 +1,4 @@
-import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.34";
+import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
@@ -112,11 +112,22 @@ export class UserD2ApiRepository implements UserRepository {
                         email: user?.email,
                         firstName: user?.firstName,
                         surname: user?.surname,
+                        phoneNumber: user?.phoneNumber,
+                        whatsApp: user?.whatsApp,
+                        facebookMessenger: user?.facebookMessenger,
+                        skype: user?.skype,
+                        telegram: user?.telegram,
+                        twitter: user?.twitter,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,
                             userRoles: user?.userCredentials.userRoles,
                             username: user?.userCredentials.username,
+                            openId: user?.userCredentials.openId,
+                            ldapId: user?.userCredentials.ldapId,
+                            externalAuth: user?.userCredentials.externalAuth,
+                            password: user?.userCredentials.password,
+                            accountExpiry: user?.userCredentials.accountExpiry,
                         },
                     };
                 });
@@ -239,6 +250,12 @@ export class UserD2ApiRepository implements UserRepository {
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
+            phoneNumber: user.phoneNumber,
+            whatsApp: user.whatsApp,
+            facebookMessenger: user.facebookMessenger,
+            skype: user.skype,
+            telegram: user.telegram,
+            twitter: user.twitter,
             lastUpdated: new Date(user.lastUpdated),
             created: new Date(user.created),
             userGroups: user.userGroups,
@@ -251,6 +268,10 @@ export class UserD2ApiRepository implements UserRepository {
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
             openId: userCredentials.openId,
+            ldapId: userCredentials.ldapId,
+            externalAuth: userCredentials.externalAuth,
+            password: userCredentials.password,
+            accountExpiry: userCredentials.accountExpiry,
             authorities,
         };
     }
@@ -262,6 +283,12 @@ export class UserD2ApiRepository implements UserRepository {
             firstName: input.firstName,
             surname: input.surname,
             email: input.email,
+            phoneNumber: input.phoneNumber,
+            whatsApp: input.whatsApp,
+            facebookMessenger: input.facebookMessenger,
+            skype: input.skype,
+            telegram: input.telegram,
+            twitter: input.twitter,
             lastUpdated: input.lastUpdated.toISOString(),
             created: input.created.toISOString(),
             userGroups: input.userGroups,
@@ -274,6 +301,10 @@ export class UserD2ApiRepository implements UserRepository {
                 lastLogin: input.lastLogin?.toISOString() ?? "",
                 disabled: input.disabled,
                 openId: input.openId ?? "",
+                ldapId: input.ldapId ?? "",
+                externalAuth: input.externalAuth ?? "",
+                password: input.password ?? "",
+                accountExpiry: input.accountExpiry ?? "",
             },
         };
     }
@@ -285,6 +316,12 @@ const fields = {
     firstName: true,
     surname: true,
     email: true,
+    phoneNumber: true,
+    whatsApp: true,
+    facebookMessenger: true,
+    skype: true,
+    telegram: true,
+    twitter: true,
     lastUpdated: true,
     created: true,
     userGroups: { id: true, name: true },
@@ -297,6 +334,10 @@ const fields = {
         lastLogin: true,
         disabled: true,
         openId: true,
+        ldapId: true,
+        externalAuth: true,
+        password: true,
+        accountExpiry: true,
     },
 } as const;
 

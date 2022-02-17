@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
-import { assignToOrgUnits, goToUserEditPage } from "../../../legacy/List/context.actions";
+import { assignToOrgUnits } from "../../../legacy/List/context.actions";
 import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
 import enableStore from "../../../legacy/List/enable.store";
@@ -47,14 +47,13 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const editUsers = useCallback(
         (ids: string[]) => {
             if (ids.length === 1) {
-                goToUserEditPage(ids[0]);
-                return;
+                navigate(`/edit/${ids[0]}`);
+            } else {
+                compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
+                    ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
+                    error => snackbar.error(error)
+                );
             }
-
-            compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
-                ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
-                error => snackbar.error(error)
-            );
         },
         [navigate, compositionRoot, snackbar]
     );
@@ -227,9 +226,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
+            onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
 
     const refreshRows = useCallback(
         (

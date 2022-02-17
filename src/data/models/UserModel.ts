@@ -1,4 +1,4 @@
-import { User, AccessPermissions } from "../../domain/entities/User";
+import { AccessPermissions, User } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
 import { ApiUser } from "../repositories/UserD2ApiRepository";
 import { NamedRefModel } from "./DHIS2Model";
@@ -19,6 +19,12 @@ export const UserModel: Codec<User> = Schema.object({
     firstName: Schema.nonEmptyString,
     surname: Schema.nonEmptyString,
     email: Schema.string,
+    phoneNumber: Schema.string,
+    whatsApp: Schema.string,
+    facebookMessenger: Schema.string,
+    skype: Schema.string,
+    telegram: Schema.string,
+    twitter: Schema.string,
     lastUpdated: Schema.date,
     created: Schema.date,
     apiUrl: Schema.nonEmptyString,
@@ -31,6 +37,10 @@ export const UserModel: Codec<User> = Schema.object({
     access: AccessPermissionsModel,
     authorities: Schema.array(Schema.nonEmptyString),
     openId: Schema.optional(Schema.string),
+    ldapId: Schema.optional(Schema.string),
+    externalAuth: Schema.boolean,
+    password: Schema.string,
+    accountExpiry: Schema.string,
 });
 
 export const ApiUserModel: Codec<ApiUser> = Schema.object({
@@ -39,6 +49,12 @@ export const ApiUserModel: Codec<ApiUser> = Schema.object({
     firstName: Schema.string,
     surname: Schema.string,
     email: Schema.optionalSafe(Schema.string, ""),
+    phoneNumber: Schema.optionalSafe(Schema.string, ""),
+    whatsApp: Schema.optionalSafe(Schema.string, ""),
+    facebookMessenger: Schema.optionalSafe(Schema.string, ""),
+    skype: Schema.optionalSafe(Schema.string, ""),
+    telegram: Schema.optionalSafe(Schema.string, ""),
+    twitter: Schema.optionalSafe(Schema.string, ""),
     lastUpdated: Schema.string,
     created: Schema.string,
     userGroups: Schema.array(NamedRefModel),
@@ -57,5 +73,9 @@ export const ApiUserModel: Codec<ApiUser> = Schema.object({
         lastLogin: Schema.optionalSafe(Schema.string, ""),
         disabled: Schema.boolean,
         openId: Schema.optionalSafe(Schema.string, ""),
+        ldapId: Schema.optionalSafe(Schema.string, ""),
+        externalAuth: Schema.boolean,
+        password: Schema.string,
+        accountExpiry: Schema.string,
     }),
 });
