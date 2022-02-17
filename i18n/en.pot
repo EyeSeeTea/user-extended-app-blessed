@@ -98,6 +98,27 @@ msgstr ""
 msgid "JSON Response"
 msgstr ""
 
+msgid "Saving users"
+msgstr ""
+
+msgid "Update strategy: "
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Assign roles to {{usernames}}"
+msgstr ""
+
+msgid "Assign groups to {{usernames}}"
+msgstr ""
+
 msgid "Back"
 msgstr ""
 
@@ -293,9 +314,6 @@ msgstr ""
 msgid "And {{overflow}} more..."
 msgstr ""
 
-msgid "Saving users"
-msgstr ""
-
 msgid "Edit users"
 msgstr ""
 
@@ -324,4 +342,7 @@ msgid "Unable to load user {{id}}"
 msgstr ""
 
 msgid "Open in user management"
+msgstr ""
+
+msgid " and {{overflow}} more..."
 msgstr ""

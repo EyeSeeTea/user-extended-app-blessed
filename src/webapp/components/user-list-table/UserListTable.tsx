@@ -1,6 +1,4 @@
 import {
-    ConfirmationDialog,
-    ConfirmationDialogProps,
     ObjectsList,
     ObjectsTableProps,
     Pager,
@@ -15,7 +13,7 @@ import { Icon, Tooltip } from "@material-ui/core";
 import { Check, Tune } from "@material-ui/icons";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
@@ -25,15 +23,22 @@ import copyInUserStore from "../../../legacy/List/copyInUser.store";
 import deleteUserStore from "../../../legacy/List/deleteUser.store";
 import enableStore from "../../../legacy/List/enable.store";
 import replicateUserStore from "../../../legacy/List/replicateUser.store";
-import userGroupsAssignmentDialogStore from "../../../legacy/List/userGroups.store";
-import userRolesAssignmentDialogStore from "../../../legacy/List/userRoles.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
+import { useReload } from "../../hooks/useReload";
+import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 
-export const UserListTable: React.FC<UserListTableProps> = props => {
+export const UserListTable: React.FC<UserListTableProps> = ({
+    openSettings,
+    onChangeVisibleColumns,
+    filters,
+    children,
+}) => {
     const { compositionRoot, currentUser } = useAppContext();
+    const [reloadKey, reload] = useReload();
 
-    const [dialogProps, _openDialog] = useState<ConfirmationDialogProps>();
+    const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
+    const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -51,6 +56,19 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             }
         },
         [navigate, compositionRoot, snackbar]
+    );
+
+    const onReorderColumns = useCallback(
+        (columns: Array<keyof User>) => {
+            if (!visibleColumns) return;
+
+            onChangeVisibleColumns(columns);
+            compositionRoot.users.saveColumns(columns).run(
+                () => {},
+                error => snackbar.error(error)
+            );
+        },
+        [compositionRoot, visibleColumns, onChangeVisibleColumns, snackbar]
     );
 
     const baseConfig = useMemo((): TableConfig<User> => {
@@ -116,7 +134,15 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Assign roles"),
                     multiple: true,
                     icon: <Icon>assignment</Icon>,
-                    onClick: users => userRolesAssignmentDialogStore.setState({ users, open: true }),
+                    onClick: ids =>
+                        openMultiSelectorDialog({
+                            type: "userRoles",
+                            ids,
+                            onClose: () => {
+                                openMultiSelectorDialog(undefined);
+                                reload();
+                            },
+                        }),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -124,7 +150,15 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     text: i18n.t("Assign groups"),
                     icon: <Icon>group_add</Icon>,
                     multiple: true,
-                    onClick: users => userGroupsAssignmentDialogStore.setState({ users, open: true }),
+                    onClick: ids =>
+                        openMultiSelectorDialog({
+                            type: "userGroups",
+                            ids,
+                            onClose: () => {
+                                openMultiSelectorDialog(undefined);
+                                reload();
+                            },
+                        }),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -173,7 +207,7 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                     name: "open-settings",
                     text: i18n.t("Settings"),
                     icon: <Tune />,
-                    onClick: () => props.openSettings(),
+                    onClick: () => openSettings(),
                 },
             ],
             // TODO: Bug in ObjectsList
@@ -192,10 +226,11 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
-            onReorderColumns: props.onChangeVisibleColumns,
             onActionButtonClick: () => navigate("/new"),
+            onReorderColumns,
+
         };
-    }, [props, enableReplicate, editUsers, navigate]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
 
     const refreshRows = useCallback(
         (
@@ -203,17 +238,19 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
+            console.debug("Reloading", reloadKey);
+
             return compositionRoot.users
                 .list({
                     search,
                     page,
                     pageSize,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters, reloadKey]
     );
 
     const refreshAllIds = useCallback(
@@ -222,20 +259,46 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
                 .listAllIds({
                     search,
                     sorting,
-                    filters: props?.filters,
+                    filters,
                 })
                 .toPromise();
         },
-        [compositionRoot, props.filters]
+        [compositionRoot, filters]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
 
+    const columnsToShow = useMemo<TableColumn<User>[]>(() => {
+        const indexes = _(visibleColumns)
+            .map((columnName, idx) => [columnName, idx] as [string, number])
+            .fromPairs()
+            .value();
+
+        return _(tableProps.columns)
+            .map(column => ({ ...column, hidden: !visibleColumns?.includes(column.name) }))
+            .sortBy(column => indexes[column.name] || 0)
+            .value();
+    }, [tableProps.columns, visibleColumns]);
+
+    useEffect(
+        () =>
+            compositionRoot.users.getColumns().run(
+                columns => {
+                    setVisibleColumns(columns);
+                    onChangeVisibleColumns(columns);
+                },
+                error => snackbar.error(error)
+            ),
+        [compositionRoot, snackbar, onChangeVisibleColumns]
+    );
+
     return (
         <React.Fragment>
-            {dialogProps && <ConfirmationDialog open={true} maxWidth={"lg"} fullWidth={true} {...dialogProps} />}
+            {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            <ObjectsList {...tableProps}>{props.children}</ObjectsList>
+            <ObjectsList<User> {...tableProps} columns={columnsToShow}>
+                {children}
+            </ObjectsList>
         </React.Fragment>
     );
 };

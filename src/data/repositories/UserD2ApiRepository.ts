@@ -2,19 +2,25 @@ import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
+import { NamedRef } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { ListOptions, UserRepository } from "../../domain/repositories/UserRepository";
+import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
+import { Namespaces } from "../clients/storage/Namespaces";
+import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
+    private userStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
+        this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -56,13 +62,10 @@ export class UserD2ApiRepository implements UserRepository {
         ).map(({ objects }) => objects.map(user => user.id));
     }
 
-    public getById(id: string): FutureData<User> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { eq: id } } })).flatMap(({ objects }) => {
-            const [user] = objects;
-            if (!user) return Future.error(`User ${id} not found`);
-
-            return Future.success(this.toDomainUser(user));
-        });
+    public getByIds(ids: string[]): FutureData<User[]> {
+        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) =>
+            Future.success(objects.map(user => this.toDomainUser(user)))
+        );
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -98,8 +101,9 @@ export class UserD2ApiRepository implements UserRepository {
 
         return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
             return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = existingUsers.map((existingUser, index) => {
-                    const user = users[index];
+                const usersToSend = existingUsers.map(existingUser => {
+                    const user = users.find(user => user.id === existingUser.id);
+                    if (!user) return undefined;
 
                     return {
                         ...existingUser,
@@ -128,9 +132,70 @@ export class UserD2ApiRepository implements UserRepository {
                     };
                 });
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).map(data => data);
+                return apiToFuture(
+                    this.api.metadata.post({
+                        users: _.compact(usersToSend),
+                        userGroups,
+                    })
+                ).map(data => data);
             });
         });
+    }
+
+    public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const commonRoles = _.intersectionBy(
+                ...storedUsers.map(user => user.userRoles.map(role => role)),
+                ({ id }) => id
+            );
+
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userRoles:
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
+                };
+            });
+
+            return this.save(users);
+        });
+    }
+
+    public updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const commonGroups = _.intersectionBy(
+                ...storedUsers.map(user => user.userGroups.map(group => group)),
+                ({ id }) => id
+            );
+
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userGroups:
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
+                };
+            });
+
+            return this.save(users);
+        });
+    }
+
+    public getColumns(): FutureData<Array<keyof User>> {
+        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    }
+
+    public saveColumns(columns: Array<keyof User>): FutureData<void> {
+        return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -277,3 +342,13 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+
+const defaultColumns: Array<keyof User> = [
+    "username",
+    "firstName",
+    "surname",
+    "email",
+    "organisationUnits",
+    "lastLogin",
+    "disabled",
+];

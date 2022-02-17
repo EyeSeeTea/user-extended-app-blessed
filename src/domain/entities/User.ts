@@ -31,6 +31,7 @@ export interface User {
     accountExpiry: string;
     authorities: string[];
 }
+
 export const defaultUser: User = {
     id: "",
     name: "",
