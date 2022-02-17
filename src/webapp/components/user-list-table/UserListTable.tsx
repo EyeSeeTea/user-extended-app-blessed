@@ -41,15 +41,16 @@ export const UserListTable: React.FC<UserListTableProps> = props => {
 
     const editUsers = useCallback(
         (ids: string[]) => {
+            // Correct fix? Catch length <= 0?
             if (ids.length === 1) {
-                // TODO: Redirect still goes to bulk-edit, investigate
                 navigate(`/edit/${ids[0]}`);
+            } else {
+                compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
+                    ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
+                    error => snackbar.error(error)
+                );
             }
 
-            compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
-                ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
-                error => snackbar.error(error)
-            );
         },
         [navigate, compositionRoot, snackbar]
     );
