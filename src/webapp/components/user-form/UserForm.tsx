@@ -106,6 +106,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
         case "username":
             return <FormField {...props} component={InputFieldFF} />;
         // TODO: Add repeat password validation
+        // TODO: if externalAccessOnly disable password
         case "password":
             return <FormField {...props} component={InputFieldFF} type="password" />;
         // TODO?: converted to date field?

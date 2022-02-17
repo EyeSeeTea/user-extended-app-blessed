@@ -11,8 +11,6 @@ import { User } from "../../../domain/entities/User";
 import { useGoBack } from "../../hooks/useGoBack";
 import { UserEditWizardStep, UserEditWizardStepProps } from "./UserEditWizardStep";
 
-// Get user fields from: http://192.168.0.240:8086/api/users/{uid}.json && @eyeseetea/d2-api/2.34/schemas.d.ts
-// if externalAccess only disable password
 const steps: WizardStep[] = [
     {
         key: `general-info`,
@@ -26,11 +24,14 @@ const steps: WizardStep[] = [
                 "firstName",
                 "surname",
                 "password",
+                "accountExpiry",
                 "externalAuth",
                 "disabled",
                 "openId",
                 "ldapId",
-                "apiUrl",
+                "uiLocale",
+                "dbLocale",
+                "apiUrl"
             ],
         },
     },
@@ -56,8 +57,8 @@ const steps: WizardStep[] = [
         component: UserEditWizardStep,
         props: {
             fields: [
-                "userGroups",
-                "userRoles"
+                "userRoles",
+                "userGroups"
             ]
         },
     },
@@ -67,8 +68,8 @@ const steps: WizardStep[] = [
         component: UserEditWizardStep,
         props: {
             fields: [
-                "dataViewOrganisationUnits",
-                "organisationUnits"
+                "organisationUnits",
+                "dataViewOrganisationUnits"
             ]
         },
     },
