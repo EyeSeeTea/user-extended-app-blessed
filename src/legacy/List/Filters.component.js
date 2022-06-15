@@ -2,7 +2,7 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import IconButton from "material-ui/IconButton";
-import Switch from "@material-ui/core/Switch"
+import { Switch, Grid } from "@material-ui/core";
 import FilterListIcon from "material-ui/svg-icons/content/filter-list";
 import memoize from "memoize-weak";
 import PropTypes from "prop-types";
@@ -61,6 +61,7 @@ export default class Filters extends React.Component {
             searchStringClear: null,
             showOnlyManagedUsers: false,
             showOnlyActiveUsers: false,
+            rootJunction: false,
             userRoles: [],
             userGroups: [],
             orgUnits: [],
@@ -167,7 +168,10 @@ export default class Filters extends React.Component {
         };
     };
 
-    checkboxHandler = (ev, isChecked) => isChecked;
+    checkboxHandler = (ev, isChecked) => {
+        console.log("this.state (before check): ", this.state)
+        return isChecked;
+    };
 
     render() {
         const {
@@ -178,6 +182,7 @@ export default class Filters extends React.Component {
             showOnlyManagedUsers,
             showOnlyActiveUsers,
             showExtendedFilters,
+            rootJunction,
         } = this.state;
 
         const { styles } = this;
@@ -214,24 +219,30 @@ export default class Filters extends React.Component {
                     onInfoAction={isFiltering ? this.clearFilters : undefined}
                 >
                     <div style={{ padding: 10, margin: 10 }}>
-                        <div className="control-row checkboxes">
-                            <Checkbox
-                                className="control-checkbox"
-                                label={this.getTranslation("display_only_users_can_manage")}
-                                onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
-                                checked={showOnlyManagedUsers}
-                            />
-
-                            <Checkbox
-                                className="control-checkbox"
-                                label={this.getTranslation("display_only_enabled_users")}
-                                onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
-                                checked={showOnlyActiveUsers}
-                            />
-
-                            <Switch />
-                        </div>
-
+                        <Grid container spacing={2} className="control-row">
+                            <Grid item xs={6} className="control-row checkboxes">
+                                <Checkbox
+                                    className="control-checkbox"
+                                    label={this.getTranslation("display_only_users_can_manage")}
+                                    onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
+                                    checked={showOnlyManagedUsers}
+                                />
+                                <Checkbox
+                                    className="control-checkbox"
+                                    label={this.getTranslation("display_only_enabled_users")}
+                                    onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
+                                    checked={showOnlyActiveUsers}
+                                />
+                            </Grid>
+                            <Grid item xs={6} className="control-row switch">
+                                <span>{this.getTranslation("AND")}</span>
+                                <Switch
+                                onChange={this.setFilter("rootJunction", this.checkboxHandler)} // relevant method to handle your change
+                                checked={rootJunction} // relevant state for your case
+                                />
+                                <span>{this.getTranslation("OR")}</span>
+                            </Grid>
+                        </Grid>
                         <div className="control-row">
                             <div className="user-management-control select-role">
                                 <MultipleFilter
