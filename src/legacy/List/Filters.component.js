@@ -2,6 +2,7 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import IconButton from "material-ui/IconButton";
+import Switch from "@material-ui/core/Switch"
 import FilterListIcon from "material-ui/svg-icons/content/filter-list";
 import memoize from "memoize-weak";
 import PropTypes from "prop-types";
@@ -227,6 +228,8 @@ export default class Filters extends React.Component {
                                 onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
                                 checked={showOnlyActiveUsers}
                             />
+
+                            <Switch />
                         </div>
 
                         <div className="control-row">
