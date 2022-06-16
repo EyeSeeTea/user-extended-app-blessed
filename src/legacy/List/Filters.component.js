@@ -232,12 +232,16 @@ export default class Filters extends React.Component {
                                 />
                             </Grid>
                             <Grid item xs={6} className="control-row switch">
-                                <span>{this.getTranslation("AND")}</span>
-                                <Switch
-                                    onChange={this.setFilter("rootJunction", this.checkboxHandler)}
-                                    checked={rootJunction}
-                                />
-                                <span>{this.getTranslation("OR")}</span>
+                                <span>{this.getTranslation("Filtering_behavior")}</span>
+                                <div className="control-switch">
+                                    <span>{this.getTranslation("AND")}</span>
+                                    <Switch
+                                        className="control-switch"
+                                        onChange={this.setFilter("rootJunction", this.checkboxHandler)}
+                                        checked={rootJunction}
+                                    />
+                                    <span>{this.getTranslation("OR")}</span>
+                                </div>
                             </Grid>
                         </Grid>
                         <div className="control-row">
