@@ -168,10 +168,7 @@ export default class Filters extends React.Component {
         };
     };
 
-    checkboxHandler = (ev, isChecked) => {
-        console.log("this.state (before check): ", this.state)
-        return isChecked;
-    };
+    checkboxHandler = (ev, isChecked) => isChecked;
 
     render() {
         const {
@@ -237,8 +234,8 @@ export default class Filters extends React.Component {
                             <Grid item xs={6} className="control-row switch">
                                 <span>{this.getTranslation("AND")}</span>
                                 <Switch
-                                onChange={this.setFilter("rootJunction", this.checkboxHandler)} // relevant method to handle your change
-                                checked={rootJunction} // relevant state for your case
+                                    onChange={this.setFilter("rootJunction", this.checkboxHandler)}
+                                    checked={rootJunction}
                                 />
                                 <span>{this.getTranslation("OR")}</span>
                             </Grid>
