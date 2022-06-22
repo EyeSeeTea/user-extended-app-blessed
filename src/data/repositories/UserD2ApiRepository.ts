@@ -247,10 +247,10 @@ export class UserD2ApiRepository implements UserRepository {
 
     private toDomainUser(input: ApiUser): User {
         const { userCredentials, ...user } = input;
-        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
+        const authorities = _(userCredentials.userRoles?.map(userRole => userRole.authorities))
             .flatten()
             .uniq()
-            .value();
+            .value() || [];
 
         return {
             id: user.id,
@@ -269,7 +269,7 @@ export class UserD2ApiRepository implements UserRepository {
             userGroups: user.userGroups,
             username: userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
-            userRoles: userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
+            userRoles: userCredentials.userRoles?.map(userRole => ({ id: userRole.id, name: userRole.name })) || [],
             lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
