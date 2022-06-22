@@ -246,6 +246,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     pageSize,
                     sorting,
                     filters,
+                    rootJunction: "OR",   // TODO: get from the Filters component
                 })
                 .toPromise();
         },

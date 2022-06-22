@@ -22,6 +22,7 @@ export interface ListOptions {
     search?: string;
     sorting?: { field: string; order: "asc" | "desc" };
     filters?: ListFilters;
+    rootJunction?: "AND" | "OR";
 }
 
 export type ListFilterType = "in" | "eq";

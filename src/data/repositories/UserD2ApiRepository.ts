@@ -29,7 +29,14 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
-        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const {
+            page,
+            pageSize,
+            search,
+            sorting = { field: "firstName", order: "asc" },
+            rootJunction,
+            filters,
+        } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
         return apiToFuture(
@@ -39,6 +46,7 @@ export class UserD2ApiRepository implements UserRepository {
                 pageSize,
                 query: search !== "" ? search : undefined,
                 filter: otherFilters,
+                rootJunction: filters ? rootJunction : undefined,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
