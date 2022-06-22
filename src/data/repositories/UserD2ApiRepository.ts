@@ -247,10 +247,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     private toDomainUser(input: ApiUser): User {
         const { userCredentials, ...user } = input;
-        const authorities = _(userCredentials.userRoles?.map(userRole => userRole.authorities))
-            .flatten()
-            .uniq()
-            .value() || [];
+        const authorities =
+            _(userCredentials.userRoles?.map(userRole => userRole.authorities))
+                .flatten()
+                .uniq()
+                .value() || [];
 
         return {
             id: user.id,
