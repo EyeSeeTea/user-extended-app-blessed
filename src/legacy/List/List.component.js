@@ -325,6 +325,7 @@ export class ListHybrid extends React.Component {
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
@@ -360,7 +361,7 @@ export class ListHybrid extends React.Component {
                 ) : null}
 
                 {this.state.orgunitassignment.open &&
-                this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
+                    this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
                     <OrgUnitDialog
                         api={this.props.api}
                         models={this.state.orgunitassignment.users}

@@ -32,6 +32,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
     onChangeVisibleColumns,
     filters,
+    rootJunction,
     children,
 }) => {
     const { compositionRoot, currentUser } = useAppContext();
@@ -64,7 +65,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
             onChangeVisibleColumns(columns);
             compositionRoot.users.saveColumns(columns).run(
-                () => {},
+                () => { },
                 error => snackbar.error(error)
             );
         },
@@ -246,11 +247,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     pageSize,
                     sorting,
                     filters,
-                    rootJunction: "OR",   // TODO: get from the Filters component
+                    rootJunction,
                 })
                 .toPromise();
         },
-        [compositionRoot, filters, reloadKey]
+        [compositionRoot, filters, rootJunction, reloadKey]
     );
 
     const refreshAllIds = useCallback(
@@ -366,6 +367,7 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+    rootJunction: "AND" | "OR";
     onChangeVisibleColumns: (columns: string[]) => void;
 }
 

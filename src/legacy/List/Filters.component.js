@@ -236,7 +236,7 @@ export default class Filters extends React.Component {
                             <Grid item xs={4} className="control-row switch">
                                 <span>{this.getTranslation("Filtering_behavior")}</span>
                                 <div className="control-switch">
-                                    <span>{this.getTranslation("AND")}</span>
+                                    <span>{this.getTranslation("OR")}</span>
                                     <Switch
                                         className="control-switch"
                                         onChange={() => {
@@ -245,7 +245,7 @@ export default class Filters extends React.Component {
                                         }}
                                         checked={rootJunction === "AND"}
                                     />
-                                    <span>{this.getTranslation("OR")}</span>
+                                    <span>{this.getTranslation("AND")}</span>
                                 </div>
                             </Grid>
                         </Grid>
