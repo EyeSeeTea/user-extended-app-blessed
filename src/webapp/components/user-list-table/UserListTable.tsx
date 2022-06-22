@@ -65,7 +65,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
             onChangeVisibleColumns(columns);
             compositionRoot.users.saveColumns(columns).run(
-                () => { },
+                () => {},
                 error => snackbar.error(error)
             );
         },

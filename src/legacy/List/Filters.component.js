@@ -240,7 +240,7 @@ export default class Filters extends React.Component {
                                     <Switch
                                         className="control-switch"
                                         onChange={() => {
-                                            const newRootJunction = (rootJunction === "AND" ? "OR" : "AND");
+                                            const newRootJunction = rootJunction === "AND" ? "OR" : "AND";
                                             this.setState({ rootJunction: newRootJunction }, this.notifyParent);
                                         }}
                                         checked={rootJunction === "AND"}

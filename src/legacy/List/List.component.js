@@ -361,7 +361,7 @@ export class ListHybrid extends React.Component {
                 ) : null}
 
                 {this.state.orgunitassignment.open &&
-                    this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
+                this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
                     <OrgUnitDialog
                         api={this.props.api}
                         models={this.state.orgunitassignment.users}
