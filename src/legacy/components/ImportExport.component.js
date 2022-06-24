@@ -71,6 +71,19 @@ class ImportExport extends React.Component {
         }
     };
 
+    exportToJsonAndSave = async () => {
+        const { d2, columns, filterOptions, settings } = this.props;
+        const orgUnitsField = settings.get("organisationUnitsField");
+        this.setState({ isProcessing: true });
+
+        try {
+            const jsonString = await exportToJson(d2, columns, filterOptions, { orgUnitsField });
+            this.saveJson(jsonString, "users");
+        } finally {
+            this.closeMenu();
+            this.setState({ isProcessing: false });
+        }
+    };
     exportEmptyTemplate = async () => {
         this.setState({ isProcessing: true });
 
@@ -110,7 +123,7 @@ class ImportExport extends React.Component {
 
     render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
-        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate } = this;
+        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate, exportToJsonAndSave } = this;
         const { t } = this;
 
         return (
@@ -136,6 +149,7 @@ class ImportExport extends React.Component {
                             primaryText={t("export_empty_template")}
                             onClick={exportEmptyTemplate}
                         />
+                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("export_to_Json")} onClick={exportToJsonAndSave}/>
                     </Menu>
                 </Popover>
             </div>
