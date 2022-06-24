@@ -452,14 +452,12 @@ async function exportTemplateToCsv() {
 }
 
 /* Get users from Dhis2 API and export given columns to a Json string */
-async function exportToJson (d2, columns, filterOptions, { orgUnitsField }) {
+async function exportToJson (d2, columns, filterOptions) {
     const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
     const { users } = await getUserList(d2, filters, listOptions);
-    const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
-    const header = columns.map(getColumnNameFromProperty);
-    const table = [header, ...userRows];
-
-    return Papa.unparse(table);
+    
+    const table = JSON.stringify(users, null, 4);
+    return table;
 }
  
 
