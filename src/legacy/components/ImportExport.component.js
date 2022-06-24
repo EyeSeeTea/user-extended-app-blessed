@@ -149,7 +149,7 @@ class ImportExport extends React.Component {
                             primaryText={t("export_empty_template")}
                             onClick={exportEmptyTemplate}
                         />
-                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("export_to_Json")} onClick={exportToJsonAndSave}/>
+                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("Export to Json")} onClick={exportToJsonAndSave}/>
                     </Menu>
                 </Popover>
             </div>
