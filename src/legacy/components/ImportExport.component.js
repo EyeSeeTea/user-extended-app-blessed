@@ -11,7 +11,7 @@ import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
 
-import { exportToCsv, exportTemplateToCsv, importFromCsv } from "../models/userHelpers";
+import { exportToCsv, exportTemplateToCsv, importFromCsv, exportToJson } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 
