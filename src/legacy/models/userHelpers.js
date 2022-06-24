@@ -549,6 +549,7 @@ export {
     exportToCsv,
     exportTemplateToCsv,
     importFromCsv,
+    exportToJson,
     updateUsers,
     saveUsers,
     parseResponse,
