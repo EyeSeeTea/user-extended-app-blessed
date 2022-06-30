@@ -206,9 +206,9 @@ export class ListHybrid extends React.Component {
 
     filterList = () => {
         const order = this.state.sorting ? this.state.sorting[0] + ":i" + this.state.sorting[1] : null;
-        const { filters } = this.state;
+        const { filters, query } = this.state;
 
-        this.setState({ isLoading: true, listFilterOptions: { order: order, ...filters } });
+        this.setState({ isLoading: true, listFilterOptions: { order: order, query: query, ...filters } });
     };
 
     convertObjsToMenuItems = objs => {
@@ -266,6 +266,10 @@ export class ListHybrid extends React.Component {
 
     _updateVisibleColumns = visibleColumns => {
         this.setState({ visibleColumns });
+    };
+
+    _updateSearch = query => {
+        this.setState({ query }, this.filterList);
     };
 
     _openImportTable = importResult => {
@@ -326,6 +330,7 @@ export class ListHybrid extends React.Component {
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
                             onChangeVisibleColumns={this._updateVisibleColumns}
+                            onChangeSearch={this._updateSearch}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
