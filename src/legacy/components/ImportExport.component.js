@@ -84,6 +84,7 @@ class ImportExport extends React.Component {
             this.setState({ isProcessing: false });
         }
     };
+
     exportEmptyTemplate = async () => {
         this.setState({ isProcessing: true });
 
@@ -100,6 +101,14 @@ class ImportExport extends React.Component {
         const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
         const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
         const filename = `${name}-${datetime}.csv`;
+        FileSaver.saveAs(blob, filename);
+        snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
+    };
+
+    saveJson = (contents, name) => {
+        const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
+        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
+        const filename = `${name}-${datetime}.json`;
         FileSaver.saveAs(blob, filename);
         snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
     };

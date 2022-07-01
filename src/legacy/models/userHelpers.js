@@ -112,6 +112,11 @@ function namesFromCollection(collection, field) {
         .join(fieldSplitChar);
 }
 
+function namesArrayFromCollection(collection, field) {
+    return _(collection.toArray ? collection.toArray() : collection)
+        .map(field);
+}
+
 function collectionFromNames(user, rowIndex, field, objectsByName) {
     const value = user[field];
     const names = (value || "")
@@ -158,6 +163,24 @@ function getPlainUser(user, { orgUnitsField }) {
         userGroups: namesFromCollection(user.userGroups, "displayName"),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
+        disabled: userCredentials.disabled,
+        openId: userCredentials.openId,
+    };
+}
+
+function getPlainJsonUser(user, { orgUnitsField }) {
+    const userCredentials = user.userCredentials || {};
+
+    return {
+        ...user,
+        username: userCredentials.username,
+        lastUpdated: formatDate(user.lastUpdated),
+        lastLogin: formatDate(userCredentials.lastLogin),
+        created: formatDate(user.created),
+        userRoles: namesArrayFromCollection(userCredentials.userRoles, "displayName"),
+        userGroups: namesArrayFromCollection(user.userGroups, "displayName"),
+        organisationUnits: namesArrayFromCollection(user.organisationUnits, orgUnitsField),
+        dataViewOrganisationUnits: namesArrayFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
         disabled: userCredentials.disabled,
         openId: userCredentials.openId,
     };
@@ -452,12 +475,13 @@ async function exportTemplateToCsv() {
 }
 
 /* Get users from Dhis2 API and export given columns to a Json string */
-async function exportToJson (d2, columns, filterOptions) {
+async function exportToJson (d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
     const { users } = await getUserList(d2, filters, listOptions);
-    
-    const table = JSON.stringify(users, null, 4);
-    return table;
+    const usersObject = users.map(user => _.pick(getPlainJsonUser(user, { orgUnitsField }), columns));
+    const usersJson = JSON.stringify(usersObject, null, 4)
+
+    return usersJson;
 }
  
 
