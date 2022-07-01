@@ -268,7 +268,7 @@ export class ListHybrid extends React.Component {
         this.setState({ visibleColumns });
     };
 
-    _updateSearch = query => {
+    _updateQuery = query => {
         this.setState({ query }, this.filterList);
     };
 
@@ -330,7 +330,7 @@ export class ListHybrid extends React.Component {
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
                             onChangeVisibleColumns={this._updateVisibleColumns}
-                            onChangeSearch={this._updateSearch}
+                            onChangeSearch={this._updateQuery}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
