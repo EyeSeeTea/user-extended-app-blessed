@@ -247,6 +247,7 @@ export default class Filters extends React.Component {
                                     />
                                     <span>{this.getTranslation("AND")}</span>
                                 </div>
+                                <span>{this.getTranslation("Active_in_advanced_only")}</span>
                             </Grid>
                         </Grid>
                         <div className="control-row">
