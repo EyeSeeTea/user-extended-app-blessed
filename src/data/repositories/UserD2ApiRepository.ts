@@ -38,6 +38,7 @@ export class UserD2ApiRepository implements UserRepository {
             filters,
         } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+        const areFiltersEnabled = _(otherFilters).values().some()
 
         return apiToFuture(
             this.api.models.users.get({
@@ -46,7 +47,7 @@ export class UserD2ApiRepository implements UserRepository {
                 pageSize,
                 query: search !== "" ? search : undefined,
                 filter: otherFilters,
-                rootJunction: filters ? rootJunction : undefined,
+                rootJunction: areFiltersEnabled ? rootJunction : undefined,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
