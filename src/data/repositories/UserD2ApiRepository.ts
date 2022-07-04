@@ -38,7 +38,7 @@ export class UserD2ApiRepository implements UserRepository {
             filters,
         } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
-        const areFiltersEnabled = _(otherFilters).values().some()
+        const areFiltersEnabled = _(otherFilters).values().some();
 
         return apiToFuture(
             this.api.models.users.get({
@@ -248,11 +248,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     private toDomainUser(input: ApiUser): User {
         const { userCredentials, ...user } = input;
-        const authorities =
-            _(userCredentials.userRoles).map(userRole => userRole.authorities)
-                .flatten()
-                .uniq()
-                .value();
+        const authorities = _(userCredentials.userRoles)
+            .map(userRole => userRole.authorities)
+            .flatten()
+            .uniq()
+            .value();
 
         return {
             id: user.id,
