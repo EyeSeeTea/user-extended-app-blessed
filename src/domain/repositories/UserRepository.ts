@@ -22,6 +22,7 @@ export interface ListOptions {
     search?: string;
     sorting?: { field: string; order: "asc" | "desc" };
     filters?: ListFilters;
+    canManage?: boolean;
 }
 
 export type ListFilterType = "in" | "eq";
