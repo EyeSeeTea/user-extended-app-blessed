@@ -29,7 +29,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
-        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters, canManage } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
         return apiToFuture(
@@ -38,6 +38,7 @@ export class UserD2ApiRepository implements UserRepository {
                 page,
                 pageSize,
                 query: search !== "" ? search : undefined,
+                canManage: canManage !== false ? true : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
@@ -48,7 +49,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public listAllIds(options: ListOptions): FutureData<string[]> {
-        const { search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const { search, sorting = { field: "firstName", order: "asc" }, filters, canManage } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
         return apiToFuture(
@@ -56,6 +57,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields: { id: true },
                 paging: false,
                 query: search !== "" ? search : undefined,
+                canManage: canManage !== false ? true : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
@@ -155,9 +157,9 @@ export class UserD2ApiRepository implements UserRepository {
                     userRoles:
                         strategy === "merge"
                             ? _.uniqBy(
-                                  [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...update],
-                                  ({ id }) => id
-                              )
+                                [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...update],
+                                ({ id }) => id
+                            )
                             : update,
                 };
             });
@@ -179,9 +181,9 @@ export class UserD2ApiRepository implements UserRepository {
                     userGroups:
                         strategy === "merge"
                             ? _.uniqBy(
-                                  [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...update],
-                                  ({ id }) => id
-                              )
+                                [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...update],
+                                ({ id }) => id
+                            )
                             : update,
                 };
             });
