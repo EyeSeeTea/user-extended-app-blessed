@@ -368,7 +368,7 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
-    canManage: boolean;
+    canManage: string;
     onChangeVisibleColumns: (columns: string[]) => void;
 }
 

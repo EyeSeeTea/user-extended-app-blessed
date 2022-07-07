@@ -38,7 +38,7 @@ export class UserD2ApiRepository implements UserRepository {
                 page,
                 pageSize,
                 query: search !== "" ? search : undefined,
-                canManage: canManage !== false ? true : undefined,
+                canManage: canManage === "true" ? "true" : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
@@ -57,7 +57,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields: { id: true },
                 paging: false,
                 query: search !== "" ? search : undefined,
-                canManage: canManage !== false ? true : undefined,
+                canManage: canManage === "true" ? "true" : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
