@@ -11,7 +11,7 @@ import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
 
-import { exportToCsv, exportTemplateToCsv, importFromCsv, exportToJson } from "../models/userHelpers";
+import { exportToCsv, exportTemplateToCsv, importFromCsv, exportToJson, importFromJson } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 
@@ -113,14 +113,18 @@ class ImportExport extends React.Component {
         snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
     };
 
-    importFromCsv = () => {
+    importFromFile = () => {
         const { onImport, maxUsers, settings } = this.props;
         const orgUnitsField = settings.get("organisationUnitsField");
 
-        fileDialog({ accept: ".csv" })
+        fileDialog({ accept: ["text/csv", "application/json"] })
             .then(files => {
                 this.setState({ isProcessing: true });
-                return importFromCsv(this.props.d2, files[0], { maxUsers, orgUnitsField });
+                if (files[0].type === "text/csv") {
+                    return importFromCsv(this.props.d2, files[0], { maxUsers, orgUnitsField });
+                } else if (files[0].type === "application/json") {
+                    return importFromJson(this.props.d2, files.item(0), { maxUsers, orgUnitsField });
+                }
             })
             .then(result => onImport(result))
             .catch(err => snackActions.show({ message: err.toString() }))
@@ -132,7 +136,7 @@ class ImportExport extends React.Component {
 
     render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
-        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate, exportToJsonAndSave } = this;
+        const { popoverConfig, closeMenu, importFromFile, exportToCsvAndSave, exportEmptyTemplate, exportToJsonAndSave } = this;
         const { t } = this;
 
         return (
@@ -151,14 +155,14 @@ class ImportExport extends React.Component {
                     onRequestClose={closeMenu}
                 >
                     <Menu>
-                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("import")} onClick={importFromCsv} />
-                        <MenuItem leftIcon={<ImportIcon />} primaryText={t("export")} onClick={exportToCsvAndSave} />
+                        <MenuItem leftIcon={<ImportIcon />} primaryText={t("import")} onClick={importFromFile} />
+                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("export_to_CSV")} onClick={exportToCsvAndSave} />
+                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("export_to_JSON")} onClick={exportToJsonAndSave}/>
                         <MenuItem
                             leftIcon={<ImportIcon />}
                             primaryText={t("export_empty_template")}
                             onClick={exportEmptyTemplate}
                         />
-                        <MenuItem leftIcon={<ImportIcon/>} primaryText={t("Export to Json")} onClick={exportToJsonAndSave}/>
                     </Menu>
                 </Popover>
             </div>
