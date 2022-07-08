@@ -500,6 +500,22 @@ async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
     });
 }
 
+async function importFromJson(d2, file, { maxUsers, orgUnitsField }) {
+    const jsonText = await new Response(file).text()
+    let jsonObject = JSON.parse(jsonText);
+
+    jsonObject.forEach((obj) => {
+        obj.userRoles = obj.userRoles.join('||') ?? undefined;
+        obj.userGroups = obj.userGroups.join('||') ?? undefined;
+        obj.organisationUnits = obj.organisationUnits.join('||') ?? undefined;
+        obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits.join('||') ?? undefined;
+    })
+
+    const csvText = Papa.unparse(jsonObject, { delimiter: "," });
+
+    return importFromCsv(d2, csvText, { maxUsers, orgUnitsField })
+}
+
 async function getExistingUsers(d2, options = {}) {
     const api = d2.Api.getApi();
     const { users } = await api.get("/users", {
@@ -572,6 +588,7 @@ export {
     exportTemplateToCsv,
     importFromCsv,
     exportToJson,
+    importFromJson,
     updateUsers,
     saveUsers,
     parseResponse,
