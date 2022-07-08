@@ -128,7 +128,14 @@ class ImportExport extends React.Component {
 
     render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
-        const { popoverConfig, closeMenu, importFromFile, exportToCsvAndSave, exportEmptyTemplate, exportToJsonAndSave } = this;
+        const {
+            popoverConfig,
+            closeMenu,
+            importFromFile,
+            exportToCsvAndSave,
+            exportEmptyTemplate,
+            exportToJsonAndSave,
+        } = this;
         const { t } = this;
 
         return (
@@ -148,8 +155,16 @@ class ImportExport extends React.Component {
                 >
                     <Menu>
                         <MenuItem leftIcon={<ImportIcon />} primaryText={t("import")} onClick={importFromFile} />
-                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("export_to_CSV")} onClick={exportToCsvAndSave} />
-                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("export_to_JSON")} onClick={exportToJsonAndSave}/>
+                        <MenuItem
+                            leftIcon={<ExportIcon />}
+                            primaryText={t("export_to_CSV")}
+                            onClick={exportToCsvAndSave}
+                        />
+                        <MenuItem
+                            leftIcon={<ExportIcon />}
+                            primaryText={t("export_to_JSON")}
+                            onClick={exportToJsonAndSave}
+                        />
                         <MenuItem
                             leftIcon={<ImportIcon />}
                             primaryText={t("export_empty_template")}

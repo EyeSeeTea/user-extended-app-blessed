@@ -113,8 +113,7 @@ function namesFromCollection(collection, field) {
 }
 
 function namesArrayFromCollection(collection, field) {
-    return _(collection.toArray ? collection.toArray() : collection)
-        .map(field);
+    return _(collection.toArray ? collection.toArray() : collection).map(field);
 }
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
@@ -475,15 +474,14 @@ async function exportTemplateToCsv() {
 }
 
 /* Get users from Dhis2 API and export given columns to a Json string */
-async function exportToJson (d2, columns, filterOptions, { orgUnitsField }) {
+async function exportToJson(d2, columns, filterOptions, { orgUnitsField }) {
     const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
     const { users } = await getUserList(d2, filters, listOptions);
     const usersObject = users.map(user => _.pick(getPlainJsonUser(user, { orgUnitsField }), columns));
-    const usersJson = JSON.stringify(usersObject, null, 4)
+    const usersJson = JSON.stringify(usersObject, null, 4);
 
     return usersJson;
 }
- 
 
 async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
     return new Promise((resolve, reject) => {
@@ -501,19 +499,19 @@ async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
 }
 
 async function importFromJson(d2, file, { maxUsers, orgUnitsField }) {
-    const jsonText = await new Response(file).text()
+    const jsonText = await new Response(file).text();
     let jsonObject = JSON.parse(jsonText);
 
-    jsonObject.forEach((obj) => {
-        obj.userRoles = obj.userRoles.join('||') ?? undefined;
-        obj.userGroups = obj.userGroups.join('||') ?? undefined;
-        obj.organisationUnits = obj.organisationUnits.join('||') ?? undefined;
-        obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits.join('||') ?? undefined;
-    })
+    jsonObject.forEach(obj => {
+        obj.userRoles = obj.userRoles.join("||") ?? undefined;
+        obj.userGroups = obj.userGroups.join("||") ?? undefined;
+        obj.organisationUnits = obj.organisationUnits.join("||") ?? undefined;
+        obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits.join("||") ?? undefined;
+    });
 
     const csvText = Papa.unparse(jsonObject, { delimiter: "," });
 
-    return importFromCsv(d2, csvText, { maxUsers, orgUnitsField })
+    return importFromCsv(d2, csvText, { maxUsers, orgUnitsField });
 }
 
 async function getExistingUsers(d2, options = {}) {
