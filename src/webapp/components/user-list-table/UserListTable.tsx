@@ -242,30 +242,26 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
             // SEE: src/legacy/models/userList.js LINE 29+
             if (canManage === "true") {
-                const userIdList = await compositionRoot.users
-                .listAllIds({
+                const userIdList = await compositionRoot.users.listAllIds({
                     search,
                     sorting,
                     filters,
                     canManage,
-                })
-                .toPromise();
+                }).toPromise();
 
                 if (userIdList) {
-                    filters["id"] = ["in", userIdList]
+                    filters["id"] = ["in", userIdList];
                 }
             }
 
-            return compositionRoot.users
-                .list({
+            return compositionRoot.users.list({
                     search,
                     page,
                     pageSize,
                     sorting,
                     filters,
                     canManage,
-                })
-                .toPromise();
+                }).toPromise();
         },
         [compositionRoot, filters, canManage, reloadKey]
     );
