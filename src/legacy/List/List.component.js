@@ -289,7 +289,6 @@ export class ListHybrid extends React.Component {
     };
 
     _onFiltersChange = filters => {
-        this.setState({ filters }, this.filterList);
         const canManage = filters.canManage;
         this.setState({ filters, canManage }, this.filterList);
     };

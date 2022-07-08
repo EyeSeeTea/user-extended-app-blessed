@@ -233,12 +233,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
 
     const refreshRows = useCallback(
-        (
+        async (
             search: string,
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
             console.debug("Reloading", reloadKey);
+
+            // SEE: src/legacy/models/userList.js LINE 29+
+            if (canManage === "true") {
+                const userIdList = await compositionRoot.users
+                .listAllIds({
+                    search,
+                    sorting,
+                    filters,
+                    canManage,
+                })
+                .toPromise();
+
+                if (userIdList) {
+                    filters["id"] = ["in", userIdList]
+                }
+            }
 
             return compositionRoot.users
                 .list({
