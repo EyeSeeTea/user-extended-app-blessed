@@ -107,6 +107,7 @@ class OrgUnitsSelectorFilter extends React.Component {
                             filterByProgram: false,
                             selectAll: false,
                         }}
+                        showNameSetting={true}
                     />
                 </ConfirmationDialog>
 
