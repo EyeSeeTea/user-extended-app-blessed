@@ -31,6 +31,7 @@ import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
     onChangeVisibleColumns,
+    onChangeSearch,
     filters,
     rootJunction,
     children,
@@ -239,6 +240,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
             console.debug("Reloading", reloadKey);
+            onChangeSearch(search);
 
             return compositionRoot.users
                 .list({
@@ -251,7 +253,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 })
                 .toPromise();
         },
-        [compositionRoot, filters, rootJunction, reloadKey]
+        [compositionRoot, filters, rootJunction, reloadKey, onChangeSearch]
     );
 
     const refreshAllIds = useCallback(
@@ -369,6 +371,7 @@ export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loadi
     filters: ListFilters;
     rootJunction: "AND" | "OR";
     onChangeVisibleColumns: (columns: string[]) => void;
+    onChangeSearch: (search: string) => void;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
