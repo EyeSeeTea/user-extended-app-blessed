@@ -329,6 +329,7 @@ export class ListHybrid extends React.Component {
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                             onChangeSearch={this._updateQuery}
                         >

@@ -61,13 +61,13 @@ export default class Filters extends React.Component {
             searchStringClear: null,
             showOnlyManagedUsers: false,
             showOnlyActiveUsers: false,
-            rootJunction: false,
             userRoles: [],
             userGroups: [],
             orgUnits: [],
             orgUnitsOutput: [],
             userRolesAll: [],
             userGroupsAll: [],
+            rootJunction: "OR",
         };
     }
 
@@ -124,6 +124,7 @@ export default class Filters extends React.Component {
             userGroups,
             orgUnits,
             orgUnitsOutput,
+            rootJunction,
         } = this.state;
 
         const inFilter = field => (_(field).isEmpty() ? null : ["in", field]);
@@ -131,6 +132,7 @@ export default class Filters extends React.Component {
         return {
             ...(showOnlyManagedUsers ? { canManage: "true" } : {}),
             ...(searchString ? { query: searchString } : {}),
+            ...(rootJunction ? { rootJunction } : {}),
             filters: {
                 "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
@@ -217,7 +219,7 @@ export default class Filters extends React.Component {
                 >
                     <div style={{ padding: 10, margin: 10 }}>
                         <Grid container spacing={2} className="control-row">
-                            <Grid item xs={6} className="control-row checkboxes">
+                            <Grid item xs={8} className="control-row checkboxes">
                                 <Checkbox
                                     className="control-checkbox"
                                     label={this.getTranslation("display_only_users_can_manage")}
@@ -231,17 +233,21 @@ export default class Filters extends React.Component {
                                     checked={showOnlyActiveUsers}
                                 />
                             </Grid>
-                            <Grid item xs={6} className="control-row switch">
+                            <Grid item xs={4} className="control-row switch">
                                 <span>{this.getTranslation("Filtering_behavior")}</span>
                                 <div className="control-switch">
-                                    <span>{this.getTranslation("AND")}</span>
+                                    <span>{this.getTranslation("OR")}</span>
                                     <Switch
                                         className="control-switch"
-                                        onChange={this.setFilter("rootJunction", this.checkboxHandler)}
-                                        checked={rootJunction}
+                                        onChange={() => {
+                                            const newRootJunction = rootJunction === "AND" ? "OR" : "AND";
+                                            this.setState({ rootJunction: newRootJunction }, this.notifyParent);
+                                        }}
+                                        checked={rootJunction === "AND"}
                                     />
-                                    <span>{this.getTranslation("OR")}</span>
+                                    <span>{this.getTranslation("AND")}</span>
                                 </div>
+                                <span>{this.getTranslation("Active_in_advanced_only")}</span>
                             </Grid>
                         </Grid>
                         <div className="control-row">
