@@ -1,5 +1,5 @@
 import { Button, ButtonStrip, CenteredContent, NoticeBox } from "@dhis2/ui";
-import { MetadataResponse } from "@eyeseetea/d2-api/2.34";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
 import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Paper } from "@material-ui/core";
 import { Delete, ViewColumn } from "@material-ui/icons";
@@ -24,7 +24,7 @@ import { useGoBack } from "../../hooks/useGoBack";
 const rowHeight = (index: number) => (index === 0 ? 30 : 70);
 const columnWidth = (index: number) => (index === 0 ? 50 : 250);
 
-export const UserBulkEditPage = () => {
+export const UserBulkEditPage: React.FC<{ isEdit: boolean }> = ({ isEdit }) => {
     const { compositionRoot } = useAppContext();
     const goBack = useGoBack();
     const loading = useLoading();
@@ -118,7 +118,7 @@ export const UserBulkEditPage = () => {
                                             estimatedRowHeight={70}
                                             rowHeight={rowHeight}
                                             columnWidth={columnWidth}
-                                            itemData={{ columns }}
+                                            itemData={{ columns, isEdit }}
                                         >
                                             {Row}
                                         </Grid>
@@ -176,7 +176,7 @@ const Row: React.FC<RowItemProps & { style: object }> = ({ style, ...props }) =>
 );
 
 interface RowItemProps {
-    data: { columns: string[] };
+    data: { columns: string[]; isEdit: boolean };
     columnIndex: number;
     rowIndex: number;
 }
@@ -216,7 +216,7 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
 
     return (
         <Item>
-            <RenderUserImportField row={row} field={field} />
+            <RenderUserImportField row={row} field={field} isEdit={data.isEdit} />
         </Item>
     );
 };

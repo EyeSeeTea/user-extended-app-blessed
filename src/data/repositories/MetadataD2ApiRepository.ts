@@ -2,7 +2,7 @@ import { FutureData } from "../../domain/entities/Future";
 import { Instance } from "../entities/Instance";
 import { Metadata, MetadataType } from "../../domain/entities/Metadata";
 import { MetadataRepository } from "../../domain/repositories/MetadataRepository";
-import { D2Api, Pager } from "@eyeseetea/d2-api/2.34";
+import { D2Api, Pager } from "@eyeseetea/d2-api/2.36";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 
@@ -26,5 +26,17 @@ export class MetadataD2ApiRepository implements MetadataRepository {
                 paging: false,
             })
         );
+    }
+
+    public getOrgUnitPathsByIds(ids: string[]): FutureData<{ id: string; name: string; path: string }[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true, path: true },
+                filter: { id: { in: ids } },
+                paging: false,
+            })
+        ).map(({ objects }) => {
+            return objects;
+        });
     }
 }

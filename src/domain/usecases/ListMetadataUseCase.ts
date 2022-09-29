@@ -1,5 +1,5 @@
 import { UseCase } from "../../CompositionRoot";
-import { Pager } from "@eyeseetea/d2-api/2.34";
+import { Pager } from "@eyeseetea/d2-api/2.36";
 import { FutureData } from "../entities/Future";
 import { Metadata, MetadataType } from "../entities/Metadata";
 import { ListOptions, MetadataRepository } from "../repositories/MetadataRepository";

@@ -1,20 +1,26 @@
-import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.34";
+import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
+import { NamedRef } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { ListOptions, UserRepository } from "../../domain/repositories/UserRepository";
+import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
+import { Namespaces } from "../clients/storage/Namespaces";
+import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
+    private userStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
+        this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
     @cache()
@@ -23,8 +29,16 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
-        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const {
+            page,
+            pageSize,
+            search,
+            sorting = { field: "firstName", order: "asc" },
+            rootJunction,
+            filters,
+        } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+        const areFiltersEnabled = _(otherFilters).values().some();
 
         return apiToFuture(
             this.api.models.users.get({
@@ -33,6 +47,7 @@ export class UserD2ApiRepository implements UserRepository {
                 pageSize,
                 query: search !== "" ? search : undefined,
                 filter: otherFilters,
+                rootJunction: areFiltersEnabled ? rootJunction : undefined,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
@@ -56,13 +71,10 @@ export class UserD2ApiRepository implements UserRepository {
         ).map(({ objects }) => objects.map(user => user.id));
     }
 
-    public getById(id: string): FutureData<User> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { eq: id } } })).flatMap(({ objects }) => {
-            const [user] = objects;
-            if (!user) return Future.error(`User ${id} not found`);
-
-            return Future.success(this.toDomainUser(user));
-        });
+    public getByIds(ids: string[]): FutureData<User[]> {
+        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) =>
+            Future.success(objects.map(user => this.toDomainUser(user)))
+        );
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -109,11 +121,22 @@ export class UserD2ApiRepository implements UserRepository {
                         email: user?.email,
                         firstName: user?.firstName,
                         surname: user?.surname,
+                        phoneNumber: user?.phoneNumber,
+                        whatsApp: user?.whatsApp,
+                        facebookMessenger: user?.facebookMessenger,
+                        skype: user?.skype,
+                        telegram: user?.telegram,
+                        twitter: user?.twitter,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,
                             userRoles: user?.userCredentials.userRoles,
                             username: user?.userCredentials.username,
+                            openId: user?.userCredentials.openId,
+                            ldapId: user?.userCredentials.ldapId,
+                            externalAuth: user?.userCredentials.externalAuth,
+                            password: user?.userCredentials.password,
+                            accountExpiry: user?.userCredentials.accountExpiry,
                         },
                     };
                 });
@@ -126,6 +149,62 @@ export class UserD2ApiRepository implements UserRepository {
                 ).map(data => data);
             });
         });
+    }
+
+    public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const commonRoles = _.intersectionBy(
+                ...storedUsers.map(user => user.userRoles.map(role => role)),
+                ({ id }) => id
+            );
+
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userRoles:
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userRoles, commonRoles, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
+                };
+            });
+
+            return this.save(users);
+        });
+    }
+
+    public updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
+        return this.getByIds(ids).flatMap(storedUsers => {
+            const commonGroups = _.intersectionBy(
+                ...storedUsers.map(user => user.userGroups.map(group => group)),
+                ({ id }) => id
+            );
+
+            const users = storedUsers.map(user => {
+                return {
+                    ...user,
+                    userGroups:
+                        strategy === "merge"
+                            ? _.uniqBy(
+                                  [..._.differenceBy(user.userGroups, commonGroups, ({ id }) => id), ...update],
+                                  ({ id }) => id
+                              )
+                            : update,
+                };
+            });
+
+            return this.save(users);
+        });
+    }
+
+    public getColumns(): FutureData<Array<keyof User>> {
+        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+    }
+
+    public saveColumns(columns: Array<keyof User>): FutureData<void> {
+        return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
     private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
@@ -169,7 +248,8 @@ export class UserD2ApiRepository implements UserRepository {
 
     private toDomainUser(input: ApiUser): User {
         const { userCredentials, ...user } = input;
-        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
+        const authorities = _(userCredentials.userRoles)
+            .map(userRole => userRole.authorities)
             .flatten()
             .uniq()
             .value();
@@ -180,18 +260,28 @@ export class UserD2ApiRepository implements UserRepository {
             firstName: user.firstName,
             surname: user.surname,
             email: user.email,
+            phoneNumber: user.phoneNumber,
+            whatsApp: user.whatsApp,
+            facebookMessenger: user.facebookMessenger,
+            skype: user.skype,
+            telegram: user.telegram,
+            twitter: user.twitter,
             lastUpdated: new Date(user.lastUpdated),
             created: new Date(user.created),
             userGroups: user.userGroups,
             username: userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
-            userRoles: userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
+            userRoles: userCredentials.userRoles?.map(userRole => ({ id: userRole.id, name: userRole.name })) || [],
             lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,
             access: user.access,
             openId: userCredentials.openId,
+            ldapId: userCredentials.ldapId,
+            externalAuth: userCredentials.externalAuth,
+            password: userCredentials.password,
+            accountExpiry: userCredentials.accountExpiry,
             authorities,
         };
     }
@@ -203,6 +293,12 @@ export class UserD2ApiRepository implements UserRepository {
             firstName: input.firstName,
             surname: input.surname,
             email: input.email,
+            phoneNumber: input.phoneNumber,
+            whatsApp: input.whatsApp,
+            facebookMessenger: input.facebookMessenger,
+            skype: input.skype,
+            telegram: input.telegram,
+            twitter: input.twitter,
             lastUpdated: input.lastUpdated.toISOString(),
             created: input.created.toISOString(),
             userGroups: input.userGroups,
@@ -215,6 +311,10 @@ export class UserD2ApiRepository implements UserRepository {
                 lastLogin: input.lastLogin?.toISOString() ?? "",
                 disabled: input.disabled,
                 openId: input.openId ?? "",
+                ldapId: input.ldapId ?? "",
+                externalAuth: input.externalAuth ?? "",
+                password: input.password ?? "",
+                accountExpiry: input.accountExpiry ?? "",
             },
         };
     }
@@ -226,6 +326,12 @@ const fields = {
     firstName: true,
     surname: true,
     email: true,
+    phoneNumber: true,
+    whatsApp: true,
+    facebookMessenger: true,
+    skype: true,
+    telegram: true,
+    twitter: true,
     lastUpdated: true,
     created: true,
     userGroups: { id: true, name: true },
@@ -238,7 +344,21 @@ const fields = {
         lastLogin: true,
         disabled: true,
         openId: true,
+        ldapId: true,
+        externalAuth: true,
+        password: true,
+        accountExpiry: true,
     },
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+
+const defaultColumns: Array<keyof User> = [
+    "username",
+    "firstName",
+    "surname",
+    "email",
+    "organisationUnits",
+    "lastLogin",
+    "disabled",
+];

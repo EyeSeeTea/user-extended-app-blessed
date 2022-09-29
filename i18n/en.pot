@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-12-07T09:36:35.426Z\n"
-"PO-Revision-Date: 2021-12-07T09:36:35.426Z\n"
+"POT-Creation-Date: 2022-02-17T08:02:57.121Z\n"
+"PO-Revision-Date: 2022-02-17T08:02:57.121Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -98,10 +98,49 @@ msgstr ""
 msgid "JSON Response"
 msgstr ""
 
+msgid "Saving users"
+msgstr ""
+
+msgid "Update strategy: "
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Assign roles to {{usernames}}"
+msgstr ""
+
+msgid "Assign groups to {{usernames}}"
+msgstr ""
+
 msgid "Back"
 msgstr ""
 
 msgid "Help"
+msgstr ""
+
+msgid "General info"
+msgstr ""
+
+msgid "Assignment"
+msgstr ""
+
+msgid "Other information"
+msgstr ""
+
+msgid "Error saving user"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "Please provide a valid identifier"
@@ -110,10 +149,34 @@ msgstr ""
 msgid "Please provide a valid email"
 msgstr ""
 
+msgid "Password should contain at least one lowercase letter"
+msgstr ""
+
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr ""
+
+msgid "Password should contain at least one number"
+msgstr ""
+
+msgid "Password should have at least one special character"
+msgstr ""
+
+msgid "Please provide a valid phone number"
+msgstr ""
+
+msgid "Please provide a valid international phone number (+0123456789)"
+msgstr ""
+
 msgid "First Name"
 msgstr ""
 
 msgid "Name"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Account expiration date"
 msgstr ""
 
 msgid "Surname"
@@ -125,7 +188,28 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+msgid "Phone Number"
+msgstr ""
+
+msgid "WhatsApp"
+msgstr ""
+
+msgid "Facebook Messenger"
+msgstr ""
+
+msgid "Skype"
+msgstr ""
+
+msgid "Telegram"
+msgstr ""
+
+msgid "Twitter"
+msgstr ""
+
 msgid "Disabled"
+msgstr ""
+
+msgid "External authentication only (OpenID or LDAP)"
 msgstr ""
 
 msgid "User Roles"
@@ -141,6 +225,15 @@ msgid "Data View Organisation Units"
 msgstr ""
 
 msgid "Open ID"
+msgstr ""
+
+msgid "LDAP identifier"
+msgstr ""
+
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
 msgstr ""
 
 msgid "Api URL"
@@ -221,9 +314,6 @@ msgstr ""
 msgid "And {{overflow}} more..."
 msgstr ""
 
-msgid "Saving users"
-msgstr ""
-
 msgid "Edit users"
 msgstr ""
 
@@ -236,8 +326,23 @@ msgstr ""
 msgid "Add user"
 msgstr ""
 
-msgid "Save"
+msgid "Delete"
 msgstr ""
 
-msgid "Delete"
+msgid "Edit user"
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Network error"
+msgstr ""
+
+msgid "Unable to load user {{id}}"
+msgstr ""
+
+msgid "Open in user management"
+msgstr ""
+
+msgid " and {{overflow}} more..."
 msgstr ""
