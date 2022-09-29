@@ -50,6 +50,7 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
                     filterByProgram: false,
                     selectAll: false,
                 }}
+                showNameSetting={true}
             />
 
             {!!message && <WarningBox warning={true} title={message} />}
