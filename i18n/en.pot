@@ -1,0 +1,348 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2022-02-17T08:02:57.121Z\n"
+"PO-Revision-Date: 2022-02-17T08:02:57.121Z\n"
+
+msgid "Enable users"
+msgstr ""
+
+msgid "Disable users"
+msgstr ""
+
+msgid "Remove users"
+msgstr ""
+
+msgid "Copy to clipboard"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "User {{user}} replicated successfully {{n}} times"
+msgstr ""
+
+msgid "Replicate {{user}}"
+msgstr ""
+
+msgid "Replicate"
+msgstr ""
+
+msgid "Value should be between {{min}} and {{max}}"
+msgstr ""
+
+msgid "Username. Example for two users: admin.$index -> admin.1, admin.2"
+msgstr ""
+
+msgid "Replicate error"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Columns to show in table"
+msgstr ""
+
+msgid "Column"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "Deleted"
+msgstr ""
+
+msgid "Ignored"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Identifier"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Import Results"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Users"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Summary"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
+msgid "JSON Response"
+msgstr ""
+
+msgid "Saving users"
+msgstr ""
+
+msgid "Update strategy: "
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Assign roles to {{usernames}}"
+msgstr ""
+
+msgid "Assign groups to {{usernames}}"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "General info"
+msgstr ""
+
+msgid "Assignment"
+msgstr ""
+
+msgid "Other information"
+msgstr ""
+
+msgid "Error saving user"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Please provide a valid identifier"
+msgstr ""
+
+msgid "Please provide a valid email"
+msgstr ""
+
+msgid "Password should contain at least one lowercase letter"
+msgstr ""
+
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr ""
+
+msgid "Password should contain at least one number"
+msgstr ""
+
+msgid "Password should have at least one special character"
+msgstr ""
+
+msgid "Please provide a valid phone number"
+msgstr ""
+
+msgid "Please provide a valid international phone number (+0123456789)"
+msgstr ""
+
+msgid "First Name"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Account expiration date"
+msgstr ""
+
+msgid "Surname"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Phone Number"
+msgstr ""
+
+msgid "WhatsApp"
+msgstr ""
+
+msgid "Facebook Messenger"
+msgstr ""
+
+msgid "Skype"
+msgstr ""
+
+msgid "Telegram"
+msgstr ""
+
+msgid "Twitter"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "External authentication only (OpenID or LDAP)"
+msgstr ""
+
+msgid "User Roles"
+msgstr ""
+
+msgid "User Groups"
+msgstr ""
+
+msgid "Organisation Units"
+msgstr ""
+
+msgid "Data View Organisation Units"
+msgstr ""
+
+msgid "Open ID"
+msgstr ""
+
+msgid "LDAP identifier"
+msgstr ""
+
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
+msgstr ""
+
+msgid "Api URL"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "API URL"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
+msgid "OU Output"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Copy in user"
+msgstr ""
+
+msgid "Assign to organisation units"
+msgstr ""
+
+msgid "Assign to data view organisation units"
+msgstr ""
+
+msgid "Assign roles"
+msgstr ""
+
+msgid "Assign groups"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Replicate user from template"
+msgstr ""
+
+msgid "Replicate user from table"
+msgstr ""
+
+msgid "Search by name or username..."
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Organisation units"
+msgstr ""
+
+msgid "Data view organisation units"
+msgstr ""
+
+msgid "And {{overflow}} more..."
+msgstr ""
+
+msgid "Edit users"
+msgstr ""
+
+msgid "Column settings"
+msgstr ""
+
+msgid "Error saving users"
+msgstr ""
+
+msgid "Add user"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Edit user"
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Network error"
+msgstr ""
+
+msgid "Unable to load user {{id}}"
+msgstr ""
+
+msgid "Open in user management"
+msgstr ""
+
+msgid " and {{overflow}} more..."
+msgstr ""

@@ -1,23 +1,90 @@
-# User App
+## Setup
 
-User App is a Dhis2 Web Application that provides an easy and integrated way to do common operations on Dhis2 users which would be burdensome to perform using the in-built Dhis2 User management application.
+Install dependencies:
 
-## Features
+```
+$ yarn install
+```
 
--   Landing page: it displays a list of users with some attributes information. The list allows sorting by some fields (click the column header) and single/multiple selections. You can also filter by name, role, groups and see only users you can manage.
--   Show details: it behaves as the regular show details in any Dhis2 instance. It shows a right side panel with some information about the user. This is also the action by default when clicking a row.
--   Assign to organisation units capture: Implemented for single and multiple selections\* allows setting Data capture and maintenance organisation units.
--   Assign to organisation units output: Implemented for single and multiple selections\* allows setting Data output and analysis organisation units.
--   Assign roles: Implemented for single and multiple selections\* allows assigning the roles to a user/s.
--   Assign to groups: Implemented for single and multiple selections\* allows assigning the user groups for a user/s.
--   Shortcut to regular dhis2 user management app
--   Replicate user: Implemented for single mode allows creating multiple users using a single users as starting point. Currently, two modes are available: 'From Template' and 'From table'.
+## Development
 
-\*In single mode, it works as the regular Dhis2 vanilla feature. For multiple selections, the changes can be saved using one of two strategies: merge or replace. The merge strategy will add the selected entities (organisation units, roles, etc) to the current values each user had, no values will be removed. Replace on the other hand overwrites any previous values and keep only those selected in this dialog.
+Start the development server:
 
-## Installation
+```
+$ PORT=8081 REACT_APP_DHIS2_BASE_URL="http://localhost:8080" yarn start
+```
 
-Just download the [zip file available for each release](https://github.com/EyeSeeTea/user-extended-app/releases) and install it in your Dhis2 instance using the App management application.
+Now in your browser, go to `http://localhost:8081`.
+
+Notes:
+
+-   Requests to DHIS2 will be transparently proxied (see `src/setupProxy.js`) from `http://localhost:8081/dhis2/path` to `http://localhost:8080/path` to avoid CORS and cross-domain problems.
+
+-   The optional environment variable `REACT_APP_DHIS2_AUTH=USERNAME:PASSWORD` forces some credentials to be used by the proxy. This variable is usually not set, so the app has the same user logged in at `REACT_APP_DHIS2_BASE_URL`.
+
+-   The optional environment variable `REACT_APP_PROXY_LOG_LEVEL` can be helpful to debug the proxyfied requests (accepts: "warn" | "debug" | "info" | "error" | "silent")
+
+-   Create a file `.env.local` (copy it from `.env`) to customize environment variables so you can simply run `yarn start`.
+
+-   [why-did-you-render](https://github.com/welldone-software/why-did-you-render) is installed, but it does not work when using standard react scripts (`yarn start`). Instead, use `yarn craco-start` to debug re-renders with WDYR. Note that hot reloading does not work out-of-the-box with [craco](https://github.com/gsoft-inc/craco).
+
+## Tests
+
+### Unit tests
+
+```
+$ yarn test
+```
+
+### Integration tests (Cypress)
+
+Create the required users for testing (`cypress/support/App.ts`) in your instance and run:
+
+```
+$ export CYPRESS_EXTERNAL_API="http://localhost:8080"
+$ export CYPRESS_ROOT_URL=http://localhost:8081
+
+# non-interactive
+$ yarn cy:e2e:run
+
+# interactive UI
+$ yarn cy:e2e:open
+```
+
+## Build app ZIP
+
+```
+$ yarn build
+```
+
+## Some development tips
+
+### Structure
+
+-   `i18n/`: Contains literal translations (gettext format)
+-   `public/`: Main app folder with a `index.html`, exposes the APP, contains the feedback-tool.
+-   `src/pages`: Main React components.
+-   `src/domain`: Domain layer of the app (clean architecture)
+-   `src/data`: Data of the app (clean architecture)
+-   `src/components`: Reusable React components.
+-   `src/types`: `.d.ts` file types for modules without TS definitions.
+-   `src/utils`: Misc utilities.
+-   `src/locales`: Auto-generated, do not update or add to the version control.
+-   `cypress/integration/`: Cypress integration tests.
+
+### i18n
+
+```
+$ yarn localize
+```
+
+### App context
+
+The file `src/contexts/app-context.ts` holds some general context so typical infrastructure objects (`api`, `d2`, ...) are readily available. Add your own global objects if necessary.
+
+### Scripts
+
+Check the example script, entry `"script-example"`in `package.json`->scripts and `src/scripts/example.ts`.
 
 ## Documentation
 
@@ -31,6 +98,3 @@ You can find a detailed user and developer guide [here](https://docs.google.com/
 
 We’d like to hear your thoughts on the app in general, improvements, new features or any of the technologies being used. Just drop as a line at hello@eyeseetea.com and let us know! If you prefer, you can also create a new issue on our GitHub repository. Note that you will have to register and be logged in to GitHub to create a new issue.
 
-## License
-
-This app is licensed under GPLv3. Please respect the terms of that license.
