@@ -14,7 +14,7 @@ const queryFields = [
     "lastUpdated",
     "access",
     "href",
-    "userCredentials[username,disabled,userRoles[id,displayName],lastLogin]",
+    "userCredentials[username,disabled,userRoles[id,displayName],lastLogin,openId]",
     "userGroups[id,displayName,publicAccess]",
     "organisationUnits[id,code,shortName,displayName]",
     "dataViewOrganisationUnits[id,code,shortName,displayName]",
