@@ -5,8 +5,8 @@ import Popover from "material-ui/Popover/Popover";
 import Menu from "material-ui/Menu/Menu";
 import MenuItem from "material-ui/MenuItem/MenuItem";
 import ImportExportIcon from "material-ui/svg-icons/communication/import-export";
-import ExportIcon from "material-ui/svg-icons/navigation/arrow-upward";
-import ImportIcon from "material-ui/svg-icons/navigation/arrow-downward";
+import ImportIcon from "material-ui/svg-icons/navigation/arrow-upward";
+import ExportIcon from "material-ui/svg-icons/navigation/arrow-downward";
 import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
@@ -166,7 +166,7 @@ class ImportExport extends React.Component {
                             onClick={exportToJsonAndSave}
                         />
                         <MenuItem
-                            leftIcon={<ImportIcon />}
+                            leftIcon={<ExportIcon />}
                             primaryText={t("export_empty_template")}
                             onClick={exportEmptyTemplate}
                         />
