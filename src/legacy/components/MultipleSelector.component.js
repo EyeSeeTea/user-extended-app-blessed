@@ -3,6 +3,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import OrgUnitForm from "./OrgUnitForm";
 import _ from "lodash";
+
+import FilteredMultiSelect from "./FilteredMultiSelect.component";
+
 class MultipleSelector extends React.Component {
     constructor(props, context) {
         super(props, context);
@@ -57,11 +60,25 @@ class MultipleSelector extends React.Component {
     };
 
     renderForm = () => {
-        const { field, orgUnitRoots } = this.props;
+        const { field, options, orgUnitRoots } = this.props;
         const { selected } = this.state;
         const t = this.getTranslation.bind(this);
 
         switch (field) {
+            case "userGroups":
+            case "userRoles": {
+                const selectOptions = options.map(o => ({ value: o.id, text: o.displayName }));
+                const selectedIds = _(selected).map("id").value();
+
+                return (
+                    <FilteredMultiSelect
+                        options={selectOptions}
+                        selected={selectedIds}
+                        onRequestClose={this.closeDialog}
+                        onChange={this.onMultiSelectChange}
+                    />
+                );
+            }
             case "organisationUnits":
                 return (
                     <OrgUnitForm

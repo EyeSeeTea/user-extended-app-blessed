@@ -29,8 +29,16 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
-        const { page, pageSize, search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const {
+            page,
+            pageSize,
+            search,
+            sorting = { field: "firstName", order: "asc" },
+            rootJunction,
+            filters,
+        } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+        const areFiltersEnabled = _(otherFilters).values().some();
 
         return apiToFuture(
             this.api.models.users.get({
@@ -39,6 +47,7 @@ export class UserD2ApiRepository implements UserRepository {
                 pageSize,
                 query: search !== "" ? search : undefined,
                 filter: otherFilters,
+                rootJunction: areFiltersEnabled ? rootJunction : undefined,
                 order: `${sorting.field}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
@@ -127,7 +136,7 @@ export class UserD2ApiRepository implements UserRepository {
                             ldapId: user?.userCredentials.ldapId,
                             externalAuth: user?.userCredentials.externalAuth,
                             password: user?.userCredentials.password,
-                            accountExpiry: user?.userCredentials.accountExpiry,
+                            // accountExpiry: user?.userCredentials.accountExpiry,
                         },
                     };
                 });
@@ -239,7 +248,8 @@ export class UserD2ApiRepository implements UserRepository {
 
     private toDomainUser(input: ApiUser): User {
         const { userCredentials, ...user } = input;
-        const authorities = _(userCredentials.userRoles.map(userRole => userRole.authorities))
+        const authorities = _(userCredentials.userRoles)
+            .map(userRole => userRole.authorities)
             .flatten()
             .uniq()
             .value();
@@ -261,7 +271,7 @@ export class UserD2ApiRepository implements UserRepository {
             userGroups: user.userGroups,
             username: userCredentials.username,
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
-            userRoles: userCredentials.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name })),
+            userRoles: userCredentials.userRoles?.map(userRole => ({ id: userRole.id, name: userRole.name })) || [],
             lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
@@ -271,7 +281,7 @@ export class UserD2ApiRepository implements UserRepository {
             ldapId: userCredentials.ldapId,
             externalAuth: userCredentials.externalAuth,
             password: userCredentials.password,
-            accountExpiry: userCredentials.accountExpiry,
+            // accountExpiry: userCredentials.accountExpiry,
             authorities,
         };
     }
@@ -304,7 +314,7 @@ export class UserD2ApiRepository implements UserRepository {
                 ldapId: input.ldapId ?? "",
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
-                accountExpiry: input.accountExpiry ?? "",
+                // accountExpiry: input.accountExpiry ?? "",
             },
         };
     }
@@ -337,7 +347,7 @@ const fields = {
         ldapId: true,
         externalAuth: true,
         password: true,
-        accountExpiry: true,
+        // accountExpiry: true,
     },
 } as const;
 

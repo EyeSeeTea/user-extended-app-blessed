@@ -124,6 +124,7 @@ class OrgUnitDialog extends React.Component {
                         filterByProgram: false,
                         selectAll: false,
                     }}
+                    showNameSetting={true}
                 />
             </ConfirmationDialog>
         );

@@ -16,7 +16,7 @@ const requiredPropertiesOnImport = ["username", "password", "firstName", "surnam
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
-const userCredentialsFields = ["username", "password", "userRoles", "disabled"];
+const userCredentialsFields = ["username", "password", "userRoles", "disabled", "openId"];
 
 const columnNameFromPropertyMapping = {
     id: "ID",
@@ -35,6 +35,7 @@ const columnNameFromPropertyMapping = {
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
     disabled: "Disabled",
+    openId: "Open ID",
 };
 
 const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
