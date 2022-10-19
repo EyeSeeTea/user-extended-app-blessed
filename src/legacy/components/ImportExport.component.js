@@ -11,7 +11,7 @@ import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
 
-import { exportToCsv, exportTemplateToCsv, importFromCsv, exportToJson, importFromJson } from "../models/userHelpers";
+import { exportTemplateToCsv, importFromCsv, importFromJson, exportUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 
@@ -63,7 +63,7 @@ class ImportExport extends React.Component {
         this.setState({ isProcessing: true });
 
         try {
-            const csvString = await exportToCsv(d2, columns, filterOptions, { orgUnitsField });
+            const csvString = await exportUsers(d2, columns, filterOptions, { orgUnitsField }, false);
             this.saveFile(csvString, "users", "csv");
         } finally {
             this.closeMenu();
@@ -77,7 +77,7 @@ class ImportExport extends React.Component {
         this.setState({ isProcessing: true });
 
         try {
-            const jsonString = await exportToJson(d2, columns, filterOptions, { orgUnitsField });
+            const jsonString = await exportUsers(d2, columns, filterOptions, { orgUnitsField }, true);
             this.saveFile(jsonString, "users", "json");
         } finally {
             this.closeMenu();

@@ -107,14 +107,14 @@ function formatDate(stringDate) {
     return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
 }
 
-function namesFromCollection(collection, field) {
-    return _(collection.toArray ? collection.toArray() : collection)
-        .map(field)
-        .join(fieldSplitChar);
-}
+function namesFromCollection(collection, field, toArray) {
+    const namesArray = _(collection.toArray ? collection.toArray() : collection).map(field);
 
-function namesArrayFromCollection(collection, field) {
-    return _(collection.toArray ? collection.toArray() : collection).map(field);
+    if (toArray) {
+        return namesArray;
+    } else {
+        return namesArray.join(fieldSplitChar);
+    }
 }
 
 function collectionFromNames(user, rowIndex, field, objectsByName) {
@@ -150,7 +150,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     return { objects, warnings, info };
 }
 
-function getPlainUser(user, { orgUnitsField }) {
+function getPlainUser(user, { orgUnitsField }, toArray) {
     const userCredentials = user.userCredentials || {};
 
     return {
@@ -159,28 +159,10 @@ function getPlainUser(user, { orgUnitsField }) {
         lastUpdated: formatDate(user.lastUpdated),
         lastLogin: formatDate(userCredentials.lastLogin),
         created: formatDate(user.created),
-        userRoles: namesFromCollection(userCredentials.userRoles, "displayName"),
-        userGroups: namesFromCollection(user.userGroups, "displayName"),
-        organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField),
-        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
-        disabled: userCredentials.disabled,
-        openId: userCredentials.openId,
-    };
-}
-
-function getPlainJsonUser(user, { orgUnitsField }) {
-    const userCredentials = user.userCredentials || {};
-
-    return {
-        ...user,
-        username: userCredentials.username,
-        lastUpdated: formatDate(user.lastUpdated),
-        lastLogin: formatDate(userCredentials.lastLogin),
-        created: formatDate(user.created),
-        userRoles: namesArrayFromCollection(userCredentials.userRoles, "displayName"),
-        userGroups: namesArrayFromCollection(user.userGroups, "displayName"),
-        organisationUnits: namesArrayFromCollection(user.organisationUnits, orgUnitsField),
-        dataViewOrganisationUnits: namesArrayFromCollection(user.dataViewOrganisationUnits, orgUnitsField),
+        userRoles: namesFromCollection(userCredentials.userRoles, "displayName", toArray),
+        userGroups: namesFromCollection(user.userGroups, "displayName", toArray),
+        organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
+        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
         disabled: userCredentials.disabled,
         openId: userCredentials.openId,
     };
@@ -449,15 +431,21 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
     }
 }
 
-/* Get users from Dhis2 API and export given columns to a CSV string */
-async function exportToCsv(d2, columns, filterOptions, { orgUnitsField }) {
+/* Get users from Dhis2 API and export given columns to a CSV or JSON string */
+async function exportUsers(d2, columns, filterOptions, { orgUnitsField }, exportToJSON) {
     const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
     const { users } = await getUserList(d2, filters, listOptions);
-    const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }), columns));
-    const header = columns.map(getColumnNameFromProperty);
-    const table = [header, ...userRows];
 
-    return Papa.unparse(table);
+    if (exportToJSON) {
+        const userRows = users.map(user => _.pick(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
+        return JSON.stringify(userRows, null, 4);
+    } else {
+        const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
+        const header = columns.map(getColumnNameFromProperty);
+        const table = [header, ...userRows];
+
+        return Papa.unparse(table);
+    }
 }
 
 async function exportTemplateToCsv() {
@@ -472,16 +460,6 @@ async function exportTemplateToCsv() {
     const table = [header];
 
     return Papa.unparse(table);
-}
-
-/* Get users from Dhis2 API and export given columns to a Json string */
-async function exportToJson(d2, columns, filterOptions, { orgUnitsField }) {
-    const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
-    const { users } = await getUserList(d2, filters, listOptions);
-    const usersObject = users.map(user => _.pick(getPlainJsonUser(user, { orgUnitsField }), columns));
-    const usersJson = JSON.stringify(usersObject, null, 4);
-
-    return usersJson;
 }
 
 async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
@@ -504,15 +482,17 @@ async function importFromJson(d2, file, { maxUsers, orgUnitsField }) {
     let jsonObject = JSON.parse(jsonText);
 
     jsonObject.forEach(obj => {
-        obj.userRoles = obj.userRoles.join("||") ?? undefined;
-        obj.userGroups = obj.userGroups.join("||") ?? undefined;
-        obj.organisationUnits = obj.organisationUnits.join("||") ?? undefined;
-        obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits.join("||") ?? undefined;
+        obj.userRoles = obj.userRoles?.join("||");
+        obj.userGroups = obj.userGroups?.join("||");
+        obj.organisationUnits = obj.organisationUnits?.join("||");
+        obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits?.join("||");
     });
 
     const csvText = Papa.unparse(jsonObject, { delimiter: "," });
+    const response = await importFromCsv(d2, csvText, { maxUsers, orgUnitsField });
+    const jsonWarnings = csvWarningsToJsonWarning(response.warnings)
 
-    return importFromCsv(d2, csvText, { maxUsers, orgUnitsField });
+    return { ...response, warnings: jsonWarnings };
 }
 
 async function getExistingUsers(d2, options = {}) {
@@ -523,6 +503,12 @@ async function getExistingUsers(d2, options = {}) {
         ...options,
     });
     return users;
+}
+
+function csvWarningsToJsonWarning(warnings) {
+    return warnings.map(warning => {
+        return `${warning}`.replace(/csv-row=\d+ /, "").replace("csv-column", "json-key");
+    })
 }
 
 function addItems(items1, items2, shouldAdd, updateStrategy) {
@@ -583,10 +569,9 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
 }
 
 export {
-    exportToCsv,
     exportTemplateToCsv,
     importFromCsv,
-    exportToJson,
+    exportUsers,
     importFromJson,
     updateUsers,
     saveUsers,
