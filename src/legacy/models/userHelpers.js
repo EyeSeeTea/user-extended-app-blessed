@@ -490,7 +490,7 @@ async function importFromJson(d2, file, { maxUsers, orgUnitsField }) {
 
     const csvText = Papa.unparse(jsonObject, { delimiter: "," });
     const response = await importFromCsv(d2, csvText, { maxUsers, orgUnitsField });
-    const jsonWarnings = csvWarningsToJsonWarning(response.warnings)
+    const jsonWarnings = csvWarningsToJsonWarning(response.warnings);
 
     return { ...response, warnings: jsonWarnings };
 }
@@ -508,7 +508,7 @@ async function getExistingUsers(d2, options = {}) {
 function csvWarningsToJsonWarning(warnings) {
     return warnings.map(warning => {
         return `${warning}`.replace(/csv-row=\d+ /, "").replace("csv-column", "json-key");
-    })
+    });
 }
 
 function addItems(items1, items2, shouldAdd, updateStrategy) {
