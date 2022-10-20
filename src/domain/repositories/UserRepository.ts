@@ -23,6 +23,7 @@ export interface ListOptions {
     sorting?: { field: string; order: "asc" | "desc" };
     filters?: ListFilters;
     canManage?: string;
+    rootJunction?: "AND" | "OR";
 }
 
 export type ListFilterType = "in" | "eq";

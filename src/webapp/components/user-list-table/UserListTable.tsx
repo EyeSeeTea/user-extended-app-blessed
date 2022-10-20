@@ -31,8 +31,10 @@ import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
     onChangeVisibleColumns,
+    onChangeSearch,
     filters,
     canManage,
+    rootJunction,
     children,
 }) => {
     const { compositionRoot, currentUser } = useAppContext();
@@ -239,31 +241,38 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
             console.debug("Reloading", reloadKey);
+            onChangeSearch(search);
 
             // SEE: src/legacy/models/userList.js LINE 29+
             if (canManage === "true") {
-                const userIdList = await compositionRoot.users.listAllIds({
-                    search,
-                    sorting,
-                    filters,
-                    canManage,
-                }).toPromise();
+                const userIdList = await compositionRoot.users
+                    .listAllIds({
+                        search,
+                        sorting,
+                        filters,
+                        canManage,
+                        rootJunction,
+                    })
+                    .toPromise();
 
                 if (userIdList) {
                     filters["id"] = ["in", userIdList];
                 }
             }
 
-            return compositionRoot.users.list({
+            return compositionRoot.users
+                .list({
                     search,
                     page,
                     pageSize,
                     sorting,
                     filters,
                     canManage,
-                }).toPromise();
+                    rootJunction,
+                })
+                .toPromise();
         },
-        [compositionRoot, filters, canManage, reloadKey]
+        [compositionRoot, filters, canManage, rootJunction, reloadKey, onChangeSearch]
     );
 
     const refreshAllIds = useCallback(
@@ -381,7 +390,9 @@ export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loadi
     openSettings: () => void;
     filters: ListFilters;
     canManage: string;
+    rootJunction: "AND" | "OR";
     onChangeVisibleColumns: (columns: string[]) => void;
+    onChangeSearch: (search: string) => void;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
