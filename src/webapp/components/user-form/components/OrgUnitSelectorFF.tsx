@@ -24,8 +24,8 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
 
     const onChange = useCallback(
         (selected: string[]) => {
-            selected = selected.flatMap(item => item.split("/").at(-1) ?? []);
-            input.onChange(selected.map(id => ({ id })));
+            const selectedIds = selected.flatMap(item => item.split("/").at(-1) ?? []);
+            input.onChange(selectedIds.map(id => ({ id })));
         },
         [input]
     );
