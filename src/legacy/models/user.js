@@ -60,7 +60,9 @@ class User {
     }
 
     async replicate(newUsersAttributes) {
-        const ownedProperties = this.d2.models.user.getOwnedPropertyNames();
+        // NOTE: externalAuth makes the replicate function fail because the IDs has to be unique
+        const externalAuthKeys = ["externalAuth", "openId", "ldapId"];
+        const ownedProperties = this.d2.models.user.getOwnedPropertyNames().filter(item => !externalAuthKeys.includes(item));
         const userJson = pick(ownedProperties, this.attributes);
         const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
