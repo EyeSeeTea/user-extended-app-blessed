@@ -131,11 +131,11 @@ export class ListHybrid extends React.Component {
             this.setState({ disableUsers: { open: true, users: existingUsers, action } });
         });
 
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
-            if (datasets !== undefined) {
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ users }) => {
+            if (users !== undefined) {
                 const existingUsers = await getExistingUsers(this.context.d2, {
                     fields: ":owner,userCredentials",
-                    filter: "id:in:[" + datasets.join(",") + "]",
+                    filter: "id:in:[" + users.join(",") + "]",
                 });
                 this.setState({ removeUsers: { open: true, users: existingUsers } });
             }

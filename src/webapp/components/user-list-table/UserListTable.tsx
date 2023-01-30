@@ -184,7 +184,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Remove"),
                     icon: <Icon>delete</Icon>,
                     multiple: true,
-                    onClick: datasets => deleteUserStore.setState({ datasets }),
+                    onClick: users => deleteUserStore.setState({ users }),
                     isActive: checkAccess(["delete"]),
                 },
                 {
