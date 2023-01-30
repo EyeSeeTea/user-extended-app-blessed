@@ -134,7 +134,7 @@ export class ListHybrid extends React.Component {
         const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
             if (datasets !== undefined) {
                 const existingUsers = await getExistingUsers(this.context.d2, {
-                    fields: ":owner",
+                    fields: ":owner,userCredentials",
                     filter: "id:in:[" + datasets.join(",") + "]",
                 });
                 this.setState({ removeUsers: { open: true, users: existingUsers } });
