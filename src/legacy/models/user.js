@@ -40,6 +40,7 @@ class User {
 
         const newUsersAttributes = newUserFields.map(userFields => ({
             id: userFields.id,
+            username: userFields.username,
             email: optional(userFields.email),
             firstName: optional(userFields.firstName),
             surname: optional(userFields.surname),
