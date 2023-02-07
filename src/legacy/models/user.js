@@ -70,7 +70,12 @@ class User {
             .filter(item => !unusedProperties.includes(item));
         if (!ownedProperties.includes("userCredentials")) ownedProperties.push("userCredentials");
         const userJson = pick(ownedProperties, this.attributes);
-        if (userJson.userCredentials?.lastLogin !== undefined) userJson.userCredentials.lastLogin = undefined;
+
+        if (userJson.userCredentials?.lastLogin !== undefined) delete userJson.userCredentials.lastLogin;
+        if (userJson.userCredentials?.lastUpdatedBy !== undefined) delete userJson.userCredentials.lastUpdatedBy;
+        if (userJson.userCredentials?.createdBy !== undefined) delete userJson.userCredentials.createdBy;
+        if (userJson.userCredentials?.user !== undefined) delete userJson.userCredentials.user;
+
         const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
         const { userGroups } = await this.api.get("/userGroups", {
