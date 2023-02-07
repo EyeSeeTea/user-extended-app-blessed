@@ -68,7 +68,9 @@ class User {
         const ownedProperties = this.d2.models.user
             .getOwnedPropertyNames()
             .filter(item => !unusedProperties.includes(item));
+        if (!ownedProperties.includes("userCredentials")) ownedProperties.push("userCredentials");
         const userJson = pick(ownedProperties, this.attributes);
+        if (userJson.userCredentials?.lastLogin !== undefined) userJson.userCredentials.lastLogin = undefined;
         const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
         const { userGroups } = await this.api.get("/userGroups", {
