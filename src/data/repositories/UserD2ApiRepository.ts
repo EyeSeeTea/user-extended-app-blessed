@@ -34,6 +34,7 @@ export class UserD2ApiRepository implements UserRepository {
             pageSize,
             search,
             sorting = { field: "firstName", order: "asc" },
+            canManage,
             rootJunction,
             filters,
         } = options;
@@ -46,6 +47,7 @@ export class UserD2ApiRepository implements UserRepository {
                 page,
                 pageSize,
                 query: search !== "" ? search : undefined,
+                canManage: canManage === "true" ? "true" : undefined,
                 filter: otherFilters,
                 rootJunction: areFiltersEnabled ? rootJunction : undefined,
                 order: `${sorting.field}:${sorting.order}`,
@@ -57,7 +59,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public listAllIds(options: ListOptions): FutureData<string[]> {
-        const { search, sorting = { field: "firstName", order: "asc" }, filters } = options;
+        const { search, sorting = { field: "firstName", order: "asc" }, filters, canManage } = options;
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
 
         return apiToFuture(
@@ -65,6 +67,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields: { id: true },
                 paging: false,
                 query: search !== "" ? search : undefined,
+                canManage: canManage === "true" ? "true" : undefined,
                 filter: otherFilters,
                 order: `${sorting.field}:${sorting.order}`,
             })
