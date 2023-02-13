@@ -33,6 +33,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     onChangeVisibleColumns,
     onChangeSearch,
     filters,
+    canManage,
     rootJunction,
     children,
 }) => {
@@ -234,13 +235,30 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
 
     const refreshRows = useCallback(
-        (
+        async (
             search: string,
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
             console.debug("Reloading", reloadKey);
             onChangeSearch(search);
+
+            // SEE: src/legacy/models/userList.js LINE 29+
+            if (canManage === "true") {
+                const userIdList = await compositionRoot.users
+                    .listAllIds({
+                        search,
+                        sorting,
+                        filters,
+                        canManage,
+                        rootJunction,
+                    })
+                    .toPromise();
+
+                if (userIdList) {
+                    filters["id"] = ["in", userIdList];
+                }
+            }
 
             return compositionRoot.users
                 .list({
@@ -249,11 +267,12 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     pageSize,
                     sorting,
                     filters,
+                    canManage,
                     rootJunction,
                 })
                 .toPromise();
         },
-        [compositionRoot, filters, rootJunction, reloadKey, onChangeSearch]
+        [compositionRoot, filters, canManage, rootJunction, reloadKey, onChangeSearch]
     );
 
     const refreshAllIds = useCallback(
@@ -263,10 +282,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     search,
                     sorting,
                     filters,
+                    canManage,
                 })
                 .toPromise();
         },
-        [compositionRoot, filters]
+        [compositionRoot, filters, canManage]
     );
 
     const tableProps = useObjectsTable(baseConfig, refreshRows, refreshAllIds);
@@ -369,6 +389,7 @@ function isStateActionVisible(action: string) {
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
+    canManage: string;
     rootJunction: "AND" | "OR";
     onChangeVisibleColumns: (columns: string[]) => void;
     onChangeSearch: (search: string) => void;
