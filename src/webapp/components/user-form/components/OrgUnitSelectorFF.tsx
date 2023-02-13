@@ -32,7 +32,7 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
 
     useEffect(() => {
         const ids = input.value.map(({ id }: NamedRef) => id);
-        compositionRoot.metadata.getOrgUnitPaths(ids).run(
+        return compositionRoot.metadata.getOrgUnitPaths(ids).run(
             items => setSelectedPaths(items.map(({ path }) => path)),
             error => console.error(error)
         );

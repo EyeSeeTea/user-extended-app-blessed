@@ -299,7 +299,8 @@ export class ListHybrid extends React.Component {
     };
 
     _onFiltersChange = filters => {
-        this.setState({ filters }, this.filterList);
+        const canManage = filters.canManage;
+        this.setState({ filters, canManage }, this.filterList);
     };
 
     _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
@@ -335,6 +336,7 @@ export class ListHybrid extends React.Component {
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            canManage={this.state?.canManage}
                             rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                             onChangeSearch={this._updateQuery}
