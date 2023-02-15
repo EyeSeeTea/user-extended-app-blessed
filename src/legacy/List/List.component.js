@@ -131,11 +131,11 @@ export class ListHybrid extends React.Component {
             this.setState({ disableUsers: { open: true, users: existingUsers, action } });
         });
 
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ datasets }) => {
-            if (datasets !== undefined) {
+        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ users }) => {
+            if (users !== undefined) {
                 const existingUsers = await getExistingUsers(this.context.d2, {
-                    fields: ":owner",
-                    filter: "id:in:[" + datasets.join(",") + "]",
+                    fields: ":owner,userCredentials",
+                    filter: "id:in:[" + users.join(",") + "]",
                 });
                 this.setState({ removeUsers: { open: true, users: existingUsers } });
             }
@@ -158,7 +158,13 @@ export class ListHybrid extends React.Component {
     setUsersEnableState = async (users, action) => {
         const newValue = action === "disable";
         const response = await updateUsers(this.context.d2, users, user => {
-            return user.userCredentials.disabled !== newValue ? set("userCredentials.disabled", newValue, user) : null;
+            if (user?.userCredentials?.disabled !== newValue) {
+                return set("userCredentials.disabled", newValue, user);
+            } else if (user?.disabled !== newValue) {
+                return set("disabled", newValue, user);
+            } else {
+                return null;
+            }
         });
 
         if (response.success) {
@@ -293,7 +299,8 @@ export class ListHybrid extends React.Component {
     };
 
     _onFiltersChange = filters => {
-        this.setState({ filters }, this.filterList);
+        const canManage = filters.canManage;
+        this.setState({ filters, canManage }, this.filterList);
     };
 
     _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
@@ -329,6 +336,7 @@ export class ListHybrid extends React.Component {
                             loading={this.state.isLoading}
                             openSettings={this._openSettings}
                             filters={this.state.filters?.filters}
+                            canManage={this.state?.canManage}
                             rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                             onChangeSearch={this._updateQuery}

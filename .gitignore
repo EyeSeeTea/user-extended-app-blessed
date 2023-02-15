@@ -38,3 +38,7 @@ cypress/fixtures/
 
 # IntelliJ
 .idea/*
+
+# VSCode
+.vscode
+remote-debug-profile

@@ -392,7 +392,7 @@ function postMetadata(api, payload) {
 async function updateUsers(d2, users, mapper) {
     const api = d2.Api.getApi();
     const existingUsers = await getExistingUsers(d2, {
-        fields: ":owner",
+        fields: ":owner,userCredentials",
         filter: "id:in:[" + _(users).map("id").join(",") + "]",
     });
     const usersToSave = _(existingUsers).map(mapper).compact().value();
@@ -411,7 +411,7 @@ async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersT
 async function saveUsers(d2, users) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
-        fields: ":owner,userGroups[id]",
+        fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
@@ -422,7 +422,7 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
     const api = d2.Api.getApi();
     if (copyUserGroups) {
         const existingUsersToUpdate = await getExistingUsers(d2, {
-            fields: ":owner,userGroups[id]",
+            fields: ":owner,userCredentials,userGroups[id]",
             filter: "userCredentials.username:in:[" + _(users).map("userCredentials.username").join(",") + "]",
         });
         return getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate);
