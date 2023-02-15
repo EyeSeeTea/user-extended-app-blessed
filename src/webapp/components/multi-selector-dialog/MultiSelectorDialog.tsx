@@ -19,6 +19,8 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
     const [users, setUsers] = useState<User[]>([]);
     const [items, setItems] = useState<NamedRef[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
+    const [filtered, setFiltered] = useState<string[]>([]);
+    const [filteredValue, setFilteredValue] = useState<string>("");
     const [updateStrategy, setUpdateStrategy] = useState<UpdateStrategy>("merge");
     const title = getTitle(type, users);
 
@@ -92,8 +94,24 @@ export const MultiSelectorDialog: React.FC<MultiSelectorDialogProps> = ({ type, 
 
             <Transfer
                 options={buildTransferOptions(items)}
-                selected={selected}
-                onChange={({ selected }) => setSelected(selected)}
+                selected={
+                    filtered.length === 0 && filteredValue !== "" ? [] : filtered.length !== 0 ? filtered : selected
+                }
+                onChange={({ selected: picked }) => {
+                    setSelected(filtered.length !== 0 ? _.difference(selected, filtered) : picked);
+                    setFiltered([]);
+                }}
+                onFilterChangePicked={filtered => {
+                    setFilteredValue(filtered.value);
+                    const filteredItems = items.filter(item =>
+                        item.name.toLowerCase().includes(filtered.value.toLowerCase())
+                    );
+                    const filteredIds = selected.filter(select => {
+                        return filteredItems.some(filtered => filtered.id === select);
+                    });
+
+                    setFiltered(filteredIds);
+                }}
                 filterable={true}
                 filterablePicked={true}
                 filterPlaceholder={i18n.t("Search")}

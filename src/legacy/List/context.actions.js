@@ -11,7 +11,7 @@ export async function assignToOrgUnits(userIds, field, titleKey) {
         filter: `id:in:[${userIds.join(",")}]`,
     };
     const users = (await d2.models.users.list(listOptions)).toArray();
-    const usernames = users.map(user => user.userCredentials.username);
+    const usernames = users.map(user => (user.userCredentials ? user.userCredentials.username : user.username));
     const info = _m.joinString(d2.i18n.getTranslation.bind(d2.i18n), usernames, 3, ", ");
     const userOrgUnitRoots = await getOrgUnitsRoots();
 

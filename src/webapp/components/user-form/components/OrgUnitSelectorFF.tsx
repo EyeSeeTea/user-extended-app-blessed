@@ -23,15 +23,16 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
     const message = validationText ?? meta.error ?? meta.submitError;
 
     const onChange = useCallback(
-        ({ selected }: { selected: string[] }) => {
-            input.onChange(selected.map(id => ({ id })));
+        (selected: string[]) => {
+            const selectedIds = selected.flatMap(item => item.split("/").at(-1) ?? []);
+            input.onChange(selectedIds.map(id => ({ id })));
         },
         [input]
     );
 
     useEffect(() => {
         const ids = input.value.map(({ id }: NamedRef) => id);
-        compositionRoot.metadata.getOrgUnitPaths(ids).run(
+        return compositionRoot.metadata.getOrgUnitPaths(ids).run(
             items => setSelectedPaths(items.map(({ path }) => path)),
             error => console.error(error)
         );
