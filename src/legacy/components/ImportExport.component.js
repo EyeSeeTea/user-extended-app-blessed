@@ -5,13 +5,13 @@ import Popover from "material-ui/Popover/Popover";
 import Menu from "material-ui/Menu/Menu";
 import MenuItem from "material-ui/MenuItem/MenuItem";
 import ImportExportIcon from "material-ui/svg-icons/communication/import-export";
-import ExportIcon from "material-ui/svg-icons/navigation/arrow-upward";
-import ImportIcon from "material-ui/svg-icons/navigation/arrow-downward";
+import ImportIcon from "material-ui/svg-icons/navigation/arrow-upward";
+import ExportIcon from "material-ui/svg-icons/navigation/arrow-downward";
 import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
 
-import { exportToCsv, exportTemplateToCsv, importFromCsv } from "../models/userHelpers";
+import { exportTemplateToCsv, importFromCsv, importFromJson, exportUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 
@@ -63,8 +63,22 @@ class ImportExport extends React.Component {
         this.setState({ isProcessing: true });
 
         try {
-            const csvString = await exportToCsv(d2, columns, filterOptions, { orgUnitsField });
-            this.saveCsv(csvString, "users");
+            const csvString = await exportUsers(d2, columns, filterOptions, { orgUnitsField }, false);
+            this.saveFile(csvString, "users", "csv");
+        } finally {
+            this.closeMenu();
+            this.setState({ isProcessing: false });
+        }
+    };
+
+    exportToJsonAndSave = async () => {
+        const { d2, columns, filterOptions, settings } = this.props;
+        const orgUnitsField = settings.get("organisationUnitsField");
+        this.setState({ isProcessing: true });
+
+        try {
+            const jsonString = await exportUsers(d2, columns, filterOptions, { orgUnitsField }, true);
+            this.saveFile(jsonString, "users", "json");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
@@ -76,29 +90,33 @@ class ImportExport extends React.Component {
 
         try {
             const csvString = await exportTemplateToCsv(this.props.d2);
-            this.saveCsv(csvString, "empty-user-template");
+            this.saveFile(csvString, "empty-user-template", "csv");
         } finally {
             this.closeMenu();
             this.setState({ isProcessing: false });
         }
     };
 
-    saveCsv = (contents, name) => {
+    saveFile = (contents, name, fileType) => {
         const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
         const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-        const filename = `${name}-${datetime}.csv`;
+        const filename = `${name}-${datetime}.${fileType}`;
         FileSaver.saveAs(blob, filename);
         snackActions.show({ message: `${this.t("table_exported")}: ${filename}` });
     };
 
-    importFromCsv = () => {
+    importFromFile = () => {
         const { onImport, maxUsers, settings } = this.props;
         const orgUnitsField = settings.get("organisationUnitsField");
 
-        fileDialog({ accept: ".csv" })
+        fileDialog({ accept: ["text/csv", "application/json"] })
             .then(files => {
                 this.setState({ isProcessing: true });
-                return importFromCsv(this.props.d2, files[0], { maxUsers, orgUnitsField });
+                if (files[0].type === "text/csv") {
+                    return importFromCsv(this.props.d2, files[0], { maxUsers, orgUnitsField });
+                } else if (files[0].type === "application/json") {
+                    return importFromJson(this.props.d2, files.item(0), { maxUsers, orgUnitsField });
+                }
             })
             .then(result => onImport(result))
             .catch(err => snackActions.show({ message: err.toString() }))
@@ -110,7 +128,14 @@ class ImportExport extends React.Component {
 
     render() {
         const { isMenuOpen, anchorEl, isProcessing } = this.state;
-        const { popoverConfig, closeMenu, importFromCsv, exportToCsvAndSave, exportEmptyTemplate } = this;
+        const {
+            popoverConfig,
+            closeMenu,
+            importFromFile,
+            exportToCsvAndSave,
+            exportEmptyTemplate,
+            exportToJsonAndSave,
+        } = this;
         const { t } = this;
 
         return (
@@ -129,10 +154,19 @@ class ImportExport extends React.Component {
                     onRequestClose={closeMenu}
                 >
                     <Menu>
-                        <MenuItem leftIcon={<ExportIcon />} primaryText={t("import")} onClick={importFromCsv} />
-                        <MenuItem leftIcon={<ImportIcon />} primaryText={t("export")} onClick={exportToCsvAndSave} />
+                        <MenuItem leftIcon={<ImportIcon />} primaryText={t("import")} onClick={importFromFile} />
                         <MenuItem
-                            leftIcon={<ImportIcon />}
+                            leftIcon={<ExportIcon />}
+                            primaryText={t("export_to_CSV")}
+                            onClick={exportToCsvAndSave}
+                        />
+                        <MenuItem
+                            leftIcon={<ExportIcon />}
+                            primaryText={t("export_to_JSON")}
+                            onClick={exportToJsonAndSave}
+                        />
+                        <MenuItem
+                            leftIcon={<ExportIcon />}
                             primaryText={t("export_empty_template")}
                             onClick={exportEmptyTemplate}
                         />

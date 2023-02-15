@@ -40,28 +40,42 @@ class User {
 
         const newUsersAttributes = newUserFields.map(userFields => ({
             id: userFields.id,
+            username: userFields.username,
             email: optional(userFields.email),
             firstName: optional(userFields.firstName),
             surname: optional(userFields.surname),
             userCredentials: {
                 id: generateUid(),
-                openId: nullable(userFields.openId),
-                ldapId: nullable(userFields.ldapId),
                 code: nullable(userFields.code),
                 userInfo: { id: userFields.id },
                 username: userFields.username,
                 password: userFields.password,
             },
-            organisationUnits: optional(userFields.organisationUnits),
-            dataViewOrganisationUnits: optional(userFields.dataViewOrganisationUnits),
+            organisationUnits: userFields.organisationUnits?.map(item => ({ id: optional(item.id) })),
+            dataViewOrganisationUnits: userFields.dataViewOrganisationUnits?.map(item => ({ id: optional(item.id) })),
         }));
 
         return this.replicate(newUsersAttributes);
     }
 
     async replicate(newUsersAttributes) {
-        const ownedProperties = this.d2.models.user.getOwnedPropertyNames();
+        /*  
+        NOTE:
+        externalAuth makes the replicate function fail because the IDs has to be unique
+        lastLogin, createdBy and created should not be copied from original user
+        */
+        const unusedProperties = ["externalAuth", "openId", "ldapId", "lastLogin", "created", "createdBy"];
+        const ownedProperties = this.d2.models.user
+            .getOwnedPropertyNames()
+            .filter(item => !unusedProperties.includes(item));
+        if (!ownedProperties.includes("userCredentials")) ownedProperties.push("userCredentials");
         const userJson = pick(ownedProperties, this.attributes);
+
+        if (userJson.userCredentials?.lastLogin !== undefined) delete userJson.userCredentials.lastLogin;
+        if (userJson.userCredentials?.lastUpdatedBy !== undefined) delete userJson.userCredentials.lastUpdatedBy;
+        if (userJson.userCredentials?.createdBy !== undefined) delete userJson.userCredentials.createdBy;
+        if (userJson.userCredentials?.user !== undefined) delete userJson.userCredentials.user;
+
         const newUsers = newUsersAttributes.map(newUserAttributes => merge(userJson, newUserAttributes));
         const userGroupIds = this.attributes.userGroups.map(userGroup => userGroup.id);
         const { userGroups } = await this.api.get("/userGroups", {
