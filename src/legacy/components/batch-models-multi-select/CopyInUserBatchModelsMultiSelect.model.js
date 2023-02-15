@@ -48,6 +48,7 @@ export default class CopyInUserBatchModelsMultiSelectModel {
             copyAccessElements,
             updateStrategy
         );
+        if (!payload.success) throw new Error(`${payload.error}`);
         return payload;
     }
 
