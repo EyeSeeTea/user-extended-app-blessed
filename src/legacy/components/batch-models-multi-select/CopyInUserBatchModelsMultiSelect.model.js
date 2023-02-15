@@ -32,7 +32,7 @@ export default class CopyInUserBatchModelsMultiSelectModel {
     }
     async getUserInfo(ids) {
         const users = await getExistingUsers(this.d2, {
-            fields: ":owner,userGroups[id]",
+            fields: ":owner,userCredentials,userGroups[id]",
             filter: "id:in:[" + ids.join(",") + "]",
         });
         return users;
@@ -48,6 +48,7 @@ export default class CopyInUserBatchModelsMultiSelectModel {
             copyAccessElements,
             updateStrategy
         );
+        if (!payload.success) throw new Error(`${payload.error}`);
         return payload;
     }
 
