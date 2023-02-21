@@ -131,6 +131,8 @@ export class UserD2ApiRepository implements UserRepository {
                         telegram: user?.telegram,
                         twitter: user?.twitter,
                         userRoles: user?.userCredentials.userRoles,
+                        username: user?.userCredentials.username,
+                        disabled: user?.userCredentials.disabled,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,
