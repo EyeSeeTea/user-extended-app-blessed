@@ -130,6 +130,7 @@ export class UserD2ApiRepository implements UserRepository {
                         skype: user?.skype,
                         telegram: user?.telegram,
                         twitter: user?.twitter,
+                        userRoles: user?.userCredentials.userRoles,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,
