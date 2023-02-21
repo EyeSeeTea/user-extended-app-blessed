@@ -317,6 +317,7 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
             id: (baseUser.userCredentials && baseUser.userCredentials.id) || generateUid(),
             userInfo: { id: userRoot.id },
         },
+        ...clean(_(userFields).pick(userCredentialsFields.filter(item => item !== 'password')).value()),
     };
 }
 
