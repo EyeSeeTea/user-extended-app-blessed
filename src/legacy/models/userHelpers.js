@@ -18,6 +18,8 @@ const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
 const userCredentialsFields = ["username", "password", "userRoles", "disabled", "openId"];
 
+const user238MissingFields = ["username", "userRoles", "disabled"];
+
 const columnNameFromPropertyMapping = {
     id: "ID",
     username: "Username",
@@ -317,6 +319,7 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
             id: (baseUser.userCredentials && baseUser.userCredentials.id) || generateUid(),
             userInfo: { id: userRoot.id },
         },
+        ...clean(_(userFields).pick(user238MissingFields).value()),
     };
 }
 

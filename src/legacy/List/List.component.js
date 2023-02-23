@@ -159,9 +159,7 @@ export class ListHybrid extends React.Component {
         const newValue = action === "disable";
         const response = await updateUsers(this.context.d2, users, user => {
             if (user?.userCredentials?.disabled !== newValue) {
-                return set("userCredentials.disabled", newValue, user);
-            } else if (user?.disabled !== newValue) {
-                return set("disabled", newValue, user);
+                return set("disabled", newValue, set("userCredentials.disabled", newValue, user));
             } else {
                 return null;
             }
