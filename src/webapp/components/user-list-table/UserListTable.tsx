@@ -229,10 +229,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 pageSizeInitialValue: 25,
             },
             searchBoxLabel: i18n.t("Search by name or username..."),
-            onActionButtonClick: () => navigate("/new"),
+            // FIXME: Disabled as long as user creation via /new does not work.
+            // onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, navigate]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload]);
 
     const refreshRows = useCallback(
         async (
