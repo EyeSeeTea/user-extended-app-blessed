@@ -328,6 +328,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 };
 
 export const columns: TableColumn<User>[] = [
+    { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
     { name: "username", sortable: false, text: i18n.t("Username") },
     { name: "firstName", sortable: true, text: i18n.t("First name") },
     { name: "surname", sortable: true, text: i18n.t("Surname") },
