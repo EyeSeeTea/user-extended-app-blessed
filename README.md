@@ -1,100 +1,106 @@
-## Setup
+# Start package for [Bulma](http://bulma.io)
 
-Install dependencies:
+Tiny npm package that includes the `npm` **dependencies** you need to **build your own website** with Bulma.
 
+<a href="http://bulma.io"><img src="https://raw.githubusercontent.com/jgthms/bulma-start/master/bulma-start.png" alt="Bulma: a Flexbox CSS framework" style="max-width:100%;" width="600" height="315"></a>
+
+## Install
+
+```sh
+npm install bulma-start
 ```
-$ yarn install
-```
+_or_
 
-## Development
-
-Start the development server:
-
-```
-$ PORT=8081 REACT_APP_DHIS2_BASE_URL="http://localhost:8080" yarn start
-```
-
-Now in your browser, go to `http://localhost:8081`.
-
-Notes:
-
--   Requests to DHIS2 will be transparently proxied (see `src/setupProxy.js`) from `http://localhost:8081/dhis2/path` to `http://localhost:8080/path` to avoid CORS and cross-domain problems.
-
--   The optional environment variable `REACT_APP_DHIS2_AUTH=USERNAME:PASSWORD` forces some credentials to be used by the proxy. This variable is usually not set, so the app has the same user logged in at `REACT_APP_DHIS2_BASE_URL`.
-
--   The optional environment variable `REACT_APP_PROXY_LOG_LEVEL` can be helpful to debug the proxyfied requests (accepts: "warn" | "debug" | "info" | "error" | "silent")
-
--   Create a file `.env.local` (copy it from `.env`) to customize environment variables so you can simply run `yarn start`.
-
--   [why-did-you-render](https://github.com/welldone-software/why-did-you-render) is installed, but it does not work when using standard react scripts (`yarn start`). Instead, use `yarn craco-start` to debug re-renders with WDYR. Note that hot reloading does not work out-of-the-box with [craco](https://github.com/gsoft-inc/craco).
-
-## Tests
-
-### Unit tests
-
-```
-$ yarn test
+```sh
+yarn add bulma-start
 ```
 
-### Integration tests (Cypress)
+## What's included
 
-Create the required users for testing (`cypress/support/App.ts`) in your instance and run:
+The `npm` dependencies included in `package.json` are:
 
-```
-$ export CYPRESS_EXTERNAL_API="http://localhost:8080"
-$ export CYPRESS_ROOT_URL=http://localhost:8081
+* <code>[bulma](https://github.com/jgthms/bulma)</code>
+* <code>[node-sass](https://github.com/sass/node-sass)</code> to compile your own Sass file
+* <code>[postcss-cli](https://github.com/postcss/postcss-cli)</code> and <code>[autoprefixer](https://github.com/postcss/autoprefixer)</code> to add support for older browsers
+* <code>[babel-cli](https://babeljs.io/docs/usage/cli/)</code>, <code>[babel-preset-env](https://github.com/babel/babel-preset-env)</code> and <code>[babel-preset-es2015-ie](https://github.com/jmcriffey/babel-preset-es2015-ie)</code> for compiling ES6 JavaScript files
 
-# non-interactive
-$ yarn cy:e2e:run
+Apart from `package.json`, the following files are included:
 
-# interactive UI
-$ yarn cy:e2e:open
-```
+* `.babelrc` configuration file for [Babel](https://babeljs.io/)
+* `.gitignore` common [Git](https://git-scm.com/) ignored files
+* `index.html` this HTML5 file
+* `_sass/main.scss` a basic SCSS file that **imports Bulma** and explains how to **customize** your styles, and compiles to `css/main.css`
+* `_javascript/main.js` an ES6 JavaScript that compiles to `lib/main.js`
 
-## Build app ZIP
 
-```
-$ yarn build
-```
+## Get your feet wet
 
-## Some development tips
+This package is meant to provide a **good starting point** for working with Bulma.
 
-### Structure
+When installing this package with the commands above, it landed in `$HOME/node_packages/bulma-start`.
+In order to use it as a **template** for your **project**, you might consider copying it to a better suited location:
 
--   `i18n/`: Contains literal translations (gettext format)
--   `public/`: Main app folder with a `index.html`, exposes the APP, contains the feedback-tool.
--   `src/pages`: Main React components.
--   `src/domain`: Domain layer of the app (clean architecture)
--   `src/data`: Data of the app (clean architecture)
--   `src/components`: Reusable React components.
--   `src/types`: `.d.ts` file types for modules without TS definitions.
--   `src/utils`: Misc utilities.
--   `src/locales`: Auto-generated, do not update or add to the version control.
--   `cypress/integration/`: Cypress integration tests.
-
-### i18n
-
-```
-$ yarn localize
+```sh
+cd $HOME/projects
+cp -a $HOME/node_modules/bulma-start my-bulma-project
 ```
 
-### App context
+Alternatively, you could do something similar with a GitHub clone as well.
 
-The file `src/contexts/app-context.ts` holds some general context so typical infrastructure objects (`api`, `d2`, ...) are readily available. Add your own global objects if necessary.
+```sh
+cd $HOME/projects
+git clone https://github.com/jgthms/bulma-start
+mv bulma-start my-bulma-project
+rm -rf my-bulma-project/.git     # cut its roots
+```
 
-### Scripts
+Now, that you prepared the groundwork for your project, set up Bulma and run the watchers:
 
-Check the example script, entry `"script-example"`in `package.json`->scripts and `src/scripts/example.ts`.
+```sh
+cd my-bulma-project
+npm install
+npm start
+```
 
-## Documentation
+As long as `npm start` is running, it will **watch** your changes. You can edit `_sass/main.scss` and `_javascript/main.js` at will. Changes are **immediately** compiled to their destinations, where `index.html` will pick them up upon reload in your browser.
 
-You can find a detailed user and developer guide [here](https://docs.google.com/document/d/1XdU57_WvAEJv-grdnXkpqh1K9DY5QUYl-8Bl0vEuboM/edit#).
+Some controlling output is written to the `npm start` console in that process:
 
-## Documentation
+```sh
+_javascript/main.js -> lib/main.js
 
-You can find a detailed user and developer guide [here](https://docs.google.com/document/d/1XdU57_WvAEJv-grdnXkpqh1K9DY5QUYl-8Bl0vEuboM/edit#).
+=> changed: $HOME/projects/start-with-bulma/_sass/main.scss
+Rendering Complete, saving .css file...
+Wrote CSS to $HOME/projects/start-with-bulma/css/main.css
+```
 
-## Feedback
+Use `npm run` to show all available commands:
 
-We’d like to hear your thoughts on the app in general, improvements, new features or any of the technologies being used. Just drop as a line at hello@eyeseetea.com and let us know! If you prefer, you can also create a new issue on our GitHub repository. Note that you will have to register and be logged in to GitHub to create a new issue.
+```sh
+Lifecycle scripts included in bulma-start:
+  start
+    npm-run-all --parallel css-watch js-watch
 
+available via `npm run-script`:
+  css-build
+    node-sass _sass/main.scss css/main.css
+  css-deploy
+    npm run css-build && npm run css-postcss
+  css-postcss
+    postcss --use autoprefixer --output css/main.css css/main.css
+  css-watch
+    npm run css-build -- --watch
+  deploy
+    npm run css-deploy && npm run js-build
+  js-build
+    babel _javascript --out-dir lib
+  js-watch
+    npm run js-build -- --watch
+```
+
+If you want to learn more, follow these links: [Bulma homepage](http://bulma.io) and [Documentation](http://bulma.io/documentation/overview/start/).
+
+
+## Copyright and license
+
+Code copyright 2017 Jeremy Thomas. Code released under [the MIT license](https://github.com/jgthms/bulma-start/blob/master/LICENSE).
