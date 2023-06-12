@@ -5,7 +5,7 @@ import { MarkdownViewer } from "../../components/markdown-viewer/MarkdownViewer"
 import { PageHeader } from "../../components/page-header/PageHeader";
 import i18n from "../../../locales";
 
-export const AboutPage:React.FC = React.memo(() => {
+export const AboutPage: React.FC = React.memo(() => {
     const navigate = useNavigate();
 
     const contents = [
@@ -33,10 +33,10 @@ export const AboutPage:React.FC = React.memo(() => {
             <div className="about-content">
                 <MarkdownViewer source={contents} center={true} />
                 <LogoWrapper>
-                    <Logo alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" />
-                    <Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" />
-                    <Logo alt={i18n.t("EyeSeeTea")} src="img/logo-eyeseetea.png" />
-                    <Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" />
+                    <div><Logo alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" /></div>
+                    <div><Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" /></div>
+                    <div><Logo alt={i18n.t("EyeSeeTea")} src="img/logo-eyeseetea.png" /></div>
+                    <div><Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" /></div>
                 </LogoWrapper>
             </div>
         </StyledLanding>
@@ -66,6 +66,10 @@ const LogoWrapper = styled.div`
     margin: 0 1em;
     padding: 3em 0;
     justify-content: center;
+    div {
+        display: flex;
+        align-items:center;
+    }
 `;
 
 const Logo = styled.img`
