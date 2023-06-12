@@ -5,7 +5,7 @@ import { MarkdownViewer } from "../../components/markdown-viewer/MarkdownViewer"
 import { PageHeader } from "../../components/page-header/PageHeader";
 import i18n from "../../../locales";
 
-export const AboutPage = () => {
+export const AboutPage:React.FC = React.memo(() => {
     const navigate = useNavigate();
 
     const contents = [
@@ -41,7 +41,7 @@ export const AboutPage = () => {
             </div>
         </StyledLanding>
     );
-};
+});
 
 const StyledLanding = styled.div`
     & > div.about-content {
