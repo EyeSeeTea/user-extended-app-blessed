@@ -34,7 +34,7 @@ export const AboutPage: React.FC = React.memo(() => {
                 <MarkdownViewer source={contents} center={true} />
                 <LogoWrapper>
                     <div>
-                        <LogoSmall alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" />
+                        <Logo size="large" alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" />
                     </div>
                     <div>
                         <Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" />
@@ -80,12 +80,11 @@ const LogoWrapper = styled.div`
     }
 `;
 
-const Logo = styled.img`
-    width: 200px;
-    margin: 0 50px;
-`;
+interface LogoProps {
+    size?: "default" | "large";
+}
 
-const LogoSmall = styled.img`
-    width: 250px;
+const Logo = styled.img<LogoProps>`
+    width: ${({size})=>size==="large"?"250px":"200px"};
     margin: 0 50px;
 `;
