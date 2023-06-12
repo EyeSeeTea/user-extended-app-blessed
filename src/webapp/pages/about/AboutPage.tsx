@@ -33,10 +33,18 @@ export const AboutPage: React.FC = React.memo(() => {
             <div className="about-content">
                 <MarkdownViewer source={contents} center={true} />
                 <LogoWrapper>
-                    <div><Logo alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" /></div>
-                    <div><Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" /></div>
-                    <div><Logo alt={i18n.t("EyeSeeTea")} src="img/logo-eyeseetea.png" /></div>
-                    <div><Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" /></div>
+                    <div>
+                        <Logo alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" />
+                    </div>
+                    <div>
+                        <Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" />
+                    </div>
+                    <div>
+                        <Logo alt={i18n.t("EyeSeeTea")} src="img/logo-eyeseetea.png" />
+                    </div>
+                    <div>
+                        <Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" />
+                    </div>
                 </LogoWrapper>
             </div>
         </StyledLanding>
@@ -68,7 +76,7 @@ const LogoWrapper = styled.div`
     justify-content: center;
     div {
         display: flex;
-        align-items:center;
+        align-items: center;
     }
 `;
 
