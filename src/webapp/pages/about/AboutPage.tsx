@@ -10,7 +10,9 @@ export const AboutPage = () => {
 
     const contents = [
         `#### ${i18n.t("Distributed under GNU GLPv3")}`,
-        i18n.t("User-Extended App is a DHIS2 Web Application that provides an easy and integrated way to perform common operations to DHIS2 users which would be burdensome to perform using the in-built DHIS2 User management application."),
+        i18n.t(
+            "User-Extended App is a DHIS2 Web Application that provides an easy and integrated way to perform common operations to DHIS2 users which would be burdensome to perform using the in-built DHIS2 User management application."
+        ),
         i18n.t(
             "This application has been funded by the the Norwegian Refugee Council (NRC), the WHO Global Malaria Programme and Samaritan’s Purse to support countries in strengthening the collection and use of health data by using DHIS2. The application has been developed by [EyeSeeTea SL](http://eyeseetea.com). Source code, documentation and release notes can be found at the [EyeSeetea GitHub Project Page](https://eyeseetea.github.io/user-extended-app-blessed/)",
             { nsSeparator: false }
@@ -42,13 +44,13 @@ export const AboutPage = () => {
 };
 
 const StyledLanding = styled.div`
-    
     & > div.about-content {
         background-color: rgb(39, 102, 150);
         padding: 0px;
         border-radius: 18px;
         margin: 1em 10px 20px 10px;
-        box-shadow: rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px, rgba(0, 0, 0, 0.2) 0px 5px 5px -3px
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px,
+            rgba(0, 0, 0, 0.2) 0px 5px 5px -3px;
     }
 
     ${MarkdownViewer} {
