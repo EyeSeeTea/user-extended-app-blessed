@@ -8,21 +8,22 @@ interface AboutProps {
 }
 
 export const About: React.FC<AboutProps> = React.memo(({ visible }) => {
-
-    return <>
-        {visible && 
+    return (
+        <>
+            {visible && (
                 <AboutButton to="/about">
-                    <InfoIcon fontSize="small"/>
+                    <InfoIcon fontSize="small" />
                 </AboutButton>
-        }
-    </>;
+            )}
+        </>
+    );
 });
 
 const AboutButton = styled(Link)`
     position: fixed;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     bottom: -3px;
     right: 140px;
     z-index: 10002;

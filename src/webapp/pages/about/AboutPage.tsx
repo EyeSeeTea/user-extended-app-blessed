@@ -7,7 +7,7 @@ import i18n from "../../../locales";
 
 export const AboutPage = () => {
     const navigate = useNavigate();
-    
+
     const contents = [
         `#### ${i18n.t("Distributed under GNU GLPv3")}`,
         i18n.t("Home page App is a DHIS2 application that aims to provide direct links to DHIS2 applications."),
@@ -27,7 +27,7 @@ export const AboutPage = () => {
 
     return (
         <StyledLanding>
-            <PageHeader title={i18n.t("About User Extended App")} onBackClick={goBack}/>
+            <PageHeader title={i18n.t("About User Extended App")} onBackClick={goBack} />
             <div>
                 <MarkdownViewer source={contents} center={true} />
                 <LogoWrapper>
@@ -41,7 +41,6 @@ export const AboutPage = () => {
 };
 
 const StyledLanding = styled.div`
-
     & > div {
         padding: 0px;
         margin: 0px 10px 20px 10px;
