@@ -10,13 +10,13 @@ export const AboutPage = () => {
 
     const contents = [
         `#### ${i18n.t("Distributed under GNU GLPv3")}`,
-        i18n.t("Home page App is a DHIS2 application that aims to provide direct links to DHIS2 applications."),
+        i18n.t("User-Extended App is a DHIS2 Web Application that provides an easy and integrated way to perform common operations to DHIS2 users which would be burdensome to perform using the in-built DHIS2 User management application."),
         i18n.t(
-            "This application has been entirely funded by the WHO Global Malaria Programme to support countries using DHIS2 in strengthening the collection and use of health data. The application has been designed by [Lushomo](https://lushomo.net) and developed by [EyeSeeTea SL](http://eyeseetea.com). The source code and release notes can be found at the [WHO GitHub repository](https://github.com/EyeSeeTea/home-page-app). If you wish to contribute to the development of Home Page App with new features, please contact [EyeSeeTea](mailto:hello@eyeseetea.com). To continue developing the tool in a coordinated manner please always contact also [WHO](mailto:integrated-data@who.int)",
+            "This application has been funded by the the Norwegian Refugee Council (NRC), the WHO Global Malaria Programme and Samaritan’s Purse to support countries in strengthening the collection and use of health data by using DHIS2. The application has been developed by [EyeSeeTea SL](http://eyeseetea.com). Source code, documentation and release notes can be found at the [EyeSeetea GitHub Project Page](https://eyeseetea.github.io/user-extended-app-blessed/)",
             { nsSeparator: false }
         ),
         i18n.t(
-            "*Disclaimer: The WHO has developed this application to support countries build capacity for health data collection and use. WHO provides a series of tutorials to support countries to use the WHO DHIS2 standard packages which can be found in the [WHO Tutorial GitHub repository](https://github.com/WorldHealthOrganization/DHIS2-tutorials) and can be installed in the application. WHO provides no assurance as to the validity, accuracy or completeness of any other tutorials built by the application's user community.*",
+            "If you wish to contribute to the development of User Extended App with new features, please contact [EyeSeeTea](mailto:hello@eyeseetea.com).",
             { nsSeparator: false }
         ),
     ].join("\n\n");
@@ -28,12 +28,13 @@ export const AboutPage = () => {
     return (
         <StyledLanding>
             <PageHeader title={i18n.t("About User Extended App")} onBackClick={goBack} />
-            <div>
+            <div className="about-content">
                 <MarkdownViewer source={contents} center={true} />
                 <LogoWrapper>
+                    <Logo alt={i18n.t("Samaritan's Purse")} src="img/logo-samaritans.svg" />
                     <Logo alt={i18n.t("World Health Organization")} src="img/logo-who.svg" />
                     <Logo alt={i18n.t("EyeSeeTea")} src="img/logo-eyeseetea.png" />
-                    <Logo alt={i18n.t("Lushomo")} src="img/logo-lushomo.png" />
+                    <Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" />
                 </LogoWrapper>
             </div>
         </StyledLanding>
@@ -41,23 +42,27 @@ export const AboutPage = () => {
 };
 
 const StyledLanding = styled.div`
-    & > div {
+    
+    & > div.about-content {
+        background-color: rgb(39, 102, 150);
         padding: 0px;
-        margin: 0px 10px 20px 10px;
+        border-radius: 18px;
+        margin: 1em 10px 20px 10px;
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px, rgba(0, 0, 0, 0.2) 0px 5px 5px -3px
     }
 
     ${MarkdownViewer} {
-        margin-right: 28px;
+        padding: 1rem 2.25rem 0 2.25rem;
         text-align-last: unset;
-        *:first-child {
-            margin-top: 0;
-        }
     }
 `;
 
 const LogoWrapper = styled.div`
     display: flex;
-    margin-top: 3em;
+    flex-wrap: wrap;
+    row-gap: 2em;
+    margin: 0 1em;
+    padding: 3em 0;
     justify-content: center;
 `;
 

@@ -37,7 +37,7 @@ export const SimpleMarkdownViewer: React.FC<{ className?: string; source: string
 );
 
 export const MarkdownViewer = styled(SimpleMarkdownViewer)`
-    color: black;
+    color: white;
     padding: 5px 20px 0 20px;
     text-align-last: ${props => (props.center ? "center" : "unset")};
 
@@ -67,7 +67,7 @@ export const MarkdownViewer = styled(SimpleMarkdownViewer)`
     }
 
     a {
-        color: black;
+        color: white;
     }
 
     details > summary {
