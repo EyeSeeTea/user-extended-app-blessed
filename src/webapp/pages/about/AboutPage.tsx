@@ -85,6 +85,6 @@ interface LogoProps {
 }
 
 const Logo = styled.img<LogoProps>`
-    width: ${({size})=>size==="large"?"250px":"200px"};
+    width: ${({ size }) => (size === "large" ? "250px" : "200px")};
     margin: 0 50px;
 `;
