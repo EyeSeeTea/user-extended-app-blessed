@@ -110,7 +110,7 @@ function formatDate(stringDate) {
 }
 
 function namesFromCollection(collection, field, toArray) {
-    const namesArray = _(collection.toArray ? collection.toArray() : collection).map(field);
+    const namesArray = _(collection?.toArray ? collection.toArray() : collection).map(field);
 
     if (toArray) {
         return namesArray;
