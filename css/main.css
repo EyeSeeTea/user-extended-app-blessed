@@ -7705,3 +7705,14 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   background-color: #276696;
   padding: 3rem 1.5rem 6rem;
   color: #ffffff; }
+
+.logo {
+  width: auto;
+  height: 64px; 
+}
+@media (max-width: 425px) {
+    .logo {
+      width: auto;
+      height: 18px; 
+    }
+}
