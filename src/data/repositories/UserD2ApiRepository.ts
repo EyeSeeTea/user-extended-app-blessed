@@ -133,6 +133,8 @@ export class UserD2ApiRepository implements UserRepository {
                         userRoles: user?.userCredentials.userRoles,
                         username: user?.userCredentials.username,
                         disabled: user?.userCredentials.disabled,
+                        openId: user?.userCredentials.openId,
+                        password: user?.userCredentials.password,
                         userCredentials: {
                             ...existingUser.userCredentials,
                             disabled: user?.userCredentials.disabled,

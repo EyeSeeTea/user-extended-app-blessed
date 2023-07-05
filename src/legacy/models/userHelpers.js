@@ -18,7 +18,7 @@ const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
 const userCredentialsFields = ["username", "password", "userRoles", "disabled", "openId"];
 
-const user238MissingFields = ["username", "userRoles", "disabled"];
+const user238MissingFields = ["username", "userRoles", "disabled", "openId", "password"];
 
 const columnNameFromPropertyMapping = {
     id: "ID",
