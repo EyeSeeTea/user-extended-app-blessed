@@ -3,7 +3,7 @@ import LoadingMask from "d2-ui/lib/loading-mask/LoadingMask.component";
 import TextField from "material-ui/TextField/TextField";
 import Action from "d2-ui/lib/action/Action";
 import { Observable } from "rxjs/Rx";
-import OrgUnitTree from "d2-ui/lib/org-unit-tree/OrgUnitTree.component";
+import { OrganisationUnitTree } from "@dhis2/ui";
 import OrgUnitSelectByLevel from "d2-ui/lib/org-unit-select/OrgUnitSelectByLevel.component";
 import OrgUnitSelectByGroup from "d2-ui/lib/org-unit-select/OrgUnitSelectByGroup.component";
 import OrgUnitSelectAll from "d2-ui/lib/org-unit-select/OrgUnitSelectAll.component";
@@ -93,7 +93,7 @@ class OrgUnitForm extends React.Component {
         this.props.onChange(newSelected);
     }
 
-    toggleOrgUnit(ev, orgUnitModel) {
+    toggleOrgUnit(orgUnitModel) {
         const orgUnit = _(orgUnitModel).pick(["id", "shortName", "path", "displayName"]).value();
         const newSelected = _(this.props.selected).find(selectedOu => selectedOu.path === orgUnit.path)
             ? this.props.selected.filter(selectedOu => selectedOu.path !== orgUnit.path)
@@ -107,16 +107,17 @@ class OrgUnitForm extends React.Component {
         if (this.state.rootOrgUnits.length) {
             return (
                 <div style={{ maxHeight: 350, maxWidth: 480, overflow: "auto" }}>
-                    {this.state.rootOrgUnits.map(rootOu => (
-                        <OrgUnitTree
-                            key={rootOu.id}
-                            selected={selectedPaths}
-                            root={rootOu}
-                            onSelectClick={this.toggleOrgUnit}
-                            emitModel
-                            initiallyExpanded={[rootOu.path]}
-                        />
-                    ))}
+                    {this.state.rootOrgUnits.map(rootOu => {
+                        return (
+                            <OrganisationUnitTree
+                                key={rootOu.id}
+                                selected={selectedPaths}
+                                roots={[rootOu.id]}
+                                onChange={this.toggleOrgUnit}
+                                initiallyExpanded={[rootOu.path]}
+                            />
+                        );
+                    })}
                 </div>
             );
         }
