@@ -14,7 +14,7 @@ export const AboutPage: React.FC = React.memo(() => {
             "User-Extended App is a DHIS2 Web Application that provides an easy and integrated way to perform common operations to DHIS2 users which would be burdensome to perform using the in-built DHIS2 User management application."
         ),
         i18n.t(
-            "This application has been funded by the the Norwegian Refugee Council (NRC), the WHO Global Malaria Programme and Samaritan’s Purse to support countries in strengthening the collection and use of health data by using DHIS2. The application has been developed by [EyeSeeTea SL](http://eyeseetea.com). Source code, documentation and release notes can be found at the [EyeSeetea GitHub Project Page](https://eyeseetea.github.io/user-extended-app-blessed/)",
+            "This application has been funded by the the Norwegian Refugee Council (NRC), the WHO Global Malaria Programme, Samaritan’s Purse and Medecins Sans Frontières (MSF) to support countries in strengthening the collection and use of health data by using DHIS2. The application has been developed by [EyeSeeTea SL](http://eyeseetea.com). Source code, documentation and release notes can be found at the [EyeSeetea GitHub Project Page](https://eyeseetea.github.io/user-extended-app-blessed/)",
             { nsSeparator: false }
         ),
         i18n.t(
@@ -44,6 +44,9 @@ export const AboutPage: React.FC = React.memo(() => {
                     </div>
                     <div>
                         <Logo alt={i18n.t("Norwegian Refugee Council")} src="img/logo-nrc.svg" />
+                    </div>
+                    <div>
+                        <Logo alt={i18n.t("MSF")} src="img/logo-msf.svg" />
                     </div>
                 </LogoWrapper>
             </div>
