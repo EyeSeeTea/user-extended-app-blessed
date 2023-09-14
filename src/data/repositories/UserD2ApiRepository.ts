@@ -314,6 +314,7 @@ export class UserD2ApiRepository implements UserRepository {
             dataViewOrganisationUnits: input.dataViewOrganisationUnits,
             access: input.access,
             userCredentials: {
+                id: input.id,
                 username: input.username,
                 userRoles: input.userRoles.map(userRole => ({ id: userRole.id, name: userRole.name, authorities: [] })),
                 lastLogin: input.lastLogin?.toISOString() ?? "",
@@ -347,6 +348,7 @@ const fields = {
     dataViewOrganisationUnits: { id: true, name: true },
     access: true,
     userCredentials: {
+        id: true,
         username: true,
         userRoles: { id: true, name: true, authorities: true },
         lastLogin: true,
