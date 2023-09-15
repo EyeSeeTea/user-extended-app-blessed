@@ -28,7 +28,8 @@ function CopyInUserDialog(props, context) {
             parents={props.user}
             onCancel={props.onCancel}
             getTitle={users => getTitle(getTranslation, users)}
-            onSuccess={getTranslation("user_configuration_copied")}
+            translationMessage={getTranslation("user_configuration_copied")}
+            onSuccess={props.onSuccess}
             onError={getTranslation("user_configuration_copied_error")}
         />
     );

@@ -6,6 +6,8 @@ import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
+import { getInstance as getD2 } from "d2/lib/d2";
+import _m from "../utils/lodash-mixins";
 import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
@@ -18,13 +20,9 @@ import Settings from "../models/settings";
 import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import { getCompactTextForModels } from "../utils/i18n";
-import copyInUserStore from "./copyInUser.store";
-import deleteUserStore from "./deleteUser.store";
-import enableStore from "./enable.store";
 import Filters from "./Filters.component";
 import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
-import replicateUserStore from "./replicateUser.store";
 
 const initialSorting = ["name", "asc"];
 
@@ -50,6 +48,7 @@ export class ListHybrid extends React.Component {
 
     componentWillUnmount = () => {
         this.observerDisposables.forEach(disposable => disposable.dispose?.());
+        snackActions.hide();
     };
 
     registerDisposable = disposable => {
@@ -64,6 +63,7 @@ export class ListHybrid extends React.Component {
         super(props, context);
 
         this.state = {
+            reloadTableKey: 1,
             listFilterOptions: {},
             filters: {},
             pager: {
@@ -119,38 +119,7 @@ export class ListHybrid extends React.Component {
             this.setAssignState("orgunitassignment", orgunitassignmentState);
         });
 
-        const replicateUserDialogStoreDisposable = replicateUserStore.subscribe(replicateUser => {
-            this.setAssignState("replicateUser", replicateUser);
-        });
-
-        const enableStoreDisposable = enableStore.subscribe(async ({ users, action }) => {
-            const existingUsers = await getExistingUsers(this.context.d2, {
-                fields: ":owner",
-                filter: "id:in:[" + users.join(",") + "]",
-            });
-            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
-        });
-
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ users }) => {
-            if (users !== undefined) {
-                const existingUsers = await getExistingUsers(this.context.d2, {
-                    fields: ":owner,userCredentials",
-                    filter: "id:in:[" + users.join(",") + "]",
-                });
-                this.setState({ removeUsers: { open: true, users: existingUsers } });
-            }
-            this.filterList();
-        });
-
-        const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
-            this.setAssignState("copyUsers", copyUsers);
-        });
-
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
-        this.registerDisposable(replicateUserDialogStoreDisposable);
-        this.registerDisposable(deleteUserStoreDisposable);
-        this.registerDisposable(enableStoreDisposable);
-        this.registerDisposable(userCopyUserDialogStoreDisposable);
 
         this.filterList();
     };
@@ -170,6 +139,7 @@ export class ListHybrid extends React.Component {
             const message = this.getTranslation(`${action}_successful`, { count });
             snackActions.show({ message });
             this.filterList();
+            this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
         } else {
             const message = this.getTranslation(`${action}_error`, {
                 error: response.error.toString(),
@@ -198,6 +168,7 @@ export class ListHybrid extends React.Component {
             action: "ok",
             translate: true,
         });
+        this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
     };
 
     _orgUnitAssignmentError = errorMessage => {
@@ -224,15 +195,18 @@ export class ListHybrid extends React.Component {
     };
 
     onReplicateDialogClose = () => {
-        replicateUserStore.setState({ open: false });
+        this.setState({
+            reloadTableKey: this.state.reloadTableKey + 1,
+            replicateUser: { open: false, users: [] },
+        });
     };
 
     getReplicateDialog = info => {
         const componentsByType = {
-            template: ReplicateUserFromTemplate,
-            table: ReplicateUserFromTable,
+            replicate_template: ReplicateUserFromTemplate,
+            replicate_table: ReplicateUserFromTable,
         };
-        const ReplicateComponent = componentsByType[info.type];
+        const ReplicateComponent = componentsByType[info.action];
 
         if (ReplicateComponent) {
             return (
@@ -305,12 +279,64 @@ export class ListHybrid extends React.Component {
 
     _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
 
-    _removeUsersSaved = () => {
-        this.setState({ removeUsers: { open: false, users: [] } });
-        deleteUserStore.delete(this.state.removeUsers.users);
+    _removeUsersSaved = async () => {
+        const users = this.state.removeUsers.users;
+        const d2 = await getD2();
+        const t = d2.i18n.getTranslation.bind(d2.i18n);
+        const api = d2.Api.getApi();
+        const usersText = _m.joinString(
+            t,
+            users.map(user => user.userCredentials.username),
+            3,
+            ", "
+        );
+        const payload = { users };
+        return api
+            .post(`metadata?importStrategy=DELETE`, payload)
+            .then(() => {
+                snackActions.show({ message: t("users_deleted", { users: usersText }) });
+                this.setState({
+                    reloadTableKey: this.state.reloadTableKey + 1,
+                    removeUsers: { open: false, users: [] },
+                });
+            })
+            .catch(response => {
+                snackActions.show({ message: response.message || "Error" });
+            });
     };
 
     _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
+
+    /**
+     * @typedef {"remove" | "disable" | "enable" | "replicate_template" | "replicate_table" | "copy_in"} UserActionName
+     */
+
+    /**
+     * @param {string[]} ids
+     * @param {UserActionName} action
+     */
+    _onAction = async (ids, action) => {
+        if (action === "disable" || action === "enable") {
+            const existingUsers = await getExistingUsers(this.context.d2, {
+                fields: ":owner",
+                filter: "id:in:[" + ids.join(",") + "]",
+            });
+            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
+        } else if (action === "remove") {
+            if (ids !== undefined) {
+                const existingUsers = await getExistingUsers(this.context.d2, {
+                    fields: ":owner,userCredentials",
+                    filter: "id:in:[" + ids.join(",") + "]",
+                });
+                this.setState({ removeUsers: { open: true, users: existingUsers } });
+            }
+            this.filterList();
+        } else if (action === "replicate_table" || action === "replicate_template") {
+            this.setAssignState("replicateUser", { user: ids[0], open: true, action });
+        } else if (action === "copy_in") {
+            this.setAssignState("copyUsers", { users: ids, open: true, action });
+        }
+    };
 
     render() {
         const { d2 } = this.context;
@@ -338,6 +364,8 @@ export class ListHybrid extends React.Component {
                             rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                             onChangeSearch={this._updateQuery}
+                            reloadTableKey={this.state.reloadTableKey}
+                            onAction={this._onAction}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
@@ -407,8 +435,14 @@ export class ListHybrid extends React.Component {
 
                 {copyUsers.open ? (
                     <CopyInUserDialog
-                        user={copyUsers.user}
-                        onCancel={() => copyInUserStore.setState({ open: false })}
+                        user={copyUsers.users}
+                        onSuccess={() => {
+                            this.setState({
+                                reloadTableKey: this.state.reloadTableKey + 1,
+                                copyUsers: { open: false, users: [] },
+                            });
+                        }}
+                        onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
                     />
                 ) : null}
 
