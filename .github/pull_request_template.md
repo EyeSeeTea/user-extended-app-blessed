@@ -4,6 +4,6 @@
 
 ### :memo: Implementation
 
-### :art: Screenshots
+### :video_camera: Screenshots/Screen capture
 
 ### :fire: Testing
