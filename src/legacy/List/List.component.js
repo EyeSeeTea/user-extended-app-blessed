@@ -307,14 +307,6 @@ export class ListHybrid extends React.Component {
 
     _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
 
-    /**
-     * @typedef {"remove" | "disable" | "enable" | "replicate_template" | "replicate_table" | "copy_in"} UserActionName
-     */
-
-    /**
-     * @param {string[]} ids
-     * @param {UserActionName} action
-     */
     _onAction = async (ids, action) => {
         if (action === "disable" || action === "enable") {
             const existingUsers = await getExistingUsers(this.context.d2, {

@@ -199,7 +199,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Replicate user from table"),
                     icon: <Icon>toc</Icon>,
                     multiple: false,
-                    onClick: users => onAction(users, "replicate_template"),
+                    onClick: users => onAction(users, "replicate_table"),
                     isActive: () => enableReplicate,
                 },
             ],
