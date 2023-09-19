@@ -101,6 +101,16 @@ class OrgUnitsSelectorFilter extends React.Component {
                         onChange={this.onChange}
                         fullWidth={true}
                         withElevation={false}
+                        listParams={{
+                            fields: {
+                                id: true,
+                                level: true,
+                                displayName: true,
+                                path: true,
+                                children: true,
+                                shortName: true,
+                            },
+                        }}
                         controls={{
                             filterByLevel: true,
                             filterByGroup: true,
