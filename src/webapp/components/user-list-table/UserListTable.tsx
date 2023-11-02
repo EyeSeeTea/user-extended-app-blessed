@@ -63,8 +63,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const onReorderColumns = useCallback(
         (columns: Array<keyof User>) => {
-            if (!visibleColumns) return;
-
+            if (!visibleColumns || !columns.length) return;
             onChangeVisibleColumns(columns);
             compositionRoot.users.saveColumns(columns).run(
                 () => {},
