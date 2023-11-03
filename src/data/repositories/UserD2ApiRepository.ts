@@ -208,7 +208,14 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public getColumns(): FutureData<Array<keyof User>> {
-        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+        const $request = this.userStorage.getOrCreateObject<Array<keyof User>>(
+            Namespaces.VISIBLE_COLUMNS,
+            defaultColumns
+        );
+        return $request.flatMap(columns => {
+            const result = columns.length ? columns : defaultColumns;
+            return Future.success(result);
+        });
     }
 
     public saveColumns(columns: Array<keyof User>): FutureData<void> {
