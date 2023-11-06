@@ -1,10 +1,14 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import PropTypes from "prop-types";
-import OrgUnitForm from "./OrgUnitForm";
+import { Observable } from "rxjs/Rx";
 import _ from "lodash";
 
 import FilteredMultiSelect from "./FilteredMultiSelect.component";
+
+import { orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
+import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
+import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class MultipleSelector extends React.Component {
     constructor(props, context) {
@@ -37,7 +41,12 @@ class MultipleSelector extends React.Component {
         this.setState({ selected });
     };
 
-    onOrgUnitsChange = selected => {
+    onOrgUnitsChange = async paths => {
+        const ids = extractIdsFromPaths(paths);
+        const selected = await listWithInFilter(this.context.d2.models.organisationUnits, "id", ids, {
+            paging: false,
+            fields: "id,displayName,shortName,path",
+        });
         this.setState({ selected });
     };
 
@@ -60,9 +69,8 @@ class MultipleSelector extends React.Component {
     };
 
     renderForm = () => {
-        const { field, options, orgUnitRoots } = this.props;
+        const { field, options } = this.props;
         const { selected } = this.state;
-        const t = this.getTranslation.bind(this);
 
         switch (field) {
             case "userGroups":
@@ -81,26 +89,24 @@ class MultipleSelector extends React.Component {
             }
             case "organisationUnits":
                 return (
-                    <OrgUnitForm
-                        onRequestClose={this.closeDialog}
+                    <OrgUnitsSelector
+                        api={this.props.api}
+                        selected={selected.map(ou => ou.path)}
                         onChange={this.onOrgUnitsChange}
-                        roots={orgUnitRoots}
-                        selected={selected}
-                        intersectionPolicy={false}
-                        filteringByNameLabel={t("filter_organisation_units_capture_by_name")}
-                        orgUnitsSelectedLabel={t("organisation_units_capture_selected")}
+                        controls={orgUnitControls}
+                        listParams={orgUnitListParams}
+                        showNameSetting
                     />
                 );
             case "dataViewOrganisationUnits":
                 return (
-                    <OrgUnitForm
-                        onRequestClose={this.closeDialog}
+                    <OrgUnitsSelector
+                        api={this.props.api}
+                        selected={selected.map(ou => ou.path)}
                         onChange={this.onOrgUnitsChange}
-                        roots={orgUnitRoots}
-                        selected={selected}
-                        intersectionPolicy={false}
-                        filteringByNameLabel={t("filter_organisation_units_output_by_name")}
-                        orgUnitsSelectedLabel={t("organisation_units_output_selected")}
+                        controls={orgUnitControls}
+                        listParams={orgUnitListParams}
+                        showNameSetting
                     />
                 );
             default:
@@ -136,6 +142,7 @@ MultipleSelector.propTypes = {
     onClose: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
     orgUnitRoots: PropTypes.arrayOf(PropTypes.object).isRequired,
+    api: PropTypes.any,
 };
 
 MultipleSelector.defaultProps = {
