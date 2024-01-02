@@ -40,7 +40,8 @@ export const UserModel: Codec<User> = Schema.object({
     ldapId: Schema.optional(Schema.string),
     externalAuth: Schema.boolean,
     password: Schema.string,
-    // accountExpiry: Schema.string,
+    createdBy: Schema.optionalSafe(Schema.string, ""),
+    lastModifiedBy: Schema.optionalSafe(Schema.string, ""),
 });
 
 export const ApiUserModel: Codec<ApiUser> = Schema.object({
