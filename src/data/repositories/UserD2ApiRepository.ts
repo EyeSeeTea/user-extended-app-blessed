@@ -383,10 +383,6 @@ const defaultColumns: Array<keyof User> = [
 ];
 
 type UserAudit = {
-    createdBy?: {
-        displayName: string;
-    };
-    lastUpdatedBy?: {
-        displayName: string;
-    };
+    createdBy?: { displayName: string };
+    lastUpdatedBy?: { displayName: string };
 };
