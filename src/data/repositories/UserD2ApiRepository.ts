@@ -2,7 +2,7 @@ import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
-import { NamedRef } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
@@ -90,7 +90,10 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userData$ = apiToFuture(
             this.api.models.users.get({
-                fields,
+                fields: {
+                    ...fields,
+                    $owner: true,
+                },
                 page,
                 pageSize,
                 paging: false,
@@ -159,6 +162,18 @@ export class UserD2ApiRepository implements UserRepository {
                         userGroups,
                     })
                 ).map(data => data);
+            });
+        });
+    }
+
+    private getUserByIds(userIds: Id[]) {
+        return apiToFuture(
+            this.api.metadata.get({
+                users: { fields: { $owner: true, userCredentials: true }, filter: { id: { in: userIds } } },
+            })
+        ).map(d2Response => {
+            return d2Response.users.map(d2User => {
+                return d2User;
             });
         });
     }
