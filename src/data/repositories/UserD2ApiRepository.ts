@@ -23,6 +23,18 @@ export class UserD2ApiRepository implements UserRepository {
         this.userStorage = new DataStoreStorageClient("user", instance);
     }
 
+    remove(users: User[]): FutureData<void> {
+        const userIds = users.map(user => user.id);
+
+        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
+            return apiToFuture(this.api.metadata.post({ users: existingUsers }, { importStrategy: "DELETE" })).flatMap(
+                () => {
+                    return Future.success(undefined);
+                }
+            );
+        });
+    }
+
     @cache()
     public getCurrent(): FutureData<User> {
         return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));

@@ -6,8 +6,6 @@ import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
-import { getInstance as getD2 } from "d2/lib/d2";
-import _m from "../utils/lodash-mixins";
 import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
@@ -139,7 +137,7 @@ export class ListHybrid extends React.Component {
             const message = this.getTranslation(`${action}_successful`, { count });
             snackActions.show({ message });
             this.filterList();
-            this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
+            this.reloadTable();
         } else {
             const message = this.getTranslation(`${action}_error`, {
                 error: response.error.toString(),
@@ -168,6 +166,10 @@ export class ListHybrid extends React.Component {
             action: "ok",
             translate: true,
         });
+        this.reloadTable();
+    };
+
+    reloadTable = () => {
         this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
     };
 
@@ -279,34 +281,6 @@ export class ListHybrid extends React.Component {
 
     _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
 
-    _removeUsersSaved = async () => {
-        const users = this.state.removeUsers.users;
-        const d2 = await getD2();
-        const t = d2.i18n.getTranslation.bind(d2.i18n);
-        const api = d2.Api.getApi();
-        const usersText = _m.joinString(
-            t,
-            users.map(user => user.userCredentials.username),
-            3,
-            ", "
-        );
-        const payload = { users };
-        return api
-            .post(`metadata?importStrategy=DELETE`, payload)
-            .then(() => {
-                snackActions.show({ message: t("users_deleted", { users: usersText }) });
-                this.setState({
-                    reloadTableKey: this.state.reloadTableKey + 1,
-                    removeUsers: { open: false, users: [] },
-                });
-            })
-            .catch(response => {
-                snackActions.show({ message: response.message || "Error" });
-            });
-    };
-
-    _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
-
     _onAction = async (ids, action) => {
         if (action === "disable" || action === "enable") {
             const existingUsers = await getExistingUsers(this.context.d2, {
@@ -333,16 +307,8 @@ export class ListHybrid extends React.Component {
     render() {
         const { d2 } = this.context;
 
-        const {
-            replicateUser,
-            listFilterOptions,
-            copyUsers,
-            removeUsers,
-            disableUsers,
-            importUsers,
-            settings,
-            settingsVisible,
-        } = this.state;
+        const { replicateUser, listFilterOptions, copyUsers, disableUsers, importUsers, settings, settingsVisible } =
+            this.state;
 
         return (
             <div>
@@ -435,23 +401,6 @@ export class ListHybrid extends React.Component {
                             });
                         }}
                         onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
-                    />
-                ) : null}
-
-                {removeUsers.open ? (
-                    <ConfirmationDialog
-                        isOpen={removeUsers.open}
-                        onSave={this._removeUsersSaved}
-                        onCancel={this._removeUsersCancel}
-                        title={i18n.t("Remove users")}
-                        description={this.getTranslation("confirm_delete_users", {
-                            users: getCompactTextForModels(this.context.d2, this.state.removeUsers.users, {
-                                i18nKey: "this_and_n_others",
-                                field: "userCredentials.username",
-                                limit: 1,
-                            }),
-                        })}
-                        saveText={"Confirm"}
                     />
                 ) : null}
 

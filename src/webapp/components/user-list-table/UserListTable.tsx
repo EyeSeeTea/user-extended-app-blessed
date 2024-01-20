@@ -15,7 +15,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { NamedRef } from "../../../domain/entities/Ref";
+import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits } from "../../../legacy/List/context.actions";
@@ -23,6 +23,7 @@ import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
+import { UsersRemoveModal } from "../users-remove-modal/UsersRemoveModal";
 
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
@@ -40,6 +41,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
+    const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -183,7 +185,9 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Remove"),
                     icon: <Icon>delete</Icon>,
                     multiple: true,
-                    onClick: users => onAction(users, "remove"),
+                    onClick: userIds => {
+                        setSelectedUserIds(userIds);
+                    },
                     isActive: checkAccess(["delete"]),
                 },
                 {
@@ -314,9 +318,25 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [compositionRoot, snackbar, onChangeVisibleColumns]
     );
 
+    const onSuccessUsersRemove = () => {
+        setSelectedUserIds([]);
+        reload();
+    };
+
+    const onCancelUsersRemove = () => {
+        setSelectedUserIds([]);
+    };
+
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
+
+            <UsersRemoveModal
+                ids={selectedUserIds}
+                isOpen={selectedUserIds.length > 0}
+                onSuccess={onSuccessUsersRemove}
+                onCancel={onCancelUsersRemove}
+            />
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}
