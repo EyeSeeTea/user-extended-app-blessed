@@ -1,7 +1,8 @@
 import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
 import { FutureData } from "../entities/Future";
 import { PaginatedResponse } from "../entities/PaginatedResponse";
-import { Id, NamedRef } from "../entities/Ref";
+import { NamedRef } from "../entities/Ref";
+import { Stats } from "../entities/Stats";
 import { User } from "../entities/User";
 
 export interface UserRepository {
@@ -14,7 +15,7 @@ export interface UserRepository {
     updateGroups(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse>;
     getColumns(): FutureData<Array<keyof User>>;
     saveColumns(columns: Array<keyof User>): FutureData<void>;
-    remove(users: User[]): FutureData<void>;
+    remove(users: User[]): FutureData<Stats>;
 }
 
 export interface ListOptions {

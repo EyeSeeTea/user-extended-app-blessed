@@ -23,7 +23,7 @@ import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
-import { UsersRemoveModal } from "../users-remove-modal/UsersRemoveModal";
+import { ActionType, UsersSelectedModal } from "../users-remove-modal/UsersSelectedModal";
 
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
@@ -42,6 +42,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
     const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
+    const [actionType, setActionType] = useState<ActionType>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -169,7 +170,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Enable"),
                     icon: <Icon>playlist_add_check</Icon>,
                     multiple: true,
-                    onClick: users => onAction(users, "enable"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("enable");
+                    },
                     isActive: isStateActionVisible("enable"),
                 },
                 {
@@ -177,7 +181,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Disable"),
                     icon: <Icon>block</Icon>,
                     multiple: true,
-                    onClick: users => onAction(users, "disable"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("disable");
+                    },
                     isActive: isStateActionVisible("disable"),
                 },
                 {
@@ -187,6 +194,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     multiple: true,
                     onClick: userIds => {
                         setSelectedUserIds(userIds);
+                        setActionType("remove");
                     },
                     isActive: checkAccess(["delete"]),
                 },
@@ -320,23 +328,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const onSuccessUsersRemove = () => {
         setSelectedUserIds([]);
+        setActionType(undefined);
         reload();
     };
 
     const onCancelUsersRemove = () => {
         setSelectedUserIds([]);
+        setActionType(undefined);
     };
 
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            <UsersRemoveModal
-                ids={selectedUserIds}
-                isOpen={selectedUserIds.length > 0}
-                onSuccess={onSuccessUsersRemove}
-                onCancel={onCancelUsersRemove}
-            />
+            {actionType && (
+                <UsersSelectedModal
+                    ids={selectedUserIds}
+                    isOpen={selectedUserIds.length > 0}
+                    onSuccess={onSuccessUsersRemove}
+                    onCancel={onCancelUsersRemove}
+                    actionType={actionType}
+                />
+            )}
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}

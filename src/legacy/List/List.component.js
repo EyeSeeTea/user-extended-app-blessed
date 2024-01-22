@@ -1,12 +1,9 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import set from "lodash/fp/set";
 import log from "loglevel";
 import IconButton from "material-ui/IconButton";
 import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
-import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
@@ -15,9 +12,8 @@ import ReplicateUserFromTable from "../components/ReplicateUserFromTable.compone
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import SettingsDialog from "../components/SettingsDialog.component";
 import Settings from "../models/settings";
-import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
+import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
-import { getCompactTextForModels } from "../utils/i18n";
 import Filters from "./Filters.component";
 import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
@@ -120,31 +116,6 @@ export class ListHybrid extends React.Component {
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
 
         this.filterList();
-    };
-
-    setUsersEnableState = async (users, action) => {
-        const newValue = action === "disable";
-        const response = await updateUsers(this.context.d2, users, user => {
-            if (user?.userCredentials?.disabled !== newValue) {
-                return set("disabled", newValue, set("userCredentials.disabled", newValue, user));
-            } else {
-                return null;
-            }
-        });
-
-        if (response.success) {
-            const count = (response.response.stats && response.response.stats.updated) || 0;
-            const message = this.getTranslation(`${action}_successful`, { count });
-            snackActions.show({ message });
-            this.filterList();
-            this.reloadTable();
-        } else {
-            const message = this.getTranslation(`${action}_error`, {
-                error: response.error.toString(),
-            });
-            snackActions.show({ message });
-        }
-        this.setState({ disableUsers: { open: false, users: [], action: "" } });
     };
 
     setAssignState = (key, value) => {
@@ -277,27 +248,8 @@ export class ListHybrid extends React.Component {
         this.setState({ filters, canManage }, this.filterList);
     };
 
-    _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
-
-    _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
-
     _onAction = async (ids, action) => {
-        if (action === "disable" || action === "enable") {
-            const existingUsers = await getExistingUsers(this.context.d2, {
-                fields: ":owner",
-                filter: "id:in:[" + ids.join(",") + "]",
-            });
-            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
-        } else if (action === "remove") {
-            if (ids !== undefined) {
-                const existingUsers = await getExistingUsers(this.context.d2, {
-                    fields: ":owner,userCredentials",
-                    filter: "id:in:[" + ids.join(",") + "]",
-                });
-                this.setState({ removeUsers: { open: true, users: existingUsers } });
-            }
-            this.filterList();
-        } else if (action === "replicate_table" || action === "replicate_template") {
+        if (action === "replicate_table" || action === "replicate_template") {
             this.setAssignState("replicateUser", { user: ids[0], open: true, action });
         } else if (action === "copy_in") {
             this.setAssignState("copyUsers", { users: ids, open: true, action });
@@ -307,8 +259,7 @@ export class ListHybrid extends React.Component {
     render() {
         const { d2 } = this.context;
 
-        const { replicateUser, listFilterOptions, copyUsers, disableUsers, importUsers, settings, settingsVisible } =
-            this.state;
+        const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
 
         return (
             <div>
@@ -371,23 +322,6 @@ export class ListHybrid extends React.Component {
                         onOrgUnitAssignmentError={this._orgUnitAssignmentError}
                         filteringByNameLabel={this.getTranslation("filter_organisation_units_output_by_name")}
                         orgUnitsSelectedLabel={this.getTranslation("organisation_units_output_selected")}
-                    />
-                ) : null}
-
-                {disableUsers.open ? (
-                    <ConfirmationDialog
-                        isOpen={disableUsers.open}
-                        onSave={this._disableUsersSaved}
-                        onCancel={this._disableUsersCancel}
-                        title={disableUsers.action === "enable" ? i18n.t("Enable users") : i18n.t("Disable users")}
-                        description={this.getTranslation(`confirm_${disableUsers.action}`, {
-                            users: getCompactTextForModels(this.context.d2, disableUsers.users, {
-                                i18nKey: "this_and_n_others",
-                                field: "userCredentials.username",
-                                limit: 1,
-                            }),
-                        })}
-                        saveText={"Confirm"}
                     />
                 ) : null}
 
