@@ -6,12 +6,14 @@ import { UserRepository } from "../repositories/UserRepository";
 export class SaveUserStatusUseCase implements UseCase {
     constructor(private userRepository: UserRepository) {}
 
-    public execute(users: User[], disabled: boolean): FutureData<void> {
+    public execute(users: User[], options: SaveUserStatusOptions): FutureData<void> {
         const usersToUpdate = users.map(user => {
-            return { ...user, disabled: disabled };
+            return { ...user, disabled: options.disabled };
         });
         return this.userRepository.save(usersToUpdate).flatMap(() => {
             return Future.success(undefined);
         });
     }
 }
+
+type SaveUserStatusOptions = { disabled: boolean };

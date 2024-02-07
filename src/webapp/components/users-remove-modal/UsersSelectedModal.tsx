@@ -84,7 +84,7 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
                 onSuccessAction();
             }, onErrorAction);
         } else if (actionType === "disable" || actionType === "enable") {
-            compositionRoot.users.saveStatus(users, actionType === "disable").run(() => {
+            compositionRoot.users.saveStatus(users, { disabled: actionType === "disable" }).run(() => {
                 onSuccessAction();
             }, onErrorAction);
         }
