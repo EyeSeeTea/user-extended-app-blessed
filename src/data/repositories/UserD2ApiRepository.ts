@@ -3,6 +3,7 @@ import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { NamedRef } from "../../domain/entities/Ref";
+import { Stats } from "../../domain/entities/Stats";
 import { User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
@@ -13,6 +14,7 @@ import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
+import { chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -21,6 +23,28 @@ export class UserD2ApiRepository implements UserRepository {
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
         this.userStorage = new DataStoreStorageClient("user", instance);
+    }
+
+    remove(users: User[]): FutureData<Stats> {
+        const ids = users.map(user => user.id);
+        return chunkRequest(ids, userIds => {
+            return apiToFuture<Dhis2Response>(
+                this.api.metadata.post({ users: userIds.map(id => ({ id: id })) }, { importStrategy: "DELETE" })
+            ).flatMap(d2Response => {
+                const res = d2Response.response ? d2Response.response : d2Response;
+                return Future.success([
+                    new Stats({
+                        created: res.stats.created,
+                        updated: res.stats.updated,
+                        ignored: res.stats.ignored,
+                        deleted: res.stats.deleted,
+                        errorMessage: getErrorFromResponse(res.typeReports),
+                    }),
+                ]);
+            });
+        }).flatMap(stats => {
+            return Future.success(Stats.combine(stats));
+        });
     }
 
     @cache()
@@ -379,3 +403,8 @@ const defaultColumns: Array<keyof User> = [
     "lastLogin",
     "disabled",
 ];
+
+// in version 2.38 stats and typeReports are inside a response object
+type Dhis2Response = MetadataResponse & {
+    response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
+};

@@ -11,7 +11,9 @@ import { GetUsersByIdsUseCase } from "./domain/usecases/GetUsersByIdsUseCase";
 import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
+import { RemoveUsersUseCase } from "./domain/usecases/RemoveUsersUseCase";
 import { SaveColumnsUseCase } from "./domain/usecases/SaveColumnsUseCase";
+import { SaveUserStatusUseCase } from "./domain/usecases/SaveUserStatusUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
 
@@ -31,9 +33,11 @@ export function getCompositionRoot(instance: Instance) {
             listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUsersByIdsUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
+            saveStatus: new SaveUserStatusUseCase(userRepository),
             updateProp: new UpdateUserPropUseCase(userRepository),
             getColumns: new GetColumnsUseCase(userRepository),
             saveColumns: new SaveColumnsUseCase(userRepository),
+            remove: new RemoveUsersUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),
