@@ -1,6 +1,11 @@
 import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import PropTypes from "prop-types";
+/* We need the Observable import to avoid the error
+rxjs__WEBPACK_IMPORTED_MODULE_1__.Observable.fromPromise is not a function
+due to d2-ui library using this module
+*/
+// eslint-disable-next-line
 import { Observable } from "rxjs/Rx";
 import _ from "lodash";
 
