@@ -5,8 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-01-02T18:03:01.460Z\n"
-"PO-Revision-Date: 2024-01-02T18:03:01.460Z\n"
+
+"POT-Creation-Date: 2024-01-22T16:20:16.511Z\n"
+"PO-Revision-Date: 2024-01-22T16:20:16.511Z\n"
 
 msgid "Enable users"
 msgstr ""
@@ -321,6 +322,20 @@ msgid "Last Modified By"
 msgstr ""
 
 msgid "And {{overflow}} more..."
+msgstr ""
+
+msgid "Users {{action}}. {{users}} {{remainingCount}}"
+msgstr ""
+
+msgid "{{action}} users"
+msgstr ""
+
+msgid ""
+"Are you sure you want to {{action}} the selected users? {{users}} "
+"{{remainingCount}}"
+msgstr ""
+
+msgid "Confirm"
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"

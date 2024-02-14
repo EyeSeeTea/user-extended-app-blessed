@@ -1,12 +1,9 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import set from "lodash/fp/set";
 import log from "loglevel";
 import IconButton from "material-ui/IconButton";
 import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
-import i18n from "../../locales";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
@@ -15,16 +12,11 @@ import ReplicateUserFromTable from "../components/ReplicateUserFromTable.compone
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import SettingsDialog from "../components/SettingsDialog.component";
 import Settings from "../models/settings";
-import { getExistingUsers, saveUsers, updateUsers } from "../models/userHelpers";
+import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
-import { getCompactTextForModels } from "../utils/i18n";
-import copyInUserStore from "./copyInUser.store";
-import deleteUserStore from "./deleteUser.store";
-import enableStore from "./enable.store";
 import Filters from "./Filters.component";
 import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
 import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
-import replicateUserStore from "./replicateUser.store";
 
 const initialSorting = ["name", "asc"];
 
@@ -50,6 +42,7 @@ export class ListHybrid extends React.Component {
 
     componentWillUnmount = () => {
         this.observerDisposables.forEach(disposable => disposable.dispose?.());
+        snackActions.hide();
     };
 
     registerDisposable = disposable => {
@@ -64,6 +57,7 @@ export class ListHybrid extends React.Component {
         super(props, context);
 
         this.state = {
+            reloadTableKey: 1,
             listFilterOptions: {},
             filters: {},
             pager: {
@@ -119,64 +113,9 @@ export class ListHybrid extends React.Component {
             this.setAssignState("orgunitassignment", orgunitassignmentState);
         });
 
-        const replicateUserDialogStoreDisposable = replicateUserStore.subscribe(replicateUser => {
-            this.setAssignState("replicateUser", replicateUser);
-        });
-
-        const enableStoreDisposable = enableStore.subscribe(async ({ users, action }) => {
-            const existingUsers = await getExistingUsers(this.context.d2, {
-                fields: ":owner",
-                filter: "id:in:[" + users.join(",") + "]",
-            });
-            this.setState({ disableUsers: { open: true, users: existingUsers, action } });
-        });
-
-        const deleteUserStoreDisposable = deleteUserStore.subscribe(async ({ users }) => {
-            if (users !== undefined) {
-                const existingUsers = await getExistingUsers(this.context.d2, {
-                    fields: ":owner,userCredentials",
-                    filter: "id:in:[" + users.join(",") + "]",
-                });
-                this.setState({ removeUsers: { open: true, users: existingUsers } });
-            }
-            this.filterList();
-        });
-
-        const userCopyUserDialogStoreDisposable = copyInUserStore.subscribe(copyUsers => {
-            this.setAssignState("copyUsers", copyUsers);
-        });
-
         this.registerDisposable(orgUnitAssignmentStoreDisposable);
-        this.registerDisposable(replicateUserDialogStoreDisposable);
-        this.registerDisposable(deleteUserStoreDisposable);
-        this.registerDisposable(enableStoreDisposable);
-        this.registerDisposable(userCopyUserDialogStoreDisposable);
 
         this.filterList();
-    };
-
-    setUsersEnableState = async (users, action) => {
-        const newValue = action === "disable";
-        const response = await updateUsers(this.context.d2, users, user => {
-            if (user?.userCredentials?.disabled !== newValue) {
-                return set("disabled", newValue, set("userCredentials.disabled", newValue, user));
-            } else {
-                return null;
-            }
-        });
-
-        if (response.success) {
-            const count = (response.response.stats && response.response.stats.updated) || 0;
-            const message = this.getTranslation(`${action}_successful`, { count });
-            snackActions.show({ message });
-            this.filterList();
-        } else {
-            const message = this.getTranslation(`${action}_error`, {
-                error: response.error.toString(),
-            });
-            snackActions.show({ message });
-        }
-        this.setState({ disableUsers: { open: false, users: [], action: "" } });
     };
 
     setAssignState = (key, value) => {
@@ -198,6 +137,11 @@ export class ListHybrid extends React.Component {
             action: "ok",
             translate: true,
         });
+        this.reloadTable();
+    };
+
+    reloadTable = () => {
+        this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
     };
 
     _orgUnitAssignmentError = errorMessage => {
@@ -224,15 +168,18 @@ export class ListHybrid extends React.Component {
     };
 
     onReplicateDialogClose = () => {
-        replicateUserStore.setState({ open: false });
+        this.setState({
+            reloadTableKey: this.state.reloadTableKey + 1,
+            replicateUser: { open: false, users: [] },
+        });
     };
 
     getReplicateDialog = info => {
         const componentsByType = {
-            template: ReplicateUserFromTemplate,
-            table: ReplicateUserFromTable,
+            replicate_template: ReplicateUserFromTemplate,
+            replicate_table: ReplicateUserFromTable,
         };
-        const ReplicateComponent = componentsByType[info.type];
+        const ReplicateComponent = componentsByType[info.action];
 
         if (ReplicateComponent) {
             return (
@@ -301,30 +248,18 @@ export class ListHybrid extends React.Component {
         this.setState({ filters, canManage }, this.filterList);
     };
 
-    _disableUsersSaved = () => this.setUsersEnableState(this.state.disableUsers.users, this.state.disableUsers.action);
-
-    _disableUsersCancel = () => this.setState({ disableUsers: { open: false } });
-
-    _removeUsersSaved = () => {
-        this.setState({ removeUsers: { open: false, users: [] } });
-        deleteUserStore.delete(this.state.removeUsers.users);
+    _onAction = async (ids, action) => {
+        if (action === "replicate_table" || action === "replicate_template") {
+            this.setAssignState("replicateUser", { user: ids[0], open: true, action });
+        } else if (action === "copy_in") {
+            this.setAssignState("copyUsers", { users: ids, open: true, action });
+        }
     };
-
-    _removeUsersCancel = () => this.setState({ removeUsers: { open: false } });
 
     render() {
         const { d2 } = this.context;
 
-        const {
-            replicateUser,
-            listFilterOptions,
-            copyUsers,
-            removeUsers,
-            disableUsers,
-            importUsers,
-            settings,
-            settingsVisible,
-        } = this.state;
+        const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
 
         return (
             <div>
@@ -338,6 +273,8 @@ export class ListHybrid extends React.Component {
                             rootJunction={this.state.filters?.rootJunction}
                             onChangeVisibleColumns={this._updateVisibleColumns}
                             onChangeSearch={this._updateQuery}
+                            reloadTableKey={this.state.reloadTableKey}
+                            onAction={this._onAction}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
@@ -388,44 +325,16 @@ export class ListHybrid extends React.Component {
                     />
                 ) : null}
 
-                {disableUsers.open ? (
-                    <ConfirmationDialog
-                        isOpen={disableUsers.open}
-                        onSave={this._disableUsersSaved}
-                        onCancel={this._disableUsersCancel}
-                        title={disableUsers.action === "enable" ? i18n.t("Enable users") : i18n.t("Disable users")}
-                        description={this.getTranslation(`confirm_${disableUsers.action}`, {
-                            users: getCompactTextForModels(this.context.d2, disableUsers.users, {
-                                i18nKey: "this_and_n_others",
-                                field: "userCredentials.username",
-                                limit: 1,
-                            }),
-                        })}
-                        saveText={"Confirm"}
-                    />
-                ) : null}
-
                 {copyUsers.open ? (
                     <CopyInUserDialog
-                        user={copyUsers.user}
-                        onCancel={() => copyInUserStore.setState({ open: false })}
-                    />
-                ) : null}
-
-                {removeUsers.open ? (
-                    <ConfirmationDialog
-                        isOpen={removeUsers.open}
-                        onSave={this._removeUsersSaved}
-                        onCancel={this._removeUsersCancel}
-                        title={i18n.t("Remove users")}
-                        description={this.getTranslation("confirm_delete_users", {
-                            users: getCompactTextForModels(this.context.d2, this.state.removeUsers.users, {
-                                i18nKey: "this_and_n_others",
-                                field: "userCredentials.username",
-                                limit: 1,
-                            }),
-                        })}
-                        saveText={"Confirm"}
+                        user={copyUsers.users}
+                        onSuccess={() => {
+                            this.setState({
+                                reloadTableKey: this.state.reloadTableKey + 1,
+                                copyUsers: { open: false, users: [] },
+                            });
+                        }}
+                        onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
                     />
                 ) : null}
 

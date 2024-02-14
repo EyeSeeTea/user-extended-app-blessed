@@ -15,18 +15,15 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import _ from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { NamedRef } from "../../../domain/entities/Ref";
+import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
 import { ListFilters } from "../../../domain/repositories/UserRepository";
 import { assignToOrgUnits } from "../../../legacy/List/context.actions";
-import copyInUserStore from "../../../legacy/List/copyInUser.store";
-import deleteUserStore from "../../../legacy/List/deleteUser.store";
-import enableStore from "../../../legacy/List/enable.store";
-import replicateUserStore from "../../../legacy/List/replicateUser.store";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
+import { ActionType, UsersSelectedModal } from "../users-remove-modal/UsersSelectedModal";
 
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
@@ -36,12 +33,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     canManage,
     rootJunction,
     children,
+    reloadTableKey,
+    onAction,
 }) => {
     const { compositionRoot, currentUser } = useAppContext();
     const [reloadKey, reload] = useReload();
 
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
+    const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
+    const [actionType, setActionType] = useState<ActionType>();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -63,8 +64,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const onReorderColumns = useCallback(
         (columns: Array<keyof User>) => {
-            if (!visibleColumns) return;
-
+            if (!visibleColumns || !columns.length) return;
             onChangeVisibleColumns(columns);
             compositionRoot.users.saveColumns(columns).run(
                 () => {},
@@ -112,7 +112,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Copy in user"),
                     icon: <Icon>content_copy</Icon>,
                     multiple: false,
-                    onClick: user => copyInUserStore.setState({ user, open: true }),
+                    onClick: users => onAction(users, "copy_in"),
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -169,7 +169,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Enable"),
                     icon: <Icon>playlist_add_check</Icon>,
                     multiple: true,
-                    onClick: users => enableStore.setState({ users, action: "enable" }),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("enable");
+                    },
                     isActive: isStateActionVisible("enable"),
                 },
                 {
@@ -177,7 +180,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Disable"),
                     icon: <Icon>block</Icon>,
                     multiple: true,
-                    onClick: users => enableStore.setState({ users, action: "disable" }),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("disable");
+                    },
                     isActive: isStateActionVisible("disable"),
                 },
                 {
@@ -185,7 +191,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Remove"),
                     icon: <Icon>delete</Icon>,
                     multiple: true,
-                    onClick: users => deleteUserStore.setState({ users }),
+                    onClick: userIds => {
+                        setSelectedUserIds(userIds);
+                        setActionType("remove");
+                    },
                     isActive: checkAccess(["delete"]),
                 },
                 {
@@ -193,7 +202,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Replicate user from template"),
                     icon: <FileCopyIcon />,
                     multiple: false,
-                    onClick: users => replicateUserStore.setState({ open: true, user: users[0], type: "template" }),
+                    onClick: users => onAction(users, "replicate_template"),
                     isActive: () => enableReplicate,
                 },
                 {
@@ -201,7 +210,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Replicate user from table"),
                     icon: <Icon>toc</Icon>,
                     multiple: false,
-                    onClick: users => replicateUserStore.setState({ open: true, user: users[0], type: "table" }),
+                    onClick: users => onAction(users, "replicate_table"),
                     isActive: () => enableReplicate,
                 },
             ],
@@ -233,7 +242,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             // onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, onAction]);
 
     const refreshRows = useCallback(
         async (
@@ -241,7 +250,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             { page, pageSize }: TablePagination,
             sorting: TableSorting<User>
         ): Promise<{ objects: User[]; pager: Pager }> => {
-            console.debug("Reloading", reloadKey);
+            console.debug("Reloading", reloadKey, reloadTableKey);
             onChangeSearch(search);
 
             // SEE: src/legacy/models/userList.js LINE 29+
@@ -273,7 +282,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 })
                 .toPromise();
         },
-        [compositionRoot, filters, canManage, rootJunction, reloadKey, onChangeSearch]
+        [compositionRoot, filters, canManage, rootJunction, reloadKey, onChangeSearch, reloadTableKey]
     );
 
     const refreshAllIds = useCallback(
@@ -316,9 +325,30 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [compositionRoot, snackbar, onChangeVisibleColumns]
     );
 
+    const onSuccessUsersRemove = () => {
+        setSelectedUserIds([]);
+        setActionType(undefined);
+        reload();
+    };
+
+    const onCancelUsersRemove = () => {
+        setSelectedUserIds([]);
+        setActionType(undefined);
+    };
+
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
+
+            {actionType && (
+                <UsersSelectedModal
+                    ids={selectedUserIds}
+                    isOpen={selectedUserIds.length > 0}
+                    onSuccess={onSuccessUsersRemove}
+                    onCancel={onCancelUsersRemove}
+                    actionType={actionType}
+                />
+            )}
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}
@@ -400,6 +430,8 @@ function isStateActionVisible(action: string) {
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
+export type UserActionName = "remove" | "disable" | "enable" | "replicate_template" | "replicate_table" | "copy_in";
+
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;
     filters: ListFilters;
@@ -407,6 +439,8 @@ export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loadi
     rootJunction: "AND" | "OR";
     onChangeVisibleColumns: (columns: string[]) => void;
     onChangeSearch: (search: string) => void;
+    reloadTableKey: number;
+    onAction: (ids: string[], action: UserActionName) => void;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
