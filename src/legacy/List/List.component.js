@@ -344,6 +344,7 @@ export class ListHybrid extends React.Component {
 
                 {!importUsers.open ? null : (
                     <ImportTable
+                        api={this.props.api}
                         title={this.getTranslation("import")}
                         onSave={this._importUsers}
                         onRequestClose={this._closeImportUsers}
