@@ -305,6 +305,12 @@ msgstr ""
 msgid "Data view organisation units"
 msgstr ""
 
+msgid "Created By"
+msgstr ""
+
+msgid "Last Modified By"
+msgstr ""
+
 msgid "And {{overflow}} more..."
 msgstr ""
 

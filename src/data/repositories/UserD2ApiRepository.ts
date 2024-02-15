@@ -67,7 +67,11 @@ export class UserD2ApiRepository implements UserRepository {
 
         return apiToFuture(
             this.api.models.users.get({
-                fields,
+                fields: {
+                    ...fields,
+                    createdBy: { displayName: true },
+                    lastUpdatedBy: { displayName: true },
+                },
                 page,
                 pageSize,
                 query: search !== "" ? search : undefined,
@@ -110,7 +114,10 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userData$ = apiToFuture(
             this.api.models.users.get({
-                fields,
+                fields: {
+                    ...fields,
+                    $owner: true,
+                },
                 page,
                 pageSize,
                 paging: false,
@@ -285,7 +292,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 
-    private toDomainUser(input: ApiUser): User {
+    private toDomainUser(input: ApiUserWithAudit): User {
         const { userCredentials, ...user } = input;
         const authorities = _(userCredentials.userRoles)
             .map(userRole => userRole.authorities)
@@ -322,10 +329,12 @@ export class UserD2ApiRepository implements UserRepository {
             password: userCredentials.password,
             // accountExpiry: userCredentials.accountExpiry,
             authorities,
+            createdBy: user.createdBy ? user.createdBy.displayName : "",
+            lastModifiedBy: user.lastUpdatedBy ? user.lastUpdatedBy.displayName : "",
         };
     }
 
-    private toApiUser(input: User): ApiUser {
+    private toApiUser(input: User): ApiUserWithAudit {
         return {
             id: input.id,
             name: input.name,
@@ -356,6 +365,8 @@ export class UserD2ApiRepository implements UserRepository {
                 password: input.password ?? "",
                 // accountExpiry: input.accountExpiry ?? "",
             },
+            createdBy: { displayName: input.createdBy },
+            lastUpdatedBy: { displayName: input.lastModifiedBy },
         };
     }
 }
@@ -393,6 +404,7 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+export type ApiUserWithAudit = ApiUser & UserAudit;
 
 const defaultColumns: Array<keyof User> = [
     "username",
@@ -407,4 +419,9 @@ const defaultColumns: Array<keyof User> = [
 // in version 2.38 stats and typeReports are inside a response object
 type Dhis2Response = MetadataResponse & {
     response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
+};
+
+type UserAudit = {
+    createdBy?: { displayName: string };
+    lastUpdatedBy?: { displayName: string };
 };

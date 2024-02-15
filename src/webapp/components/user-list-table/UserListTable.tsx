@@ -400,6 +400,18 @@ export const columns: TableColumn<User>[] = [
         text: i18n.t("Disabled"),
         getValue: row => (row.disabled ? <Check /> : undefined),
     },
+    {
+        name: "createdBy",
+        sortable: false,
+        text: i18n.t("Created By"),
+        getValue: row => row.createdBy,
+    },
+    {
+        name: "lastModifiedBy",
+        sortable: false,
+        text: i18n.t("Last Modified By"),
+        getValue: row => row.lastModifiedBy,
+    },
 ];
 
 function checkAccess(requiredKeys: string[]) {

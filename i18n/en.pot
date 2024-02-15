@@ -5,8 +5,18 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
 "POT-Creation-Date: 2024-01-22T16:20:16.511Z\n"
 "PO-Revision-Date: 2024-01-22T16:20:16.511Z\n"
+
+msgid "Enable users"
+msgstr ""
+
+msgid "Disable users"
+msgstr ""
+
+msgid "Remove users"
+msgstr ""
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -303,6 +313,12 @@ msgid "Organisation units"
 msgstr ""
 
 msgid "Data view organisation units"
+msgstr ""
+
+msgid "Created By"
+msgstr ""
+
+msgid "Last Modified By"
 msgstr ""
 
 msgid "And {{overflow}} more..."
