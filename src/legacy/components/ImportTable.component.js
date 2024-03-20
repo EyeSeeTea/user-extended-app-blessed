@@ -687,6 +687,7 @@ class ImportTable extends React.Component {
 
                 {multipleSelector && (
                     <MultipleSelector
+                        api={this.props.api}
                         field={multipleSelector.field}
                         selected={multipleSelector.selected}
                         options={multipleSelector.options}

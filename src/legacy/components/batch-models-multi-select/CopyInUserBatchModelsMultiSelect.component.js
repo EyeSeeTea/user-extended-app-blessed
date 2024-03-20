@@ -133,7 +133,10 @@ export default class CopyInUserBatchModelsMultiSelectComponent extends React.Com
         };
         await this.props.model
             .copyInUserSave(parents, selectedIds, copyAccessElements, updateStrategy)
-            .then(() => this.close(this.props.onSuccess))
+            .then(() => {
+                this.close(this.props.translationMessage);
+                if (this.props.onSuccess) this.props.onSuccess();
+            })
             .catch(() => this.close(this.props.onError))
             .finally(() => this.setState({ state: "ready" }));
     };

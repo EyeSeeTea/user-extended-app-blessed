@@ -3,6 +3,7 @@ import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { NamedRef } from "../../domain/entities/Ref";
+import { Stats } from "../../domain/entities/Stats";
 import { User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
@@ -13,6 +14,7 @@ import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiUserModel } from "../models/UserModel";
+import { chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -21,6 +23,28 @@ export class UserD2ApiRepository implements UserRepository {
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
         this.userStorage = new DataStoreStorageClient("user", instance);
+    }
+
+    remove(users: User[]): FutureData<Stats> {
+        const ids = users.map(user => user.id);
+        return chunkRequest(ids, userIds => {
+            return apiToFuture<Dhis2Response>(
+                this.api.metadata.post({ users: userIds.map(id => ({ id: id })) }, { importStrategy: "DELETE" })
+            ).flatMap(d2Response => {
+                const res = d2Response.response ? d2Response.response : d2Response;
+                return Future.success([
+                    new Stats({
+                        created: res.stats.created,
+                        updated: res.stats.updated,
+                        ignored: res.stats.ignored,
+                        deleted: res.stats.deleted,
+                        errorMessage: getErrorFromResponse(res.typeReports),
+                    }),
+                ]);
+            });
+        }).flatMap(stats => {
+            return Future.success(Stats.combine(stats));
+        });
     }
 
     @cache()
@@ -43,7 +67,11 @@ export class UserD2ApiRepository implements UserRepository {
 
         return apiToFuture(
             this.api.models.users.get({
-                fields,
+                fields: {
+                    ...fields,
+                    createdBy: { displayName: true },
+                    lastUpdatedBy: { displayName: true },
+                },
                 page,
                 pageSize,
                 query: search !== "" ? search : undefined,
@@ -86,7 +114,10 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userData$ = apiToFuture(
             this.api.models.users.get({
-                fields,
+                fields: {
+                    ...fields,
+                    $owner: true,
+                },
                 page,
                 pageSize,
                 paging: false,
@@ -208,7 +239,14 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public getColumns(): FutureData<Array<keyof User>> {
-        return this.userStorage.getOrCreateObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, defaultColumns);
+        const $request = this.userStorage.getOrCreateObject<Array<keyof User>>(
+            Namespaces.VISIBLE_COLUMNS,
+            defaultColumns
+        );
+        return $request.flatMap(columns => {
+            const result = columns.length ? columns : defaultColumns;
+            return Future.success(result);
+        });
     }
 
     public saveColumns(columns: Array<keyof User>): FutureData<void> {
@@ -254,7 +292,7 @@ export class UserD2ApiRepository implements UserRepository {
         );
     }
 
-    private toDomainUser(input: ApiUser): User {
+    private toDomainUser(input: ApiUserWithAudit): User {
         const { userCredentials, ...user } = input;
         const authorities = _(userCredentials.userRoles)
             .map(userRole => userRole.authorities)
@@ -291,10 +329,12 @@ export class UserD2ApiRepository implements UserRepository {
             password: userCredentials.password,
             // accountExpiry: userCredentials.accountExpiry,
             authorities,
+            createdBy: user.createdBy ? user.createdBy.displayName : "",
+            lastModifiedBy: user.lastUpdatedBy ? user.lastUpdatedBy.displayName : "",
         };
     }
 
-    private toApiUser(input: User): ApiUser {
+    private toApiUser(input: User): ApiUserWithAudit {
         return {
             id: input.id,
             name: input.name,
@@ -325,6 +365,8 @@ export class UserD2ApiRepository implements UserRepository {
                 password: input.password ?? "",
                 // accountExpiry: input.accountExpiry ?? "",
             },
+            createdBy: { displayName: input.createdBy },
+            lastUpdatedBy: { displayName: input.lastModifiedBy },
         };
     }
 }
@@ -362,6 +404,7 @@ const fields = {
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
+export type ApiUserWithAudit = ApiUser & UserAudit;
 
 const defaultColumns: Array<keyof User> = [
     "username",
@@ -372,3 +415,13 @@ const defaultColumns: Array<keyof User> = [
     "lastLogin",
     "disabled",
 ];
+
+// in version 2.38 stats and typeReports are inside a response object
+type Dhis2Response = MetadataResponse & {
+    response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
+};
+
+type UserAudit = {
+    createdBy?: { displayName: string };
+    lastUpdatedBy?: { displayName: string };
+};
