@@ -371,6 +371,8 @@ export class UserD2ApiRepository implements UserRepository {
     }
 }
 
+const orgUnitsFields = { id: true, name: true, path: true } as const;
+
 const fields = {
     id: true,
     name: true,
@@ -386,8 +388,8 @@ const fields = {
     lastUpdated: true,
     created: true,
     userGroups: { id: true, name: true },
-    organisationUnits: { id: true, name: true },
-    dataViewOrganisationUnits: { id: true, name: true },
+    organisationUnits: orgUnitsFields,
+    dataViewOrganisationUnits: orgUnitsFields,
     access: true,
     userCredentials: {
         id: true,

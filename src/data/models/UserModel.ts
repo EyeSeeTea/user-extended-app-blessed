@@ -1,7 +1,7 @@
 import { AccessPermissions, User } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
 import { ApiUser } from "../repositories/UserD2ApiRepository";
-import { NamedRefModel } from "./DHIS2Model";
+import { NamedRefModel, OrgUnitModel } from "./DHIS2Model";
 
 export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     read: Schema.optionalSafe(Schema.boolean, false),
@@ -30,8 +30,8 @@ export const UserModel: Codec<User> = Schema.object({
     apiUrl: Schema.nonEmptyString,
     userRoles: Schema.array(NamedRefModel),
     userGroups: Schema.array(NamedRefModel),
-    organisationUnits: Schema.array(NamedRefModel),
-    dataViewOrganisationUnits: Schema.array(NamedRefModel),
+    organisationUnits: Schema.array(OrgUnitModel),
+    dataViewOrganisationUnits: Schema.array(OrgUnitModel),
     lastLogin: Schema.optional(Schema.date),
     disabled: Schema.boolean,
     access: AccessPermissionsModel,
@@ -59,8 +59,8 @@ export const ApiUserModel: Codec<ApiUser> = Schema.object({
     lastUpdated: Schema.string,
     created: Schema.string,
     userGroups: Schema.array(NamedRefModel),
-    organisationUnits: Schema.array(NamedRefModel),
-    dataViewOrganisationUnits: Schema.array(NamedRefModel),
+    organisationUnits: Schema.array(OrgUnitModel),
+    dataViewOrganisationUnits: Schema.array(OrgUnitModel),
     access: AccessPermissionsModel,
     userCredentials: Schema.object({
         id: Schema.string,

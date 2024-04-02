@@ -17,13 +17,40 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters } from "../../../domain/repositories/UserRepository";
-import { assignToOrgUnits } from "../../../legacy/List/context.actions";
+import { ListFilters, UpdateStrategy } from "../../../domain/repositories/UserRepository";
+import { SaveUserOrgUnitOptions } from "../../../domain/usecases/SaveUserOrgUnitUseCase";
 import i18n from "../../../locales";
+import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
+import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/useUser";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
-import { ActionType, UsersSelectedModal } from "../users-remove-modal/UsersSelectedModal";
+import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
+import {
+    ActionType,
+    generateMessage,
+    getFirstThreeUsersNames,
+    UsersSelectedModal,
+} from "../users-remove-modal/UsersSelectedModal";
+
+const ouCaptureI18n = i18n.t("Assign to organisation units capture");
+const ouOutputI18n = i18n.t("Assign to organisation units output");
+
+function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
+    switch (action) {
+        case "assign_to_org_units_capture":
+            return "capture";
+        case "assign_to_org_units_output":
+            return "output";
+        default:
+            throw new Error(`Invalid action: ${action}`);
+    }
+}
+
+function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
+    if (!actionType) return false;
+    return actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output";
+}
 
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
@@ -47,6 +74,19 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
     const navigate = useNavigate();
+
+    const onCleanSelectedUsers = React.useCallback(() => {
+        setSelectedUserIds([]);
+        setActionType(undefined);
+    }, []);
+
+    const { users } = useGetUsersByIds({ ids: selectedUserIds });
+    const { saveUsersOrgUnits } = useSaveUsersOrgUnits({
+        onSuccess: React.useCallback(() => {
+            onCleanSelectedUsers();
+            reload();
+        }, [onCleanSelectedUsers, reload]),
+    });
 
     const editUsers = useCallback(
         (ids: string[]) => {
@@ -120,7 +160,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Assign to organisation units"),
                     multiple: true,
                     icon: <Icon>business</Icon>,
-                    onClick: users => assignToOrgUnits(users, "organisationUnits", "assign_to_org_units_capture"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_capture");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -128,8 +171,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Assign to data view organisation units"),
                     multiple: true,
                     icon: <Icon>business</Icon>,
-                    onClick: users =>
-                        assignToOrgUnits(users, "dataViewOrganisationUnits", "assign_to_org_units_output"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_output");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -326,27 +371,38 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     );
 
     const onSuccessUsersRemove = () => {
-        setSelectedUserIds([]);
-        setActionType(undefined);
+        onCleanSelectedUsers();
         reload();
-    };
-
-    const onCancelUsersRemove = () => {
-        setSelectedUserIds([]);
-        setActionType(undefined);
     };
 
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            {actionType && (
+            {actionType && !isActionTypeOrgUnit(actionType) && (
                 <UsersSelectedModal
                     ids={selectedUserIds}
                     isOpen={selectedUserIds.length > 0}
                     onSuccess={onSuccessUsersRemove}
-                    onCancel={onCancelUsersRemove}
+                    onCancel={onCleanSelectedUsers}
                     actionType={actionType}
+                />
+            )}
+
+            {actionType && isActionTypeOrgUnit(actionType) && Array.isArray(users) && users.length > 0 && (
+                <OrgUnitDialogSelector
+                    onCancel={onCleanSelectedUsers}
+                    onSave={(orgUnitIds: Id[], updateStrategy: UpdateStrategy) => {
+                        saveUsersOrgUnits(orgUnitIds, updateStrategy, users, convertActionToOrgUnitType(actionType));
+                    }}
+                    title={i18n.t("{{action}}: {{users}} {{remainingCount}}", {
+                        action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
+                        users: getFirstThreeUsersNames(users).join(", "),
+                        remainingCount: generateMessage(users),
+                        nsSeparator: false,
+                    })}
+                    visible
+                    users={users}
                 />
             )}
 

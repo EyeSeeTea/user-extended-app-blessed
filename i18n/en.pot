@@ -5,18 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-
-"POT-Creation-Date: 2024-01-22T16:20:16.511Z\n"
-"PO-Revision-Date: 2024-01-22T16:20:16.511Z\n"
-
-msgid "Enable users"
-msgstr ""
-
-msgid "Disable users"
-msgstr ""
-
-msgid "Remove users"
-msgstr ""
+"POT-Creation-Date: 2024-04-02T02:57:31.095Z\n"
+"PO-Revision-Date: 2024-04-02T02:57:31.095Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -118,6 +108,9 @@ msgid "Assign roles to {{usernames}}"
 msgstr ""
 
 msgid "Assign groups to {{usernames}}"
+msgstr ""
+
+msgid "Bulk update strategy: {{strategy}}"
 msgstr ""
 
 msgid "Back"
@@ -240,6 +233,12 @@ msgstr ""
 msgid "Api URL"
 msgstr ""
 
+msgid "Assign to organisation units capture"
+msgstr ""
+
+msgid "Assign to organisation units output"
+msgstr ""
+
 msgid "Last updated"
 msgstr ""
 
@@ -303,6 +302,9 @@ msgstr ""
 msgid "Search by name or username..."
 msgstr ""
 
+msgid "{{action}}: {{users}} {{remainingCount}}"
+msgstr ""
+
 msgid "User ID"
 msgstr ""
 
@@ -336,6 +338,9 @@ msgid ""
 msgstr ""
 
 msgid "Confirm"
+msgstr ""
+
+msgid "Saving..."
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"

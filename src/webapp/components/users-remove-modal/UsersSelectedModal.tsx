@@ -15,7 +15,7 @@ type UsersRemoveModalProps = {
     actionType: ActionType;
 };
 
-export type ActionType = "remove" | "enable" | "disable";
+export type ActionType = "remove" | "enable" | "disable" | "assign_to_org_units_capture" | "assign_to_org_units_output";
 
 function getMessagesByActionType(actionType: ActionType): { title: string } {
     if (actionType === "remove") {
@@ -28,10 +28,17 @@ function getMessagesByActionType(actionType: ActionType): { title: string } {
     return { title: "" };
 }
 
-function generateMessage(users: User[]) {
+export function generateMessage(users: User[]) {
     const firstThreeUsers = _(users).take(3).value();
     const remainingUsersCount = users.length - firstThreeUsers.length;
     return remainingUsersCount > 0 ? `and ${remainingUsersCount} more` : "";
+}
+
+export function getFirstThreeUsersNames(users: User[]): string[] {
+    return _(users)
+        .take(3)
+        .map(user => user.username)
+        .value();
 }
 
 export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
@@ -54,10 +61,7 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
 
     const messages = getMessagesByActionType(actionType);
 
-    const firstThreeUsers = _(users)
-        .take(3)
-        .map(user => user.username)
-        .value();
+    const firstThreeUsers = getFirstThreeUsersNames(users);
 
     const onSuccessAction = () => {
         snackbar.success(

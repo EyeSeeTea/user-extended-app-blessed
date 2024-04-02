@@ -1,6 +1,8 @@
 import _ from "lodash";
 import { NamedRef } from "./Ref";
 
+type OrgUnit = NamedRef & { path: string };
+
 export interface User {
     id: string;
     name: string;
@@ -19,8 +21,8 @@ export interface User {
     apiUrl: string;
     userRoles: NamedRef[];
     userGroups: NamedRef[];
-    organisationUnits: NamedRef[];
-    dataViewOrganisationUnits: NamedRef[];
+    organisationUnits: OrgUnit[];
+    dataViewOrganisationUnits: OrgUnit[];
     lastLogin?: Date;
     disabled: boolean;
     access: AccessPermissions;
@@ -52,8 +54,8 @@ export const defaultUser: User = {
     apiUrl: "",
     userRoles: [{ id: "", name: "" }],
     userGroups: [{ id: "", name: "" }],
-    organisationUnits: [{ id: "", name: "" }],
-    dataViewOrganisationUnits: [{ id: "", name: "" }],
+    organisationUnits: [{ id: "", name: "", path: "" }],
+    dataViewOrganisationUnits: [{ id: "", name: "", path: "" }],
     lastLogin: new Date(),
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },
