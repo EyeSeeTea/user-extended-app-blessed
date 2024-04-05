@@ -340,7 +340,7 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
-msgid "Guardando..."
+msgid "Saving..."
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"

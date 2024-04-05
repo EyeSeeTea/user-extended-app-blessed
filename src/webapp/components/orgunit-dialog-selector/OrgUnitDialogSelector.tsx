@@ -1,5 +1,7 @@
 import React from "react";
+import styled from "styled-components";
 import { ConfirmationDialog, OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
+
 import { useAppContext } from "../../contexts/app-context";
 import Toggle from "material-ui/Toggle";
 import i18n from "../../../locales";
@@ -45,35 +47,32 @@ export const OrgUnitDialogSelector: React.FC<OrgUnitDialogSelectorProps> = props
             onSave={() => onDialogSave()}
         >
             {!onlyOneUser && (
-                <Toggle
-                    label={i18n.t("Bulk update strategy: {{strategy}}", {
-                        strategy: strategyLabel,
-                        nsSeparator: false,
-                    })}
-                    checked={updateStrategy === "replace"}
-                    onToggle={(_, newValue) => setUpdateStrategy(newValue ? "replace" : "merge")}
-                    style={{
-                        width: 300,
-                        float: "right",
-                        marginTop: 20,
-                        marginRight: 15,
-                        marginBottom: -50,
-                    }}
-                />
+                <ToggleContainer>
+                    <ToggleStyle
+                        label={i18n.t("Bulk update strategy: {{strategy}}", {
+                            strategy: strategyLabel,
+                            nsSeparator: false,
+                        })}
+                        checked={updateStrategy === "replace"}
+                        onToggle={(_, newValue) => setUpdateStrategy(newValue ? "replace" : "merge")}
+                    />
+                </ToggleContainer>
             )}
 
-            <OrgUnitsSelector
-                api={api}
-                selected={selectedPaths}
-                onChange={onChangeOrgUnit}
-                controls={{
-                    filterByLevel: true,
-                    filterByGroup: true,
-                    filterByProgram: false,
-                    selectAll: false,
-                }}
-                showNameSetting={true}
-            />
+            <div className="org-unit-dialog-selector">
+                <OrgUnitsSelector
+                    api={api}
+                    selected={selectedPaths}
+                    onChange={onChangeOrgUnit}
+                    controls={{
+                        filterByLevel: true,
+                        filterByGroup: true,
+                        filterByProgram: false,
+                        selectAll: false,
+                    }}
+                    showNameSetting={true}
+                />
+            </div>
         </ConfirmationDialog>
     );
 };
@@ -85,3 +84,13 @@ type OrgUnitDialogSelectorProps = {
     users: User[];
     visible: boolean;
 };
+
+const ToggleStyle = styled(Toggle)`
+    margin-left: auto;
+    width: initial !important;
+`;
+
+const ToggleContainer = styled.div`
+    display: flex;
+    padding: 1em;
+`;
