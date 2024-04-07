@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-02T02:57:31.095Z\n"
-"PO-Revision-Date: 2024-04-02T02:57:31.095Z\n"
+"POT-Creation-Date: 2024-04-07T22:55:11.118Z\n"
+"PO-Revision-Date: 2024-04-07T22:55:11.118Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -233,12 +233,6 @@ msgstr ""
 msgid "Api URL"
 msgstr ""
 
-msgid "Assign to organisation units capture"
-msgstr ""
-
-msgid "Assign to organisation units output"
-msgstr ""
-
 msgid "Last updated"
 msgstr ""
 
@@ -300,6 +294,12 @@ msgid "Replicate user from table"
 msgstr ""
 
 msgid "Search by name or username..."
+msgstr ""
+
+msgid "Assign to organisation units capture"
+msgstr ""
+
+msgid "Assign to organisation units output"
 msgstr ""
 
 msgid "{{action}}: {{users}} {{remainingCount}}"

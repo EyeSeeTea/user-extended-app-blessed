@@ -121,9 +121,8 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
                     disabled={values.users[row].externalAuth === true}
                 />
             );
-        // TODO: Convert to date field
-        // case "accountExpiry":
-        //     return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
+        case "accountExpiry":
+            return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
         case "userGroups":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":

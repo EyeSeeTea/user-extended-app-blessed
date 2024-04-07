@@ -33,23 +33,25 @@ import {
     UsersSelectedModal,
 } from "../users-remove-modal/UsersSelectedModal";
 
-const ouCaptureI18n = i18n.t("Assign to organisation units capture");
-const ouOutputI18n = i18n.t("Assign to organisation units output");
-
 function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
     switch (action) {
         case "assign_to_org_units_capture":
             return "capture";
         case "assign_to_org_units_output":
             return "output";
-        default:
+        case "disable":
+        case "enable":
+        case "remove":
             throw new Error(`Invalid action: ${action}`);
     }
 }
 
 function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
-    if (!actionType) return false;
-    return actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output";
+    if (actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output") {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -75,12 +77,14 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const snackbar = useSnackbar();
     const navigate = useNavigate();
 
+    const { users, setUsers } = useGetUsersByIds({ ids: selectedUserIds });
+
     const onCleanSelectedUsers = React.useCallback(() => {
         setSelectedUserIds([]);
+        setUsers(undefined);
         setActionType(undefined);
-    }, []);
+    }, [setUsers]);
 
-    const { users } = useGetUsersByIds({ ids: selectedUserIds });
     const { saveUsersOrgUnits } = useSaveUsersOrgUnits({
         onSuccess: React.useCallback(() => {
             onCleanSelectedUsers();
@@ -375,6 +379,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         reload();
     };
 
+    const ouCaptureI18n = i18n.t("Assign to organisation units capture");
+    const ouOutputI18n = i18n.t("Assign to organisation units output");
+
+    const onSaveOrgUnits = React.useCallback(
+        (orgUnitIds: Id[], updateStrategy: UpdateStrategy) => {
+            if (users && actionType) {
+                saveUsersOrgUnits(orgUnitIds, updateStrategy, users, convertActionToOrgUnitType(actionType));
+            }
+        },
+        [actionType, users, saveUsersOrgUnits]
+    );
+
+    const generateOrgUnitTitle = React.useCallback(() => {
+        if (!users || !actionType) return "";
+        return i18n.t("{{action}}: {{users}} {{remainingCount}}", {
+            action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
+            users: getFirstThreeUsersNames(users).join(", "),
+            remainingCount: generateMessage(users),
+            nsSeparator: false,
+        });
+    }, [actionType, users, ouCaptureI18n, ouOutputI18n]);
+
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
@@ -389,18 +415,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 />
             )}
 
-            {actionType && isActionTypeOrgUnit(actionType) && Array.isArray(users) && users.length > 0 && (
+            {actionType && isActionTypeOrgUnit(actionType) && users && users.length > 0 && (
                 <OrgUnitDialogSelector
                     onCancel={onCleanSelectedUsers}
-                    onSave={(orgUnitIds: Id[], updateStrategy: UpdateStrategy) => {
-                        saveUsersOrgUnits(orgUnitIds, updateStrategy, users, convertActionToOrgUnitType(actionType));
-                    }}
-                    title={i18n.t("{{action}}: {{users}} {{remainingCount}}", {
-                        action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
-                        users: getFirstThreeUsersNames(users).join(", "),
-                        remainingCount: generateMessage(users),
-                        nsSeparator: false,
-                    })}
+                    onSave={onSaveOrgUnits}
+                    title={generateOrgUnitTitle()}
                     visible
                     users={users}
                 />

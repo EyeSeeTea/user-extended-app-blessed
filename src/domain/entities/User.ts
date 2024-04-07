@@ -1,7 +1,6 @@
 import _ from "lodash";
+import { OrgUnit } from "./OrgUnit";
 import { NamedRef } from "./Ref";
-
-type OrgUnit = NamedRef & { path: string };
 
 export interface User {
     id: string;
@@ -30,7 +29,7 @@ export interface User {
     ldapId?: string;
     externalAuth: boolean;
     password: string;
-    // accountExpiry: string;
+    accountExpiry?: string;
     authorities: string[];
     createdBy: string;
     lastModifiedBy: string;
@@ -66,6 +65,7 @@ export const defaultUser: User = {
     authorities: [""],
     createdBy: "",
     lastModifiedBy: "",
+    accountExpiry: undefined,
 };
 export interface AccessPermissions {
     read: boolean;

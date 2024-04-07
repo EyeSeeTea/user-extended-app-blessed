@@ -78,6 +78,6 @@ export const ApiUserModel: Codec<ApiUser> = Schema.object({
         ldapId: Schema.optionalSafe(Schema.string, ""),
         externalAuth: Schema.boolean,
         password: Schema.string,
-        // accountExpiry: Schema.string,
+        accountExpiry: Schema.optionalSafe(Schema.string, ""),
     }),
 });

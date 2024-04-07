@@ -117,6 +117,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields: {
                     ...fields,
                     $owner: true,
+                    userCredentials: { ...fields.userCredentials, $all: true },
                 },
                 page,
                 pageSize,
@@ -147,7 +148,6 @@ export class UserD2ApiRepository implements UserRepository {
                 const usersToSend = existingUsers.map(existingUser => {
                     const user = users.find(user => user.id === existingUser.id);
                     if (!user) return undefined;
-
                     return {
                         ...existingUser,
                         organisationUnits: user?.organisationUnits,
@@ -175,7 +175,7 @@ export class UserD2ApiRepository implements UserRepository {
                             ldapId: user?.userCredentials.ldapId,
                             externalAuth: user?.userCredentials.externalAuth,
                             password: user?.userCredentials.password,
-                            // accountExpiry: user?.userCredentials.accountExpiry,
+                            accountExpiry: user?.userCredentials.accountExpiry,
                         },
                     };
                 });
@@ -327,7 +327,7 @@ export class UserD2ApiRepository implements UserRepository {
             ldapId: userCredentials.ldapId,
             externalAuth: userCredentials.externalAuth,
             password: userCredentials.password,
-            // accountExpiry: userCredentials.accountExpiry,
+            accountExpiry: userCredentials.accountExpiry,
             authorities,
             createdBy: user.createdBy ? user.createdBy.displayName : "",
             lastModifiedBy: user.lastUpdatedBy ? user.lastUpdatedBy.displayName : "",
@@ -363,7 +363,7 @@ export class UserD2ApiRepository implements UserRepository {
                 ldapId: input.ldapId ?? "",
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
-                // accountExpiry: input.accountExpiry ?? "",
+                accountExpiry: input.accountExpiry ?? "",
             },
             createdBy: { displayName: input.createdBy },
             lastUpdatedBy: { displayName: input.lastModifiedBy },
@@ -401,7 +401,7 @@ const fields = {
         ldapId: true,
         externalAuth: true,
         password: true,
-        // accountExpiry: true,
+        accountExpiry: true,
     },
 } as const;
 

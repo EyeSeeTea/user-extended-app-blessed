@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import { UseCase } from "../../CompositionRoot";
-import { Future, FutureData } from "../entities/Future";
+import { FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { UpdateStrategy, UserRepository } from "../repositories/UserRepository";
 import { Id } from "../entities/Ref";
@@ -16,38 +16,38 @@ export class SaveUserOrgUnitUseCase implements UseCase {
     }
 
     private applyOrgUnitsToUsers(options: SaveUserOrgUnitOptions): User[] {
-        const orgUnitKey = this.getOrgUnitKey(options);
+        const isCaptureOrgUnit = options.orgUnitType === "capture";
         return options.users.map(user => {
-            return {
-                ...user,
-                [orgUnitKey]: this.getOrgUnits(
-                    options,
-                    orgUnitKey === "organisationUnits" ? user.organisationUnits : user.dataViewOrganisationUnits
-                ),
-            };
+            const orgUnits = this.getOrgUnits(
+                options,
+                isCaptureOrgUnit ? user.organisationUnits : user.dataViewOrganisationUnits
+            );
+
+            const userOrgUnits: Partial<User> = isCaptureOrgUnit
+                ? { organisationUnits: orgUnits }
+                : { dataViewOrganisationUnits: orgUnits };
+
+            return { ...user, ...userOrgUnits };
         });
     }
 
-    private getOrgUnitKey(options: SaveUserOrgUnitOptions): keyof User {
-        return options.orgUnitType === "capture" ? "organisationUnits" : "dataViewOrganisationUnits";
-    }
-
     private getOrgUnits(options: SaveUserOrgUnitOptions, organisationUnits: OrgUnit[]): OrgUnit[] {
-        if (options.updateStrategy === "replace") {
-            return options.orgUnitsIds.map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }));
-        } else if (options.updateStrategy === "merge") {
-            return _(options.orgUnitsIds)
-                .map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }))
-                .concat(organisationUnits)
-                .uniqBy(orgUnit => orgUnit.id)
-                .value();
-        } else {
-            throw Error(`Invalid UpdateStrategy: ${options.updateStrategy}`);
+        switch (options.updateStrategy) {
+            case "replace":
+                return options.orgUnitsIds.map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }));
+            case "merge":
+                return _(options.orgUnitsIds)
+                    .map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }))
+                    .concat(organisationUnits)
+                    .uniqBy(orgUnit => orgUnit.id)
+                    .value();
+            default:
+                throw Error(`Invalid UpdateStrategy: ${options.updateStrategy}`);
         }
     }
 
     private saveUsers(users: User[]): FutureData<void> {
-        return this.userRepository.save(users).flatMap(() => Future.success(undefined));
+        return this.userRepository.save(users).map(() => undefined);
     }
 }
 

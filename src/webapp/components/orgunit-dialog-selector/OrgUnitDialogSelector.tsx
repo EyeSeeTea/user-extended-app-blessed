@@ -18,6 +18,13 @@ function getOrgUnitPaths(users: User[]): string[] {
     return isThereOnlyOneUser(users) ? users.flatMap(user => user.organisationUnits.map(ou => ou.path)) : [];
 }
 
+const controls = {
+    filterByLevel: true,
+    filterByGroup: true,
+    filterByProgram: false,
+    selectAll: false,
+};
+
 export const OrgUnitDialogSelector: React.FC<OrgUnitDialogSelectorProps> = props => {
     const { onCancel, onSave, title, users, visible } = props;
 
@@ -35,7 +42,12 @@ export const OrgUnitDialogSelector: React.FC<OrgUnitDialogSelectorProps> = props
         onSave(extractIdsFromPaths(selectedPaths), updateStrategy);
     }, [onSave, updateStrategy, selectedPaths]);
 
-    const strategyLabel = updateStrategy === "replace" ? i18n.t("Replace") : i18n.t("Merge");
+    const onToggle = React.useCallback((_event, newValue: boolean) => {
+        setUpdateStrategy(newValue ? "replace" : "merge");
+    }, []);
+
+    const isReplaceStrategy = updateStrategy === "replace";
+    const strategyLabel = isReplaceStrategy ? i18n.t("Replace") : i18n.t("Merge");
 
     return (
         <ConfirmationDialog
@@ -44,32 +56,25 @@ export const OrgUnitDialogSelector: React.FC<OrgUnitDialogSelectorProps> = props
             maxWidth="lg"
             fullWidth
             onCancel={onCancel}
-            onSave={() => onDialogSave()}
+            onSave={onDialogSave}
         >
-            {!onlyOneUser && (
-                <ToggleContainer>
-                    <ToggleStyle
-                        label={i18n.t("Bulk update strategy: {{strategy}}", {
-                            strategy: strategyLabel,
-                            nsSeparator: false,
-                        })}
-                        checked={updateStrategy === "replace"}
-                        onToggle={(_, newValue) => setUpdateStrategy(newValue ? "replace" : "merge")}
-                    />
-                </ToggleContainer>
-            )}
+            <ToggleContainer $hide={onlyOneUser}>
+                <ToggleStyle
+                    label={i18n.t("Bulk update strategy: {{strategy}}", {
+                        strategy: strategyLabel,
+                        nsSeparator: false,
+                    })}
+                    toggled={isReplaceStrategy}
+                    onToggle={onToggle}
+                />
+            </ToggleContainer>
 
             <div className="org-unit-dialog-selector">
                 <OrgUnitsSelector
                     api={api}
                     selected={selectedPaths}
                     onChange={onChangeOrgUnit}
-                    controls={{
-                        filterByLevel: true,
-                        filterByGroup: true,
-                        filterByProgram: false,
-                        selectAll: false,
-                    }}
+                    controls={controls}
                     showNameSetting={true}
                 />
             </div>
@@ -77,7 +82,7 @@ export const OrgUnitDialogSelector: React.FC<OrgUnitDialogSelectorProps> = props
     );
 };
 
-type OrgUnitDialogSelectorProps = {
+export type OrgUnitDialogSelectorProps = {
     onCancel: () => void;
     onSave: (orgUnitIds: Id[], strategy: UpdateStrategy) => void;
     title: string;
@@ -90,7 +95,7 @@ const ToggleStyle = styled(Toggle)`
     width: initial !important;
 `;
 
-const ToggleContainer = styled.div`
-    display: flex;
+const ToggleContainer = styled.div<{ $hide: boolean }>`
+    display: ${props => (props.$hide ? "none" : "flex")};
     padding: 1em;
 `;

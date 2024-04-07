@@ -7,6 +7,9 @@ import { SaveUserOrgUnitOptions } from "../../domain/usecases/SaveUserOrgUnitUse
 import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
 
+type UseGetUsersByIdsProps = { ids: Id[] };
+type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
+
 export function useGetUsersByIds(props: UseGetUsersByIdsProps) {
     const { ids } = props;
 
@@ -18,7 +21,7 @@ export function useGetUsersByIds(props: UseGetUsersByIdsProps) {
     React.useEffect(() => {
         if (ids.length === 0) return;
         loading.show(true);
-        compositionRoot.users.get(ids).run(
+        return compositionRoot.users.get(ids).run(
             users => {
                 setUsers(users);
                 loading.hide();
@@ -29,10 +32,10 @@ export function useGetUsersByIds(props: UseGetUsersByIdsProps) {
         );
     }, [compositionRoot.users, ids, loading, snackbar]);
 
-    return { users };
+    return { setUsers, users };
 }
 
-export function useSaveUsersOrgUnits(props: any) {
+export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
     const { onSuccess } = props;
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
@@ -69,5 +72,3 @@ export function useSaveUsersOrgUnits(props: any) {
 
     return { saveUsersOrgUnits };
 }
-
-type UseGetUsersByIdsProps = { ids: Id[] };
