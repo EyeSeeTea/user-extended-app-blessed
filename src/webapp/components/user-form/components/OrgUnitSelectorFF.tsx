@@ -3,6 +3,7 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { NamedRef } from "../../../../domain/entities/Ref";
+import { orgUnitControls, orgUnitListParams } from "../../../../utils/d2-api";
 import { useAppContext } from "../../../contexts/app-context";
 
 export type OrgUnitSelectorFFProps = {
@@ -45,12 +46,8 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
                 api={api}
                 onChange={onChange}
                 selected={selectedPaths}
-                controls={{
-                    filterByLevel: true,
-                    filterByGroup: true,
-                    filterByProgram: false,
-                    selectAll: false,
-                }}
+                controls={orgUnitControls}
+                listParams={orgUnitListParams}
                 showNameSetting={true}
             />
 

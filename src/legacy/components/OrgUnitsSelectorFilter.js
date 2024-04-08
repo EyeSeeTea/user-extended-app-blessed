@@ -4,6 +4,7 @@ import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
 import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
+import { orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
 import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
@@ -101,12 +102,8 @@ class OrgUnitsSelectorFilter extends React.Component {
                         onChange={this.onChange}
                         fullWidth={true}
                         withElevation={false}
-                        controls={{
-                            filterByLevel: true,
-                            filterByGroup: true,
-                            filterByProgram: false,
-                            selectAll: false,
-                        }}
+                        listParams={orgUnitListParams}
+                        controls={orgUnitControls}
                         showNameSetting={true}
                     />
                 </ConfirmationDialog>
