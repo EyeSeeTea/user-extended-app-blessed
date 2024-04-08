@@ -30,6 +30,8 @@ export interface User {
     password: string;
     // accountExpiry: string;
     authorities: string[];
+    createdBy: string;
+    lastModifiedBy: string;
 }
 
 export const defaultUser: User = {
@@ -59,8 +61,9 @@ export const defaultUser: User = {
     ldapId: "",
     externalAuth: false,
     password: "",
-    // accountExpiry: "",
     authorities: [""],
+    createdBy: "",
+    lastModifiedBy: "",
 };
 export interface AccessPermissions {
     read: boolean;

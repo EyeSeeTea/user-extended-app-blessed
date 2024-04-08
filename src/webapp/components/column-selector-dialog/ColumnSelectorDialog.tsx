@@ -49,11 +49,7 @@ export function ColumnSelectorDialog(props: ColumnSelectorDialogProps) {
 
                             return (
                                 <TableRow key={`cell-${name}`}>
-                                    <TableCell
-                                        component="th"
-                                        scope="row"
-                                        onClick={() => !disabled && toggleElement(name)}
-                                    >
+                                    <TableCell scope="row" onClick={() => !disabled && toggleElement(name)}>
                                         <Checkbox
                                             color={"primary"}
                                             checked={checked}

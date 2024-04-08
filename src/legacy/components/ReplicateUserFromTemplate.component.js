@@ -133,7 +133,12 @@ class ReplicateUserFromTemplate extends React.Component {
             snackActions.show({ message });
             onRequestClose();
         } else {
-            this.setState({ infoDialog: { response } });
+            const errorMessage = i18n.t("Error replicating user {{user}}: {{message}}", {
+                user: userToReplicate.displayName,
+                message: response.error,
+            });
+            snackActions.show({ message: errorMessage });
+            onRequestClose();
         }
     };
 
