@@ -97,8 +97,8 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             if (ids.length === 1) {
                 navigate(`/edit/${ids[0]}`);
             } else {
-                compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
-                    ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
+                compositionRoot.users.get(ids).run(
+                    users => navigate(`/bulk-edit`, { state: { users: users } }),
                     error => snackbar.error(error)
                 );
             }

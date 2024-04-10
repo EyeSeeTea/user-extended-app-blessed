@@ -33,6 +33,8 @@ export interface User {
     authorities: string[];
     createdBy: string;
     lastModifiedBy: string;
+    uiLocale: LocaleCode;
+    dbLocale: LocaleCode;
 }
 
 export const defaultUser: User = {
@@ -66,6 +68,8 @@ export const defaultUser: User = {
     createdBy: "",
     lastModifiedBy: "",
     accountExpiry: undefined,
+    uiLocale: "",
+    dbLocale: "",
 };
 export interface AccessPermissions {
     read: boolean;
@@ -83,3 +87,5 @@ export const isSuperAdmin = (user: User): boolean => {
 export const hasReplicateAuthority = (user: User): boolean => {
     return _.some(user.authorities, authorities => authorities.includes("F_REPLICATE_USER"));
 };
+
+export type LocaleCode = string;

@@ -42,6 +42,8 @@ export const UserModel: Codec<User> = Schema.object({
     password: Schema.string,
     createdBy: Schema.optionalSafe(Schema.string, ""),
     lastModifiedBy: Schema.optionalSafe(Schema.string, ""),
+    uiLocale: Schema.optionalSafe(Schema.string, ""),
+    dbLocale: Schema.optionalSafe(Schema.string, ""),
 });
 
 export const ApiUserModel: Codec<ApiUser> = Schema.object({

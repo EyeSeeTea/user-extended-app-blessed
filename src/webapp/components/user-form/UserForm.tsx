@@ -90,7 +90,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
     useEffect(() => {
         if (field !== "uiLocale" && field !== "dbLocale") return;
 
-        compositionRoot.instance.getLocales(field).run(
+        return compositionRoot.instance.getLocales(field).run(
             locales => setLocales(locales),
             error => console.error(error)
         );
@@ -135,6 +135,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         case "uiLocale":
         case "dbLocale":
+            if (locales.length === 0) return null;
             return (
                 <FormField
                     {...props}

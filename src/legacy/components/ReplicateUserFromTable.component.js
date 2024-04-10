@@ -64,6 +64,7 @@ class ReplicateUserFromTable extends React.Component {
                 onRequestClose={onRequestClose}
                 columns={this.columns}
                 settings={this.props.settings}
+                api={this.props.api}
             />
         );
     }
