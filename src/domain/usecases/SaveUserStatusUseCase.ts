@@ -1,5 +1,5 @@
 import { UseCase } from "../../CompositionRoot";
-import { FutureData, Future } from "../entities/Future";
+import { FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepository";
 
@@ -10,9 +10,7 @@ export class SaveUserStatusUseCase implements UseCase {
         const usersToUpdate = users.map(user => {
             return { ...user, disabled: options.disabled };
         });
-        return this.userRepository.save(usersToUpdate).flatMap(() => {
-            return Future.success(undefined);
-        });
+        return this.userRepository.save(usersToUpdate).map(() => undefined);
     }
 }
 

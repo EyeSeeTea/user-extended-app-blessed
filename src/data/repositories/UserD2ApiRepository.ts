@@ -4,7 +4,7 @@ import { Future, FutureData } from "../../domain/entities/Future";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
-import { LocaleCode, User } from "../../domain/entities/User";
+import { DB_LOCALE_KEY, LocaleCode, UI_LOCALE_KEY, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
@@ -60,9 +60,9 @@ export class UserD2ApiRepository implements UserRepository {
 
     private getLocaleValueByType(user: User, keyLocale: KeyLocale): string {
         switch (keyLocale) {
-            case "keyDbLocale":
+            case DB_LOCALE_KEY:
                 return user.dbLocale;
-            case "keyUiLocale":
+            case UI_LOCALE_KEY:
                 return user.uiLocale;
             default:
                 throw Error(`Invalid locale type: ${keyLocale}`);

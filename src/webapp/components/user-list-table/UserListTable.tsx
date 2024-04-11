@@ -47,11 +47,7 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
 }
 
 function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
-    if (actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output") {
-        return true;
-    } else {
-        return false;
-    }
+    return actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output";
 }
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -391,7 +387,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [actionType, users, saveUsersOrgUnits]
     );
 
-    const generateOrgUnitTitle = React.useCallback(() => {
+    const generateOrgUnitTitle = React.useMemo(() => {
         if (!users || !actionType) return "";
         return i18n.t("{{action}}: {{users}} {{remainingCount}}", {
             action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
@@ -419,7 +415,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 <OrgUnitDialogSelector
                     onCancel={onCleanSelectedUsers}
                     onSave={onSaveOrgUnits}
-                    title={generateOrgUnitTitle()}
+                    title={generateOrgUnitTitle}
                     visible
                     users={users}
                 />

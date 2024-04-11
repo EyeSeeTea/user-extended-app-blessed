@@ -9,8 +9,4 @@ export function extractIdsFromPaths(orgUnitPaths: string[]): string[] {
     return orgUnitPaths.map(extractIdFromPath);
 }
 
-export type OrgUnit = {
-    id: Id;
-    name: string;
-    path: string;
-};
+export type OrgUnit = { id: Id; name: string; path: string };

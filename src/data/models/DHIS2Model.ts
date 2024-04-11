@@ -13,6 +13,6 @@ export const NamedRefModel: Codec<NamedRef> = Schema.object({
 
 export const OrgUnitModel: Codec<OrgUnit> = Schema.object({
     id: Schema.string,
-    name: Schema.optionalSafe(Schema.string, ""),
-    path: Schema.optionalSafe(Schema.string, ""),
+    name: Schema.string,
+    path: Schema.string,
 });

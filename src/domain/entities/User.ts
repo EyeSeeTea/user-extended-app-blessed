@@ -89,3 +89,5 @@ export const hasReplicateAuthority = (user: User): boolean => {
 };
 
 export type LocaleCode = string;
+export const UI_LOCALE_KEY = "keyUiLocale";
+export const DB_LOCALE_KEY = "keyDbLocale";

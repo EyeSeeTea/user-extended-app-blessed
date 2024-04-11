@@ -108,6 +108,10 @@ export class Future<E, D> {
     static flatten<E, D>(futures: Array<Future<E, D[]>>): Future<E, D[]> {
         return Future.sequential(futures).map(listOfValues => _.flatten(listOfValues));
     }
+
+    static void(): Future<unknown, undefined> {
+        return Future.success(undefined);
+    }
 }
 
 type JoinObj<Futures extends Record<string, Future<any, any>>> = Future<
