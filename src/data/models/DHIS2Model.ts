@@ -1,5 +1,4 @@
-import { OrgUnit } from "../../domain/entities/OrgUnit";
-import { NamedRef, Ref } from "../../domain/entities/Ref";
+import { Id, NamedRef, Ref } from "../../domain/entities/Ref";
 import { Codec, Schema } from "../../utils/codec";
 
 export const RefModel: Codec<Ref> = Schema.object({
@@ -11,7 +10,13 @@ export const NamedRefModel: Codec<NamedRef> = Schema.object({
     name: Schema.optionalSafe(Schema.string, "Unknown"),
 });
 
-export const OrgUnitModel: Codec<OrgUnit> = Schema.object({
+export type ApiD2OrgUnit = {
+    id: Id;
+    name: string;
+    path: string;
+};
+
+export const OrgUnitModel: Codec<ApiD2OrgUnit> = Schema.object({
     id: Schema.string,
     name: Schema.string,
     path: Schema.string,

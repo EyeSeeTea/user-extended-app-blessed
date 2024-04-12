@@ -1,4 +1,4 @@
-import { AccessPermissions, User } from "../../domain/entities/User";
+import { AccessPermissions } from "../../domain/entities/User";
 import { Codec, Schema } from "../../utils/codec";
 import { ApiUser } from "../repositories/UserD2ApiRepository";
 import { NamedRefModel, OrgUnitModel } from "./DHIS2Model";
@@ -10,40 +10,6 @@ export const AccessPermissionsModel: Codec<AccessPermissions> = Schema.object({
     delete: Schema.optionalSafe(Schema.boolean, false),
     write: Schema.optionalSafe(Schema.boolean, false),
     manage: Schema.optionalSafe(Schema.boolean, false),
-});
-
-export const UserModel: Codec<User> = Schema.object({
-    id: Schema.nonEmptyString,
-    name: Schema.nonEmptyString,
-    username: Schema.nonEmptyString,
-    firstName: Schema.nonEmptyString,
-    surname: Schema.nonEmptyString,
-    email: Schema.string,
-    phoneNumber: Schema.string,
-    whatsApp: Schema.string,
-    facebookMessenger: Schema.string,
-    skype: Schema.string,
-    telegram: Schema.string,
-    twitter: Schema.string,
-    lastUpdated: Schema.date,
-    created: Schema.date,
-    apiUrl: Schema.nonEmptyString,
-    userRoles: Schema.array(NamedRefModel),
-    userGroups: Schema.array(NamedRefModel),
-    organisationUnits: Schema.array(OrgUnitModel),
-    dataViewOrganisationUnits: Schema.array(OrgUnitModel),
-    lastLogin: Schema.optional(Schema.date),
-    disabled: Schema.boolean,
-    access: AccessPermissionsModel,
-    authorities: Schema.array(Schema.nonEmptyString),
-    openId: Schema.optional(Schema.string),
-    ldapId: Schema.optional(Schema.string),
-    externalAuth: Schema.boolean,
-    password: Schema.string,
-    createdBy: Schema.optionalSafe(Schema.string, ""),
-    lastModifiedBy: Schema.optionalSafe(Schema.string, ""),
-    uiLocale: Schema.string,
-    dbLocale: Schema.string,
 });
 
 export const ApiUserModel: Codec<ApiUser> = Schema.object({

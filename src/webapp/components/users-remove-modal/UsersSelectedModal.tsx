@@ -3,13 +3,12 @@ import _ from "lodash";
 import { ConfirmationDialog, useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 
 import { useAppContext } from "../../contexts/app-context";
-import { Id } from "../../../domain/entities/Ref";
 import { User } from "../../../domain/entities/User";
 import i18n from "../../../locales";
 
 type UsersRemoveModalProps = {
     isOpen: boolean;
-    ids: Id[];
+    users: User[];
     onSuccess: () => void;
     onCancel: () => void;
     actionType: ActionType;
@@ -34,7 +33,7 @@ export function generateMessage(users: User[]) {
     return remainingUsersCount > 0 ? `and ${remainingUsersCount} more` : "";
 }
 
-export function getFirstThreeUsersNames(users: User[]): string[] {
+export function getFirstThreeUserNames(users: User[]): string[] {
     return _(users)
         .take(3)
         .map(user => user.username)
@@ -43,7 +42,7 @@ export function getFirstThreeUsersNames(users: User[]): string[] {
 
 export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
     actionType,
-    ids,
+    users,
     isOpen,
     onCancel,
     onSuccess,
@@ -51,17 +50,10 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
     const loading = useLoading();
-    const [users, setUsers] = React.useState<User[]>([]);
-
-    React.useEffect(() => {
-        compositionRoot.users.get(ids).run(usersInfo => {
-            setUsers(usersInfo);
-        }, snackbar.error);
-    }, [compositionRoot.users, ids, snackbar]);
 
     const messages = getMessagesByActionType(actionType);
 
-    const firstThreeUsers = getFirstThreeUsersNames(users);
+    const firstThreeUsers = getFirstThreeUserNames(users);
 
     const onSuccessAction = () => {
         snackbar.success(
@@ -71,7 +63,6 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
                 remainingCount: generateMessage(users),
             })
         );
-        setUsers([]);
         onSuccess();
         loading.hide();
     };

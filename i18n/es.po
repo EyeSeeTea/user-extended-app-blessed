@@ -403,9 +403,8 @@ msgstr ""
 msgid "Edit user"
 msgstr ""
 
-#, fuzzy
 msgid "New user"
-msgstr "Eliminar usuarios"
+msgstr "Nuevo usuario"
 
 msgid "Network error"
 msgstr ""
@@ -418,14 +417,3 @@ msgstr ""
 
 msgid " and {{overflow}} more..."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Replace2"
-#~ msgstr "Replicar"
-
-#, fuzzy
-#~ msgid "Replace3"
-#~ msgstr "Replicar"
-
-#~ msgid "Remove users"
-#~ msgstr "Eliminar usuarios"

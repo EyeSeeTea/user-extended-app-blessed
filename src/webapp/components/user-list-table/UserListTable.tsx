@@ -29,7 +29,7 @@ import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogS
 import {
     ActionType,
     generateMessage,
-    getFirstThreeUsersNames,
+    getFirstThreeUserNames,
     UsersSelectedModal,
 } from "../users-remove-modal/UsersSelectedModal";
 
@@ -48,6 +48,10 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
 
 function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
     return actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output";
+}
+
+function isActionTypeEnableOrRemove(actionType: Maybe<ActionType>): boolean {
+    return actionType === "disable" || actionType === "enable" || actionType === "remove";
 }
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -391,33 +395,36 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         if (!users || !actionType) return "";
         return i18n.t("{{action}}: {{users}} {{remainingCount}}", {
             action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
-            users: getFirstThreeUsersNames(users).join(", "),
+            users: getFirstThreeUserNames(users).join(", "),
             remainingCount: generateMessage(users),
             nsSeparator: false,
         });
     }, [actionType, users, ouCaptureI18n, ouOutputI18n]);
 
+    const selectedUsers = users && users.length > 0;
+
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            {actionType && !isActionTypeOrgUnit(actionType) && (
+            {actionType && isActionTypeEnableOrRemove(actionType) && selectedUsers && (
                 <UsersSelectedModal
-                    ids={selectedUserIds}
-                    isOpen={selectedUserIds.length > 0}
+                    users={users}
+                    isOpen={users.length > 0}
                     onSuccess={onSuccessUsersRemove}
                     onCancel={onCleanSelectedUsers}
                     actionType={actionType}
                 />
             )}
 
-            {actionType && isActionTypeOrgUnit(actionType) && users && users.length > 0 && (
+            {actionType && isActionTypeOrgUnit(actionType) && selectedUsers && (
                 <OrgUnitDialogSelector
                     onCancel={onCleanSelectedUsers}
                     onSave={onSaveOrgUnits}
                     title={generateOrgUnitTitle}
                     visible
                     users={users}
+                    actionType={actionType}
                 />
             )}
 

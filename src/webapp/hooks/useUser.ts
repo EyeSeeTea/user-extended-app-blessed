@@ -49,7 +49,7 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
             orgUnitType: SaveUserOrgUnitOptions["orgUnitType"]
         ) => {
             loading.show(true, i18n.t("Saving..."));
-            compositionRoot.users
+            return compositionRoot.users
                 .saveOrgUnits({
                     orgUnitsIds: orgUnitIds,
                     updateStrategy: updateStrategy,

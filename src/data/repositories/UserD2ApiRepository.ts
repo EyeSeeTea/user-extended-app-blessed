@@ -1,10 +1,11 @@
 import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
+import { joinPaths, OrgUnit } from "../../domain/entities/OrgUnit";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
-import { DB_LOCALE_KEY, LocaleCode, UI_LOCALE_KEY, User } from "../../domain/entities/User";
+import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance } from "../../utils/d2-api";
@@ -13,6 +14,7 @@ import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClien
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
+import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
 import { chunkRequest, getErrorFromResponse } from "../utils";
 
@@ -64,8 +66,6 @@ export class UserD2ApiRepository implements UserRepository {
                 return user.dbLocale;
             case UI_LOCALE_KEY:
                 return user.uiLocale;
-            default:
-                throw Error(`Invalid locale type: ${keyLocale}`);
         }
     }
 
@@ -144,24 +144,25 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public getByIds(ids: string[]): FutureData<User[]> {
+        if (ids.length === 0) return Future.success([]);
         return this.getUsersByIds(ids);
     }
 
     private getUsersByIds(ids: Id[]): FutureData<User[]> {
-        const $requests = Future.sequential(
-            _.chunk(ids, 50).map(usersIds => {
+        const $requests = chunkRequest(
+            ids,
+            usersIds => {
                 return apiToFuture(
                     this.api.models.users.get({ paging: false, fields, filter: { id: { in: usersIds } } })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
                     return this.getLocales(users).flatMap(users => Future.success(users));
                 });
-            })
+            },
+            50
         );
 
-        return Future.sequential([$requests]).map(result => {
-            return _(result[0]).flatten().value();
-        });
+        return $requests.map(_.flatten);
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -205,36 +206,7 @@ export class UserD2ApiRepository implements UserRepository {
                     .map(existingUser => {
                         const user = users.find(user => user.id === existingUser.id);
                         if (!user) return undefined;
-                        return {
-                            ...existingUser,
-                            organisationUnits: user?.organisationUnits,
-                            dataViewOrganisationUnits: user?.dataViewOrganisationUnits,
-                            email: user?.email,
-                            firstName: user?.firstName,
-                            surname: user?.surname,
-                            phoneNumber: user?.phoneNumber,
-                            whatsApp: user?.whatsApp,
-                            facebookMessenger: user?.facebookMessenger,
-                            skype: user?.skype,
-                            telegram: user?.telegram,
-                            twitter: user?.twitter,
-                            userRoles: user?.userCredentials.userRoles,
-                            username: user?.userCredentials.username,
-                            disabled: user?.userCredentials.disabled,
-                            openId: user?.userCredentials.openId,
-                            password: user?.userCredentials.password,
-                            userCredentials: {
-                                ...existingUser.userCredentials,
-                                disabled: user?.userCredentials.disabled,
-                                userRoles: user?.userCredentials.userRoles,
-                                username: user?.userCredentials.username,
-                                openId: user?.userCredentials.openId,
-                                ldapId: user?.userCredentials.ldapId,
-                                externalAuth: user?.userCredentials.externalAuth,
-                                password: user?.userCredentials.password,
-                                accountExpiry: user?.userCredentials.accountExpiry,
-                            },
-                        };
+                        return this.buildUsersToSave(existingUser, user);
                     })
                     .compact()
                     .value();
@@ -244,6 +216,20 @@ export class UserD2ApiRepository implements UserRepository {
                 });
             });
         });
+    }
+
+    private buildUsersToSave(existingUser: ApiUser, user: ApiUser) {
+        return {
+            ...existingUser,
+            ...user,
+            // include these fields here and in userCredentials due to a bug in v2.38
+            userRoles: user?.userCredentials.userRoles,
+            username: user?.userCredentials.username,
+            disabled: user?.userCredentials.disabled,
+            openId: user?.userCredentials.openId,
+            password: user?.userCredentials.password,
+            userCredentials: { ...existingUser.userCredentials, ...user.userCredentials },
+        };
     }
 
     public updateRoles(ids: string[], update: NamedRef[], strategy: UpdateStrategy): FutureData<MetadataResponse> {
@@ -376,8 +362,8 @@ export class UserD2ApiRepository implements UserRepository {
             userRoles: userCredentials.userRoles?.map(userRole => ({ id: userRole.id, name: userRole.name })) || [],
             lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
             disabled: userCredentials.disabled,
-            organisationUnits: user.organisationUnits,
-            dataViewOrganisationUnits: user.dataViewOrganisationUnits,
+            organisationUnits: this.getDomainOrgUnits(user.organisationUnits),
+            dataViewOrganisationUnits: this.getDomainOrgUnits(user.dataViewOrganisationUnits),
             access: user.access,
             openId: userCredentials.openId,
             ldapId: userCredentials.ldapId,
@@ -408,8 +394,8 @@ export class UserD2ApiRepository implements UserRepository {
             lastUpdated: input.lastUpdated.toISOString(),
             created: input.created.toISOString(),
             userGroups: input.userGroups,
-            organisationUnits: input.organisationUnits,
-            dataViewOrganisationUnits: input.dataViewOrganisationUnits,
+            organisationUnits: this.getApiOrgUnits(input.organisationUnits),
+            dataViewOrganisationUnits: this.getApiOrgUnits(input.dataViewOrganisationUnits),
             access: input.access,
             userCredentials: {
                 id: input.id,
@@ -426,6 +412,17 @@ export class UserD2ApiRepository implements UserRepository {
             createdBy: { displayName: input.createdBy },
             lastUpdatedBy: { displayName: input.lastModifiedBy },
         };
+    }
+
+    private getDomainOrgUnits(d2OrgUnits: ApiD2OrgUnit[]): OrgUnit[] {
+        return d2OrgUnits.map(d2OrgUnit => ({
+            ...d2OrgUnit,
+            path: d2OrgUnit.path.split("/").slice(1),
+        }));
+    }
+
+    private getApiOrgUnits(orgUnits: OrgUnit[]): ApiD2OrgUnit[] {
+        return orgUnits.map(orgUnit => ({ ...orgUnit, path: joinPaths(orgUnit) }));
     }
 }
 
@@ -488,3 +485,5 @@ type UserAudit = {
 
 type D2UserSettings = { keyDbLocale: LocaleCode; keyUiLocale: LocaleCode };
 type KeyLocale = "keyUiLocale" | "keyDbLocale";
+const UI_LOCALE_KEY = "keyUiLocale";
+const DB_LOCALE_KEY = "keyDbLocale";

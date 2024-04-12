@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { Maybe } from "../../types/utils";
 import { OrgUnit } from "./OrgUnit";
 import { NamedRef } from "./Ref";
 
@@ -22,14 +23,14 @@ export interface User {
     userGroups: NamedRef[];
     organisationUnits: OrgUnit[];
     dataViewOrganisationUnits: OrgUnit[];
-    lastLogin?: Date;
+    lastLogin: Maybe<Date>;
     disabled: boolean;
     access: AccessPermissions;
-    openId?: string;
-    ldapId?: string;
+    openId: Maybe<string>;
+    ldapId: Maybe<string>;
     externalAuth: boolean;
     password: string;
-    accountExpiry?: string;
+    accountExpiry: Maybe<string>;
     authorities: string[];
     createdBy: string;
     lastModifiedBy: string;
@@ -55,8 +56,8 @@ export const defaultUser: User = {
     apiUrl: "",
     userRoles: [{ id: "", name: "" }],
     userGroups: [{ id: "", name: "" }],
-    organisationUnits: [{ id: "", name: "", path: "" }],
-    dataViewOrganisationUnits: [{ id: "", name: "", path: "" }],
+    organisationUnits: [{ id: "", name: "", path: [] }],
+    dataViewOrganisationUnits: [{ id: "", name: "", path: [] }],
     lastLogin: new Date(),
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },
@@ -89,5 +90,3 @@ export const hasReplicateAuthority = (user: User): boolean => {
 };
 
 export type LocaleCode = string;
-export const UI_LOCALE_KEY = "keyUiLocale";
-export const DB_LOCALE_KEY = "keyDbLocale";

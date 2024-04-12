@@ -109,8 +109,8 @@ export class Future<E, D> {
         return Future.sequential(futures).map(listOfValues => _.flatten(listOfValues));
     }
 
-    static void(): Future<unknown, undefined> {
-        return Future.success(undefined);
+    toVoid(): Future<E, void> {
+        return this.map(() => undefined);
     }
 }
 

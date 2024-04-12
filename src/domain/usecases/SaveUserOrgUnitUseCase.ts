@@ -34,20 +34,22 @@ export class SaveUserOrgUnitUseCase implements UseCase {
     private getOrgUnits(options: SaveUserOrgUnitOptions, organisationUnits: OrgUnit[]): OrgUnit[] {
         switch (options.updateStrategy) {
             case "replace":
-                return options.orgUnitsIds.map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }));
+                return options.orgUnitsIds.map(orgUnitId => this.createOrgUnit(orgUnitId));
             case "merge":
                 return _(options.orgUnitsIds)
-                    .map(orgUnitId => ({ id: orgUnitId, name: "", path: "" }))
+                    .map(orgUnitId => this.createOrgUnit(orgUnitId))
                     .concat(organisationUnits)
                     .uniqBy(orgUnit => orgUnit.id)
                     .value();
-            default:
-                throw Error(`Invalid UpdateStrategy: ${options.updateStrategy}`);
         }
     }
 
     private saveUsers(users: User[]): FutureData<void> {
-        return this.userRepository.save(users).map(() => undefined);
+        return this.userRepository.save(users).toVoid();
+    }
+
+    private createOrgUnit(id: Id): OrgUnit {
+        return { id, name: "", path: [] };
     }
 }
 
