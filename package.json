@@ -53,7 +53,6 @@
         "react-window": "1.8.6",
         "rehype-raw": "^6.1.1",
         "rehype-sanitize": "^5.0.1",
-        "rx": "4.1.0",
         "rxjs": "6.6.7",
         "styled-components": "5.3.3",
         "styled-jsx": "4.0.1",

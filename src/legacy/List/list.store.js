@@ -1,6 +1,6 @@
 import Store from "d2-ui/lib/store/Store";
 import { getInstance as getD2 } from "d2/lib/d2";
-import { Observable, Subject } from "rx";
+import { Observable, Subject } from "rxjs/Rx";
 import { getUserList } from "../models/userList";
 
 export const columns = [
@@ -36,7 +36,7 @@ export default Store.create({
                     fields: "id,displayName",
                 });
                 Observable.fromPromise(rolesPromise).subscribe(res => {
-                    this.listRolesSubject.onNext(res);
+                    this.listRolesSubject.next(res);
                 });
             }
         });
@@ -50,25 +50,25 @@ export default Store.create({
                     fields: "id,displayName",
                 });
                 Observable.fromPromise(groupsPromise).subscribe(res => {
-                    this.listGroupsSubject.onNext(res);
+                    this.listGroupsSubject.next(res);
                 });
             }
         });
     },
 
     getNextPage() {
-        this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getNextPage()));
+        this.listSourceSubject.next(Observable.fromPromise(this.state.pager.getNextPage()));
     },
 
     getPreviousPage() {
-        this.listSourceSubject.onNext(Observable.fromPromise(this.state.pager.getPreviousPage()));
+        this.listSourceSubject.next(Observable.fromPromise(this.state.pager.getPreviousPage()));
     },
 
     filter(options, complete) {
         getD2().then(d2 => {
             const { filters, ...listOptions } = options;
             const listSearchPromise = getUserList(d2, filters, listOptions);
-            this.listSourceSubject.onNext(Observable.fromPromise(listSearchPromise));
+            this.listSourceSubject.next(Observable.fromPromise(listSearchPromise));
             complete(`list with filters '${filters}' is loading`);
         });
     },

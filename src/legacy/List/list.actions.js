@@ -1,6 +1,6 @@
 import Action from "d2-ui/lib/action/Action";
 import listStore from "./list.store";
-import { Observable } from "rx";
+import { Observable } from "rxjs/Rx";
 
 const listActions = Action.createActionsFromNames([
     "loadList",
