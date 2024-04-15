@@ -1,7 +1,7 @@
 {
     "name": "user-extended-app",
     "description": "DHIS2 Extended User app",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "license": "GPL-3.0",
     "author": "EyeSeeTea team",
     "homepage": ".",
@@ -53,7 +53,6 @@
         "react-window": "1.8.6",
         "rehype-raw": "^6.1.1",
         "rehype-sanitize": "^5.0.1",
-        "rx": "4.1.0",
         "rxjs": "6.6.7",
         "styled-components": "5.3.3",
         "styled-jsx": "4.0.1",
