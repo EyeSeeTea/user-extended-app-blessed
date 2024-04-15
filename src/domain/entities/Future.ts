@@ -100,6 +100,14 @@ export class Future<E, D> {
     static futureMap<T, E, D>(inputValues: T[], mapper: (value: T, index: number) => Future<E, D>): Future<E, D[]> {
         return this.parallel(inputValues.map((value, index) => mapper(value, index)));
     }
+
+    static sequential<E, D>(futures: Array<Future<E, D>>): Future<E, Array<D>> {
+        return Future.parallel(futures, { maxConcurrency: 1 });
+    }
+
+    static flatten<E, D>(futures: Array<Future<E, D[]>>): Future<E, D[]> {
+        return Future.sequential(futures).map(listOfValues => _.flatten(listOfValues));
+    }
 }
 
 type JoinObj<Futures extends Record<string, Future<any, any>>> = Future<

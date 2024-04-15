@@ -11,3 +11,21 @@ export function getMajorVersion(version: string): number {
 export function getD2APiFromInstance(instance: Instance) {
     return new D2Api({ baseUrl: instance.url, auth: instance.auth, backend: "fetch" });
 }
+
+export const orgUnitListParams = {
+    fields: {
+        id: true,
+        level: true,
+        displayName: true,
+        path: true,
+        children: true,
+        shortName: true,
+    },
+};
+
+export const orgUnitControls = {
+    filterByLevel: true,
+    filterByGroup: true,
+    filterByProgram: false,
+    selectAll: false,
+};
