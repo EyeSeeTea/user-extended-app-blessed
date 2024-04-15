@@ -187,6 +187,7 @@ export class ListHybrid extends React.Component {
                     userToReplicateId={info.user}
                     onRequestClose={this.onReplicateDialogClose}
                     settings={this.state.settings}
+                    api={this.props.api}
                 />
             );
         } else {
