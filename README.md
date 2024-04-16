@@ -1,3 +1,13 @@
+## Documentation
+
+You can find a detailed user and developer guide [at the wiki](https://github.com/EyeSeeTea/user-extended-app-blessed/wiki)
+
+For more links, see the [User-Extended App website](https://eyeseetea.github.io/user-extended-app-blessed/)
+
+## Feedback
+
+We’d like to hear your thoughts on the app in general, improvements, new features or any of the technologies being used. Just drop as a line at community@eyeseetea.com and let us know! If you prefer, you can also [create a new issue](https://github.com/EyeSeeTea/user-extended-app-blessed/issues) on our GitHub repository. Note that you will have to register and be logged in to GitHub to create a new issue.
+
 ## Setup
 
 Install dependencies:
@@ -86,15 +96,4 @@ The file `src/contexts/app-context.ts` holds some general context so typical inf
 
 Check the example script, entry `"script-example"`in `package.json`->scripts and `src/scripts/example.ts`.
 
-## Documentation
-
-You can find a detailed user and developer guide [here](https://docs.google.com/document/d/1XdU57_WvAEJv-grdnXkpqh1K9DY5QUYl-8Bl0vEuboM/edit#).
-
-## Documentation
-
-You can find a detailed user and developer guide [here](https://docs.google.com/document/d/1XdU57_WvAEJv-grdnXkpqh1K9DY5QUYl-8Bl0vEuboM/edit#).
-
-## Feedback
-
-We’d like to hear your thoughts on the app in general, improvements, new features or any of the technologies being used. Just drop as a line at hello@eyeseetea.com and let us know! If you prefer, you can also create a new issue on our GitHub repository. Note that you will have to register and be logged in to GitHub to create a new issue.
 
