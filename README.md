@@ -1,3 +1,5 @@
+User-Extended App is a DHIS2 Web Application part of [EyeSeeTea's DHIS2 Suite](https://eyeseetea.com/dhis2-apps/) that provides a quick, easy and integrated way to perform common operations to DHIS2 users.
+
 ## Documentation
 
 You can find a detailed user and developer guide [at the wiki](https://github.com/EyeSeeTea/user-extended-app-blessed/wiki)
