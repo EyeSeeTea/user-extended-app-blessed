@@ -1,8 +1,10 @@
+ <img height="120" src="https://github.com/EyeSeeTea/user-extended-app-blessed/blob/gh-pages/img/logo.png" alt="User-Extended App Logo">
+
 User-Extended App is a DHIS2 Web Application part of [EyeSeeTea's DHIS2 Suite](https://eyeseetea.com/dhis2-apps/) that provides a quick, easy and integrated way to perform common operations to DHIS2 users.
 
 ## Documentation
 
-You can find a detailed user and developer guide [at the wiki](https://github.com/EyeSeeTea/user-extended-app-blessed/wiki)
+You can find a detailed user and developer guide [at the wiki](https://github.com/EyeSeeTea/user-extended-app-blessed/wiki) and also our [road map](https://github.com/orgs/EyeSeeTea/projects/47)
 
 For more links, see the [User-Extended App website](https://eyeseetea.github.io/user-extended-app-blessed/)
 
