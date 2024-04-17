@@ -65,6 +65,8 @@ export class UserD2ApiRepository implements UserRepository {
         const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
         const areFiltersEnabled = _(otherFilters).values().some();
 
+        const sortingField = sorting.field === "status" ? "disabled" : sorting.field;
+
         return apiToFuture(
             this.api.models.users.get({
                 fields: {
@@ -78,7 +80,7 @@ export class UserD2ApiRepository implements UserRepository {
                 canManage: canManage === "true" ? "true" : undefined,
                 filter: otherFilters,
                 rootJunction: areFiltersEnabled ? rootJunction : undefined,
-                order: `${sorting.field}:${sorting.order}`,
+                order: `${sortingField}:${sorting.order}`,
             })
         ).map(({ objects, pager }) => ({
             pager,
@@ -319,6 +321,7 @@ export class UserD2ApiRepository implements UserRepository {
             apiUrl: `${this.api.baseUrl}/api/users/${user.id}.json`,
             userRoles: userCredentials.userRoles?.map(userRole => ({ id: userRole.id, name: userRole.name })) || [],
             lastLogin: userCredentials.lastLogin ? new Date(userCredentials.lastLogin) : undefined,
+            status: userCredentials.disabled ? "Disabled" : "Active",
             disabled: userCredentials.disabled,
             organisationUnits: user.organisationUnits,
             dataViewOrganisationUnits: user.dataViewOrganisationUnits,

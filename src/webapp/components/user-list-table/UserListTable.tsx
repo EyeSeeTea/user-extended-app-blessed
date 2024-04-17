@@ -395,6 +395,11 @@ export const columns: TableColumn<User>[] = [
     },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {
+        name: "status",
+        sortable: true,
+        text: i18n.t("Status"),
+    },
+    {
         name: "disabled",
         sortable: false,
         text: i18n.t("Disabled"),

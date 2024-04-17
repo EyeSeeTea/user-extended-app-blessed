@@ -22,6 +22,7 @@ export interface User {
     organisationUnits: NamedRef[];
     dataViewOrganisationUnits: NamedRef[];
     lastLogin?: Date;
+    status: string;
     disabled: boolean;
     access: AccessPermissions;
     openId?: string;
@@ -55,6 +56,7 @@ export const defaultUser: User = {
     organisationUnits: [{ id: "", name: "" }],
     dataViewOrganisationUnits: [{ id: "", name: "" }],
     lastLogin: new Date(),
+    status: "",
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },
     openId: "",
