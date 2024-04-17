@@ -41,7 +41,13 @@ class ReplicateUserFromTable extends React.Component {
             snackActions.show({ message });
             return null;
         } else {
-            return response;
+            const errorMessage = i18n.t("Error replicating user {{user}}: {{message}}", {
+                user: userToReplicate.displayName,
+                message: response.error,
+                nsSeparator: false,
+            });
+            snackActions.show({ message: errorMessage });
+            return null;
         }
     };
 
