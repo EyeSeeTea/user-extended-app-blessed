@@ -39,6 +39,8 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
             return "capture";
         case "assign_to_org_units_output":
             return "output";
+        case "assign_to_org_units_search":
+            return "search";
         case "disable":
         case "enable":
         case "remove":
@@ -47,11 +49,33 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
 }
 
 function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
-    return actionType === "assign_to_org_units_capture" || actionType === "assign_to_org_units_output";
+    return (
+        actionType === "assign_to_org_units_capture" ||
+        actionType === "assign_to_org_units_output" ||
+        actionType === "assign_to_org_units_search"
+    );
 }
 
 function isActionTypeEnableOrRemove(actionType: Maybe<ActionType>): boolean {
     return actionType === "disable" || actionType === "enable" || actionType === "remove";
+}
+
+function buildOrgUnitTitleByAction(
+    actionType: ActionType,
+    ouCapture: string,
+    ouOutput: string,
+    ouSearch: string
+): string {
+    switch (actionType) {
+        case "assign_to_org_units_capture":
+            return ouCapture;
+        case "assign_to_org_units_output":
+            return ouOutput;
+        case "assign_to_org_units_search":
+            return ouSearch;
+        default:
+            return "";
+    }
 }
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -135,6 +159,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
                 { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
+                { name: "searchOrganisationsUnits", text: i18n.t("OU Search") },
             ],
             actions: [
                 {
@@ -178,6 +203,17 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     onClick: users => {
                         setSelectedUserIds(users);
                         setActionType("assign_to_org_units_output");
+                    },
+                    isActive: checkAccess(["update"]),
+                },
+                {
+                    name: "assign_to_org_units_search",
+                    text: i18n.t("Assign to search organisation units"),
+                    multiple: true,
+                    icon: <Icon>business</Icon>,
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_search");
                     },
                     isActive: checkAccess(["update"]),
                 },
@@ -381,6 +417,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const ouCaptureI18n = i18n.t("Assign to organisation units capture");
     const ouOutputI18n = i18n.t("Assign to organisation units output");
+    const ouSearchI18n = i18n.t("Assign to organisation units search");
 
     const onSaveOrgUnits = React.useCallback(
         (orgUnitIds: Id[], updateStrategy: UpdateStrategy) => {
@@ -394,12 +431,12 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const generateOrgUnitTitle = React.useMemo(() => {
         if (!users || !actionType) return "";
         return i18n.t("{{action}}: {{users}} {{remainingCount}}", {
-            action: actionType === "assign_to_org_units_capture" ? ouCaptureI18n : ouOutputI18n,
+            action: buildOrgUnitTitleByAction(actionType, ouCaptureI18n, ouOutputI18n, ouSearchI18n),
             users: getFirstThreeUserNames(users).join(", "),
             remainingCount: generateMessage(users),
             nsSeparator: false,
         });
-    }, [actionType, users, ouCaptureI18n, ouOutputI18n]);
+    }, [actionType, users, ouCaptureI18n, ouOutputI18n, ouSearchI18n]);
 
     const selectedUsers = users && users.length > 0;
 
@@ -470,6 +507,12 @@ export const columns: TableColumn<User>[] = [
         sortable: false,
         text: i18n.t("Data view organisation units"),
         getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+    },
+    {
+        name: "searchOrganisationsUnits",
+        sortable: false,
+        text: i18n.t("Search organisation units"),
+        getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
     },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {

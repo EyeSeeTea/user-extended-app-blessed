@@ -223,11 +223,11 @@ export class UserD2ApiRepository implements UserRepository {
             ...existingUser,
             ...user,
             // include these fields here and in userCredentials due to a bug in v2.38
-            userRoles: user?.userCredentials.userRoles,
-            username: user?.userCredentials.username,
-            disabled: user?.userCredentials.disabled,
-            openId: user?.userCredentials.openId,
-            password: user?.userCredentials.password,
+            userRoles: user.userCredentials.userRoles,
+            username: user.userCredentials.username,
+            disabled: user.userCredentials.disabled,
+            openId: user.userCredentials.openId,
+            password: user.userCredentials.password,
             userCredentials: { ...existingUser.userCredentials, ...user.userCredentials },
         };
     }
@@ -364,6 +364,7 @@ export class UserD2ApiRepository implements UserRepository {
             disabled: userCredentials.disabled,
             organisationUnits: this.getDomainOrgUnits(user.organisationUnits),
             dataViewOrganisationUnits: this.getDomainOrgUnits(user.dataViewOrganisationUnits),
+            searchOrganisationsUnits: this.getDomainOrgUnits(user.teiSearchOrganisationUnits),
             access: user.access,
             openId: userCredentials.openId,
             ldapId: userCredentials.ldapId,
@@ -396,6 +397,7 @@ export class UserD2ApiRepository implements UserRepository {
             userGroups: input.userGroups,
             organisationUnits: this.getApiOrgUnits(input.organisationUnits),
             dataViewOrganisationUnits: this.getApiOrgUnits(input.dataViewOrganisationUnits),
+            teiSearchOrganisationUnits: this.getApiOrgUnits(input.searchOrganisationsUnits),
             access: input.access,
             userCredentials: {
                 id: input.id,
@@ -445,6 +447,7 @@ const fields = {
     userGroups: { id: true, name: true },
     organisationUnits: orgUnitsFields,
     dataViewOrganisationUnits: orgUnitsFields,
+    teiSearchOrganisationUnits: orgUnitsFields,
     access: true,
     userCredentials: {
         id: true,

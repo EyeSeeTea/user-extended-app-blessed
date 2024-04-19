@@ -23,6 +23,7 @@ export interface User {
     userGroups: NamedRef[];
     organisationUnits: OrgUnit[];
     dataViewOrganisationUnits: OrgUnit[];
+    searchOrganisationsUnits: OrgUnit[];
     lastLogin: Maybe<Date>;
     disabled: boolean;
     access: AccessPermissions;
@@ -37,6 +38,8 @@ export interface User {
     uiLocale: LocaleCode;
     dbLocale: LocaleCode;
 }
+
+const emptyOrgUnit: OrgUnit = { id: "", name: "", path: [] };
 
 export const defaultUser: User = {
     id: "",
@@ -56,8 +59,9 @@ export const defaultUser: User = {
     apiUrl: "",
     userRoles: [{ id: "", name: "" }],
     userGroups: [{ id: "", name: "" }],
-    organisationUnits: [{ id: "", name: "", path: [] }],
-    dataViewOrganisationUnits: [{ id: "", name: "", path: [] }],
+    organisationUnits: [emptyOrgUnit],
+    dataViewOrganisationUnits: [emptyOrgUnit],
+    searchOrganisationsUnits: [emptyOrgUnit],
     lastLogin: new Date(),
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },

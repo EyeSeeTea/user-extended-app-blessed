@@ -9,8 +9,8 @@ export function extractIdsFromPaths(orgUnitPaths: string[]): string[] {
     return orgUnitPaths.map(extractIdFromPath);
 }
 
-export function joinPaths(orgUnits: OrgUnit): string {
-    return `/${orgUnits.path.join("/")}`;
+export function joinPaths(orgUnit: OrgUnit): string {
+    return `/${orgUnit.path.join("/")}`;
 }
 
 export type OrgUnit = { id: Id; name: string; path: string[] };

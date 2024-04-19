@@ -1,7 +1,8 @@
 import { FieldState, NoticeBox } from "@dhis2/ui";
 import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
+import { joinPaths } from "../../../../domain/entities/OrgUnit";
 import { NamedRef } from "../../../../domain/entities/Ref";
 import { orgUnitControls, orgUnitListParams } from "../../../../utils/d2-api";
 import { useAppContext } from "../../../contexts/app-context";
@@ -20,21 +21,34 @@ export type OrgUnitSelectorFFProps = {
 export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgUnitSelectorFFProps) => {
     const { api, compositionRoot } = useAppContext();
 
-    const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+    const [selectedPaths, setSelectedPaths] = React.useState<string[]>([]);
     const message = validationText ?? meta.error ?? meta.submitError;
 
-    const onChange = useCallback(
+    const onChange = React.useCallback(
         (selected: string[]) => {
             const selectedIds = selected.flatMap(item => item.split("/").at(-1) ?? []);
-            input.onChange(selectedIds.map(id => ({ id })));
+            return compositionRoot.metadata.getOrgUnitPaths(selectedIds).run(
+                orgUnits => {
+                    input.onChange(
+                        selectedIds.map(id => {
+                            const orgUnitDetails = orgUnits.find(orgUnit => orgUnit.id === id);
+                            if (!orgUnitDetails) return { id, name: "", path: "" };
+                            return orgUnitDetails;
+                        })
+                    );
+                },
+                error => console.error(error)
+            );
         },
-        [input]
+        [compositionRoot.metadata, input]
     );
 
-    useEffect(() => {
+    React.useEffect(() => {
         const ids = input.value.map(({ id }: NamedRef) => id);
         return compositionRoot.metadata.getOrgUnitPaths(ids).run(
-            items => setSelectedPaths(items.map(({ path }) => path)),
+            items => {
+                setSelectedPaths(items.map(orgUnit => joinPaths(orgUnit)));
+            },
             error => console.error(error)
         );
     }, [input.value, compositionRoot]);

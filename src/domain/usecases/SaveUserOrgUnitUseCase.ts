@@ -16,19 +16,36 @@ export class SaveUserOrgUnitUseCase implements UseCase {
     }
 
     private applyOrgUnitsToUsers(options: SaveUserOrgUnitOptions): User[] {
-        const isCaptureOrgUnit = options.orgUnitType === "capture";
         return options.users.map(user => {
-            const orgUnits = this.getOrgUnits(
-                options,
-                isCaptureOrgUnit ? user.organisationUnits : user.dataViewOrganisationUnits
-            );
-
-            const userOrgUnits: Partial<User> = isCaptureOrgUnit
-                ? { organisationUnits: orgUnits }
-                : { dataViewOrganisationUnits: orgUnits };
-
+            const orgUnits = this.getOrgUnits(options, this.getOrgUnitFromType(user, options));
+            const userOrgUnits: Partial<User> = this.buildUserWithOrgUnits(options.orgUnitType, orgUnits);
             return { ...user, ...userOrgUnits };
         });
+    }
+
+    private buildUserWithOrgUnits(
+        orgUnitType: SaveUserOrgUnitOptions["orgUnitType"],
+        orgUnits: OrgUnit[]
+    ): Partial<User> {
+        switch (orgUnitType) {
+            case "capture":
+                return { organisationUnits: orgUnits };
+            case "output":
+                return { dataViewOrganisationUnits: orgUnits };
+            case "search":
+                return { searchOrganisationsUnits: orgUnits };
+        }
+    }
+
+    private getOrgUnitFromType(user: User, options: SaveUserOrgUnitOptions): OrgUnit[] {
+        switch (options.orgUnitType) {
+            case "capture":
+                return user.organisationUnits;
+            case "output":
+                return user.dataViewOrganisationUnits;
+            case "search":
+                return user.searchOrganisationsUnits;
+        }
     }
 
     private getOrgUnits(options: SaveUserOrgUnitOptions, organisationUnits: OrgUnit[]): OrgUnit[] {
@@ -57,5 +74,5 @@ export type SaveUserOrgUnitOptions = {
     orgUnitsIds: Id[];
     updateStrategy: UpdateStrategy;
     users: User[];
-    orgUnitType: "capture" | "output";
+    orgUnitType: "capture" | "output" | "search";
 };

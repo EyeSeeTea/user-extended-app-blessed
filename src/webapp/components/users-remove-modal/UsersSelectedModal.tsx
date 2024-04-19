@@ -14,7 +14,13 @@ type UsersRemoveModalProps = {
     actionType: ActionType;
 };
 
-export type ActionType = "remove" | "enable" | "disable" | "assign_to_org_units_capture" | "assign_to_org_units_output";
+export type ActionType =
+    | "remove"
+    | "enable"
+    | "disable"
+    | "assign_to_org_units_capture"
+    | "assign_to_org_units_output"
+    | "assign_to_org_units_search";
 
 function getMessagesByActionType(actionType: ActionType): { title: string } {
     if (actionType === "remove") {

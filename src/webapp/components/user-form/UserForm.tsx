@@ -129,6 +129,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
             return <FormField {...props} component={UserRoleGroupFF} modelType="userRoles" />;
         case "organisationUnits":
         case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
             return <FormField {...props} component={OrgUnitSelectorFF} />;
         case "externalAuth":
         case "disabled":
@@ -168,6 +169,7 @@ export const RenderUserImportField: React.FC<{ row: number; field: UserFormField
         case "userRoles":
         case "organisationUnits":
         case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
             return (
                 <PreviewInputFF {...props}>
                     <RenderUserWizardField row={row} field={field} isEdit={isEdit} />

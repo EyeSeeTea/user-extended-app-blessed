@@ -36,7 +36,13 @@ const steps: WizardStep[] = [
         label: i18n.t("Assignment"),
         component: UserEditWizardStep,
         props: {
-            fields: ["userRoles", "organisationUnits", "dataViewOrganisationUnits", "userGroups"],
+            fields: [
+                "userRoles",
+                "organisationUnits",
+                "dataViewOrganisationUnits",
+                "searchOrganisationsUnits",
+                "userGroups",
+            ],
         },
     },
     {
