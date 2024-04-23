@@ -1204,7 +1204,9 @@ a.box:active {
   .button.is-normal {
     font-size: 1rem; }
   .button.is-medium {
-    font-size: 1.25rem; }
+  font-size: 1.25rem;
+  margin: 0 0 0 5px;
+}}
   .button.is-large {
     font-size: 1.5rem; }
   .button[disabled],
