@@ -19,6 +19,10 @@ html {
   -ms-user-select: none;
   user-select: none; }
 
+.margin_v30 {
+  margin: 30px 0;
+}
+
 .select:not(.is-multiple):not(.is-loading)::after, .navbar-link:not(.is-arrowless)::after {
   border: 3px solid transparent;
   border-radius: 2px;
@@ -2043,7 +2047,7 @@ a.tag:hover {
     vertical-align: middle; }
 
 .title {
-  color: #363636;
+  color: #d9cdcd;;
   font-size: 2rem;
   font-weight: 600;
   line-height: 1.125; }
