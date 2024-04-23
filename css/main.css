@@ -35,6 +35,12 @@ html {
   transition: all .5s !important;
 }
 
+a.raised {
+  color: #fff !important;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .select:not(.is-multiple):not(.is-loading)::after, .navbar-link:not(.is-arrowless)::after {
   border: 3px solid transparent;
   border-radius: 2px;
