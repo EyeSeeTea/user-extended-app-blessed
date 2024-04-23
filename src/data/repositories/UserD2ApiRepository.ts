@@ -103,9 +103,27 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     public getByIds(ids: string[]): FutureData<User[]> {
-        return apiToFuture(this.api.models.users.get({ fields, filter: { id: { in: ids } } })).flatMap(({ objects }) =>
-            Future.success(objects.map(user => this.toDomainUser(user)))
-        );
+        const pageSize = 250;
+        const $requests = _(ids)
+            .chunk(pageSize)
+            .map(ids => {
+                return apiToFuture(
+                    this.api.models.users.get({
+                        fields,
+                        filter: { id: { in: ids } },
+                        pageSize: pageSize,
+                    })
+                );
+            })
+            .value();
+
+        return Future.sequential($requests).flatMap(result => {
+            return Future.success(
+                _(result.map(({ objects }) => objects.map(user => this.toDomainUser(user))))
+                    .flatten()
+                    .value()
+            );
+        });
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -117,6 +135,7 @@ export class UserD2ApiRepository implements UserRepository {
                 fields: {
                     ...fields,
                     $owner: true,
+                    userCredentials: { ...fields.userCredentials, $all: true },
                 },
                 page,
                 pageSize,
@@ -329,8 +348,16 @@ export class UserD2ApiRepository implements UserRepository {
             password: userCredentials.password,
             // accountExpiry: userCredentials.accountExpiry,
             authorities,
-            createdBy: user.createdBy ? user.createdBy.displayName : "",
-            lastModifiedBy: user.lastUpdatedBy ? user.lastUpdatedBy.displayName : "",
+            ...this.getUserAuditFields(input),
+        };
+    }
+
+    private getUserAuditFields(user: ApiUserWithAudit) {
+        const createdBy = user.userCredentials.createdBy || user.createdBy;
+        const lastUpdatedBy = user.userCredentials.lastUpdatedBy || user.lastUpdatedBy;
+        return {
+            createdBy: createdBy?.displayName || "",
+            lastModifiedBy: lastUpdatedBy?.displayName || "",
         };
     }
 
@@ -363,6 +390,8 @@ export class UserD2ApiRepository implements UserRepository {
                 ldapId: input.ldapId ?? "",
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
+                createdBy: { id: "", displayName: input.createdBy },
+                lastUpdatedBy: { id: "", displayName: input.lastModifiedBy },
                 // accountExpiry: input.accountExpiry ?? "",
             },
             createdBy: { displayName: input.createdBy },
@@ -399,6 +428,8 @@ const fields = {
         ldapId: true,
         externalAuth: true,
         password: true,
+        createdBy: { id: true, displayName: true },
+        lastUpdatedBy: { id: true, displayName: true },
         // accountExpiry: true,
     },
 } as const;
