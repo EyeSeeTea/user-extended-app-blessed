@@ -27,6 +27,14 @@ html {
   margin: 0 0px 0 10px;
 }
 
+.button.primary-btn {
+  outline: none;
+  border-color: #43cbcb !important;
+  background-color: #43cbcb !important;
+  color: #fff;
+  transition: all .5s !important;
+}
+
 .select:not(.is-multiple):not(.is-loading)::after, .navbar-link:not(.is-arrowless)::after {
   border: 3px solid transparent;
   border-radius: 2px;
