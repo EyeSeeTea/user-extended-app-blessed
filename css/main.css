@@ -1205,7 +1205,7 @@ a.box:active {
     font-size: 1rem; }
   .button.is-medium {
   font-size: 1.25rem;
-  margin: 0 0 0 5px;
+  margin: 0 0 0 10px;
 }}
   .button.is-large {
     font-size: 1.5rem; }
@@ -7720,6 +7720,9 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
       padding: 9rem 1.5rem; }
     .section.is-large {
       padding: 18rem 1.5rem; } }
+
+.section_tight {
+  padding: 1rem 1.5rem; }
 
 .footer {
   background-color: #276696;
