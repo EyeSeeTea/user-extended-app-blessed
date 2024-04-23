@@ -20,7 +20,7 @@ html {
   user-select: none; }
 
 .margin_v30 {
-  margin: 30px 0;
+  margin: 30px 0 !important;
 }
 
 .select:not(.is-multiple):not(.is-loading)::after, .navbar-link:not(.is-arrowless)::after {
