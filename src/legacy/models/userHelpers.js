@@ -167,6 +167,7 @@ function getPlainUser(user, { orgUnitsField }, toArray) {
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
         disabled: userCredentials.disabled,
         openId: userCredentials.openId,
+        phoneNumber: user.phoneNumber,
     };
 }
 
