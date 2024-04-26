@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-12T13:15:04.627Z\n"
-"PO-Revision-Date: 2024-04-12T13:15:04.627Z\n"
+"POT-Creation-Date: 2024-04-17T14:57:37.763Z\n"
+"PO-Revision-Date: 2024-04-17T14:57:37.763Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -300,6 +300,9 @@ msgid "User ID"
 msgstr ""
 
 msgid "First name"
+msgstr ""
+
+msgid "Phone number"
 msgstr ""
 
 msgid "Organisation units"
