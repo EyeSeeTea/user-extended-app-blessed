@@ -372,10 +372,18 @@ export class UserD2ApiRepository implements UserRepository {
             password: userCredentials.password,
             accountExpiry: userCredentials.accountExpiry,
             authorities,
-            createdBy: user.createdBy ? user.createdBy.displayName : "",
-            lastModifiedBy: user.lastUpdatedBy ? user.lastUpdatedBy.displayName : "",
             dbLocale: "",
             uiLocale: "",
+            ...this.getUserAuditFields(input),
+        };
+    }
+
+    private getUserAuditFields(user: ApiUserWithAudit) {
+        const createdBy = user.userCredentials.createdBy || user.createdBy;
+        const lastUpdatedBy = user.userCredentials.lastUpdatedBy || user.lastUpdatedBy;
+        return {
+            createdBy: createdBy?.displayName || "",
+            lastModifiedBy: lastUpdatedBy?.displayName || "",
         };
     }
 
@@ -410,6 +418,8 @@ export class UserD2ApiRepository implements UserRepository {
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
                 accountExpiry: input.accountExpiry ?? "",
+                createdBy: { id: "", displayName: input.createdBy },
+                lastUpdatedBy: { id: "", displayName: input.lastModifiedBy },
             },
             createdBy: { displayName: input.createdBy },
             lastUpdatedBy: { displayName: input.lastModifiedBy },
@@ -460,6 +470,8 @@ const fields = {
         externalAuth: true,
         password: true,
         accountExpiry: true,
+        createdBy: { id: true, displayName: true },
+        lastUpdatedBy: { id: true, displayName: true },
     },
 } as const;
 
