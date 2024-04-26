@@ -2,9 +2,8 @@ import { FieldState, NoticeBox } from "@dhis2/ui";
 import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import styled from "styled-components";
-import { joinPaths } from "../../../../domain/entities/OrgUnit";
 import { NamedRef } from "../../../../domain/entities/Ref";
-import { orgUnitControls, orgUnitListParams } from "../../../../utils/d2-api";
+import { joinPaths, orgUnitControls, orgUnitListParams } from "../../../../utils/d2-api";
 import { useAppContext } from "../../../contexts/app-context";
 
 export type OrgUnitSelectorFFProps = {

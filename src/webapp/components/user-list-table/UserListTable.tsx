@@ -23,7 +23,7 @@ import i18n from "../../../locales";
 import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
-import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/useUser";
+import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
 import {
@@ -101,7 +101,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const snackbar = useSnackbar();
     const navigate = useNavigate();
 
-    const { users, setUsers } = useGetUsersByIds({ ids: selectedUserIds });
+    const { users, setUsers } = useGetUsersByIds(selectedUserIds);
 
     const onCleanSelectedUsers = React.useCallback(() => {
         setSelectedUserIds([]);

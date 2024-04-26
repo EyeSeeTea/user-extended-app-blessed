@@ -10,7 +10,7 @@ export class SaveUserStatusUseCase implements UseCase {
         const usersToUpdate = users.map(user => {
             return { ...user, disabled: options.disabled };
         });
-        return this.userRepository.save(usersToUpdate).map(() => undefined);
+        return this.userRepository.save(usersToUpdate).toVoid();
     }
 }
 

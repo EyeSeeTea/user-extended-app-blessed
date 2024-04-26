@@ -7,9 +7,9 @@ import Toggle from "material-ui/Toggle";
 import i18n from "../../../locales";
 import { User } from "../../../domain/entities/User";
 import { Id } from "../../../domain/entities/Ref";
-import { extractIdsFromPaths, joinPaths } from "../../../domain/entities/OrgUnit";
 import { UpdateStrategy } from "../../../domain/repositories/UserRepository";
 import { ActionType } from "../users-remove-modal/UsersSelectedModal";
+import { extractIdsFromPaths, joinPaths } from "../../../utils/d2-api";
 
 function isThereOnlyOneUser(users: User[]): boolean {
     return users.length === 1;
@@ -25,6 +25,8 @@ function getOrgUnitsByActionType(actionType: ActionType, user: User): string[] {
             return user.organisationUnits.flatMap(joinPaths);
         case "assign_to_org_units_output":
             return user.dataViewOrganisationUnits.flatMap(joinPaths);
+        case "assign_to_org_units_search":
+            return user.searchOrganisationsUnits.flatMap(joinPaths);
         default:
             return [];
     }

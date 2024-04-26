@@ -7,12 +7,9 @@ import { SaveUserOrgUnitOptions } from "../../domain/usecases/SaveUserOrgUnitUse
 import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
 
-type UseGetUsersByIdsProps = { ids: Id[] };
 type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
 
-export function useGetUsersByIds(props: UseGetUsersByIdsProps) {
-    const { ids } = props;
-
+export function useGetUsersByIds(ids: Id[]) {
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
     const loading = useLoading();

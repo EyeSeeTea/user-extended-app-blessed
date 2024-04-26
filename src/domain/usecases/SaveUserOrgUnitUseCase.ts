@@ -1,13 +1,12 @@
 import _ from "lodash";
 
-import { UseCase } from "../../CompositionRoot";
 import { FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { UpdateStrategy, UserRepository } from "../repositories/UserRepository";
 import { Id } from "../entities/Ref";
 import { OrgUnit } from "../entities/OrgUnit";
 
-export class SaveUserOrgUnitUseCase implements UseCase {
+export class SaveUserOrgUnitUseCase {
     constructor(private userRepository: UserRepository) {}
 
     public execute(options: SaveUserOrgUnitOptions): FutureData<void> {
@@ -18,7 +17,7 @@ export class SaveUserOrgUnitUseCase implements UseCase {
     private applyOrgUnitsToUsers(options: SaveUserOrgUnitOptions): User[] {
         return options.users.map(user => {
             const orgUnits = this.getOrgUnits(options, this.getOrgUnitFromType(user, options));
-            const userOrgUnits: Partial<User> = this.buildUserWithOrgUnits(options.orgUnitType, orgUnits);
+            const userOrgUnits = this.buildUserWithOrgUnits(options.orgUnitType, orgUnits);
             return { ...user, ...userOrgUnits };
         });
     }

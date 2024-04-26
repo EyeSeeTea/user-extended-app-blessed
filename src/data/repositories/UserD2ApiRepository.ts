@@ -1,14 +1,14 @@
 import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
 import _ from "lodash";
 import { Future, FutureData } from "../../domain/entities/Future";
-import { joinPaths, OrgUnit } from "../../domain/entities/OrgUnit";
+import { OrgUnit } from "../../domain/entities/OrgUnit";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { cache } from "../../utils/cache";
-import { getD2APiFromInstance } from "../../utils/d2-api";
+import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
@@ -156,7 +156,7 @@ export class UserD2ApiRepository implements UserRepository {
                     this.api.models.users.get({ paging: false, fields, filter: { id: { in: usersIds } } })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
-                    return this.getLocales(users).flatMap(users => Future.success(users));
+                    return this.getLocales(users);
                 });
             },
             50
