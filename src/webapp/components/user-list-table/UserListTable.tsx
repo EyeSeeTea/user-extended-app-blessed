@@ -525,13 +525,13 @@ export const columns: TableColumn<User>[] = [
         name: "createdBy",
         sortable: false,
         text: i18n.t("Created By"),
-        getValue: row => row.createdBy,
+        getValue: row => row.createdBy?.username || "",
     },
     {
         name: "lastModifiedBy",
         sortable: false,
         text: i18n.t("Last Modified By"),
-        getValue: row => row.lastModifiedBy,
+        getValue: row => row.lastModifiedBy?.username || "",
     },
 ];
 

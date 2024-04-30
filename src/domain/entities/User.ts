@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Maybe } from "../../types/utils";
 import { OrgUnit } from "./OrgUnit";
-import { NamedRef } from "./Ref";
+import { Id, NamedRef } from "./Ref";
 
 export interface User {
     id: string;
@@ -33,10 +33,15 @@ export interface User {
     password: string;
     accountExpiry: Maybe<string>;
     authorities: string[];
-    createdBy: string;
-    lastModifiedBy: string;
+    createdBy: Maybe<UserAudit>;
+    lastModifiedBy: Maybe<UserAudit>;
     uiLocale: LocaleCode;
     dbLocale: LocaleCode;
+}
+
+export interface UserAudit {
+    id: Id;
+    username: string;
 }
 
 const emptyOrgUnit: OrgUnit = { id: "", name: "", path: [] };
@@ -70,8 +75,8 @@ export const defaultUser: User = {
     externalAuth: false,
     password: "",
     authorities: [""],
-    createdBy: "",
-    lastModifiedBy: "",
+    createdBy: { id: "", username: "" },
+    lastModifiedBy: { id: "", username: "" },
     accountExpiry: undefined,
     uiLocale: "",
     dbLocale: "",

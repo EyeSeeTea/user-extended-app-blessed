@@ -113,8 +113,8 @@ export class UserD2ApiRepository implements UserRepository {
             this.api.models.users.get({
                 fields: {
                     ...fields,
-                    createdBy: { displayName: true },
-                    lastUpdatedBy: { displayName: true },
+                    ...auditFields,
+                    userCredentials: { ...fields.userCredentials, ...auditFields },
                 },
                 page,
                 pageSize,
@@ -153,7 +153,15 @@ export class UserD2ApiRepository implements UserRepository {
             ids,
             usersIds => {
                 return apiToFuture(
-                    this.api.models.users.get({ paging: false, fields, filter: { id: { in: usersIds } } })
+                    this.api.models.users.get({
+                        paging: false,
+                        fields: {
+                            ...fields,
+                            ...auditFields,
+                            userCredentials: { ...fields.userCredentials, ...auditFields },
+                        },
+                        filter: { id: { in: usersIds } },
+                    })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
                     return this.getLocales(users);
@@ -228,7 +236,12 @@ export class UserD2ApiRepository implements UserRepository {
             disabled: user.userCredentials.disabled,
             openId: user.userCredentials.openId,
             password: user.userCredentials.password,
-            userCredentials: { ...existingUser.userCredentials, ...user.userCredentials },
+            userCredentials: {
+                ...existingUser.userCredentials,
+                ...user.userCredentials,
+                id: user.id,
+                accountExpiry: user.userCredentials.accountExpiry ? user.userCredentials.accountExpiry : undefined,
+            },
         };
     }
 
@@ -378,12 +391,12 @@ export class UserD2ApiRepository implements UserRepository {
         };
     }
 
-    private getUserAuditFields(user: ApiUserWithAudit) {
+    private getUserAuditFields(user: ApiUserWithAudit): Pick<User, "createdBy" | "lastModifiedBy"> {
         const createdBy = user.userCredentials.createdBy || user.createdBy;
         const lastUpdatedBy = user.userCredentials.lastUpdatedBy || user.lastUpdatedBy;
         return {
-            createdBy: createdBy?.displayName || "",
-            lastModifiedBy: lastUpdatedBy?.displayName || "",
+            createdBy: createdBy ? { id: createdBy.id, username: createdBy.displayName } : undefined,
+            lastModifiedBy: lastUpdatedBy ? { id: lastUpdatedBy?.id, username: lastUpdatedBy?.displayName } : undefined,
         };
     }
 
@@ -418,11 +431,21 @@ export class UserD2ApiRepository implements UserRepository {
                 externalAuth: input.externalAuth ?? "",
                 password: input.password ?? "",
                 accountExpiry: input.accountExpiry ?? "",
-                createdBy: { id: "", displayName: input.createdBy },
-                lastUpdatedBy: { id: "", displayName: input.lastModifiedBy },
+                ...this.getApiAuditFields(input),
             },
-            createdBy: { displayName: input.createdBy },
-            lastUpdatedBy: { displayName: input.lastModifiedBy },
+            ...this.getApiAuditFields(input),
+        };
+    }
+
+    private getApiAuditFields(user: User): D2UserAudit {
+        return {
+            createdBy: user.createdBy ? { id: user.createdBy.id, displayName: user.createdBy.username } : undefined,
+            lastUpdatedBy: user.lastModifiedBy
+                ? {
+                      id: user.lastModifiedBy.id,
+                      displayName: user.lastModifiedBy.username,
+                  }
+                : undefined,
         };
     }
 
@@ -439,6 +462,11 @@ export class UserD2ApiRepository implements UserRepository {
 }
 
 const orgUnitsFields = { id: true, name: true, path: true } as const;
+
+const auditFields = {
+    createdBy: { id: true, displayName: true },
+    lastUpdatedBy: { id: true, displayName: true },
+};
 
 const fields = {
     id: true,
@@ -470,13 +498,11 @@ const fields = {
         externalAuth: true,
         password: true,
         accountExpiry: true,
-        createdBy: { id: true, displayName: true },
-        lastUpdatedBy: { id: true, displayName: true },
     },
 } as const;
 
 export type ApiUser = SelectedPick<D2UserSchema, typeof fields>;
-export type ApiUserWithAudit = ApiUser & UserAudit;
+export type ApiUserWithAudit = ApiUser & { userCredentials: ApiUser["userCredentials"] & D2UserAudit } & D2UserAudit;
 
 const defaultColumns: Array<keyof User> = [
     "username",
@@ -493,9 +519,9 @@ type Dhis2Response = MetadataResponse & {
     response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
 };
 
-type UserAudit = {
-    createdBy?: { displayName: string };
-    lastUpdatedBy?: { displayName: string };
+type D2UserAudit = {
+    createdBy?: { id: string; displayName: string };
+    lastUpdatedBy?: { id: string; displayName: string };
 };
 
 type D2UserSettings = { keyDbLocale: LocaleCode; keyUiLocale: LocaleCode };
