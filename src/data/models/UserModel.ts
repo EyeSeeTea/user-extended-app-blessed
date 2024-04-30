@@ -34,6 +34,7 @@ export const UserModel: Codec<User> = Schema.object({
     dataViewOrganisationUnits: Schema.array(NamedRefModel),
     lastLogin: Schema.optional(Schema.date),
     disabled: Schema.boolean,
+    status: Schema.string,
     access: AccessPermissionsModel,
     authorities: Schema.array(Schema.nonEmptyString),
     openId: Schema.optional(Schema.string),
@@ -78,6 +79,8 @@ export const ApiUserModel: Codec<ApiUser> = Schema.object({
         ldapId: Schema.optionalSafe(Schema.string, ""),
         externalAuth: Schema.boolean,
         password: Schema.string,
+        createdBy: Schema.object({ id: Schema.string, displayName: Schema.string }),
+        lastUpdatedBy: Schema.object({ id: Schema.string, displayName: Schema.string }),
         // accountExpiry: Schema.string,
     }),
 });
