@@ -25,6 +25,7 @@ export interface User {
     dataViewOrganisationUnits: OrgUnit[];
     searchOrganisationsUnits: OrgUnit[];
     lastLogin: Maybe<Date>;
+    status: string;
     disabled: boolean;
     access: AccessPermissions;
     openId: Maybe<string>;
@@ -68,6 +69,7 @@ export const defaultUser: User = {
     dataViewOrganisationUnits: [emptyOrgUnit],
     searchOrganisationsUnits: [emptyOrgUnit],
     lastLogin: new Date(),
+    status: "",
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },
     openId: "",

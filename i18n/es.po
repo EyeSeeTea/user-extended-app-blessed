@@ -326,6 +326,9 @@ msgstr ""
 msgid "First name"
 msgstr ""
 
+msgid "Phone number"
+msgstr ""
+
 msgid "Organisation units"
 msgstr ""
 
