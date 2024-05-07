@@ -15,6 +15,7 @@ import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
+import { Feedback } from "@eyeseetea/feedback-component";
 
 export interface AppProps {
     api: D2Api;
@@ -26,6 +27,7 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
     const [showShareButton, setShowShareButton] = useState(false);
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
+    const [username, setUsername] = useState("");
 
     useEffect(() => {
         async function setup() {
@@ -37,6 +39,7 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
 
             // TODO: Remove d2
             setAppContext({ d2, api, currentUser, compositionRoot });
+            setUsername(currentUser.username);
             setShowShareButton(isShareButtonVisible);
             setLoading(false);
         }
@@ -51,14 +54,13 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
                 <SnackbarProvider>
                     <LoadingProvider>
                         <HeaderBar appName="User Extended App" />
-
                         <div id="app" className="content">
                             <AppContext.Provider value={appContext}>
                                 <Router />
                             </AppContext.Provider>
                         </div>
-
                         <Share visible={showShareButton} />
+                        <Feedback options={appConfig.feedback} username={username} />
                     </LoadingProvider>
                 </SnackbarProvider>
             </OldMuiThemeProvider>
