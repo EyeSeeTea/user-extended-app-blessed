@@ -13,7 +13,6 @@ import Share from "../../components/share/Share";
 import { AppContext, AppContextState } from "../../contexts/app-context";
 import { Router } from "../Router";
 import "./App.css";
-import { AppConfig } from "./AppConfig";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
 
@@ -39,7 +38,6 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
             // TODO: Remove d2
             setAppContext({ d2, api, currentUser, compositionRoot });
             setShowShareButton(isShareButtonVisible);
-            initFeedbackTool(d2, appConfig);
             setLoading(false);
         }
         setup();
@@ -69,15 +67,3 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
 });
 
 type D2 = object;
-
-function initFeedbackTool(d2: D2, appConfig: AppConfig): void {
-    const appKey = _(appConfig).get("appKey");
-
-    if (appConfig && appConfig.feedback) {
-        const feedbackOptions = {
-            ...appConfig.feedback,
-            i18nPath: "feedback-tool/i18n",
-        };
-        window.$.feedbackDhis2(d2, appKey, feedbackOptions);
-    }
-}
