@@ -11,8 +11,7 @@ import _ from "lodash";
 
 import FilteredMultiSelect from "./FilteredMultiSelect.component";
 
-import { orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
-import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
+import { extractIdsFromPaths, orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
 import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class MultipleSelector extends React.Component {

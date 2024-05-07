@@ -3,8 +3,7 @@ import _ from "lodash";
 import TextField from "material-ui/TextField";
 import PropTypes from "prop-types";
 import React from "react";
-import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
-import { orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
+import { extractIdsFromPaths, orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
 import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class OrgUnitsSelectorFilter extends React.Component {
