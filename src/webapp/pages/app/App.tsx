@@ -54,11 +54,13 @@ export const App: React.FC<AppProps> = React.memo(function App({ api, d2, instan
                 <SnackbarProvider>
                     <LoadingProvider>
                         <HeaderBar appName="User Extended App" />
+
                         <div id="app" className="content">
                             <AppContext.Provider value={appContext}>
                                 <Router />
                             </AppContext.Provider>
                         </div>
+
                         <Share visible={showShareButton} />
                         <Feedback options={appConfig.feedback} username={username} />
                     </LoadingProvider>
