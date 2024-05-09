@@ -18,6 +18,7 @@ const queryFields = [
     "userGroups[id,displayName,publicAccess]",
     "organisationUnits[id,code,shortName,displayName]",
     "dataViewOrganisationUnits[id,code,shortName,displayName]",
+    "searchOrganisationUnits[id,code,shortName,displayName]",
     "phoneNumber",
 ];
 

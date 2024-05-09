@@ -479,6 +479,7 @@ export const columns: TableColumn<User>[] = [
     { name: "surname", sortable: true, text: i18n.t("Surname") },
     { name: "email", sortable: true, text: i18n.t("Email") },
     { name: "phoneNumber", text: i18n.t("Phone number") },
+    { name: "searchOrganisationsUnits", text: i18n.t("Search organisation units") },
     { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
     { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
     { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },

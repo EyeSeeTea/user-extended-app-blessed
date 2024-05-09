@@ -165,6 +165,7 @@ function getPlainUser(user, { orgUnitsField }, toArray) {
         userGroups: namesFromCollection(user.userGroups, "displayName", toArray),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
+        searchOrganisationsUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
         disabled: userCredentials.disabled,
         openId: userCredentials.openId,
         phoneNumber: user.phoneNumber,
