@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-05-09T18:05:54.508Z\n"
-"PO-Revision-Date: 2024-05-09T18:05:54.508Z\n"
+"POT-Creation-Date: 2024-05-10T09:58:18.688Z\n"
+"PO-Revision-Date: 2024-05-10T09:58:18.688Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -215,7 +215,7 @@ msgstr ""
 msgid "User Groups"
 msgstr ""
 
-msgid "Organisation Units"
+msgid "Data Capture Organisation Units"
 msgstr ""
 
 msgid "Data View Organisation Units"
@@ -275,7 +275,7 @@ msgstr ""
 msgid "Copy in user"
 msgstr ""
 
-msgid "Assign to organisation units"
+msgid "Assign to data capture organisation units"
 msgstr ""
 
 msgid "Assign to data view organisation units"
@@ -329,13 +329,13 @@ msgstr ""
 msgid "Phone number"
 msgstr ""
 
-msgid "Search organisation units"
-msgstr ""
-
-msgid "Organisation units"
+msgid "Data capture organisation units"
 msgstr ""
 
 msgid "Data view organisation units"
+msgstr ""
+
+msgid "Search organisation units"
 msgstr ""
 
 msgid "Created By"
