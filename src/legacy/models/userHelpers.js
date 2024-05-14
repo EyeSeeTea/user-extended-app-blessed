@@ -12,7 +12,7 @@ const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
+const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles"];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
