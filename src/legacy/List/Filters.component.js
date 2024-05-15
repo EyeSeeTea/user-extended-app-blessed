@@ -11,6 +11,7 @@ import MultipleFilter from "../components/MultipleFilter.component";
 import OrgUnitsSelectorFilter from "../components/OrgUnitsSelectorFilter";
 import listActions from "./list.actions";
 import listStore from "./list.store";
+import Dropdown from "../components/Dropdown.component";
 
 export default class Filters extends React.Component {
     static contextTypes = {
@@ -34,6 +35,9 @@ export default class Filters extends React.Component {
             textField: {
                 width: "90%",
             },
+        },
+        dropdownStyles: {
+            width: "90%",
         },
         animationVisible: {
             width: 850,
@@ -60,11 +64,11 @@ export default class Filters extends React.Component {
             searchString: "",
             searchStringClear: null,
             showOnlyManagedUsers: false,
-            showOnlyActiveUsers: false,
             userRoles: [],
             userGroups: [],
             orgUnits: [],
             orgUnitsOutput: [],
+            userDisabled: null,
             userRolesAll: [],
             userGroupsAll: [],
             rootJunction: "OR",
@@ -118,10 +122,10 @@ export default class Filters extends React.Component {
     getFilterOptions = () => {
         const {
             showOnlyManagedUsers,
-            showOnlyActiveUsers,
             searchString,
             userRoles,
             userGroups,
+            userDisabled,
             orgUnits,
             orgUnitsOutput,
             rootJunction,
@@ -134,7 +138,7 @@ export default class Filters extends React.Component {
             ...(searchString ? { query: searchString } : {}),
             ...(rootJunction ? { rootJunction } : {}),
             filters: {
-                "userCredentials.disabled": showOnlyActiveUsers ? ["eq", false] : undefined,
+                "userCredentials.disabled": userDisabled !== null ? ["eq", userDisabled] : undefined,
                 "userCredentials.userRoles.id": inFilter(userRoles),
                 "userGroups.id": inFilter(userGroups),
                 "organisationUnits.id": inFilter(orgUnits.map(ou => ou.id)),
@@ -147,10 +151,10 @@ export default class Filters extends React.Component {
         this.setState(
             {
                 showOnlyManagedUsers: false,
-                showOnlyActiveUsers: false,
                 searchStringClear: new Date(),
                 userGroups: [],
                 userRoles: [],
+                userDisabled: null,
                 orgUnits: [],
                 orgUnitsOutput: [],
             },
@@ -171,15 +175,16 @@ export default class Filters extends React.Component {
     };
 
     checkboxHandler = (ev, isChecked) => isChecked;
+    dropdownHandler = ev => ev.target.value;
 
     render() {
         const {
             userGroups,
             userRoles,
+            userDisabled,
             orgUnits,
             orgUnitsOutput,
             showOnlyManagedUsers,
-            showOnlyActiveUsers,
             showExtendedFilters,
             rootJunction,
         } = this.state;
@@ -188,11 +193,16 @@ export default class Filters extends React.Component {
 
         const isExtendedFiltering =
             showOnlyManagedUsers ||
-            showOnlyActiveUsers ||
+            userDisabled ||
             !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty);
         const isFiltering = showOnlyManagedUsers || isExtendedFiltering;
         const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? { backgroundColor: "#cdcdcd" } : undefined;
+
+        const dropdownOptions = [
+            { value: false, text: this.getTranslation("active") },
+            { value: true, text: this.getTranslation("inactive") },
+        ];
 
         return (
             <div className="user-management-controls" style={styles.wrapper}>
@@ -226,12 +236,6 @@ export default class Filters extends React.Component {
                                     onCheck={this.setFilter("showOnlyManagedUsers", this.checkboxHandler)}
                                     checked={showOnlyManagedUsers}
                                 />
-                                <Checkbox
-                                    className="control-checkbox"
-                                    label={this.getTranslation("display_only_enabled_users")}
-                                    onCheck={this.setFilter("showOnlyActiveUsers", this.checkboxHandler)}
-                                    checked={showOnlyActiveUsers}
-                                />
                             </Grid>
                             <Grid item xs={4} className="control-row switch">
                                 <span>{this.getTranslation("Filtering_behavior")}</span>
@@ -251,6 +255,16 @@ export default class Filters extends React.Component {
                             </Grid>
                         </Grid>
                         <div className="control-row">
+                            <div className="user-management-control select-active-or-inactive">
+                                <Dropdown
+                                    labelText={this.getTranslation("filter_active_inactive_users")}
+                                    options={dropdownOptions}
+                                    value={this.state.userDisabled}
+                                    onChange={this.setFilter("userDisabled", this.dropdownHandler)}
+                                    style={styles.dropdownStyles}
+                                />
+                            </div>
+
                             <div className="user-management-control select-role">
                                 <MultipleFilter
                                     title={this.getTranslation("filter_role")}
