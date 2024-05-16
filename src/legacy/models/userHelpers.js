@@ -36,6 +36,7 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
+    searchOrganisationsUnits: "OUSearch",
     disabled: "Disabled",
     openId: "Open ID",
 };
