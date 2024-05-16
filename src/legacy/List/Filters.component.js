@@ -199,7 +199,7 @@ export default class Filters extends React.Component {
         const isExtendedFiltering =
             showOnlyManagedUsers ||
             userDisabled ||
-            !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty);
+            !_([userGroups, userRoles, orgUnits, orgUnitsOutput, searchOrgUnits]).every(_.isEmpty);
         const isFiltering = showOnlyManagedUsers || isExtendedFiltering;
         const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? { backgroundColor: "#cdcdcd" } : undefined;
