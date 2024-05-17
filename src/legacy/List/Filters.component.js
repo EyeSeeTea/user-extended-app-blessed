@@ -145,7 +145,7 @@ export default class Filters extends React.Component {
                 "userGroups.id": inFilter(userGroups),
                 "organisationUnits.id": inFilter(orgUnits.map(ou => ou.id)),
                 "dataViewOrganisationUnits.id": inFilter(orgUnitsOutput.map(ou => ou.id)),
-                "searchOrganisationUnits.id": inFilter(searchOrgUnits.map(ou => ou.id)),
+                "teiSearchOrganisationUnits.id": inFilter(searchOrgUnits.map(ou => ou.id)),
             },
         };
     };

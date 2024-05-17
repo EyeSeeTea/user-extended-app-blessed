@@ -355,6 +355,9 @@ class ImportTable extends React.Component {
             dataViewOrganisationUnits: {
                 validators: [validators.importWarnings("dataViewOrganisationUnits")],
             },
+            searchOrganisationsUnits: {
+                validators: [validators.importWarnings("searchOrganisationsUnits")],
+            },
             _default: { validators: [] },
         };
     };
@@ -385,7 +388,13 @@ class ImportTable extends React.Component {
     };
 
     getFields = user => {
-        const relationshipFields = ["userRoles", "userGroups", "organisationUnits", "dataViewOrganisationUnits"];
+        const relationshipFields = [
+            "userRoles",
+            "userGroups",
+            "organisationUnits",
+            "dataViewOrganisationUnits",
+            "teiSearchOrganisationUnits",
+        ];
 
         const orgUnitsField = this.props.settings.get("organisationUnitsField");
 
@@ -394,7 +403,11 @@ class ImportTable extends React.Component {
             const validators = (this.fieldsInfo[field] || this.fieldsInfo._default).validators;
             const isMultipleValue = relationshipFields.includes(field);
             const displayField =
-                field === "organisationUnits" || field === "dataViewOrganisationUnits" ? orgUnitsField : "displayName";
+                field === "organisationUnits" ||
+                field === "dataViewOrganisationUnits" ||
+                field === "teiSearchOrganisationUnits"
+                    ? orgUnitsField
+                    : "displayName";
 
             if (isMultipleValue) {
                 const values = value || [];
@@ -461,6 +474,7 @@ class ImportTable extends React.Component {
                 surname: templateUser.attributes.surname,
                 organisationUnits: templateUser.attributes.organisationUnits,
                 dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
+                searchOrganisationsUnits: templateUser.attributes.searchOrganisationsUnits,
                 email: templateUser.attributes.email,
                 disabled: templateUser.attributes.disabled,
             };
