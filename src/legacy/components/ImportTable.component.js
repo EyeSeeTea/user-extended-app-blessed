@@ -393,7 +393,7 @@ class ImportTable extends React.Component {
             "userGroups",
             "organisationUnits",
             "dataViewOrganisationUnits",
-            "teiSearchOrganisationUnits",
+            "searchOrganisationsUnits",
         ];
 
         const orgUnitsField = this.props.settings.get("organisationUnitsField");
@@ -405,7 +405,7 @@ class ImportTable extends React.Component {
             const displayField =
                 field === "organisationUnits" ||
                 field === "dataViewOrganisationUnits" ||
-                field === "teiSearchOrganisationUnits"
+                field === "searchOrganisationsUnits"
                     ? orgUnitsField
                     : "displayName";
 

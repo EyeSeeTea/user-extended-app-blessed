@@ -70,7 +70,7 @@ class MultipleSelector extends React.Component {
         userRoles: "assign_roles",
         organisationUnits: "assign_to_org_units_capture",
         dataViewOrganisationUnits: "assign_to_org_units_output",
-        teiSearchOrganisationUnits: "assign_to_org_units_search",
+        searchOrganisationsUnits: "assign_to_org_units_search",
     };
 
     renderForm = () => {
@@ -114,7 +114,7 @@ class MultipleSelector extends React.Component {
                         showNameSetting
                     />
                 );
-            case "teiSearchOrganisationUnits":
+            case "searchOrganisationsUnits":
                 return (
                     <OrgUnitsSelector
                         api={this.props.api}

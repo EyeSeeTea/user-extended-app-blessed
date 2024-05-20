@@ -36,7 +36,6 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
-    teiSearchOrganisationUnits: "OUSearch",
     searchOrganisationsUnits: "OUSearch",
     disabled: "Disabled",
     openId: "Open ID",
@@ -583,7 +582,7 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
             userCredentials: newChildUserCredentials,
             userGroups: newChildUserGroups,
             dataViewOrganisationUnits: newChildOrgUnitsOutput,
-            teiSearchOrganisationUnits: newChildOrgUnitsSearch,
+            searchOrganisationsUnits: newChildOrgUnitsSearch,
             organisationUnits: newChildOrgUnits,
         };
     });
