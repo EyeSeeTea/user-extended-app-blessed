@@ -323,6 +323,7 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
 
     return {
         ...userRoot,
+        teiSearchOrganisationUnits: userRoot.searchOrganisationsUnits,
         userCredentials: {
             ...baseUser.userCredentials,
             ...clean(_(userFields).pick(userCredentialsFields).value()),
