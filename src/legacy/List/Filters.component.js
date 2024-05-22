@@ -68,6 +68,7 @@ export default class Filters extends React.Component {
             userGroups: [],
             orgUnits: [],
             orgUnitsOutput: [],
+            searchOrgUnits: [],
             userDisabled: null,
             userRolesAll: [],
             userGroupsAll: [],
@@ -128,6 +129,7 @@ export default class Filters extends React.Component {
             userDisabled,
             orgUnits,
             orgUnitsOutput,
+            searchOrgUnits,
             rootJunction,
         } = this.state;
 
@@ -143,6 +145,7 @@ export default class Filters extends React.Component {
                 "userGroups.id": inFilter(userGroups),
                 "organisationUnits.id": inFilter(orgUnits.map(ou => ou.id)),
                 "dataViewOrganisationUnits.id": inFilter(orgUnitsOutput.map(ou => ou.id)),
+                "teiSearchOrganisationUnits.id": inFilter(searchOrgUnits.map(ou => ou.id)),
             },
         };
     };
@@ -157,6 +160,7 @@ export default class Filters extends React.Component {
                 userDisabled: null,
                 orgUnits: [],
                 orgUnitsOutput: [],
+                searchOrgUnits: [],
             },
             this.notifyParent
         );
@@ -184,6 +188,7 @@ export default class Filters extends React.Component {
             userDisabled,
             orgUnits,
             orgUnitsOutput,
+            searchOrgUnits,
             showOnlyManagedUsers,
             showExtendedFilters,
             rootJunction,
@@ -194,7 +199,7 @@ export default class Filters extends React.Component {
         const isExtendedFiltering =
             showOnlyManagedUsers ||
             userDisabled ||
-            !_([userGroups, userRoles, orgUnits, orgUnitsOutput]).every(_.isEmpty);
+            !_([userGroups, userRoles, orgUnits, orgUnitsOutput, searchOrgUnits]).every(_.isEmpty);
         const isFiltering = showOnlyManagedUsers || isExtendedFiltering;
         const filterIconColor = isExtendedFiltering ? "#ff9800" : undefined;
         const filterButtonColor = showExtendedFilters ? { backgroundColor: "#cdcdcd" } : undefined;
@@ -303,6 +308,16 @@ export default class Filters extends React.Component {
                                     title={this.getTranslation("filter_by_organisation_units_output")}
                                     selected={this.state.orgUnitsOutput}
                                     onChange={this.setFilter("orgUnitsOutput")}
+                                    styles={styles.filterStyles}
+                                />
+                            </div>
+
+                            <div className="user-management-control select-search-organisation-unit">
+                                <OrgUnitsSelectorFilter
+                                    api={this.props.api}
+                                    title={this.getTranslation("filter_by_search_organisation_units")}
+                                    selected={this.state.searchOrgUnits}
+                                    onChange={this.setFilter("searchOrgUnits")}
                                     styles={styles.filterStyles}
                                 />
                             </div>

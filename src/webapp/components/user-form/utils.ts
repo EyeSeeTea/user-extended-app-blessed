@@ -70,7 +70,7 @@ export const getUserName = (field: UserFormField) => {
         case "userGroups":
             return i18n.t("User Groups");
         case "organisationUnits":
-            return i18n.t("Organisation Units");
+            return i18n.t("Data Capture Organisation Units");
         case "dataViewOrganisationUnits":
             return i18n.t("Data View Organisation Units");
         case "searchOrganisationsUnits":

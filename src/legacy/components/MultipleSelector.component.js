@@ -70,6 +70,7 @@ class MultipleSelector extends React.Component {
         userRoles: "assign_roles",
         organisationUnits: "assign_to_org_units_capture",
         dataViewOrganisationUnits: "assign_to_org_units_output",
+        searchOrganisationsUnits: "assign_to_org_units_search",
     };
 
     renderForm = () => {
@@ -103,6 +104,17 @@ class MultipleSelector extends React.Component {
                     />
                 );
             case "dataViewOrganisationUnits":
+                return (
+                    <OrgUnitsSelector
+                        api={this.props.api}
+                        selected={selected.map(ou => ou.path)}
+                        onChange={this.onOrgUnitsChange}
+                        controls={orgUnitControls}
+                        listParams={orgUnitListParams}
+                        showNameSetting
+                    />
+                );
+            case "searchOrganisationsUnits":
                 return (
                     <OrgUnitsSelector
                         api={this.props.api}

@@ -186,7 +186,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 },
                 {
                     name: "assign_to_org_units_capture",
-                    text: i18n.t("Assign to organisation units"),
+                    text: i18n.t("Assign to data capture organisation units"),
                     multiple: true,
                     icon: <Icon>business</Icon>,
                     onClick: users => {
@@ -500,7 +500,7 @@ export const columns: TableColumn<User>[] = [
     {
         name: "organisationUnits",
         sortable: false,
-        text: i18n.t("Organisation units"),
+        text: i18n.t("Data capture organisation units"),
         getValue: user => buildEllipsizedList(user.organisationUnits),
     },
     {
