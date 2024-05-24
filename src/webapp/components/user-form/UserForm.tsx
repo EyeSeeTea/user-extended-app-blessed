@@ -90,7 +90,7 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
     useEffect(() => {
         if (field !== "uiLocale" && field !== "dbLocale") return;
 
-        compositionRoot.instance.getLocales(field).run(
+        return compositionRoot.instance.getLocales(field).run(
             locales => setLocales(locales),
             error => console.error(error)
         );
@@ -121,21 +121,22 @@ export const RenderUserWizardField: React.FC<{ row: number; field: UserFormField
                     disabled={values.users[row].externalAuth === true}
                 />
             );
-        // TODO: Convert to date field
-        // case "accountExpiry":
-        //     return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
+        case "accountExpiry":
+            return <FormField {...props} component={InputFieldFF} type="datetime-local" />;
         case "userGroups":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":
             return <FormField {...props} component={UserRoleGroupFF} modelType="userRoles" />;
         case "organisationUnits":
         case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
             return <FormField {...props} component={OrgUnitSelectorFF} />;
         case "externalAuth":
         case "disabled":
             return <FormField {...props} component={CheckboxFieldFF} type={"checkbox"} />;
         case "uiLocale":
         case "dbLocale":
+            if (locales.length === 0) return null;
             return (
                 <FormField
                     {...props}
@@ -168,6 +169,7 @@ export const RenderUserImportField: React.FC<{ row: number; field: UserFormField
         case "userRoles":
         case "organisationUnits":
         case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
             return (
                 <PreviewInputFF {...props}>
                     <RenderUserWizardField row={row} field={field} isEdit={isEdit} />

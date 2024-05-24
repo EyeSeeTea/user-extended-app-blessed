@@ -18,6 +18,7 @@ export const userFormFields = [
     "dbLocale",
     "dataViewOrganisationUnits",
     "organisationUnits",
+    "searchOrganisationsUnits",
     "userGroups",
     "userRoles",
     "phoneNumber",
@@ -40,8 +41,8 @@ export const getUserName = (field: UserFormField) => {
             return i18n.t("Name");
         case "password":
             return i18n.t("Password");
-        // case "accountExpiry":
-        //     return i18n.t("Account expiration date");
+        case "accountExpiry":
+            return i18n.t("Account expiration date");
         case "surname":
             return i18n.t("Surname");
         case "username":
@@ -69,9 +70,11 @@ export const getUserName = (field: UserFormField) => {
         case "userGroups":
             return i18n.t("User Groups");
         case "organisationUnits":
-            return i18n.t("Organisation Units");
+            return i18n.t("Data Capture Organisation Units");
         case "dataViewOrganisationUnits":
             return i18n.t("Data View Organisation Units");
+        case "searchOrganisationsUnits":
+            return i18n.t("Search Organisation Units");
         case "openId":
             return i18n.t("Open ID");
         case "ldapId":

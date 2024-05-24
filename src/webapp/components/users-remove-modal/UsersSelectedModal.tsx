@@ -3,19 +3,24 @@ import _ from "lodash";
 import { ConfirmationDialog, useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 
 import { useAppContext } from "../../contexts/app-context";
-import { Id } from "../../../domain/entities/Ref";
 import { User } from "../../../domain/entities/User";
 import i18n from "../../../locales";
 
 type UsersRemoveModalProps = {
     isOpen: boolean;
-    ids: Id[];
+    users: User[];
     onSuccess: () => void;
     onCancel: () => void;
     actionType: ActionType;
 };
 
-export type ActionType = "remove" | "enable" | "disable";
+export type ActionType =
+    | "remove"
+    | "enable"
+    | "disable"
+    | "assign_to_org_units_capture"
+    | "assign_to_org_units_output"
+    | "assign_to_org_units_search";
 
 function getMessagesByActionType(actionType: ActionType): { title: string } {
     if (actionType === "remove") {
@@ -28,15 +33,22 @@ function getMessagesByActionType(actionType: ActionType): { title: string } {
     return { title: "" };
 }
 
-function generateMessage(users: User[]) {
+export function generateMessage(users: User[]) {
     const firstThreeUsers = _(users).take(3).value();
     const remainingUsersCount = users.length - firstThreeUsers.length;
     return remainingUsersCount > 0 ? `and ${remainingUsersCount} more` : "";
 }
 
+export function getFirstThreeUserNames(users: User[]): string[] {
+    return _(users)
+        .take(3)
+        .map(user => user.username)
+        .value();
+}
+
 export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
     actionType,
-    ids,
+    users,
     isOpen,
     onCancel,
     onSuccess,
@@ -44,20 +56,10 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
     const loading = useLoading();
-    const [users, setUsers] = React.useState<User[]>([]);
-
-    React.useEffect(() => {
-        compositionRoot.users.get(ids).run(usersInfo => {
-            setUsers(usersInfo);
-        }, snackbar.error);
-    }, [compositionRoot.users, ids, snackbar]);
 
     const messages = getMessagesByActionType(actionType);
 
-    const firstThreeUsers = _(users)
-        .take(3)
-        .map(user => user.username)
-        .value();
+    const firstThreeUsers = getFirstThreeUserNames(users);
 
     const onSuccessAction = () => {
         snackbar.success(
@@ -67,7 +69,6 @@ export const UsersSelectedModal: React.FC<UsersRemoveModalProps> = ({
                 remainingCount: generateMessage(users),
             })
         );
-        setUsers([]);
         onSuccess();
         loading.hide();
     };

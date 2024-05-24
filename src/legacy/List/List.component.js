@@ -1,4 +1,3 @@
-import log from "loglevel";
 import IconButton from "material-ui/IconButton";
 import MenuItem from "material-ui/MenuItem";
 import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
@@ -15,8 +14,6 @@ import Settings from "../models/settings";
 import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import Filters from "./Filters.component";
-import orgUnitDialogStore from "./organisation-unit-dialog/organisationUnitDialogStore";
-import OrgUnitDialog from "./organisation-unit-dialog/OrgUnitDialog.component";
 
 const initialSorting = ["name", "asc"];
 
@@ -75,9 +72,6 @@ export class ListHybrid extends React.Component {
                 model: null,
                 open: false,
             },
-            orgunitassignment: {
-                open: false,
-            },
             replicateUser: {
                 open: false,
             },
@@ -109,12 +103,6 @@ export class ListHybrid extends React.Component {
             });
         });
 
-        const orgUnitAssignmentStoreDisposable = orgUnitDialogStore.subscribe(orgunitassignmentState => {
-            this.setAssignState("orgunitassignment", orgunitassignmentState);
-        });
-
-        this.registerDisposable(orgUnitAssignmentStoreDisposable);
-
         this.filterList();
     };
 
@@ -131,25 +119,8 @@ export class ListHybrid extends React.Component {
         }
     }
 
-    _orgUnitAssignmentSaved = () => {
-        snackActions.show({
-            message: "organisation_unit_capture_assignment_saved",
-            action: "ok",
-            translate: true,
-        });
-        this.reloadTable();
-    };
-
     reloadTable = () => {
         this.setState({ reloadTableKey: this.state.reloadTableKey + 1 });
-    };
-
-    _orgUnitAssignmentError = errorMessage => {
-        log.error(errorMessage);
-        snackActions.show({
-            message: "organisation_unit_capture_assignment_save_error",
-            translate: true,
-        });
     };
 
     filterList = () => {
@@ -293,39 +264,6 @@ export class ListHybrid extends React.Component {
                     </div>
                 </div>
 
-                {this.state.orgunitassignment.open && this.state.orgunitassignment.field === "organisationUnits" ? (
-                    <OrgUnitDialog
-                        api={this.props.api}
-                        models={this.state.orgunitassignment.users}
-                        open={true}
-                        onRequestClose={this._closeOrgUnitDialog}
-                        title={this.state.orgunitassignment.title}
-                        field={this.state.orgunitassignment.field}
-                        roots={this.state.orgunitassignment.roots}
-                        onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
-                        onOrgUnitAssignmentError={this._orgUnitAssignmentError}
-                        filteringByNameLabel={this.getTranslation("filter_organisation_units_capture_by_name")}
-                        orgUnitsSelectedLabel={this.getTranslation("organisation_units_capture_selected")}
-                    />
-                ) : null}
-
-                {this.state.orgunitassignment.open &&
-                this.state.orgunitassignment.field === "dataViewOrganisationUnits" ? (
-                    <OrgUnitDialog
-                        api={this.props.api}
-                        models={this.state.orgunitassignment.users}
-                        open={true}
-                        onRequestClose={this._closeOrgUnitDialog}
-                        title={this.state.orgunitassignment.title}
-                        field={this.state.orgunitassignment.field}
-                        roots={this.state.orgunitassignment.roots}
-                        onOrgUnitAssignmentSaved={this._orgUnitAssignmentSaved}
-                        onOrgUnitAssignmentError={this._orgUnitAssignmentError}
-                        filteringByNameLabel={this.getTranslation("filter_organisation_units_output_by_name")}
-                        orgUnitsSelectedLabel={this.getTranslation("organisation_units_output_selected")}
-                    />
-                ) : null}
-
                 {copyUsers.open ? (
                     <CopyInUserDialog
                         user={copyUsers.users}
@@ -360,12 +298,4 @@ export class ListHybrid extends React.Component {
             </div>
         );
     }
-
-    _closeOrgUnitDialog = () => {
-        orgUnitDialogStore.setState(
-            Object.assign({}, orgUnitDialogStore.state, {
-                open: false,
-            })
-        );
-    };
 }

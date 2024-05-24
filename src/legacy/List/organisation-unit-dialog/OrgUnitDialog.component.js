@@ -4,7 +4,7 @@ import _ from "lodash";
 import Toggle from "material-ui/Toggle/Toggle";
 import PropTypes from "prop-types";
 import React from "react";
-import { extractIdsFromPaths } from "../../../domain/entities/OrgUnit";
+import { extractIdsFromPaths } from "../../../utils/d2-api";
 import BatchModelsMultiSelectModel from "../../components/batch-models-multi-select/BatchModelsMultiSelect.model";
 import { listWithInFilter } from "../../utils/dhis2Helpers";
 import _m from "../../utils/lodash-mixins";

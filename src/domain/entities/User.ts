@@ -1,5 +1,7 @@
 import _ from "lodash";
-import { NamedRef } from "./Ref";
+import { Maybe } from "../../types/utils";
+import { OrgUnit } from "./OrgUnit";
+import { Id, NamedRef } from "./Ref";
 
 export interface User {
     id: string;
@@ -19,20 +21,31 @@ export interface User {
     apiUrl: string;
     userRoles: NamedRef[];
     userGroups: NamedRef[];
-    organisationUnits: NamedRef[];
-    dataViewOrganisationUnits: NamedRef[];
-    lastLogin?: Date;
+    organisationUnits: OrgUnit[];
+    dataViewOrganisationUnits: OrgUnit[];
+    searchOrganisationsUnits: OrgUnit[];
+    lastLogin: Maybe<Date>;
+    status: string;
     disabled: boolean;
     access: AccessPermissions;
-    openId?: string;
-    ldapId?: string;
+    openId: Maybe<string>;
+    ldapId: Maybe<string>;
     externalAuth: boolean;
     password: string;
-    // accountExpiry: string;
+    accountExpiry: Maybe<string>;
     authorities: string[];
-    createdBy: string;
-    lastModifiedBy: string;
+    createdBy: Maybe<UserAudit>;
+    lastModifiedBy: Maybe<UserAudit>;
+    uiLocale: LocaleCode;
+    dbLocale: LocaleCode;
 }
+
+export interface UserAudit {
+    id: Id;
+    username: string;
+}
+
+const emptyOrgUnit: OrgUnit = { id: "", name: "", path: [] };
 
 export const defaultUser: User = {
     id: "",
@@ -52,9 +65,11 @@ export const defaultUser: User = {
     apiUrl: "",
     userRoles: [{ id: "", name: "" }],
     userGroups: [{ id: "", name: "" }],
-    organisationUnits: [{ id: "", name: "" }],
-    dataViewOrganisationUnits: [{ id: "", name: "" }],
+    organisationUnits: [emptyOrgUnit],
+    dataViewOrganisationUnits: [emptyOrgUnit],
+    searchOrganisationsUnits: [emptyOrgUnit],
     lastLogin: new Date(),
+    status: "",
     disabled: false,
     access: { read: true, update: true, externalize: true, delete: true, write: true, manage: true },
     openId: "",
@@ -62,8 +77,11 @@ export const defaultUser: User = {
     externalAuth: false,
     password: "",
     authorities: [""],
-    createdBy: "",
-    lastModifiedBy: "",
+    createdBy: { id: "", username: "" },
+    lastModifiedBy: { id: "", username: "" },
+    accountExpiry: undefined,
+    uiLocale: "",
+    dbLocale: "",
 };
 export interface AccessPermissions {
     read: boolean;
@@ -81,3 +99,5 @@ export const isSuperAdmin = (user: User): boolean => {
 export const hasReplicateAuthority = (user: User): boolean => {
     return _.some(user.authorities, authorities => authorities.includes("F_REPLICATE_USER"));
 };
+
+export type LocaleCode = string;

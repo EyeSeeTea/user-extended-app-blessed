@@ -17,7 +17,17 @@ const steps: WizardStep[] = [
         label: i18n.t("General info"),
         component: UserEditWizardStep,
         props: {
-            fields: ["username", "firstName", "surname", "email", "externalAuth", "password", "openId", "ldapId"],
+            fields: [
+                "username",
+                "firstName",
+                "surname",
+                "email",
+                "externalAuth",
+                "password",
+                "openId",
+                "ldapId",
+                "accountExpiry",
+            ],
         },
     },
 
@@ -26,7 +36,13 @@ const steps: WizardStep[] = [
         label: i18n.t("Assignment"),
         component: UserEditWizardStep,
         props: {
-            fields: ["userRoles", "organisationUnits", "dataViewOrganisationUnits", "userGroups"],
+            fields: [
+                "userRoles",
+                "organisationUnits",
+                "dataViewOrganisationUnits",
+                "searchOrganisationsUnits",
+                "userGroups",
+            ],
         },
     },
     {

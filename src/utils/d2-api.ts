@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { Instance } from "../data/entities/Instance";
+import { OrgUnit } from "../domain/entities/OrgUnit";
 import { D2Api } from "../types/d2-api";
 
 export function getMajorVersion(version: string): number {
@@ -29,3 +30,15 @@ export const orgUnitControls = {
     filterByProgram: false,
     selectAll: false,
 };
+
+export function joinPaths(orgUnit: OrgUnit): string {
+    return `/${orgUnit.path.join("/")}`;
+}
+
+export function extractIdFromPath(orgUnitPath?: string): string {
+    return _(orgUnitPath).split("/").last() ?? "";
+}
+
+export function extractIdsFromPaths(orgUnitPaths: string[]): string[] {
+    return orgUnitPaths.map(extractIdFromPath);
+}

@@ -11,8 +11,7 @@ import _ from "lodash";
 
 import FilteredMultiSelect from "./FilteredMultiSelect.component";
 
-import { orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
-import { extractIdsFromPaths } from "../../domain/entities/OrgUnit";
+import { extractIdsFromPaths, orgUnitControls, orgUnitListParams } from "../../utils/d2-api";
 import { listWithInFilter } from "../utils/dhis2Helpers";
 
 class MultipleSelector extends React.Component {
@@ -71,6 +70,7 @@ class MultipleSelector extends React.Component {
         userRoles: "assign_roles",
         organisationUnits: "assign_to_org_units_capture",
         dataViewOrganisationUnits: "assign_to_org_units_output",
+        searchOrganisationsUnits: "assign_to_org_units_search",
     };
 
     renderForm = () => {
@@ -104,6 +104,17 @@ class MultipleSelector extends React.Component {
                     />
                 );
             case "dataViewOrganisationUnits":
+                return (
+                    <OrgUnitsSelector
+                        api={this.props.api}
+                        selected={selected.map(ou => ou.path)}
+                        onChange={this.onOrgUnitsChange}
+                        controls={orgUnitControls}
+                        listParams={orgUnitListParams}
+                        showNameSetting
+                    />
+                );
+            case "searchOrganisationsUnits":
                 return (
                     <OrgUnitsSelector
                         api={this.props.api}
