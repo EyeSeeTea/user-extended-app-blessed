@@ -17,13 +17,66 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters } from "../../../domain/repositories/UserRepository";
-import { assignToOrgUnits } from "../../../legacy/List/context.actions";
+import { ListFilters, UpdateStrategy } from "../../../domain/repositories/UserRepository";
+import { SaveUserOrgUnitOptions } from "../../../domain/usecases/SaveUserOrgUnitUseCase";
 import i18n from "../../../locales";
+import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
+import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
-import { ActionType, UsersSelectedModal } from "../users-remove-modal/UsersSelectedModal";
+import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
+import {
+    ActionType,
+    generateMessage,
+    getFirstThreeUserNames,
+    UsersSelectedModal,
+} from "../users-remove-modal/UsersSelectedModal";
+
+function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
+    switch (action) {
+        case "assign_to_org_units_capture":
+            return "capture";
+        case "assign_to_org_units_output":
+            return "output";
+        case "assign_to_org_units_search":
+            return "search";
+        case "disable":
+        case "enable":
+        case "remove":
+            throw new Error(`Invalid action: ${action}`);
+    }
+}
+
+function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
+    return (
+        actionType === "assign_to_org_units_capture" ||
+        actionType === "assign_to_org_units_output" ||
+        actionType === "assign_to_org_units_search"
+    );
+}
+
+function isActionTypeEnableOrRemove(actionType: Maybe<ActionType>): boolean {
+    return actionType === "disable" || actionType === "enable" || actionType === "remove";
+}
+
+function buildOrgUnitTitleByAction(
+    actionType: ActionType,
+    ouCapture: string,
+    ouOutput: string,
+    ouSearch: string
+): string {
+    switch (actionType) {
+        case "assign_to_org_units_capture":
+            return ouCapture;
+        case "assign_to_org_units_output":
+            return ouOutput;
+        case "assign_to_org_units_search":
+            return ouSearch;
+        default:
+            return "";
+    }
+}
 
 export const UserListTable: React.FC<UserListTableProps> = ({
     openSettings,
@@ -48,13 +101,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const snackbar = useSnackbar();
     const navigate = useNavigate();
 
+    const { users, setUsers } = useGetUsersByIds(selectedUserIds);
+
+    const onCleanSelectedUsers = React.useCallback(() => {
+        setSelectedUserIds([]);
+        setUsers(undefined);
+        setActionType(undefined);
+    }, [setUsers]);
+
+    const { saveUsersOrgUnits } = useSaveUsersOrgUnits({
+        onSuccess: React.useCallback(() => {
+            onCleanSelectedUsers();
+            reload();
+        }, [onCleanSelectedUsers, reload]),
+    });
+
     const editUsers = useCallback(
         (ids: string[]) => {
             if (ids.length === 1) {
                 navigate(`/edit/${ids[0]}`);
             } else {
-                compositionRoot.users.list({ filters: { id: ["in", ids] } }).run(
-                    ({ objects }) => navigate(`/bulk-edit`, { state: { users: objects } }),
+                compositionRoot.users.get(ids).run(
+                    users => navigate(`/bulk-edit`, { state: { users: users } }),
                     error => snackbar.error(error)
                 );
             }
@@ -91,6 +159,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 { name: "userGroups", text: i18n.t("Groups") },
                 { name: "organisationUnits", text: i18n.t("OU Capture") },
                 { name: "dataViewOrganisationUnits", text: i18n.t("OU Output") },
+                { name: "searchOrganisationsUnits", text: i18n.t("OU Search") },
             ],
             actions: [
                 {
@@ -117,10 +186,13 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 },
                 {
                     name: "assign_to_org_units_capture",
-                    text: i18n.t("Assign to organisation units"),
+                    text: i18n.t("Assign to data capture organisation units"),
                     multiple: true,
                     icon: <Icon>business</Icon>,
-                    onClick: users => assignToOrgUnits(users, "organisationUnits", "assign_to_org_units_capture"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_capture");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -128,8 +200,21 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Assign to data view organisation units"),
                     multiple: true,
                     icon: <Icon>business</Icon>,
-                    onClick: users =>
-                        assignToOrgUnits(users, "dataViewOrganisationUnits", "assign_to_org_units_output"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_output");
+                    },
+                    isActive: checkAccess(["update"]),
+                },
+                {
+                    name: "assign_to_org_units_search",
+                    text: i18n.t("Assign to search organisation units"),
+                    multiple: true,
+                    icon: <Icon>business</Icon>,
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("assign_to_org_units_search");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -326,26 +411,56 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     );
 
     const onSuccessUsersRemove = () => {
-        setSelectedUserIds([]);
-        setActionType(undefined);
+        onCleanSelectedUsers();
         reload();
     };
 
-    const onCancelUsersRemove = () => {
-        setSelectedUserIds([]);
-        setActionType(undefined);
-    };
+    const ouCaptureI18n = i18n.t("Assign to organisation units capture");
+    const ouOutputI18n = i18n.t("Assign to organisation units output");
+    const ouSearchI18n = i18n.t("Assign to organisation units search");
+
+    const onSaveOrgUnits = React.useCallback(
+        (orgUnitIds: Id[], updateStrategy: UpdateStrategy) => {
+            if (users && actionType) {
+                saveUsersOrgUnits(orgUnitIds, updateStrategy, users, convertActionToOrgUnitType(actionType));
+            }
+        },
+        [actionType, users, saveUsersOrgUnits]
+    );
+
+    const generateOrgUnitTitle = React.useMemo(() => {
+        if (!users || !actionType) return "";
+        return i18n.t("{{action}}: {{users}} {{remainingCount}}", {
+            action: buildOrgUnitTitleByAction(actionType, ouCaptureI18n, ouOutputI18n, ouSearchI18n),
+            users: getFirstThreeUserNames(users).join(", "),
+            remainingCount: generateMessage(users),
+            nsSeparator: false,
+        });
+    }, [actionType, users, ouCaptureI18n, ouOutputI18n, ouSearchI18n]);
+
+    const selectedUsers = users && users.length > 0;
 
     return (
         <React.Fragment>
             {multiSelectorDialogProps && <MultiSelectorDialog {...multiSelectorDialogProps} />}
 
-            {actionType && (
+            {actionType && isActionTypeEnableOrRemove(actionType) && selectedUsers && (
                 <UsersSelectedModal
-                    ids={selectedUserIds}
-                    isOpen={selectedUserIds.length > 0}
+                    users={users}
+                    isOpen={users.length > 0}
                     onSuccess={onSuccessUsersRemove}
-                    onCancel={onCancelUsersRemove}
+                    onCancel={onCleanSelectedUsers}
+                    actionType={actionType}
+                />
+            )}
+
+            {actionType && isActionTypeOrgUnit(actionType) && selectedUsers && (
+                <OrgUnitDialogSelector
+                    onCancel={onCleanSelectedUsers}
+                    onSave={onSaveOrgUnits}
+                    title={generateOrgUnitTitle}
+                    visible
+                    users={users}
                     actionType={actionType}
                 />
             )}
@@ -385,7 +500,7 @@ export const columns: TableColumn<User>[] = [
     {
         name: "organisationUnits",
         sortable: false,
-        text: i18n.t("Organisation units"),
+        text: i18n.t("Data capture organisation units"),
         getValue: user => buildEllipsizedList(user.organisationUnits),
     },
     {
@@ -393,6 +508,12 @@ export const columns: TableColumn<User>[] = [
         sortable: false,
         text: i18n.t("Data view organisation units"),
         getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+    },
+    {
+        name: "searchOrganisationsUnits",
+        sortable: false,
+        text: i18n.t("Search organisation units"),
+        getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
     },
     { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
     {
@@ -410,13 +531,13 @@ export const columns: TableColumn<User>[] = [
         name: "createdBy",
         sortable: false,
         text: i18n.t("Created By"),
-        getValue: row => row.createdBy,
+        getValue: row => row.createdBy?.username || "",
     },
     {
         name: "lastModifiedBy",
         sortable: false,
         text: i18n.t("Last Modified By"),
-        getValue: row => row.lastModifiedBy,
+        getValue: row => row.lastModifiedBy?.username || "",
     },
 ];
 

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-17T14:57:37.763Z\n"
-"PO-Revision-Date: 2024-04-17T14:57:37.763Z\n"
+"POT-Creation-Date: 2024-05-10T09:58:18.688Z\n"
+"PO-Revision-Date: 2024-05-10T09:58:18.688Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -113,6 +113,9 @@ msgstr ""
 msgid "Assign groups to {{usernames}}"
 msgstr ""
 
+msgid "Bulk update strategy: {{strategy}}"
+msgstr ""
+
 msgid "Back"
 msgstr ""
 
@@ -212,10 +215,13 @@ msgstr ""
 msgid "User Groups"
 msgstr ""
 
-msgid "Organisation Units"
+msgid "Data Capture Organisation Units"
 msgstr ""
 
 msgid "Data View Organisation Units"
+msgstr ""
+
+msgid "Search Organisation Units"
 msgstr ""
 
 msgid "Open ID"
@@ -257,6 +263,9 @@ msgstr ""
 msgid "OU Output"
 msgstr ""
 
+msgid "OU Search"
+msgstr ""
+
 msgid "Details"
 msgstr ""
 
@@ -266,10 +275,13 @@ msgstr ""
 msgid "Copy in user"
 msgstr ""
 
-msgid "Assign to organisation units"
+msgid "Assign to data capture organisation units"
 msgstr ""
 
 msgid "Assign to data view organisation units"
+msgstr ""
+
+msgid "Assign to search organisation units"
 msgstr ""
 
 msgid "Assign roles"
@@ -296,6 +308,18 @@ msgstr ""
 msgid "Search by name or username..."
 msgstr ""
 
+msgid "Assign to organisation units capture"
+msgstr ""
+
+msgid "Assign to organisation units output"
+msgstr ""
+
+msgid "Assign to organisation units search"
+msgstr ""
+
+msgid "{{action}}: {{users}} {{remainingCount}}"
+msgstr ""
+
 msgid "User ID"
 msgstr ""
 
@@ -305,10 +329,13 @@ msgstr ""
 msgid "Phone number"
 msgstr ""
 
-msgid "Organisation units"
+msgid "Data capture organisation units"
 msgstr ""
 
 msgid "Data view organisation units"
+msgstr ""
+
+msgid "Search organisation units"
 msgstr ""
 
 msgid "Created By"
@@ -332,6 +359,9 @@ msgid ""
 msgstr ""
 
 msgid "Confirm"
+msgstr ""
+
+msgid "Saving..."
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"

@@ -78,7 +78,7 @@ $ yarn build
 ### Structure
 
 -   `i18n/`: Contains literal translations (gettext format)
--   `public/`: Main app folder with a `index.html`, exposes the APP, contains the feedback-tool.
+-   `public/`: Main app folder with a `index.html`, exposes the APP.
 -   `src/pages`: Main React components.
 -   `src/domain`: Domain layer of the app (clean architecture)
 -   `src/data`: Data of the app (clean architecture)
@@ -107,5 +107,3 @@ Check the example script, entry `"script-example"`in `package.json`->scripts and
 User-Extended App development is sustainable thanks to the partners for which we build customized DHIS2 solutions. It has been funded by the Norwegian Refugee Council, the WHO Global Malaria Programme, Samaritan’s Purse and Medecins Sans Frontières to support countries in strengthening the collection and use of health data through DHIS2. Also, the WHO Integrated Data Platform (WIDP), where several WHO departments and units share a dedicated hosting and maintenance provided by EyeSeeTea, back some specific new features. The Long Term Agreement EyeSeeTea holds with WHO for this maintenance includes maintenance of this application, ensuring that it will always work at least with the last version of WIDP. We are passionate about both DHIS2 and open source, so giving back to the community through dedicated open-source development is and will always be part of EyeSeeTea’s commitment.
 
 You can also [support our work through a one-time contribution or becoming a regular github sponsor](https://github.com/sponsors/EyeSeeTea)
-
-

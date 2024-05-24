@@ -5,6 +5,7 @@ import { MetadataRepository } from "../../domain/repositories/MetadataRepository
 import { D2Api, Pager } from "@eyeseetea/d2-api/2.36";
 import { getD2APiFromInstance } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { OrgUnit } from "../../domain/entities/OrgUnit";
 
 export class MetadataD2ApiRepository implements MetadataRepository {
     private api: D2Api;
@@ -28,7 +29,7 @@ export class MetadataD2ApiRepository implements MetadataRepository {
         );
     }
 
-    public getOrgUnitPathsByIds(ids: string[]): FutureData<{ id: string; name: string; path: string }[]> {
+    public getOrgUnitPathsByIds(ids: string[]): FutureData<OrgUnit[]> {
         return apiToFuture(
             this.api.models.organisationUnits.get({
                 fields: { id: true, name: true, path: true },
@@ -36,7 +37,9 @@ export class MetadataD2ApiRepository implements MetadataRepository {
                 paging: false,
             })
         ).map(({ objects }) => {
-            return objects;
+            return objects.map(d2OrgUnit => {
+                return { ...d2OrgUnit, path: d2OrgUnit.path.split("/").slice(1) };
+            });
         });
     }
 }

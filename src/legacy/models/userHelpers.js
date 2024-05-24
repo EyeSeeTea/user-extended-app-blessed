@@ -12,7 +12,7 @@ const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname"];
+const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles"];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
@@ -36,6 +36,7 @@ const columnNameFromPropertyMapping = {
     userGroups: "Groups",
     organisationUnits: "OUCapture",
     dataViewOrganisationUnits: "OUOutput",
+    searchOrganisationsUnits: "OUSearch",
     disabled: "Disabled",
     openId: "Open ID",
 };
@@ -47,6 +48,7 @@ const modelByField = {
     userGroups: "userGroups",
     organisationUnits: "organisationUnits",
     dataViewOrganisationUnits: "organisationUnits",
+    searchOrganisationsUnits: "organisationUnits",
 };
 
 const queryFieldsByModel = {
@@ -165,6 +167,7 @@ function getPlainUser(user, { orgUnitsField }, toArray) {
         userGroups: namesFromCollection(user.userGroups, "displayName", toArray),
         organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
         dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
+        searchOrganisationsUnits: namesFromCollection(user.teiSearchOrganisationUnits, orgUnitsField, toArray),
         disabled: userCredentials.disabled,
         openId: userCredentials.openId,
         phoneNumber: user.phoneNumber,
@@ -181,6 +184,12 @@ function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
             user,
             rowIndex,
             "dataViewOrganisationUnits",
+            byField.organisationUnits
+        ),
+        searchOrganisationsUnits: collectionFromNames(
+            user,
+            rowIndex,
+            "searchOrganisationsUnits",
             byField.organisationUnits
         ),
     };
@@ -314,6 +323,7 @@ function getUserPayloadFromPlainAttributes(baseUser, userFields) {
 
     return {
         ...userRoot,
+        teiSearchOrganisationUnits: userRoot.searchOrganisationsUnits,
         userCredentials: {
             ...baseUser.userCredentials,
             ...clean(_(userFields).pick(userCredentialsFields).value()),
@@ -490,6 +500,7 @@ async function importFromJson(d2, file, { maxUsers, orgUnitsField }) {
         obj.userGroups = obj.userGroups?.join("||");
         obj.organisationUnits = obj.organisationUnits?.join("||");
         obj.dataViewOrganisationUnits = obj.dataViewOrganisationUnits?.join("||");
+        obj.searchOrganisationsUnits = obj.searchOrganisationsUnits?.join("||");
     });
 
     const csvText = Papa.unparse(jsonObject, { delimiter: "," });
@@ -560,11 +571,19 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
             updateStrategy
         );
 
+        const newChildOrgUnitsSearch = addItems(
+            childUser.searchOrganisationsUnits,
+            parentUser.searchOrganisationsUnits,
+            fields.orgUnitSearch,
+            updateStrategy
+        );
+
         return {
             ...childUser,
             userCredentials: newChildUserCredentials,
             userGroups: newChildUserGroups,
             dataViewOrganisationUnits: newChildOrgUnitsOutput,
+            searchOrganisationsUnits: newChildOrgUnitsSearch,
             organisationUnits: newChildOrgUnits,
         };
     });
