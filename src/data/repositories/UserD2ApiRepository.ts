@@ -199,6 +199,40 @@ export class UserD2ApiRepository implements UserRepository {
         return userData$.map(({ objects }) => objects);
     }
 
+    public listAll(options: ListOptions): FutureData<User[]> {
+        const {
+            page,
+            pageSize,
+            search,
+            sorting = { field: "firstName", order: "asc" },
+            canManage,
+            rootJunction,
+            filters,
+        } = options;
+        const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
+        const areFiltersEnabled = _(otherFilters).values().some();
+
+        const sortingField = sorting.field === "status" ? "disabled" : sorting.field;
+
+        return apiToFuture(
+            this.api.models.users.get({
+                fields: {
+                    ...fields,
+                    ...auditFields,
+                    userCredentials: { ...fields.userCredentials, ...auditFields },
+                },
+                page,
+                pageSize,
+                paging: false,
+                query: search !== "" ? search : undefined,
+                canManage: canManage === "true" ? "true" : undefined,
+                filter: otherFilters,
+                rootJunction: areFiltersEnabled ? rootJunction : undefined,
+                order: `${sortingField}:${sorting.order}`,
+            })
+        ).map(({ objects }) => objects.map(user => this.toDomainUser(user)));
+    }
+
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
         const validations = usersToSave.map(user => ApiUserModel.decode(this.toApiUser(user)));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));
