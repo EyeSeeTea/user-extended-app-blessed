@@ -8,6 +8,7 @@ import { User } from "../entities/User";
 export interface UserRepository {
     getCurrent(): FutureData<User>;
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
+    listAll(options: ListOptions): FutureData<User[]>;
     listAllIds(options: ListOptions): FutureData<string[]>;
     getByIds(ids: string[]): FutureData<User[]>;
     save(users: User[]): FutureData<MetadataResponse>;
