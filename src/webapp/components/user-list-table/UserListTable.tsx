@@ -181,7 +181,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Copy in user"),
                     icon: <Icon>content_copy</Icon>,
                     multiple: false,
-                    onClick: users => onAction(users, "copy_in"),
+                    onClick: users => onAction(users, "copy_in_user"),
                     isActive: checkAccess(["update"]),
                 },
                 {

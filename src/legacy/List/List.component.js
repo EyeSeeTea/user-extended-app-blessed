@@ -223,7 +223,7 @@ export class ListHybrid extends React.Component {
     _onAction = async (ids, action) => {
         if (action === "replicate_table" || action === "replicate_template") {
             this.setAssignState("replicateUser", { user: ids[0], open: true, action });
-        } else if (action === "copy_in") {
+        } else if (action === "copy_in_user") {
             this.setAssignState("copyUsers", { users: ids, open: true, action });
         }
     };
