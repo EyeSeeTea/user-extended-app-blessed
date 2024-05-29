@@ -5,9 +5,9 @@ import { User } from "../../../domain/entities/User";
 import { Id } from "../../../domain/entities/Ref";
 import { AccessElements, UpdateStrategy } from "../../../domain/repositories/UserRepository";
 import { ConfirmationDialog, MultiSelector } from "@eyeseetea/d2-ui-components";
-import { TextField, Toggle } from "material-ui";
-import { Box } from "@material-ui/core";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
+import _ from "lodash";
 
 export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     const { d2, compositionRoot } = useAppContext();
@@ -23,6 +23,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         dataViewOrganisationUnits: false,
         organisationUnits: false,
     });
+    const snackbar = useSnackbar();
 
     const isReplaceStrategy = updateStrategy === "replace";
     const strategyLabel = isReplaceStrategy ? i18n.t("Replace") : i18n.t("Merge");
@@ -31,8 +32,15 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     });
 
     const onDialogSave = React.useCallback(() => {
-        onSave(selectedUsersIds, updateStrategy, accessElements);
-    }, [onSave, selectedUsersIds, updateStrategy, accessElements]);
+        // Make sure one accessElements property is truthful
+        if (_.every(accessElements, value => value === false)) {
+            snackbar.error(i18n.t("Select one toggle"));
+        } else if (_.isEmpty(selectedUsersIds)) {
+            snackbar.error(i18n.t("Select at least one user"));
+        } else {
+            onSave(selectedUsersIds, updateStrategy, accessElements);
+        }
+    }, [onSave, selectedUsersIds, updateStrategy, accessElements, snackbar]);
 
     const onToggleStrategy = React.useCallback((_event: React.MouseEvent<HTMLInputElement>, newValue: boolean) => {
         setUpdateStrategy(newValue ? "replace" : "merge");
