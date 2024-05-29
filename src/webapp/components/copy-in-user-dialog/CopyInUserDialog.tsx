@@ -6,16 +6,17 @@ import { Id } from "../../../domain/entities/Ref";
 import { AccessElements, UpdateStrategy } from "../../../domain/repositories/UserRepository";
 import { ConfirmationDialog, MultiSelector } from "@eyeseetea/d2-ui-components";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
+import { Toggle } from "material-ui";
+import { Box, makeStyles } from "@material-ui/core";
 import styled from "styled-components";
 import _ from "lodash";
+import { useFetchUsersIdsAndInfos } from "../../hooks/userHooks";
 
 export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
-    const { d2, compositionRoot } = useAppContext();
+    const { d2 } = useAppContext();
     const { onCancel, onSave, user, visible } = props;
 
-    const [usersIdsAndInfos, setUsersIdsAndInfos] = React.useState<{ text: string; value: Id }[]>([]);
     const [selectedUsersIds, setSelectedUsersIds] = React.useState<Id[]>([]);
-    const [searchText, setSearchText] = React.useState<string>("");
     const [updateStrategy, setUpdateStrategy] = React.useState<UpdateStrategy>("merge");
     const [accessElements, setAccessElements] = React.useState<AccessElements>({
         userGroups: false,
@@ -23,7 +24,16 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         dataViewOrganisationUnits: false,
         organisationUnits: false,
     });
+
     const snackbar = useSnackbar();
+    const { usersIdsAndInfos } = useFetchUsersIdsAndInfos();
+
+    // Overide TextInput width in MultiSelector
+    const useStyles = makeStyles(() => ({
+        searchFieldOverride: {
+            width: "initial",
+        },
+    }));
 
     const isReplaceStrategy = updateStrategy === "replace";
     const strategyLabel = isReplaceStrategy ? i18n.t("Replace") : i18n.t("Merge");
@@ -50,24 +60,6 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         setAccessElements({ ...accessElements, [_event.currentTarget.name]: newValue });
     };
 
-    React.useMemo(() => {
-        const getUsersIdAndInfos = async (): Promise<void> => {
-            try {
-                const users = await compositionRoot.users.listAll({ search: searchText }).toPromise();
-                const usersIdsAndInfosList = users.map(({ id, name, username }) => ({
-                    text: `${name} (${username})`,
-                    value: id,
-                }));
-                console.log({ usersIdsAndInfosList });
-                setUsersIdsAndInfos(usersIdsAndInfosList);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        };
-
-        getUsersIdAndInfos();
-    }, [compositionRoot, searchText]);
-
     return (
         <ConfirmationDialog
             title={copyInUserTitle}
@@ -78,30 +70,25 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
             onSave={onDialogSave}
         >
             <Container>
-                <Box justifyContent="space-between">
-                    <TextField
-                        style={{ width: "initial" }}
-                        value={searchText}
-                        onChange={(e, value) => setSearchText(value)}
-                        type="search"
-                        hintText={i18n.t("Search by name")}
-                    />
-                    <Toggle
-                        label={i18n.t("Bulk update strategy: {{strategy}}", {
-                            strategy: strategyLabel,
-                            nsSeparator: false,
-                        })}
-                        style={{ width: 280, float: "right", marginTop: 20, marginRight: 15 }}
-                        toggled={isReplaceStrategy}
-                        onToggle={onToggleStrategy}
-                    />
-                </Box>
+                <Toggle
+                    label={i18n.t("Bulk update strategy: {{strategy}}", {
+                        strategy: strategyLabel,
+                        nsSeparator: false,
+                    })}
+                    style={{ width: 280, float: "right", marginTop: 20, marginRight: 15 }}
+                    toggled={isReplaceStrategy}
+                    onToggle={onToggleStrategy}
+                />
                 <MultiSelector
                     d2={d2}
                     height={300}
                     onChange={setSelectedUsersIds}
                     options={usersIdsAndInfos}
                     ordered={false}
+                    searchFilterLabel={i18n.t("Search by name")}
+                    classes={{
+                        searchField: useStyles().searchFieldOverride,
+                    }}
                 />
                 <Box display="flex">
                     <ToggleContainer>
