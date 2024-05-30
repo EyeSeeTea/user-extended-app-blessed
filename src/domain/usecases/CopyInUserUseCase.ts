@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import { FutureData } from "../entities/Future";
+import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { AccessElements, UpdateStrategy, AccessElementsKeys, UserRepository } from "../repositories/UserRepository";
 import { Id } from "../entities/Ref";
@@ -9,9 +9,16 @@ export class CopyInUserUseCase {
     constructor(private userRepository: UserRepository) {}
 
     public execute(options: CopyInUserOptions): FutureData<void> {
-        return this.getUsersToUpdate(options.selectedUsersIds).flatMap(usersToUpdate => {
-            const usersToSave = this.applyCopyToUsers(usersToUpdate, options);
-            return this.saveUsers(usersToSave);
+        return this.getUsersToUpdate(options.selectedUsersIds).flatMap(users => {
+            const usersBatches = _.chunk(users, 10);
+
+            const $requests = usersBatches.map(usersToUpdate => {
+                const usersToSave = this.applyCopyToUsers(usersToUpdate, options);
+                return this.saveUsers(usersToSave);
+            });
+
+            // Update batch of 10 users
+            return Future.sequential($requests).toVoid();
         });
     }
 
