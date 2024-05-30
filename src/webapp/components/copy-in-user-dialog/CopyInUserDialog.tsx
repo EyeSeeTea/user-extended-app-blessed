@@ -39,6 +39,11 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         user: user.username,
     });
 
+    const getOptions = () => {
+        // Remove user source from target users
+        return _.reject(usersList, { value: user.id });
+    };
+
     const onDialogSave = React.useCallback(() => {
         // Make sure one accessElements property is truthful
         if (_.every(accessElements, value => value === false)) {
@@ -81,7 +86,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
                     d2={d2}
                     height={300}
                     onChange={setSelectedUsersIds}
-                    options={usersList}
+                    options={getOptions()}
                     ordered={false}
                     searchFilterLabel={i18n.t("Search by name")}
                     classes={{
