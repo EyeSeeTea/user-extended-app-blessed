@@ -74,11 +74,9 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
 export function useFetchUsersIdsAndInfos() {
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
-    const loading = useLoading();
     const [usersIdsAndInfos, setUsersIdsAndInfos] = React.useState<{ text: string; value: Id }[]>([]);
 
     React.useMemo(() => {
-        loading.show(true, i18n.t("Fetching users"));
         compositionRoot.users
             .listAll({})
             .map(users => {
@@ -90,14 +88,12 @@ export function useFetchUsersIdsAndInfos() {
             .run(
                 users => {
                     setUsersIdsAndInfos(users);
-                    loading.hide();
                 },
                 error => {
-                    loading.hide();
                     snackbar.error(error);
                 }
             );
-    }, [compositionRoot, loading, snackbar]);
+    }, [compositionRoot, snackbar]);
 
     return { usersIdsAndInfos };
 }

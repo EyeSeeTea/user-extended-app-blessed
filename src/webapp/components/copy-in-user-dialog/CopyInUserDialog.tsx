@@ -10,11 +10,10 @@ import { Toggle } from "material-ui";
 import { Box, makeStyles } from "@material-ui/core";
 import styled from "styled-components";
 import _ from "lodash";
-import { useFetchUsersIdsAndInfos } from "../../hooks/userHooks";
 
 export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     const { d2 } = useAppContext();
-    const { onCancel, onSave, user, visible } = props;
+    const { onCancel, onSave, user, visible, usersList } = props;
 
     const [selectedUsersIds, setSelectedUsersIds] = React.useState<Id[]>([]);
     const [updateStrategy, setUpdateStrategy] = React.useState<UpdateStrategy>("merge");
@@ -26,7 +25,6 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     });
 
     const snackbar = useSnackbar();
-    const { usersIdsAndInfos } = useFetchUsersIdsAndInfos();
 
     // Overide TextInput width in MultiSelector
     const useStyles = makeStyles(() => ({
@@ -83,7 +81,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
                     d2={d2}
                     height={300}
                     onChange={setSelectedUsersIds}
-                    options={usersIdsAndInfos}
+                    options={usersList}
                     ordered={false}
                     searchFilterLabel={i18n.t("Search by name")}
                     classes={{
@@ -130,6 +128,7 @@ export type CopyInUserDialogProps = {
     onSave: (selectedUsersIds: Id[], updateStrategy: UpdateStrategy, accessElements: AccessElements) => void;
     user: User;
     visible: boolean;
+    usersList: { text: string; value: Id }[];
 };
 
 const Container = styled.div`
