@@ -40,6 +40,8 @@ const columnNameFromPropertyMapping = {
     searchOrganisationsUnits: i18n.t("OUSearch"),
     disabled: i18n.t("Disabled"),
     openId: i18n.t("Open ID"),
+    createdBy: i18n.t("created by"),
+    lastModifiedBy: i18n.t("Last modified by"),
 };
 
 // const propertyFromColumnNameMapping = _.invert(columnNameFromPropertyMapping);
@@ -69,15 +71,15 @@ export class ExportUsersUseCase implements UseCase {
 
     private async exportUsers(
         users: User[],
-        { columns, orgUnitsField, format }: Pick<ExportUsersUseCaseOptions, "columns" | "orgUnitsField" | "format">
+        { columns, format }: Pick<ExportUsersUseCaseOptions, "columns" | "format">
     ) {
         switch (format) {
             case "json": {
-                const userRows = users.map(user => _.pick(this.getPlainUser(user, orgUnitsField, true), columns));
+                const userRows = users.map(user => _.pick(this.getPlainUser(user, true), columns));
                 return JSON.stringify(userRows, null, 4);
             }
             case "csv": {
-                const userRows = users.map(user => _.at(this.getPlainUser(user, orgUnitsField, false), columns));
+                const userRows = users.map(user => _.at(this.getPlainUser(user, false), columns));
                 const header = columns.map(this.getColumnNameFromProperty);
                 const table = [header, ...userRows];
 
@@ -94,29 +96,36 @@ export class ExportUsersUseCase implements UseCase {
         return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
     }
 
-    private namesFromCollection(collection: any, field: string, toArray: boolean): any {
-        const namesArray = _(collection?.toArray ? collection.toArray() : collection).map(field);
+    private namesFromCollection(
+        collection: Array<
+            User[
+                | "userRoles"
+                | "userGroups"
+                | "organisationUnits"
+                | "dataViewOrganisationUnits"
+                | "searchOrganisationsUnits"]
+        >,
+        toArray: boolean
+    ): any {
+        const nameField = "name";
+        const namesArray = _(collection).map(nameField);
 
         return toArray ? namesArray : namesArray.join(fieldSplitChar);
     }
 
-    private getPlainUser(user: any, orgUnitsField: string, toArray: boolean): any {
-        const userCredentials = user.userCredentials || {};
-
+    private getPlainUser(user: any, toArray: boolean): Record<ColumnMappingKeys, string | string[]> {
         return {
             ...user,
-            username: userCredentials.username,
             lastUpdated: this.formatDate(user.lastUpdated),
-            lastLogin: this.formatDate(userCredentials.lastLogin),
+            lastLogin: this.formatDate(user.lastLogin),
             created: this.formatDate(user.created),
-            userRoles: this.namesFromCollection(userCredentials.userRoles, "displayName", toArray),
-            userGroups: this.namesFromCollection(user.userGroups, "displayName", toArray),
-            organisationUnits: this.namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
-            dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
-            searchOrganisationsUnits: this.namesFromCollection(user.teiSearchOrganisationUnits, orgUnitsField, toArray),
-            disabled: userCredentials.disabled,
-            openId: userCredentials.openId,
-            phoneNumber: user.phoneNumber,
+            userRoles: this.namesFromCollection(user.userRoles, toArray),
+            userGroups: this.namesFromCollection(user.userGroups, toArray),
+            organisationUnits: this.namesFromCollection(user.organisationUnits, toArray),
+            dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toArray),
+            searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toArray),
+            createdBy: user.createdBy?.username,
+            lastModifiedBy: user.lastModifiedBy?.username,
         };
     }
     // private async getAssociations(objs: any[], orgUnitsField: string) {
