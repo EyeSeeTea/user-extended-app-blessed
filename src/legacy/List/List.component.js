@@ -229,8 +229,6 @@ export class ListHybrid extends React.Component {
     };
 
     render() {
-        const { d2 } = this.context;
-
         const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
 
         return (
@@ -252,7 +250,6 @@ export class ListHybrid extends React.Component {
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>
                                 <ImportExport
-                                    d2={d2}
                                     columns={this.state.visibleColumns}
                                     filterOptions={listFilterOptions}
                                     onImport={this._openImportTable}
