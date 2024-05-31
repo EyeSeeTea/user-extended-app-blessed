@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
-import ImportExport from "../components/ImportExport.component";
+import { ImportExport } from "../../webapp/components/import-export/ImportExport";
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
@@ -124,10 +124,10 @@ export class ListHybrid extends React.Component {
     };
 
     filterList = () => {
-        const order = this.state.sorting ? this.state.sorting[0] + ":i" + this.state.sorting[1] : null;
+        const sorting = this.state.sorting ? { field: this.state.sorting[0], order: this.state.sorting[1] } : undefined;
         const { filters, query } = this.state;
 
-        this.setState({ isLoading: true, listFilterOptions: { order: order, query: query, ...filters } });
+        this.setState({ isLoading: true, listFilterOptions: { sorting, search: query, ...filters } });
     };
 
     convertObjsToMenuItems = objs => {
