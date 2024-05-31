@@ -1,6 +1,7 @@
 import _ from "lodash";
 import moment from "moment";
 import Papa from "papaparse";
+import i18n from "../../locales";
 
 import { FutureData } from "../entities/Future";
 import { User } from "../entities/User";
@@ -10,25 +11,25 @@ import { UseCase } from "../../CompositionRoot";
 
 // Constants
 const fieldSplitChar = "||";
-const columnNameFromPropertyMapping: Record<string, string> = {
-    id: "ID",
-    username: "Username",
-    password: "Password",
-    name: "Name",
-    firstName: "First name",
-    surname: "Surname",
-    email: "Email",
-    phoneNumber: "Phone number",
-    lastUpdated: "Updated",
-    lastLogin: "Last login",
-    created: "Created",
-    userRoles: "Roles",
-    userGroups: "Groups",
-    organisationUnits: "OUCapture",
-    dataViewOrganisationUnits: "OUOutput",
-    searchOrganisationsUnits: "OUSearch",
-    disabled: "Disabled",
-    openId: "Open ID",
+const columnNameFromPropertyMapping: { [K in keyof User]?: string } = {
+    id: i18n.t("ID"),
+    username: i18n.t("Username"),
+    password: i18n.t("Password"),
+    name: i18n.t("Name"),
+    firstName: i18n.t("First name"),
+    surname: i18n.t("Surname"),
+    email: i18n.t("Email"),
+    phoneNumber: i18n.t("Phone number"),
+    lastUpdated: i18n.t("Updated"),
+    lastLogin: i18n.t("Last login"),
+    created: i18n.t("Created"),
+    userRoles: i18n.t("Roles"),
+    userGroups: i18n.t("Groups"),
+    organisationUnits: i18n.t("OUCapture"),
+    dataViewOrganisationUnits: i18n.t("OUOutput"),
+    searchOrganisationsUnits: i18n.t("OUSearch"),
+    disabled: i18n.t("Disabled"),
+    openId: i18n.t("Open ID"),
 };
 
 
