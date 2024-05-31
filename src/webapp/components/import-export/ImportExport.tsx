@@ -14,7 +14,7 @@ import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 
 export const ImportExport: React.FC<ImportExportProps> = props => {
-    const { d2 } = useAppContext();
+    const { compositionRoot, d2 } = useAppContext();
     const { columns, filterOptions, onImport, maxUsers, settings } = props;
     const snackbar = useSnackbar();
     const [isMenuOpen, setMenuOpen] = React.useState(false);
@@ -52,14 +52,26 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
     // TODO implement settings use case
     const exportToCsvAndSave = () => {
         const orgUnitsField = settings["organisationUnitsField"];
-        // TODO implement use case for exportUsers
-        handleExport(() => exportUsers(d2, columns, filterOptions, { orgUnitsField }, false), "users", "csv");
+        handleExport(
+            async () =>
+                await compositionRoot.users
+                    .export({ columns, filterOptions, orgUnitsField, format: "csv" })
+                    .toPromise(),
+            "users",
+            "csv"
+        );
     };
 
     const exportToJsonAndSave = () => {
         const orgUnitsField = settings["organisationUnitsField"];
-        // TODO implement use case for exportUsers
-        handleExport(() => exportUsers(d2, columns, filterOptions, { orgUnitsField }, true), "users", "json");
+        handleExport(
+            async () =>
+                await compositionRoot.users
+                    .export({ columns, filterOptions, orgUnitsField, format: "json" })
+                    .toPromise(),
+            "users",
+            "json"
+        );
     };
 
     const exportEmptyTemplate = () => {
