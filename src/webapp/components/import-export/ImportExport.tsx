@@ -8,10 +8,11 @@ import ExportIcon from "@material-ui/icons/ArrowDownward";
 import FileSaver from "file-saver";
 import moment from "moment";
 import fileDialog from "file-dialog";
-import { exportTemplateToCsv, importFromCsv, importFromJson, exportUsers } from "../../../legacy/models/userHelpers";
+import { exportTemplateToCsv, importFromCsv, importFromJson } from "../../../legacy/models/userHelpers";
 import ModalLoadingMask from "../../../legacy/components/ModalLoadingMask.component";
 import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
+import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
 
 export const ImportExport: React.FC<ImportExportProps> = props => {
     const { compositionRoot, d2 } = useAppContext();
@@ -143,7 +144,7 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
 export type FilterOption = { search: string; sorting: { field: string; order: "asc" | "desc" } };
 
 export type ImportExportProps = {
-    columns: string[];
+    columns: ColumnMappingKeys[];
     filterOptions: FilterOption;
     onImport: (result: any) => void;
     maxUsers: number;
