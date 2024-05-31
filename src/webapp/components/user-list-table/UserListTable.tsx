@@ -100,6 +100,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
     const navigate = useNavigate();
+    const userColumns = useUserColumns();
 
     const { users, setUsers } = useGetUsersByIds(selectedUserIds);
 
@@ -144,7 +145,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
-            columns,
+            columns: userColumns,
             details: [
                 { name: "name", text: i18n.t("Name") },
                 { name: "username", text: i18n.t("Username") },
@@ -327,7 +328,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             // onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, onAction]);
+    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, onAction, userColumns]);
 
     const refreshRows = useCallback(
         async (
@@ -472,74 +473,79 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     );
 };
 
-export const columns: TableColumn<User>[] = [
-    { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
-    { name: "username", sortable: false, text: i18n.t("Username") },
-    { name: "firstName", sortable: true, text: i18n.t("First name") },
-    { name: "surname", sortable: true, text: i18n.t("Surname") },
-    { name: "email", sortable: true, text: i18n.t("Email") },
-    { name: "phoneNumber", text: i18n.t("Phone number") },
-    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
-    { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
-    { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
-    { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
-    {
-        name: "userRoles",
-        sortable: false,
-        text: i18n.t("Roles"),
-        getValue: user => buildEllipsizedList(user.userRoles),
-        hidden: true,
-    },
-    {
-        name: "userGroups",
-        sortable: false,
-        text: i18n.t("Groups"),
-        getValue: user => buildEllipsizedList(user.userGroups),
-        hidden: true,
-    },
-    {
-        name: "organisationUnits",
-        sortable: false,
-        text: i18n.t("Data capture organisation units"),
-        getValue: user => buildEllipsizedList(user.organisationUnits),
-    },
-    {
-        name: "dataViewOrganisationUnits",
-        sortable: false,
-        text: i18n.t("Data view organisation units"),
-        getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
-    },
-    {
-        name: "searchOrganisationsUnits",
-        sortable: false,
-        text: i18n.t("Search organisation units"),
-        getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
-    },
-    { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
-    {
-        name: "status",
-        sortable: true,
-        text: i18n.t("Status"),
-    },
-    {
-        name: "disabled",
-        sortable: false,
-        text: i18n.t("Disabled"),
-        getValue: row => (row.disabled ? <Check /> : undefined),
-    },
-    {
-        name: "createdBy",
-        sortable: false,
-        text: i18n.t("Created By"),
-        getValue: row => row.createdBy?.username || "",
-    },
-    {
-        name: "lastModifiedBy",
-        sortable: false,
-        text: i18n.t("Last Modified By"),
-        getValue: row => row.lastModifiedBy?.username || "",
-    },
-];
+function useUserColumns() {
+    const columns = React.useMemo((): TableColumn<User>[] => {
+        return [
+            { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
+            { name: "username", sortable: false, text: i18n.t("Username") },
+            { name: "firstName", sortable: true, text: i18n.t("First name") },
+            { name: "surname", sortable: true, text: i18n.t("Surname") },
+            { name: "email", sortable: true, text: i18n.t("Email") },
+            { name: "phoneNumber", text: i18n.t("Phone number") },
+            { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
+            { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
+            { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
+            { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
+            {
+                name: "userRoles",
+                sortable: false,
+                text: i18n.t("Roles"),
+                getValue: user => buildEllipsizedList(user.userRoles),
+                hidden: true,
+            },
+            {
+                name: "userGroups",
+                sortable: false,
+                text: i18n.t("Groups"),
+                getValue: user => buildEllipsizedList(user.userGroups),
+                hidden: true,
+            },
+            {
+                name: "organisationUnits",
+                sortable: false,
+                text: i18n.t("Data capture organisation units"),
+                getValue: user => buildEllipsizedList(user.organisationUnits),
+            },
+            {
+                name: "dataViewOrganisationUnits",
+                sortable: false,
+                text: i18n.t("Data view organisation units"),
+                getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+            },
+            {
+                name: "searchOrganisationsUnits",
+                sortable: false,
+                text: i18n.t("Search organisation units"),
+                getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
+            },
+            { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
+            {
+                name: "status",
+                sortable: true,
+                text: i18n.t("Status"),
+            },
+            {
+                name: "disabled",
+                sortable: false,
+                text: i18n.t("Disabled"),
+                getValue: row => (row.disabled ? <Check /> : undefined),
+            },
+            {
+                name: "createdBy",
+                sortable: false,
+                text: i18n.t("Created By"),
+                getValue: row => row.createdBy?.username || "",
+            },
+            {
+                name: "lastModifiedBy",
+                sortable: false,
+                text: i18n.t("Last Modified By"),
+                getValue: row => row.lastModifiedBy?.username || "",
+            },
+        ];
+    }, []);
+    return columns;
+}
 
 function checkAccess(requiredKeys: string[]) {
     return (users: User[]) =>
