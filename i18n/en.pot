@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-05-10T09:58:18.688Z\n"
-"PO-Revision-Date: 2024-05-10T09:58:18.688Z\n"
+"POT-Creation-Date: 2024-05-31T09:36:53.590Z\n"
+"PO-Revision-Date: 2024-05-31T09:36:53.590Z\n"
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -44,6 +44,21 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
+msgid "Import/Export"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Export to CSV"
+msgstr ""
+
+msgid "Export to JSON"
+msgstr ""
+
+msgid "Export empty template"
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
@@ -75,9 +90,6 @@ msgid "Ok"
 msgstr ""
 
 msgid "Users"
-msgstr ""
-
-msgid "Import"
 msgstr ""
 
 msgid "Status"

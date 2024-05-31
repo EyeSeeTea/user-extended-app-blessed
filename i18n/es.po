@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-05-10T09:58:18.688Z\n"
+"POT-Creation-Date: 2024-05-31T09:36:53.590Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -44,6 +44,21 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
+msgid "Import/Export"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Export to CSV"
+msgstr ""
+
+msgid "Export to JSON"
+msgstr ""
+
+msgid "Export empty template"
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
@@ -75,9 +90,6 @@ msgid "Ok"
 msgstr ""
 
 msgid "Users"
-msgstr ""
-
-msgid "Import"
 msgstr ""
 
 msgid "Status"
