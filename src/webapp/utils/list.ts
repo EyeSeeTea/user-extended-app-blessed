@@ -1,4 +1,4 @@
-import i18n from "@eyeseetea/d2-ui-components/locales";
+import i18n from "../../locales";
 import _ from "lodash";
 
 export function ellipsizedList(items: string[], limit = 3): string {
