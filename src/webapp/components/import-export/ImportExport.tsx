@@ -52,24 +52,16 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
 
     // TODO implement settings use case
     const exportToCsvAndSave = () => {
-        const orgUnitsField = settings["organisationUnitsField"];
         handleExport(
-            async () =>
-                await compositionRoot.users
-                    .export({ columns, filterOptions, orgUnitsField, format: "csv" })
-                    .toPromise(),
+            async () => await compositionRoot.users.export({ columns, filterOptions, format: "csv" }).toPromise(),
             "users",
             "csv"
         );
     };
 
     const exportToJsonAndSave = () => {
-        const orgUnitsField = settings["organisationUnitsField"];
         handleExport(
-            async () =>
-                await compositionRoot.users
-                    .export({ columns, filterOptions, orgUnitsField, format: "json" })
-                    .toPromise(),
+            async () => await compositionRoot.users.export({ columns, filterOptions, format: "json" }).toPromise(),
             "users",
             "json"
         );

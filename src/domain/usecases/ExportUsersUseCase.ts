@@ -119,7 +119,6 @@ export type ColumnMappingKeys = keyof typeof columnNameFromPropertyMapping;
 export type ExportUsersUseCaseOptions = {
     columns: ColumnMappingKeys[];
     filterOptions?: ListOptions;
-    orgUnitsField?: any; // TODO type
     format: "json" | "csv";
     isEmptyTemplate?: boolean;
 };
