@@ -28,7 +28,7 @@ const columnNameFromPropertyMapping = {
     searchOrganisationsUnits: i18n.t("OUSearch"),
     disabled: i18n.t("Disabled"),
     openId: i18n.t("Open ID"),
-    createdBy: i18n.t("created by"),
+    createdBy: i18n.t("Created by"),
     lastModifiedBy: i18n.t("Last modified by"),
 };
 

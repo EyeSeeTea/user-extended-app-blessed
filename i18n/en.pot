@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-05-31T13:02:09.578Z\n"
-"PO-Revision-Date: 2024-05-31T13:02:09.578Z\n"
+"POT-Creation-Date: 2024-06-03T15:12:57.985Z\n"
+"PO-Revision-Date: 2024-06-03T15:12:57.985Z\n"
 
 msgid "ID"
 msgstr ""
@@ -60,6 +60,15 @@ msgid "Disabled"
 msgstr ""
 
 msgid "Open ID"
+msgstr ""
+
+msgid "Created by"
+msgstr ""
+
+msgid "Last modified by"
+msgstr ""
+
+msgid "created by"
 msgstr ""
 
 msgid "Copy to clipboard"
