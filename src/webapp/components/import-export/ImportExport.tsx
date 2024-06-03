@@ -76,8 +76,12 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
     };
 
     const exportEmptyTemplate = () => {
-        // TODO implement use case for exportUsers
-        handleExport(() => exportTemplateToCsv(), "empty-user-template", "csv");
+        handleExport(
+            async () =>
+                await compositionRoot.users.export({ columns, format: "csv", isEmptyTemplate: true }).toPromise(),
+            "empty-user-template",
+            "csv"
+        );
     };
 
     const importFromFile = () => {
