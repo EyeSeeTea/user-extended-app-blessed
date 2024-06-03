@@ -6,10 +6,8 @@ import i18n from "../../locales";
 import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { ListOptions, UserRepository } from "../repositories/UserRepository";
-
 import { UseCase } from "../../CompositionRoot";
 
-// Constants
 const fieldSplitChar = "||";
 const columnNameFromPropertyMapping = {
     id: i18n.t("ID"),
@@ -84,18 +82,18 @@ export class ExportUsersUseCase implements UseCase {
             | "organisationUnits"
             | "dataViewOrganisationUnits"
             | "searchOrganisationsUnits"],
-        toArray: boolean
+        toString: boolean
     ): string | string[] {
         const nameField = "name";
         const namesArray = _(collection).map(nameField).value();
 
-        return toArray ? namesArray : namesArray.join(fieldSplitChar);
+        return toString ? namesArray.join(fieldSplitChar) : namesArray;
     }
 
     private getPlainUser(
         user: User,
         columns: ColumnMappingKeys[],
-        toArray: boolean
+        toString: boolean
     ): Record<ColumnMappingKeys, typeof user[ColumnMappingKeys] | string[]> {
         return _.pick(
             {
@@ -103,11 +101,11 @@ export class ExportUsersUseCase implements UseCase {
                 lastUpdated: this.formatDate(user.lastUpdated),
                 lastLogin: this.formatDate(user.lastLogin),
                 created: this.formatDate(user.created),
-                userRoles: this.namesFromCollection(user.userRoles, toArray),
-                userGroups: this.namesFromCollection(user.userGroups, toArray),
-                organisationUnits: this.namesFromCollection(user.organisationUnits, toArray),
-                dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toArray),
-                searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toArray),
+                userRoles: this.namesFromCollection(user.userRoles, toString),
+                userGroups: this.namesFromCollection(user.userGroups, toString),
+                organisationUnits: this.namesFromCollection(user.organisationUnits, toString),
+                dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toString),
+                searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toString),
                 createdBy: user.createdBy?.username,
                 lastModifiedBy: user.lastModifiedBy?.username,
             },
