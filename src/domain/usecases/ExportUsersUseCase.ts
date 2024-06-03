@@ -3,7 +3,7 @@ import moment from "moment";
 import Papa from "papaparse";
 import i18n from "../../locales";
 
-import { FutureData } from "../entities/Future";
+import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { ListOptions, UserRepository } from "../repositories/UserRepository";
 
@@ -37,9 +37,15 @@ const columnNameFromPropertyMapping = {
 export class ExportUsersUseCase implements UseCase {
     constructor(private userRepository: UserRepository) {}
 
-    public execute({ filterOptions, ...options }: ExportUsersUseCaseOptions): FutureData<Promise<string>> {
+    public execute({
+        filterOptions = {},
+        isEmptyTemplate,
+        ...options
+    }: ExportUsersUseCaseOptions): FutureData<Promise<string>> {
+        if (isEmptyTemplate) {
+            return Future.success(this.exportUsers([], options));
+        }
         return this.userRepository.listAll(filterOptions).map(users => {
-            console.log("users.length", users.length);
             return this.exportUsers(users, options);
         });
     }
@@ -50,11 +56,11 @@ export class ExportUsersUseCase implements UseCase {
     ) {
         switch (format) {
             case "json": {
-                const userRows = users.map(user => _.pick(this.getPlainUser(user, true), columns));
+                const userRows = users.map(user => this.getPlainUser(user, columns, true));
                 return JSON.stringify(userRows, null, 4);
             }
             case "csv": {
-                const userRows = users.map(user => _.at(this.getPlainUser(user, false), columns));
+                const userRows = users.map(user => this.getPlainUser(user, columns, false));
                 const header = columns.map(this.getColumnNameFromProperty);
                 const table = [header, ...userRows];
 
@@ -67,41 +73,46 @@ export class ExportUsersUseCase implements UseCase {
         return columnNameFromPropertyMapping[property] || property;
     }
 
-    private formatDate(stringDate: string | null): string | null {
-        return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
+    private formatDate(stringDate?: Date | null): string | undefined {
+        return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : undefined;
     }
 
     private namesFromCollection(
-        collection: Array<
-            User[
-                | "userRoles"
-                | "userGroups"
-                | "organisationUnits"
-                | "dataViewOrganisationUnits"
-                | "searchOrganisationsUnits"]
-        >,
+        collection: User[
+            | "userRoles"
+            | "userGroups"
+            | "organisationUnits"
+            | "dataViewOrganisationUnits"
+            | "searchOrganisationsUnits"],
         toArray: boolean
-    ): any {
+    ): string | string[] {
         const nameField = "name";
-        const namesArray = _(collection).map(nameField);
+        const namesArray = _(collection).map(nameField).value();
 
         return toArray ? namesArray : namesArray.join(fieldSplitChar);
     }
 
-    private getPlainUser(user: any, toArray: boolean): Record<ColumnMappingKeys, string | string[]> {
-        return {
-            ...user,
-            lastUpdated: this.formatDate(user.lastUpdated),
-            lastLogin: this.formatDate(user.lastLogin),
-            created: this.formatDate(user.created),
-            userRoles: this.namesFromCollection(user.userRoles, toArray),
-            userGroups: this.namesFromCollection(user.userGroups, toArray),
-            organisationUnits: this.namesFromCollection(user.organisationUnits, toArray),
-            dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toArray),
-            searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toArray),
-            createdBy: user.createdBy?.username,
-            lastModifiedBy: user.lastModifiedBy?.username,
-        };
+    private getPlainUser(
+        user: User,
+        columns: ColumnMappingKeys[],
+        toArray: boolean
+    ): Record<ColumnMappingKeys, typeof user[ColumnMappingKeys] | string[]> {
+        return _.pick(
+            {
+                ...user,
+                lastUpdated: this.formatDate(user.lastUpdated),
+                lastLogin: this.formatDate(user.lastLogin),
+                created: this.formatDate(user.created),
+                userRoles: this.namesFromCollection(user.userRoles, toArray),
+                userGroups: this.namesFromCollection(user.userGroups, toArray),
+                organisationUnits: this.namesFromCollection(user.organisationUnits, toArray),
+                dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toArray),
+                searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toArray),
+                createdBy: user.createdBy?.username,
+                lastModifiedBy: user.lastModifiedBy?.username,
+            },
+            columns
+        );
     }
 }
 
@@ -109,7 +120,8 @@ export type ColumnMappingKeys = keyof typeof columnNameFromPropertyMapping;
 
 export type ExportUsersUseCaseOptions = {
     columns: ColumnMappingKeys[];
-    filterOptions: ListOptions;
-    orgUnitsField: any; // TODO type
+    filterOptions?: ListOptions;
+    orgUnitsField?: any; // TODO type
     format: "json" | "csv";
+    isEmptyTemplate?: boolean;
 };
