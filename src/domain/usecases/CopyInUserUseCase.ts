@@ -10,7 +10,7 @@ export class CopyInUserUseCase {
 
     public execute(options: CopyInUserOptions): FutureData<void> {
         return this.getUsersToUpdate(options.selectedUsersIds).flatMap(users => {
-            const usersBatches = _.chunk(users, 10);
+            const usersBatches = _.chunk(users, 50);
 
             const $requests = usersBatches.map(usersToUpdate => {
                 const usersToSave = this.applyCopyToUsers(usersToUpdate, options);
