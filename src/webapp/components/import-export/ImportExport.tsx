@@ -5,17 +5,16 @@ import { Popover } from "@material-ui/core";
 import ImportExportIcon from "@material-ui/icons/ImportExport";
 import ImportIcon from "@material-ui/icons/ArrowUpward";
 import ExportIcon from "@material-ui/icons/ArrowDownward";
-import FileSaver from "file-saver";
-import moment from "moment";
 import fileDialog from "file-dialog";
-import { exportTemplateToCsv, importFromCsv, importFromJson } from "../../../legacy/models/userHelpers";
+import { importFromCsv, importFromJson } from "../../../legacy/models/userHelpers";
 import ModalLoadingMask from "../../../legacy/components/ModalLoadingMask.component";
 import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
+import { useExportUsers } from "../../hooks/userHooks";
 
 export const ImportExport: React.FC<ImportExportProps> = props => {
-    const { compositionRoot, d2 } = useAppContext();
+    const { d2 } = useAppContext();
     const { columns, filterOptions, onImport, maxUsers, settings } = props;
     const snackbar = useSnackbar();
     const [isMenuOpen, setMenuOpen] = React.useState(false);
@@ -31,50 +30,11 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
         setMenuOpen(false);
     };
 
-    const saveFile = (contents: string, name: string, fileType: string) => {
-        const blob = new Blob([contents], { type: "text/plain;charset=utf-8" });
-        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
-        const filename = `${name}-${datetime}.${fileType}`;
-        FileSaver.saveAs(blob, filename);
-        snackbar.success(i18n.t("Table exported: {{filename}}", { filename }));
-    };
-
-    const handleExport = async (exportFunc: () => Promise<string>, name: string, fileType: string) => {
-        setProcessing(true);
-        try {
-            const dataString = await exportFunc();
-            saveFile(dataString, name, fileType);
-        } finally {
-            closeMenu();
-            setProcessing(false);
-        }
-    };
-
-    // TODO implement settings use case
-    const exportToCsvAndSave = () => {
-        handleExport(
-            async () => await compositionRoot.users.export({ columns, filterOptions, format: "csv" }).toPromise(),
-            "users",
-            "csv"
-        );
-    };
-
-    const exportToJsonAndSave = () => {
-        handleExport(
-            async () => await compositionRoot.users.export({ columns, filterOptions, format: "json" }).toPromise(),
-            "users",
-            "json"
-        );
-    };
-
-    const exportEmptyTemplate = () => {
-        handleExport(
-            async () =>
-                await compositionRoot.users.export({ columns, format: "csv", isEmptyTemplate: true }).toPromise(),
-            "empty-user-template",
-            "csv"
-        );
-    };
+    const { exportUsersToCSV, exportUsersToJSON, exportEmptyTemplate } = useExportUsers({
+        columns,
+        filterOptions,
+        onSuccess: closeMenu,
+    });
 
     const importFromFile = () => {
         const orgUnitsField = settings["organisationUnitsField"];
@@ -122,10 +82,10 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
                     <MenuItem leftIcon={<ImportIcon />} onClick={importFromFile}>
                         {i18n.t("Import")}
                     </MenuItem>
-                    <MenuItem leftIcon={<ExportIcon />} onClick={exportToCsvAndSave}>
+                    <MenuItem leftIcon={<ExportIcon />} onClick={exportUsersToCSV}>
                         {i18n.t("Export to CSV")}
                     </MenuItem>
-                    <MenuItem leftIcon={<ExportIcon />} onClick={exportToJsonAndSave}>
+                    <MenuItem leftIcon={<ExportIcon />} onClick={exportUsersToJSON}>
                         {i18n.t("Export to JSON")}
                     </MenuItem>
                     <MenuItem leftIcon={<ExportIcon />} onClick={exportEmptyTemplate}>

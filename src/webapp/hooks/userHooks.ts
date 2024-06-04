@@ -2,12 +2,15 @@ import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import { Id } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { UpdateStrategy } from "../../domain/repositories/UserRepository";
+import { ListOptions, UpdateStrategy } from "../../domain/repositories/UserRepository";
 import { SaveUserOrgUnitOptions } from "../../domain/usecases/SaveUserOrgUnitUseCase";
 import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
+import { AllowedExportFormat, ColumnMappingKeys } from "../../domain/usecases/ExportUsersUseCase";
+import FileSaver from "file-saver";
 
 type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
+type UseExportUsersProps = { onSuccess: () => void; columns: ColumnMappingKeys[]; filterOptions: ListOptions };
 
 export function useGetUsersByIds(ids: Id[]) {
     const { compositionRoot } = useAppContext();
@@ -69,3 +72,38 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
 
     return { saveUsersOrgUnits };
 }
+
+export const useExportUsers = (props: UseExportUsersProps) => {
+    const { onSuccess, columns, filterOptions } = props;
+
+    const { compositionRoot } = useAppContext();
+    const snackbar = useSnackbar();
+    const loading = useLoading();
+
+    const exportUsers = React.useCallback(
+        (name: string, format: AllowedExportFormat, isEmptyTemplate = false) => {
+            loading.show();
+
+            const exportOptions = { name, columns, filterOptions, format, isEmptyTemplate };
+            return compositionRoot.users.export(exportOptions).run(
+                ({ blob, filename }) => {
+                    FileSaver.saveAs(blob, filename);
+                    onSuccess();
+                    snackbar.success(i18n.t("Table exported: {{filename}}", { filename }));
+                    loading.hide();
+                },
+                error => {
+                    snackbar.error(error);
+                    loading.hide();
+                }
+            );
+        },
+        [columns, compositionRoot.users, filterOptions, onSuccess, snackbar, loading]
+    );
+
+    return {
+        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv"), [exportUsers]),
+        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json"), [exportUsers]),
+        exportEmptyTemplate: React.useCallback(() => exportUsers("empty-user-template", "csv", true), [exportUsers]),
+    };
+};
