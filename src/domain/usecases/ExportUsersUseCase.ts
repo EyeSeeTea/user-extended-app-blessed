@@ -39,29 +39,41 @@ export class ExportUsersUseCase implements UseCase {
         filterOptions = {},
         isEmptyTemplate,
         ...options
-    }: ExportUsersUseCaseOptions): FutureData<Promise<string>> {
+    }: ExportUsersUseCaseOptions): FutureData<{ blob: Blob; filename: string }> {
+        const filename = this.getFilename(options);
+
         if (isEmptyTemplate) {
-            return Future.success(this.exportUsers([], options));
+            return Future.success({
+                blob: new Blob([this.buildExportDataString([], options)], { type: "text/plain;charset=utf-8" }),
+                filename,
+            });
         }
         return this.userRepository.listAll(filterOptions).map(users => {
-            return this.exportUsers(users, options);
+            return {
+                blob: new Blob([this.buildExportDataString(users, options)], { type: "text/plain;charset=utf-8" }),
+                filename,
+            };
         });
     }
 
-    private async exportUsers(
+    private getFilename({ name, format }: ExportUsersUseCaseOptions): string {
+        const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
+        return `${name}-${datetime}.${format}`;
+    }
+
+    private buildExportDataString(
         users: User[],
         { columns, format }: Pick<ExportUsersUseCaseOptions, "columns" | "format">
     ) {
         switch (format) {
             case "json": {
-                const userRows = users.map(user => this.getPlainUser(user, columns, true));
+                const userRows = users.map(user => this.getPlainUser(user, columns, false));
                 return JSON.stringify(userRows, null, 4);
             }
             case "csv": {
-                const userRows = users.map(user => this.getPlainUser(user, columns, false));
+                const userRows = users.map(user => this.getPlainUser(user, columns, true));
                 const header = columns.map(this.getColumnNameFromProperty);
                 const table = [header, ...userRows];
-
                 return Papa.unparse(table);
             }
         }
@@ -116,9 +128,12 @@ export class ExportUsersUseCase implements UseCase {
 
 export type ColumnMappingKeys = keyof typeof columnNameFromPropertyMapping;
 
+export type AllowedExportFormat = "json" | "csv";
+
 export type ExportUsersUseCaseOptions = {
+    name: string;
     columns: ColumnMappingKeys[];
     filterOptions?: ListOptions;
-    format: "json" | "csv";
+    format: AllowedExportFormat;
     isEmptyTemplate?: boolean;
 };
