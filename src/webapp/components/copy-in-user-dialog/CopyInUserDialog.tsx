@@ -37,6 +37,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     const strategyLabel = isReplaceStrategy ? i18n.t("Replace") : i18n.t("Merge");
     const copyInUserTitle = i18n.t("Copy in user: {{user}}", {
         user: user.username,
+        nsSeparator: false,
     });
 
     const getOptions = () => {

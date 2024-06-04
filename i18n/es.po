@@ -1,12 +1,75 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-05-30T07:35:49.257Z\n"
+"POT-Creation-Date: 2024-06-04T13:13:15.178Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "ID"
+msgstr ""
+
+msgid "Username"
+msgstr "Usuario"
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "First name"
+msgstr "Nombre"
+
+msgid "Surname"
+msgstr "Apellido"
+
+msgid "Email"
+msgstr "Correo electrónico"
+
+msgid "Phone number"
+msgstr "Número de teléfono móvil"
+
+msgid "Updated"
+msgstr "Actualizado"
+
+msgid "Last login"
+msgstr "Última conexión"
+
+msgid "Created"
+msgstr "Creado"
+
+msgid "Roles"
+msgstr "Roles"
+
+msgid "Groups"
+msgstr "Grupos"
+
+msgid "OUCapture"
+msgstr ""
+
+msgid "OUOutput"
+msgstr ""
+
+#, fuzzy
+msgid "OUSearch"
+msgstr "Buscar"
+
+msgid "Disabled"
+msgstr "Deshabilitado"
+
+msgid "Open ID"
+msgstr ""
+
+#, fuzzy
+msgid "created by"
+msgstr "Creado por"
+
+#, fuzzy
+msgid "Last modified by"
+msgstr "Última actualización hecha por"
 
 msgid "Copy to clipboard"
 msgstr "Copiar"
@@ -50,6 +113,10 @@ msgstr ""
 msgid "Merge"
 msgstr ""
 
+#, fuzzy
+msgid "Copy in user: {{user}}"
+msgstr "Copiar a usuario"
+
 msgid "Select one toggle"
 msgstr ""
 
@@ -76,12 +143,6 @@ msgstr ""
 
 msgid "Type"
 msgstr ""
-
-msgid "Created"
-msgstr "Creado"
-
-msgid "Updated"
-msgstr "Actualizado"
 
 msgid "Deleted"
 msgstr "Eliminado"
@@ -128,12 +189,6 @@ msgstr "Guardando usuarios"
 msgid "Update strategy: "
 msgstr "Estrategia de actualización: "
 
-msgid "Merge"
-msgstr "Mezclar"
-
-msgid "Replace"
-msgstr "Reemplazar"
-
 msgid "Search"
 msgstr "Buscar"
 
@@ -142,9 +197,6 @@ msgstr "Asignar roles a {{usernames}}"
 
 msgid "Assign groups to {{usernames}}"
 msgstr "Asignar grupos a {{usernames}}"
-
-msgid "Bulk update strategy: {{strategy}}"
-msgstr "Estrategia de actualización masiva: {{strategy}}"
 
 msgid "Back"
 msgstr "Volver"
@@ -179,14 +231,16 @@ msgstr "Por favor proporcione un correo electrónico válido"
 msgid "Password should contain at least one lowercase letter"
 msgstr "La contraseña debe contener al menos una letra minúscula"
 
+#, fuzzy
 msgid "Password should contain at least one UPPERCASE letter"
-msgstr "La contraseña debe contener al menos una letra MAYÚSCULA"
+msgstr "La contraseña debe contener al menos una letra minúscula"
 
 msgid "Password should contain at least one number"
 msgstr "La contraseña debe contener al menos un número"
 
+#, fuzzy
 msgid "Password should have at least one special character"
-msgstr "La contraseña debe contener al menos un carácter especial"
+msgstr "La contraseña debe contener al menos una letra minúscula"
 
 msgid "Please provide a valid phone number"
 msgstr "Por favor proporcione un número de teléfono válido"
@@ -199,23 +253,8 @@ msgstr ""
 msgid "First Name"
 msgstr "Nombre"
 
-msgid "Name"
-msgstr "Nombre"
-
-msgid "Password"
-msgstr "Contraseña"
-
 msgid "Account expiration date"
 msgstr "Fecha de expiración de la cuenta"
-
-msgid "Surname"
-msgstr "Apellido"
-
-msgid "Username"
-msgstr "Usuario"
-
-msgid "Email"
-msgstr "Correo electrónico"
 
 msgid "Phone Number"
 msgstr "Número de teléfono"
@@ -235,17 +274,8 @@ msgstr ""
 msgid "Twitter"
 msgstr ""
 
-msgid "Disabled"
-msgstr "Deshabilitado"
-
 msgid "External authentication only (OpenID or LDAP)"
 msgstr "Solo autenticación externa (OpenID o LDAP)"
-
-msgid "User Roles"
-msgstr "Roles"
-
-msgid "User Groups"
-msgstr "Grupos"
 
 msgid "Data Capture Organisation Units"
 msgstr "Unidades Organizativas de salida"
@@ -255,9 +285,6 @@ msgstr "Unidades Organizativas de salida"
 
 msgid "Search Organisation Units"
 msgstr "Unidades Organizativas de búsqueda"
-
-msgid "Open ID"
-msgstr ""
 
 msgid "LDAP identifier"
 msgstr "LDAP ID"
@@ -274,20 +301,8 @@ msgstr ""
 msgid "Last updated"
 msgstr "Última actualización"
 
-msgid "Last login"
-msgstr "Última conexión"
-
-msgid "ID"
-msgstr ""
-
 msgid "API URL"
 msgstr ""
-
-msgid "Roles"
-msgstr "Roles"
-
-msgid "Groups"
-msgstr "Grupos"
 
 msgid "OU Output"
 msgstr ""
@@ -352,12 +367,6 @@ msgstr ""
 
 msgid "User ID"
 msgstr "ID"
-
-msgid "First name"
-msgstr "Nombre"
-
-msgid "Phone number"
-msgstr "Número de teléfono móvil"
 
 #, fuzzy
 msgid "Data capture organisation units"
