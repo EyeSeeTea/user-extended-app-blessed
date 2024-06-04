@@ -199,38 +199,22 @@ export class UserD2ApiRepository implements UserRepository {
         return userData$.map(({ objects }) => objects);
     }
 
-    public listAll(options: ListOptions): FutureData<User[]> {
-        const {
-            page,
-            pageSize,
-            search,
-            sorting = { field: "firstName", order: "asc" },
-            canManage,
-            rootJunction,
-            filters,
-        } = options;
-        const otherFilters = _.mapValues(filters, items => (items ? { [items[0]]: items[1] } : undefined));
-        const areFiltersEnabled = _(otherFilters).values().some();
-
-        const sortingField = sorting.field === "status" ? "disabled" : sorting.field;
-
-        return apiToFuture(
-            this.api.models.users.get({
-                fields: {
-                    ...fields,
-                    ...auditFields,
-                    userCredentials: { ...fields.userCredentials, ...auditFields },
-                },
-                page,
-                pageSize,
-                paging: false,
-                query: search !== "" ? search : undefined,
-                canManage: canManage === "true" ? "true" : undefined,
-                filter: otherFilters,
-                rootJunction: areFiltersEnabled ? rootJunction : undefined,
-                order: `${sortingField}:${sorting.order}`,
-            })
-        ).map(({ objects }) => objects.map(user => this.toDomainUser(user)));
+    public listAll(
+        options: ListOptions,
+        state: { initialPage: number; users: User[] } = { initialPage: 1, users: [] }
+    ): FutureData<User[]> {
+        const { initialPage, users } = state;
+        return this.list({ ...options, page: initialPage }).flatMap(({ pager, objects }) => {
+            const newUsers = [...users, ...objects];
+            if (pager.page >= pager.pageCount) {
+                return Future.success(newUsers);
+            } else {
+                return this.listAll(options, {
+                    initialPage: initialPage + 1,
+                    users: newUsers,
+                });
+            }
+        });
     }
 
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
