@@ -3,7 +3,7 @@ import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
 import { User } from "../../../domain/entities/User";
 import { Id } from "../../../domain/entities/Ref";
-import { AccessElements, UpdateStrategy } from "../../../domain/repositories/UserRepository";
+import { AccessElements, AccessElementsKeys, UpdateStrategy } from "../../../domain/repositories/UserRepository";
 import { ConfirmationDialog, MultiSelector } from "@eyeseetea/d2-ui-components";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Toggle } from "material-ui";
@@ -65,8 +65,8 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         setUpdateStrategy(newValue ? "replace" : "merge");
     }, []);
 
-    const onToggleAccessElements = (_event: React.MouseEvent<HTMLInputElement>, newValue: boolean) => {
-        setAccessElements({ ...accessElements, [_event.currentTarget.name]: newValue });
+    const onToggleAccessElements = (property: AccessElementsKeys, value: boolean) => {
+        setAccessElements({ ...accessElements, [property]: value });
     };
 
     return (
@@ -104,28 +104,24 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
                         <Toggle
                             label={i18n.t("User Groups")}
                             toggled={accessElements.userGroups}
-                            name="userGroups"
-                            onToggle={onToggleAccessElements}
+                            onToggle={(_, value) => onToggleAccessElements("userGroups", value)}
                         />
                         <Toggle
                             label={i18n.t("OU Outputs")}
                             toggled={accessElements.dataViewOrganisationUnits}
-                            name="dataViewOrganisationUnits"
-                            onToggle={onToggleAccessElements}
+                            onToggle={(_, value) => onToggleAccessElements("dataViewOrganisationUnits", value)}
                         />
                     </ToggleContainer>
                     <ToggleContainer>
                         <Toggle
                             label={i18n.t("User Roles")}
                             toggled={accessElements.userRoles}
-                            name="userRoles"
-                            onToggle={onToggleAccessElements}
+                            onToggle={(_, value) => onToggleAccessElements("userRoles", value)}
                         />
                         <Toggle
                             label={i18n.t("OU Capture")}
                             toggled={accessElements.organisationUnits}
-                            name="organisationUnits"
-                            onToggle={onToggleAccessElements}
+                            onToggle={(_, value) => onToggleAccessElements("organisationUnits", value)}
                         />
                     </ToggleContainer>
                 </Box>
