@@ -71,7 +71,8 @@ export class ExportUsersUseCase implements UseCase {
                 return JSON.stringify(userRows, null, 4);
             }
             case "csv": {
-                const userRows = users.map(user => this.getPlainUser(user, columns, true));
+                // Convert object to array of values sorted by columns
+                const userRows = users.map(user => _.at(this.getPlainUser(user, columns, true), columns));
                 const header = columns.map(this.getColumnNameFromProperty);
                 const table = [header, ...userRows];
                 return Papa.unparse(table);
