@@ -20,6 +20,7 @@ const columnNameFromPropertyMapping = {
     phoneNumber: i18n.t("Phone number"),
     lastUpdated: i18n.t("Updated"),
     lastLogin: i18n.t("Last login"),
+    apiUrl: i18n.t("API URL"),
     created: i18n.t("Created"),
     userRoles: i18n.t("Roles"),
     userGroups: i18n.t("Groups"),
@@ -27,6 +28,7 @@ const columnNameFromPropertyMapping = {
     dataViewOrganisationUnits: i18n.t("OUOutput"),
     searchOrganisationsUnits: i18n.t("OUSearch"),
     disabled: i18n.t("Disabled"),
+    status: i18n.t("Status"),
     openId: i18n.t("Open ID"),
     createdBy: i18n.t("Created by"),
     lastModifiedBy: i18n.t("Last modified by"),
@@ -40,25 +42,24 @@ export class ExportUsersUseCase implements UseCase {
         isEmptyTemplate,
         ...options
     }: ExportUsersUseCaseOptions): FutureData<{ blob: Blob; filename: string }> {
-        const filename = this.getFilename(options);
-
         if (isEmptyTemplate) {
-            return Future.success({
-                blob: new Blob([this.buildExportDataString([], options)], { type: "text/plain;charset=utf-8" }),
-                filename,
-            });
+            return Future.success(this.buildBlobAndFilename([], options));
         }
         return this.userRepository.listAll(filterOptions).map(users => {
-            return {
-                blob: new Blob([this.buildExportDataString(users, options)], { type: "text/plain;charset=utf-8" }),
-                filename,
-            };
+            return this.buildBlobAndFilename(users, options);
         });
     }
 
     private getFilename({ name, format }: ExportUsersUseCaseOptions): string {
         const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
         return `${name}-${datetime}.${format}`;
+    }
+
+    private buildBlobAndFilename(users: User[], options: ExportUsersUseCaseOptions) {
+        return {
+            blob: new Blob([this.buildExportDataString(users, options)], { type: "text/plain;charset=utf-8" }),
+            filename: this.getFilename(options),
+        };
     }
 
     private buildExportDataString(
