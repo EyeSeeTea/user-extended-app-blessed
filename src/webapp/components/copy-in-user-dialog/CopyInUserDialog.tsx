@@ -40,7 +40,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         nsSeparator: false,
     });
 
-    const getOptions = () => {
+    const getOptions = (): Array<{ value: Id; text: string }> => {
         // Remove user source from target users
         return _.reject(usersList, { value: user.id });
     };
