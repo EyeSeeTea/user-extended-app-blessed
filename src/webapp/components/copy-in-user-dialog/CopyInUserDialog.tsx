@@ -79,7 +79,7 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
                         strategy: strategyLabel,
                         nsSeparator: false,
                     })}
-                    style={{ width: 280, float: "right", marginTop: 20, marginRight: 15 }}
+                    style={{ width: 280, float: "inline-end", marginBlockStart: 20, marginInlineStart: 15 }}
                     toggled={isReplaceStrategy}
                     onToggle={onToggleStrategy}
                 />
@@ -142,6 +142,6 @@ const Container = styled.div`
 `;
 
 const ToggleContainer = styled.div`
-    margin-top: 3em;
-    margin-right: 1em;
+    margin-block-start: 3em;
+    margin-inline-end: 1em;
 `;
