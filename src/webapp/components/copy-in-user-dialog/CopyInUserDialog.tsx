@@ -41,8 +41,13 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
     });
 
     const getOptions = (): Array<{ value: Id; text: string }> => {
-        // Remove user source from target users
-        return _.reject(usersList, { value: user.id });
+        return _(usersList)
+            .reject({ id: user.id }) // Remove user source from target users
+            .map(({ id, name, username }) => ({
+                text: `${name} (${username})`,
+                value: id,
+            }))
+            .value();
     };
 
     const onDialogSave = React.useCallback(() => {
@@ -134,7 +139,7 @@ export type CopyInUserDialogProps = {
     onSave: (selectedUsersIds: Id[], updateStrategy: UpdateStrategy, accessElements: AccessElements) => void;
     user: User;
     visible: boolean;
-    usersList: { text: string; value: Id }[];
+    usersList: User[];
 };
 
 const Container = styled.div`

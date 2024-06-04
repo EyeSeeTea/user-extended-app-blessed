@@ -23,7 +23,7 @@ import i18n from "../../../locales";
 import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
-import { useCopyInUser, useFetchUsersIdsAndInfos, useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
+import { useCopyInUser, useGetAllUsers, useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
 import { CopyInUserDialog } from "../copy-in-user-dialog/CopyInUserDialog";
@@ -109,7 +109,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const userColumns = useUserColumns();
 
     const { users, setUsers } = useGetUsersByIds(selectedUserIds);
-    const { usersIdsAndInfos } = useFetchUsersIdsAndInfos();
+    const { users: allUsers } = useGetAllUsers();
 
     const onCleanSelectedUsers = React.useCallback(() => {
         setSelectedUserIds([]);
@@ -497,10 +497,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 />
             )}
 
-            {actionType && isActionTypeCopyInUser(actionType) && selectedUser && (
+            {actionType && isActionTypeCopyInUser(actionType) && selectedUser && allUsers && (
                 <CopyInUserDialog
                     user={selectedUser}
-                    usersList={usersIdsAndInfos}
+                    usersList={allUsers}
                     onCancel={onCleanSelectedUsers}
                     onSave={onSaveCopyInUser}
                     visible

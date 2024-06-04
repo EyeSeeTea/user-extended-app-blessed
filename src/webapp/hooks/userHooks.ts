@@ -71,31 +71,23 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
     return { saveUsersOrgUnits };
 }
 
-export function useFetchUsersIdsAndInfos() {
+export function useGetAllUsers() {
     const { compositionRoot } = useAppContext();
+    const [users, setUsers] = React.useState<User[]>();
     const snackbar = useSnackbar();
-    const [usersIdsAndInfos, setUsersIdsAndInfos] = React.useState<{ text: string; value: Id }[]>([]);
 
     React.useMemo(() => {
-        compositionRoot.users
-            .listAll({})
-            .map(users => {
-                return users.map(({ id, name, username }) => ({
-                    text: `${name} (${username})`,
-                    value: id,
-                }));
-            })
-            .run(
-                users => {
-                    setUsersIdsAndInfos(users);
-                },
-                error => {
-                    snackbar.error(error);
-                }
-            );
+        compositionRoot.users.listAll({}).run(
+            allUsers => {
+                setUsers(allUsers);
+            },
+            error => {
+                snackbar.error(error);
+            }
+        );
     }, [compositionRoot, snackbar]);
 
-    return { usersIdsAndInfos };
+    return { users };
 }
 
 export function useCopyInUser(props: UseCopyInUserProps) {
