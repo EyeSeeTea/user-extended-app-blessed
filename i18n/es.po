@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-06-03T15:12:57.985Z\n"
+"POT-Creation-Date: 2024-06-04T13:07:29.920Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,6 +38,9 @@ msgstr ""
 msgid "Last login"
 msgstr ""
 
+msgid "API URL"
+msgstr ""
+
 msgid "Created"
 msgstr ""
 
@@ -57,6 +60,9 @@ msgid "OUSearch"
 msgstr ""
 
 msgid "Disabled"
+msgstr ""
+
+msgid "Status"
 msgstr ""
 
 msgid "Open ID"
@@ -147,9 +153,6 @@ msgid "Ok"
 msgstr ""
 
 msgid "Users"
-msgstr ""
-
-msgid "Status"
 msgstr ""
 
 msgid "Summary"
@@ -290,9 +293,6 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
-msgid "API URL"
-msgstr ""
-
 msgid "OU Capture"
 msgstr ""
 
@@ -392,6 +392,9 @@ msgid "Confirm"
 msgstr ""
 
 msgid "Saving..."
+msgstr ""
+
+msgid "Table exported: {{filename}}"
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"
