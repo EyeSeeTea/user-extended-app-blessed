@@ -498,7 +498,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 }
 
-const orgUnitsFields = { id: true, name: true, path: true } as const;
+const orgUnitsFields = { id: true, name: true, code: true, path: true } as const;
 
 const auditFields = {
     createdBy: { id: true, displayName: true },

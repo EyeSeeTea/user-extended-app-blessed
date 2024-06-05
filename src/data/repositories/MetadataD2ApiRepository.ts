@@ -32,7 +32,7 @@ export class MetadataD2ApiRepository implements MetadataRepository {
     public getOrgUnitPathsByIds(ids: string[]): FutureData<OrgUnit[]> {
         return apiToFuture(
             this.api.models.organisationUnits.get({
-                fields: { id: true, name: true, path: true },
+                fields: { id: true, name: true, code: true, path: true },
                 filter: { id: { in: ids } },
                 paging: false,
             })

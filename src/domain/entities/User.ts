@@ -45,7 +45,7 @@ export interface UserAudit {
     username: string;
 }
 
-const emptyOrgUnit: OrgUnit = { id: "", name: "", path: [] };
+const emptyOrgUnit: OrgUnit = { id: "", name: "", code: "", path: [] };
 
 export const defaultUser: User = {
     id: "",
