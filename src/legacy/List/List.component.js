@@ -247,15 +247,17 @@ export class ListHybrid extends React.Component {
                             onAction={this._onAction}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
-                            
+
                             <div className="user-management-control pagination" style={{ order: 11 }}>
-                                    {settings && <ImportExport
-                                    columns={this.state.visibleColumns}
-                                    filterOptions={listFilterOptions}
-                                    onImport={this._openImportTable}
-                                    maxUsers={this.maxImportUsers}
-                                    settings={settings}
-                                />}
+                                {settings && (
+                                    <ImportExport
+                                        columns={this.state.visibleColumns}
+                                        filterOptions={listFilterOptions}
+                                        onImport={this._openImportTable}
+                                        maxUsers={this.maxImportUsers}
+                                        settings={settings}
+                                    />
+                                )}
                             </div>
                         </UserListTable>
                     </div>
