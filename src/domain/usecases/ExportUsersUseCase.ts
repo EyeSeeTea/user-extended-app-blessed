@@ -7,8 +7,10 @@ import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { ListOptions, UserRepository } from "../repositories/UserRepository";
 import { UseCase } from "../../CompositionRoot";
+import { OrgUnitKey } from "../entities/OrgUnit";
 
 const fieldSplitChar = "||";
+const defaultNameField = "name";
 const columnNameFromPropertyMapping = {
     id: i18n.t("ID"),
     username: i18n.t("Username"),
@@ -62,18 +64,17 @@ export class ExportUsersUseCase implements UseCase {
         };
     }
 
-    private buildExportDataString(
-        users: User[],
-        { columns, format }: Pick<ExportUsersUseCaseOptions, "columns" | "format">
-    ) {
+    private buildExportDataString(users: User[], { columns, format, orgUnitsField }: ExportUsersUseCaseOptions) {
         switch (format) {
             case "json": {
-                const userRows = users.map(user => this.getPlainUser(user, columns, false));
+                const userRows = users.map(user => this.getPlainUser(user, columns, orgUnitsField, false));
                 return JSON.stringify(userRows, null, 4);
             }
             case "csv": {
                 // Convert object to array of values sorted by columns
-                const userRows = users.map(user => _.at(this.getPlainUser(user, columns, true), columns));
+                const userRows = users.map(user =>
+                    _.at(this.getPlainUser(user, columns, orgUnitsField, true), columns)
+                );
                 const header = columns.map(this.getColumnNameFromProperty);
                 const table = [header, ...userRows];
                 return Papa.unparse(table);
@@ -96,9 +97,11 @@ export class ExportUsersUseCase implements UseCase {
             | "organisationUnits"
             | "dataViewOrganisationUnits"
             | "searchOrganisationsUnits"],
+        field: OrgUnitKey | typeof defaultNameField,
         toString: boolean
     ): string | string[] {
-        const nameField = "name";
+        // Check if field is in the collection, fallback on default name field
+        const nameField = _.some(collection, field) ? field : defaultNameField;
         const namesArray = _(collection).map(nameField).value();
 
         return toString ? namesArray.join(fieldSplitChar) : namesArray;
@@ -107,6 +110,7 @@ export class ExportUsersUseCase implements UseCase {
     private getPlainUser(
         user: User,
         columns: ColumnMappingKeys[],
+        orgUnitsField: OrgUnitKey,
         toString: boolean
     ): Record<ColumnMappingKeys, typeof user[ColumnMappingKeys] | string[]> {
         return _.pick(
@@ -115,11 +119,19 @@ export class ExportUsersUseCase implements UseCase {
                 lastUpdated: this.formatDate(user.lastUpdated),
                 lastLogin: this.formatDate(user.lastLogin),
                 created: this.formatDate(user.created),
-                userRoles: this.namesFromCollection(user.userRoles, toString),
-                userGroups: this.namesFromCollection(user.userGroups, toString),
-                organisationUnits: this.namesFromCollection(user.organisationUnits, toString),
-                dataViewOrganisationUnits: this.namesFromCollection(user.dataViewOrganisationUnits, toString),
-                searchOrganisationsUnits: this.namesFromCollection(user.searchOrganisationsUnits, toString),
+                userRoles: this.namesFromCollection(user.userRoles, defaultNameField, toString),
+                userGroups: this.namesFromCollection(user.userGroups, defaultNameField, toString),
+                organisationUnits: this.namesFromCollection(user.organisationUnits, orgUnitsField, toString),
+                dataViewOrganisationUnits: this.namesFromCollection(
+                    user.dataViewOrganisationUnits,
+                    orgUnitsField,
+                    toString
+                ),
+                searchOrganisationsUnits: this.namesFromCollection(
+                    user.searchOrganisationsUnits,
+                    orgUnitsField,
+                    toString
+                ),
                 createdBy: user.createdBy?.username,
                 lastModifiedBy: user.lastModifiedBy?.username,
             },
@@ -137,5 +149,6 @@ export type ExportUsersUseCaseOptions = {
     columns: ColumnMappingKeys[];
     filterOptions?: ListOptions;
     format: AllowedExportFormat;
+    orgUnitsField: OrgUnitKey;
     isEmptyTemplate?: boolean;
 };

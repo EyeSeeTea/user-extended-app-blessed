@@ -30,14 +30,15 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
         setMenuOpen(false);
     };
 
+    const orgUnitsField = settings.get("organisationUnitsField");
     const { exportUsersToCSV, exportUsersToJSON, exportEmptyTemplate } = useExportUsers({
         columns,
         filterOptions,
+        orgUnitsField,
         onSuccess: closeMenu,
     });
 
     const importFromFile = () => {
-        const orgUnitsField = settings["organisationUnitsField"];
         fileDialog({ accept: ["text/csv", "application/json"] })
             .then((files: FileList) => {
                 setProcessing(true);

@@ -8,9 +8,15 @@ import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
 import { AllowedExportFormat, ColumnMappingKeys } from "../../domain/usecases/ExportUsersUseCase";
 import FileSaver from "file-saver";
+import { OrgUnitKey } from "../../domain/entities/OrgUnit";
 
 type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
-type UseExportUsersProps = { onSuccess: () => void; columns: ColumnMappingKeys[]; filterOptions: ListOptions };
+type UseExportUsersProps = {
+    onSuccess: () => void;
+    columns: ColumnMappingKeys[];
+    filterOptions: ListOptions;
+    orgUnitsField: OrgUnitKey;
+};
 
 export function useGetUsersByIds(ids: Id[]) {
     const { compositionRoot } = useAppContext();
@@ -74,7 +80,7 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
 }
 
 export const useExportUsers = (props: UseExportUsersProps) => {
-    const { onSuccess, columns, filterOptions } = props;
+    const { onSuccess, columns, filterOptions, orgUnitsField } = props;
 
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
@@ -84,7 +90,7 @@ export const useExportUsers = (props: UseExportUsersProps) => {
         (name: string, format: AllowedExportFormat, isEmptyTemplate = false) => {
             loading.show();
 
-            const exportOptions = { name, columns, filterOptions, format, isEmptyTemplate };
+            const exportOptions = { name, columns, filterOptions, format, orgUnitsField, isEmptyTemplate };
             return compositionRoot.users.export(exportOptions).run(
                 ({ blob, filename }) => {
                     FileSaver.saveAs(blob, filename);
@@ -98,7 +104,7 @@ export const useExportUsers = (props: UseExportUsersProps) => {
                 }
             );
         },
-        [columns, compositionRoot.users, filterOptions, onSuccess, snackbar, loading]
+        [columns, compositionRoot.users, filterOptions, onSuccess, snackbar, loading, orgUnitsField]
     );
 
     return {
