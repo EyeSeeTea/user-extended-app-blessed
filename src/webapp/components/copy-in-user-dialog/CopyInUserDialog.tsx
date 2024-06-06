@@ -1,18 +1,16 @@
 import React from "react";
 import i18n from "../../../locales";
-import { useAppContext } from "../../contexts/app-context";
+import _ from "lodash";
 import { User } from "../../../domain/entities/User";
 import { Id } from "../../../domain/entities/Ref";
 import { AccessElements, AccessElementsKeys, UpdateStrategy } from "../../../domain/repositories/UserRepository";
-import { ConfirmationDialog, MultiSelector } from "@eyeseetea/d2-ui-components";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Toggle } from "material-ui";
-import { Box, makeStyles } from "@material-ui/core";
+import { Box } from "@material-ui/core";
 import styled from "styled-components";
-import _ from "lodash";
+import { SegmentedControl, Transfer } from "@dhis2/ui";
+import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
 
 export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
-    const { d2 } = useAppContext();
     const { onCancel, onSave, user, visible, usersList } = props;
 
     const [selectedUsersIds, setSelectedUsersIds] = React.useState<Id[]>([]);
@@ -26,25 +24,16 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
 
     const snackbar = useSnackbar();
 
-    // Overide TextInput width in MultiSelector
-    const useStyles = makeStyles(() => ({
-        searchFieldOverride: {
-            width: "initial",
-        },
-    }));
-
-    const isReplaceStrategy = updateStrategy === "replace";
-    const strategyLabel = isReplaceStrategy ? i18n.t("Replace") : i18n.t("Merge");
     const copyInUserTitle = i18n.t("Copy in user: {{user}}", {
         user: user.username,
         nsSeparator: false,
     });
 
-    const getOptions = (): Array<{ value: Id; text: string }> => {
+    const getOptions = (): Array<{ value: Id; label: string }> => {
         return _(usersList)
             .reject({ id: user.id }) // Remove user source from target users
             .map(({ id, name, username }) => ({
-                text: `${name} (${username})`,
+                label: `${name} (${username})`,
                 value: id,
             }))
             .value();
@@ -61,10 +50,6 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
         }
     }, [onSave, selectedUsersIds, updateStrategy, accessElements, snackbar]);
 
-    const onToggleStrategy = React.useCallback((_event: React.MouseEvent<HTMLInputElement>, newValue: boolean) => {
-        setUpdateStrategy(newValue ? "replace" : "merge");
-    }, []);
-
     const onToggleAccessElements = (property: AccessElementsKeys, value: boolean) => {
         setAccessElements({ ...accessElements, [property]: value });
     };
@@ -79,53 +64,65 @@ export const CopyInUserDialog: React.FC<CopyInUserDialogProps> = props => {
             onSave={onDialogSave}
         >
             <Container>
-                <Toggle
-                    label={i18n.t("Bulk update strategy: {{strategy}}", {
-                        strategy: strategyLabel,
-                        nsSeparator: false,
-                    })}
-                    style={{ width: 280, float: "inline-end", marginBlockStart: 20, marginInlineStart: 15 }}
-                    toggled={isReplaceStrategy}
-                    onToggle={onToggleStrategy}
+                <Label>{i18n.t("Bulk update strategy: ", { nsSeparator: false })}</Label>
+
+                <SegmentedControl
+                    options={[
+                        {
+                            label: i18n.t("Merge"),
+                            value: "merge",
+                        },
+                        {
+                            label: i18n.t("Replace"),
+                            value: "replace",
+                        },
+                    ]}
+                    selected={updateStrategy}
+                    onChange={({ value }) => setUpdateStrategy(value ?? "merge")}
                 />
-                <MultiSelector
-                    d2={d2}
-                    height={300}
-                    onChange={setSelectedUsersIds}
-                    options={getOptions()}
-                    ordered={false}
-                    searchFilterLabel={i18n.t("Search by name")}
-                    classes={{
-                        searchField: useStyles().searchFieldOverride,
-                    }}
-                />
-                <Box display="flex">
-                    <ToggleContainer>
-                        <Toggle
-                            label={i18n.t("User Groups")}
-                            toggled={accessElements.userGroups}
-                            onToggle={(_, value) => onToggleAccessElements("userGroups", value)}
-                        />
-                        <Toggle
-                            label={i18n.t("OU Outputs")}
-                            toggled={accessElements.dataViewOrganisationUnits}
-                            onToggle={(_, value) => onToggleAccessElements("dataViewOrganisationUnits", value)}
-                        />
-                    </ToggleContainer>
-                    <ToggleContainer>
-                        <Toggle
-                            label={i18n.t("User Roles")}
-                            toggled={accessElements.userRoles}
-                            onToggle={(_, value) => onToggleAccessElements("userRoles", value)}
-                        />
-                        <Toggle
-                            label={i18n.t("OU Capture")}
-                            toggled={accessElements.organisationUnits}
-                            onToggle={(_, value) => onToggleAccessElements("organisationUnits", value)}
-                        />
-                    </ToggleContainer>
-                </Box>
             </Container>
+
+            <Transfer
+                options={getOptions()}
+                selected={selectedUsersIds}
+                onChange={({ selected }) => {
+                    setSelectedUsersIds(selected);
+                }}
+                filterable={true}
+                filterablePicked={true}
+                filterPlaceholder={i18n.t("Search")}
+                filterPlaceholderPicked={i18n.t("Search")}
+                selectedWidth="100%"
+                optionsWidth="100%"
+                height="400px"
+            />
+
+            <Box display="flex">
+                <ToggleContainer>
+                    <Toggle
+                        label={i18n.t("User Groups")}
+                        toggled={accessElements.userGroups}
+                        onToggle={(_, value) => onToggleAccessElements("userGroups", value)}
+                    />
+                    <Toggle
+                        label={i18n.t("OU Outputs")}
+                        toggled={accessElements.dataViewOrganisationUnits}
+                        onToggle={(_, value) => onToggleAccessElements("dataViewOrganisationUnits", value)}
+                    />
+                </ToggleContainer>
+                <ToggleContainer>
+                    <Toggle
+                        label={i18n.t("User Roles")}
+                        toggled={accessElements.userRoles}
+                        onToggle={(_, value) => onToggleAccessElements("userRoles", value)}
+                    />
+                    <Toggle
+                        label={i18n.t("OU Capture")}
+                        toggled={accessElements.organisationUnits}
+                        onToggle={(_, value) => onToggleAccessElements("organisationUnits", value)}
+                    />
+                </ToggleContainer>
+            </Box>
         </ConfirmationDialog>
     );
 };
@@ -139,7 +136,15 @@ export type CopyInUserDialogProps = {
 };
 
 const Container = styled.div`
-    padding: 1em;
+    display: flex;
+    justify-content: right;
+    margin-block-end: 1em;
+    align-items: center;
+`;
+
+const Label = styled.span`
+    margin-inline-end: 1em;
+    font-weight: bold;
 `;
 
 const ToggleContainer = styled.div`
