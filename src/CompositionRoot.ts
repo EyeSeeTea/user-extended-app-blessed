@@ -11,12 +11,14 @@ import { GetUsersByIdsUseCase } from "./domain/usecases/GetUsersByIdsUseCase";
 import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
+import { ListAllUsersUseCase } from "./domain/usecases/ListAllUsersUseCase";
 import { RemoveUsersUseCase } from "./domain/usecases/RemoveUsersUseCase";
 import { SaveColumnsUseCase } from "./domain/usecases/SaveColumnsUseCase";
 import { SaveUserOrgUnitUseCase } from "./domain/usecases/SaveUserOrgUnitUseCase";
 import { SaveUserStatusUseCase } from "./domain/usecases/SaveUserStatusUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
+import { CopyInUserUseCase } from "./domain/usecases/CopyInUserUseCase";
 
 export function getCompositionRoot(instance: Instance) {
     const instanceRepository = new InstanceD2ApiRepository(instance);
@@ -31,6 +33,7 @@ export function getCompositionRoot(instance: Instance) {
         users: getExecute({
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
+            listAll: new ListAllUsersUseCase(userRepository),
             listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUsersByIdsUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
@@ -40,6 +43,7 @@ export function getCompositionRoot(instance: Instance) {
             saveColumns: new SaveColumnsUseCase(userRepository),
             remove: new RemoveUsersUseCase(userRepository),
             saveOrgUnits: new SaveUserOrgUnitUseCase(userRepository),
+            copyInUser: new CopyInUserUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),

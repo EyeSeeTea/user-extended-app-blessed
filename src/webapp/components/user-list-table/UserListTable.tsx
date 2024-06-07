@@ -17,15 +17,16 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters, UpdateStrategy } from "../../../domain/repositories/UserRepository";
+import { ListFilters, UpdateStrategy, AccessElements } from "../../../domain/repositories/UserRepository";
 import { SaveUserOrgUnitOptions } from "../../../domain/usecases/SaveUserOrgUnitUseCase";
 import i18n from "../../../locales";
 import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
-import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
+import { useCopyInUser, useGetAllUsers, useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
+import { CopyInUserDialog } from "../copy-in-user-dialog/CopyInUserDialog";
 import {
     ActionType,
     generateMessage,
@@ -41,6 +42,7 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
             return "output";
         case "assign_to_org_units_search":
             return "search";
+        case "copy_in_user":
         case "disable":
         case "enable":
         case "remove":
@@ -58,6 +60,10 @@ function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
 
 function isActionTypeEnableOrRemove(actionType: Maybe<ActionType>): boolean {
     return actionType === "disable" || actionType === "enable" || actionType === "remove";
+}
+
+function isActionTypeCopyInUser(actionType: Maybe<ActionType>): boolean {
+    return actionType === "copy_in_user";
 }
 
 function buildOrgUnitTitleByAction(
@@ -103,6 +109,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const userColumns = useUserColumns();
 
     const { users, setUsers } = useGetUsersByIds(selectedUserIds);
+    const { users: allUsers } = useGetAllUsers();
 
     const onCleanSelectedUsers = React.useCallback(() => {
         setSelectedUserIds([]);
@@ -111,6 +118,13 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }, [setUsers]);
 
     const { saveUsersOrgUnits } = useSaveUsersOrgUnits({
+        onSuccess: React.useCallback(() => {
+            onCleanSelectedUsers();
+            reload();
+        }, [onCleanSelectedUsers, reload]),
+    });
+
+    const { copyInUser } = useCopyInUser({
         onSuccess: React.useCallback(() => {
             onCleanSelectedUsers();
             reload();
@@ -182,7 +196,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Copy in user"),
                     icon: <Icon>content_copy</Icon>,
                     multiple: false,
-                    onClick: users => onAction(users, "copy_in"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("copy_in_user");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -439,6 +456,20 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         });
     }, [actionType, users, ouCaptureI18n, ouOutputI18n, ouSearchI18n]);
 
+    const selectedUser = useMemo(() => {
+        if (!users || selectedUserIds.length !== 1) return undefined;
+        return users.find(user => user.id === selectedUserIds[0]);
+    }, [users, selectedUserIds]);
+
+    const onSaveCopyInUser = React.useCallback(
+        (selectedUsersIds: Id[], updateStrategy: UpdateStrategy, accessElements: AccessElements) => {
+            if (selectedUser && actionType) {
+                copyInUser(selectedUser, selectedUsersIds, updateStrategy, accessElements);
+            }
+        },
+        [actionType, selectedUser, copyInUser]
+    );
+
     const selectedUsers = users && users.length > 0;
 
     return (
@@ -463,6 +494,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     visible
                     users={users}
                     actionType={actionType}
+                />
+            )}
+
+            {actionType && isActionTypeCopyInUser(actionType) && selectedUser && allUsers && (
+                <CopyInUserDialog
+                    user={selectedUser}
+                    usersList={allUsers}
+                    onCancel={onCleanSelectedUsers}
+                    onSave={onSaveCopyInUser}
+                    visible
                 />
             )}
 
@@ -563,7 +604,13 @@ function isStateActionVisible(action: string) {
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
-export type UserActionName = "remove" | "disable" | "enable" | "replicate_template" | "replicate_table" | "copy_in";
+export type UserActionName =
+    | "remove"
+    | "disable"
+    | "enable"
+    | "replicate_template"
+    | "replicate_table"
+    | "copy_in_user";
 
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
     openSettings: () => void;

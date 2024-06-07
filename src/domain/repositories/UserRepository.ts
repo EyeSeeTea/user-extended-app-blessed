@@ -8,6 +8,7 @@ import { User } from "../entities/User";
 export interface UserRepository {
     getCurrent(): FutureData<User>;
     list(options: ListOptions): FutureData<PaginatedResponse<User>>;
+    listAll(options: ListOptions): FutureData<User[]>;
     listAllIds(options: ListOptions): FutureData<string[]>;
     getByIds(ids: string[]): FutureData<User[]>;
     save(users: User[]): FutureData<MetadataResponse>;
@@ -31,3 +32,11 @@ export interface ListOptions {
 export type ListFilterType = "in" | "eq";
 export type ListFilters = Record<string, [ListFilterType, string[]]>;
 export type UpdateStrategy = "replace" | "merge";
+
+export type AccessElements = {
+    userGroups: boolean;
+    userRoles: boolean;
+    dataViewOrganisationUnits: boolean;
+    organisationUnits: boolean;
+};
+export type AccessElementsKeys = keyof AccessElements;

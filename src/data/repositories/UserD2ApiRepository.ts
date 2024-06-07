@@ -199,6 +199,24 @@ export class UserD2ApiRepository implements UserRepository {
         return userData$.map(({ objects }) => objects);
     }
 
+    public listAll(
+        options: ListOptions,
+        state: { initialPage: number; users: User[] } = { initialPage: 1, users: [] }
+    ): FutureData<User[]> {
+        const { initialPage, users } = state;
+        return this.list({ ...options, pageSize: 100, page: initialPage }).flatMap(({ pager, objects }) => {
+            const newUsers = [...users, ...objects];
+            if (pager.page >= pager.pageCount) {
+                return Future.success(newUsers);
+            } else {
+                return this.listAll(options, {
+                    initialPage: initialPage + 1,
+                    users: newUsers,
+                });
+            }
+        });
+    }
+
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
         const validations = usersToSave.map(user => ApiUserModel.decode(this.toApiUser(user)));
         const users = _.compact(validations.map(either => either.toMaybe().extract()));

@@ -4,7 +4,6 @@ import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
-import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import ImportExport from "../components/ImportExport.component";
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
@@ -223,7 +222,7 @@ export class ListHybrid extends React.Component {
     _onAction = async (ids, action) => {
         if (action === "replicate_table" || action === "replicate_template") {
             this.setAssignState("replicateUser", { user: ids[0], open: true, action });
-        } else if (action === "copy_in") {
+        } else if (action === "copy_in_user") {
             this.setAssignState("copyUsers", { users: ids, open: true, action });
         }
     };
@@ -231,7 +230,7 @@ export class ListHybrid extends React.Component {
     render() {
         const { d2 } = this.context;
 
-        const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
+        const { replicateUser, listFilterOptions, importUsers, settings, settingsVisible } = this.state;
 
         return (
             <div>
@@ -263,19 +262,6 @@ export class ListHybrid extends React.Component {
                         </UserListTable>
                     </div>
                 </div>
-
-                {copyUsers.open ? (
-                    <CopyInUserDialog
-                        user={copyUsers.users}
-                        onSuccess={() => {
-                            this.setState({
-                                reloadTableKey: this.state.reloadTableKey + 1,
-                                copyUsers: { open: false, users: [] },
-                            });
-                        }}
-                        onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
-                    />
-                ) : null}
 
                 {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 
