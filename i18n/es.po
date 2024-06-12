@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-06-06T07:49:29.380Z\n"
+"POT-Creation-Date: 2024-06-12T15:20:23.307Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -75,9 +75,6 @@ msgstr "Creado por"
 msgid "Last modified by"
 msgstr ""
 
-msgid "created by"
-msgstr ""
-
 msgid "Copy to clipboard"
 msgstr "Copiar"
 
@@ -148,8 +145,9 @@ msgstr ""
 msgid "OU Capture"
 msgstr ""
 
-msgid "Type"
-msgstr ""
+#, fuzzy
+msgid "Import/Export"
+msgstr "Importar"
 
 msgid "Import"
 msgstr "Importar"
@@ -316,21 +314,6 @@ msgstr ""
 
 msgid "Last updated"
 msgstr "Última actualización"
-
-msgid "Last login"
-msgstr "Última conexión"
-
-msgid "ID"
-msgstr ""
-
-msgid "API URL"
-msgstr ""
-
-msgid "Roles"
-msgstr "Roles"
-
-msgid "Groups"
-msgstr "Grupos"
 
 msgid "OU Output"
 msgstr ""
@@ -511,15 +494,3 @@ msgstr "Abrir en Administración de usuarios"
 
 msgid " and {{overflow}} more..."
 msgstr " y {{overflow}} más..."
-
-#, fuzzy
-#~ msgid "OUSearch"
-#~ msgstr "Buscar"
-
-#, fuzzy
-#~ msgid "created by"
-#~ msgstr "Creado por"
-
-#, fuzzy
-#~ msgid "Last modified by"
-#~ msgstr "Última actualización hecha por"
