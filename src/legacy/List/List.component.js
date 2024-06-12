@@ -223,13 +223,13 @@ export class ListHybrid extends React.Component {
     _onAction = async (ids, action) => {
         if (action === "replicate_table" || action === "replicate_template") {
             this.setAssignState("replicateUser", { user: ids[0], open: true, action });
-        } else if (action === "copy_in") {
+        } else if (action === "copy_in_user") {
             this.setAssignState("copyUsers", { users: ids, open: true, action });
         }
     };
 
     render() {
-        const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
+        const { replicateUser, listFilterOptions, importUsers, settings, settingsVisible } = this.state;
 
         return (
             <div>
@@ -262,19 +262,6 @@ export class ListHybrid extends React.Component {
                         </UserListTable>
                     </div>
                 </div>
-
-                {copyUsers.open ? (
-                    <CopyInUserDialog
-                        user={copyUsers.users}
-                        onSuccess={() => {
-                            this.setState({
-                                reloadTableKey: this.state.reloadTableKey + 1,
-                                copyUsers: { open: false, users: [] },
-                            });
-                        }}
-                        onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
-                    />
-                ) : null}
 
                 {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 

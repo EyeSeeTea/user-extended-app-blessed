@@ -32,3 +32,11 @@ export interface ListOptions {
 export type ListFilterType = "in" | "eq";
 export type ListFilters = Record<string, [ListFilterType, string[]]>;
 export type UpdateStrategy = "replace" | "merge";
+
+export type AccessElements = {
+    userGroups: boolean;
+    userRoles: boolean;
+    dataViewOrganisationUnits: boolean;
+    organisationUnits: boolean;
+};
+export type AccessElementsKeys = keyof AccessElements;
