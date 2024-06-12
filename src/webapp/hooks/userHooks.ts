@@ -141,10 +141,17 @@ export const useExportUsers = (props: UseExportUsersProps) => {
     const loading = useLoading();
 
     const exportUsers = React.useCallback(
-        (name: string, format: AllowedExportFormat, isEmptyTemplate = false) => {
+        (name: string, format: AllowedExportFormat, isEmptyTemplate?: boolean) => {
             loading.show();
 
-            const exportOptions = { name, columns, filterOptions, format, orgUnitsField, isEmptyTemplate };
+            const exportOptions = {
+                name,
+                columns,
+                filterOptions,
+                format,
+                orgUnitsField,
+                isEmptyTemplate: isEmptyTemplate || false,
+            };
             return compositionRoot.users.export(exportOptions).run(
                 ({ blob, filename }) => {
                     FileSaver.saveAs(blob, filename);
