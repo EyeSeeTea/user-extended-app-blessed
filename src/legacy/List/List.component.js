@@ -4,7 +4,6 @@ import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
-import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import { ImportExport } from "../../webapp/components/import-export/ImportExport";
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
