@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
 "POT-Creation-Date: 2024-06-06T07:49:29.380Z\n"
-"PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
+º"PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -44,12 +44,6 @@ msgstr "Columnas a mostrar en tabla"
 msgid "Column"
 msgstr "Columna"
 
-msgid "Replace"
-msgstr ""
-
-msgid "Merge"
-msgstr ""
-
 #, fuzzy
 msgid "Copy in user: {{user}}"
 msgstr "Copiar a usuario"
@@ -60,11 +54,18 @@ msgstr ""
 msgid "Select at least one user"
 msgstr ""
 
-msgid "Bulk update strategy: {{strategy}}"
+#, fuzzy
+msgid "Bulk update strategy: "
+msgstr "Estrategia de actualización: "
+
+msgid "Merge"
 msgstr ""
 
-msgid "Search by name"
+msgid "Replace"
 msgstr ""
+
+msgid "Search"
+msgstr "Buscar"
 
 msgid "User Groups"
 msgstr ""
@@ -132,14 +133,14 @@ msgstr "Guardando usuarios"
 msgid "Update strategy: "
 msgstr "Estrategia de actualización: "
 
-msgid "Search"
-msgstr "Buscar"
-
 msgid "Assign roles to {{usernames}}"
 msgstr "Asignar roles a {{usernames}}"
 
 msgid "Assign groups to {{usernames}}"
 msgstr "Asignar grupos a {{usernames}}"
+
+msgid "Bulk update strategy: {{strategy}}"
+msgstr ""
 
 msgid "Back"
 msgstr "Volver"
