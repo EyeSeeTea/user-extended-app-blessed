@@ -17,7 +17,6 @@ export class CopyInUserUseCase {
                 return this.saveUsers(usersToSave);
             });
 
-            // Update batch of 10 users
             return Future.sequential($requests).toVoid();
         });
     }
