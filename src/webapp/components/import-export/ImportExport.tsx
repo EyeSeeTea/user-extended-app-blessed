@@ -11,6 +11,7 @@ import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar, useLoading } from "@eyeseetea/d2-ui-components";
 import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
 import { useExportUsers } from "../../hooks/userHooks";
+import Settings from "../../../legacy/models/settings";
 
 export const ImportExport: React.FC<ImportExportProps> = props => {
     const { d2 } = useAppContext();
@@ -102,5 +103,5 @@ export type ImportExportProps = {
     filterOptions: FilterOption;
     onImport: (result: any) => void;
     maxUsers: number;
-    settings: Record<string, any>;
+    settings: Settings;
 };
