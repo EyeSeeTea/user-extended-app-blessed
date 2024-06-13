@@ -110,12 +110,6 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
-msgid "Replace"
-msgstr ""
-
-msgid "Merge"
-msgstr ""
-
 msgid "Copy in user: {{user}}"
 msgstr ""
 
@@ -125,10 +119,16 @@ msgstr ""
 msgid "Select at least one user"
 msgstr ""
 
-msgid "Bulk update strategy: {{strategy}}"
+msgid "Bulk update strategy: "
 msgstr ""
 
-msgid "Search by name"
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
 msgstr ""
 
 msgid "User Groups"
@@ -200,13 +200,13 @@ msgstr ""
 msgid "Update strategy: "
 msgstr ""
 
-msgid "Search"
-msgstr ""
-
 msgid "Assign roles to {{usernames}}"
 msgstr ""
 
 msgid "Assign groups to {{usernames}}"
+msgstr ""
+
+msgid "Bulk update strategy: {{strategy}}"
 msgstr ""
 
 msgid "Back"
