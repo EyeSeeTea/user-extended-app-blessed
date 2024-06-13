@@ -6,7 +6,6 @@ import i18n from "../../locales";
 import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { ListOptions, UserRepository } from "../repositories/UserRepository";
-import { UseCase } from "../../CompositionRoot";
 import { OrgUnitKey } from "../entities/OrgUnit";
 
 const fieldSplitChar = "||";
@@ -36,7 +35,7 @@ const columnNameFromPropertyMapping = {
     lastModifiedBy: i18n.t("Last modified by"),
 };
 
-export class ExportUsersUseCase implements UseCase {
+export class ExportUsersUseCase {
     constructor(private userRepository: UserRepository) {}
 
     public execute({
