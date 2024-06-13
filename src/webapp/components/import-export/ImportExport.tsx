@@ -7,9 +7,8 @@ import ImportIcon from "@material-ui/icons/ArrowUpward";
 import ExportIcon from "@material-ui/icons/ArrowDownward";
 import fileDialog from "file-dialog";
 import { importFromCsv, importFromJson } from "../../../legacy/models/userHelpers";
-import ModalLoadingMask from "../../../legacy/components/ModalLoadingMask.component";
 import { useAppContext } from "../../contexts/app-context";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
+import { useSnackbar, useLoading } from "@eyeseetea/d2-ui-components";
 import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
 import { useExportUsers } from "../../hooks/userHooks";
 
@@ -17,9 +16,9 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
     const { d2 } = useAppContext();
     const { columns, filterOptions, onImport, maxUsers, settings } = props;
     const snackbar = useSnackbar();
+    const loading = useLoading();
     const [isMenuOpen, setMenuOpen] = React.useState(false);
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-    const [isProcessing, setProcessing] = React.useState(false);
 
     const openMenu = (event: React.MouseEvent<HTMLElement>) => {
         setMenuOpen(true);
@@ -41,7 +40,7 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
     const importFromFile = () => {
         fileDialog({ accept: ["text/csv", "application/json"] })
             .then((files: FileList) => {
-                setProcessing(true);
+                loading.show(true);
                 const file = files[0];
                 if (!file) return;
                 if (file.type === "text/csv") {
@@ -54,7 +53,7 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
             .catch(err => snackbar.error(err.toString()))
             .finally(() => {
                 closeMenu();
-                setProcessing(false);
+                loading.hide();
             });
     };
 
@@ -63,8 +62,6 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
             <IconButton onClick={openMenu} tooltipPosition="bottom-left" tooltip={i18n.t("Import/Export")}>
                 <ImportExportIcon />
             </IconButton>
-
-            {isProcessing && <ModalLoadingMask />}
 
             <Popover
                 open={isMenuOpen}
