@@ -9,6 +9,7 @@ import i18n from "../../locales";
 import { AllowedExportFormat, ColumnMappingKeys } from "../../domain/usecases/ExportUsersUseCase";
 import FileSaver from "file-saver";
 import { OrgUnitKey } from "../../domain/entities/OrgUnit";
+import { Maybe } from "../../types/utils";
 
 type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
 type UseExportUsersProps = {
@@ -141,7 +142,7 @@ export const useExportUsers = (props: UseExportUsersProps) => {
     const loading = useLoading();
 
     const exportUsers = React.useCallback(
-        (name: string, format: AllowedExportFormat, isEmptyTemplate?: boolean) => {
+        (name: string, format: AllowedExportFormat, isEmptyTemplate: boolean) => {
             loading.show();
 
             const exportOptions = {
@@ -150,7 +151,7 @@ export const useExportUsers = (props: UseExportUsersProps) => {
                 filterOptions,
                 format,
                 orgUnitsField,
-                isEmptyTemplate: isEmptyTemplate || false,
+                isEmptyTemplate,
             };
             return compositionRoot.users.export(exportOptions).run(
                 ({ blob, filename }) => {
@@ -169,8 +170,8 @@ export const useExportUsers = (props: UseExportUsersProps) => {
     );
 
     return {
-        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv"), [exportUsers]),
-        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json"), [exportUsers]),
+        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv", false), [exportUsers]),
+        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json", false), [exportUsers]),
         exportEmptyTemplate: React.useCallback(() => exportUsers("empty-user-template", "csv", true), [exportUsers]),
     };
 };
