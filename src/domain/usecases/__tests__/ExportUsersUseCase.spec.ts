@@ -28,6 +28,7 @@ describe("ExportUsersUseCase", () => {
             format: "csv",
             orgUnitsField: "code",
             isEmptyTemplate: true,
+            filterOptions: {},
         };
 
         const { blob, filename } = await exportUsersUseCase.execute(options).toPromise();
@@ -46,6 +47,8 @@ describe("ExportUsersUseCase", () => {
             columns: columnsAvailableToExport,
             format: "csv",
             orgUnitsField: "code",
+            filterOptions: {},
+            isEmptyTemplate: false,
         };
 
         const { blob, filename } = await exportUsersUseCase.execute(options).toPromise();
@@ -64,6 +67,8 @@ describe("ExportUsersUseCase", () => {
             columns: columnsAvailableToExport,
             format: "json",
             orgUnitsField: "code",
+            filterOptions: {},
+            isEmptyTemplate: false,
         };
 
         const { blob, filename } = await exportUsersUseCase.execute(options).toPromise();
