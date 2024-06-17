@@ -2,6 +2,7 @@ import { Instance } from "./data/entities/Instance";
 import { InstanceD2ApiRepository } from "./data/repositories/InstanceD2ApiRepository";
 import { MetadataD2ApiRepository } from "./data/repositories/MetadataD2ApiRepository";
 import { UserD2ApiRepository } from "./data/repositories/UserD2ApiRepository";
+import { ExportUsersUseCase } from "./domain/usecases/ExportUsersUseCase";
 import { GetColumnsUseCase } from "./domain/usecases/GetColumnsUseCase";
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceLocalesUseCase } from "./domain/usecases/GetInstanceLocalesUseCase";
@@ -43,6 +44,7 @@ export function getCompositionRoot(instance: Instance) {
             saveColumns: new SaveColumnsUseCase(userRepository),
             remove: new RemoveUsersUseCase(userRepository),
             saveOrgUnits: new SaveUserOrgUnitUseCase(userRepository),
+            export: new ExportUsersUseCase(userRepository),
             copyInUser: new CopyInUserUseCase(userRepository),
         }),
         metadata: getExecute({

@@ -5,8 +5,74 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-06-06T07:49:29.380Z\n"
-"PO-Revision-Date: 2024-06-06T07:49:29.380Z\n"
+"POT-Creation-Date: 2024-06-12T15:20:23.307Z\n"
+"PO-Revision-Date: 2024-06-12T15:20:23.307Z\n"
+
+msgid "ID"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Surname"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Phone number"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "API URL"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "OUCapture"
+msgstr ""
+
+msgid "OUOutput"
+msgstr ""
+
+msgid "OUSearch"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Open ID"
+msgstr ""
+
+msgid "Created by"
+msgstr ""
+
+msgid "Last modified by"
+msgstr ""
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -77,13 +143,22 @@ msgstr ""
 msgid "OU Capture"
 msgstr ""
 
+msgid "Import/Export"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Export to CSV"
+msgstr ""
+
+msgid "Export to JSON"
+msgstr ""
+
+msgid "Export empty template"
+msgstr ""
+
 msgid "Type"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Updated"
 msgstr ""
 
 msgid "Deleted"
@@ -108,12 +183,6 @@ msgid "Ok"
 msgstr ""
 
 msgid "Users"
-msgstr ""
-
-msgid "Import"
-msgstr ""
-
-msgid "Status"
 msgstr ""
 
 msgid "Summary"
@@ -191,22 +260,7 @@ msgstr ""
 msgid "First Name"
 msgstr ""
 
-msgid "Name"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
 msgid "Account expiration date"
-msgstr ""
-
-msgid "Surname"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Email"
 msgstr ""
 
 msgid "Phone Number"
@@ -227,9 +281,6 @@ msgstr ""
 msgid "Twitter"
 msgstr ""
 
-msgid "Disabled"
-msgstr ""
-
 msgid "External authentication only (OpenID or LDAP)"
 msgstr ""
 
@@ -240,9 +291,6 @@ msgid "Data View Organisation Units"
 msgstr ""
 
 msgid "Search Organisation Units"
-msgstr ""
-
-msgid "Open ID"
 msgstr ""
 
 msgid "LDAP identifier"
@@ -258,21 +306,6 @@ msgid "Api URL"
 msgstr ""
 
 msgid "Last updated"
-msgstr ""
-
-msgid "Last login"
-msgstr ""
-
-msgid "ID"
-msgstr ""
-
-msgid "API URL"
-msgstr ""
-
-msgid "Roles"
-msgstr ""
-
-msgid "Groups"
 msgstr ""
 
 msgid "OU Output"
@@ -338,12 +371,6 @@ msgstr ""
 msgid "User ID"
 msgstr ""
 
-msgid "First name"
-msgstr ""
-
-msgid "Phone number"
-msgstr ""
-
 msgid "Data capture organisation units"
 msgstr ""
 
@@ -377,6 +404,9 @@ msgid "Confirm"
 msgstr ""
 
 msgid "Saving..."
+msgstr ""
+
+msgid "Table exported: {{filename}}"
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"

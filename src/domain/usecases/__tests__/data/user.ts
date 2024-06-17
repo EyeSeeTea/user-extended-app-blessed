@@ -31,6 +31,7 @@ export const sourceUser: User = {
     ],
     organisationUnits: [
         {
+            code: "OU_525",
             name: "Sierra Leone",
             id: "ImspTQPwCqd",
             path: ["ImspTQPwCqd"],
@@ -38,6 +39,7 @@ export const sourceUser: User = {
     ],
     dataViewOrganisationUnits: [
         {
+            code: "OU_525",
             name: "Sierra Leone",
             id: "ImspTQPwCqd",
             path: ["ImspTQPwCqd"],
@@ -76,6 +78,7 @@ export const targetUser: User = {
     ],
     organisationUnits: [
         {
+            code: "OU_666",
             name: "Ngelehun CHC",
             id: "DiszpKrYNg8",
             path: ["ImspTQPwCqd", "O6uvpzGd5pu", "YuQRtpLP10I", "DiszpKrYNg8"],
@@ -83,6 +86,7 @@ export const targetUser: User = {
     ],
     dataViewOrganisationUnits: [
         {
+            code: "OU_333",
             name: "Badjia",
             id: "YuQRtpLP10I",
             path: ["ImspTQPwCqd", "O6uvpzGd5pu", "YuQRtpLP10I"],

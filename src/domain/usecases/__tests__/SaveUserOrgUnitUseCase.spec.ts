@@ -11,11 +11,13 @@ import { sourceUser, targetUser } from "./data/user";
 const selectedUsers: User[] = [sourceUser, targetUser];
 const selectedOrgUnits: OrgUnit[] = [
     {
+        code: "OU_525",
         name: "Sierra Leone",
         id: "ImspTQPwCqd",
         path: ["ImspTQPwCqd"],
     },
     {
+        code: "OU_111",
         name: "Other Org Unit",
         id: "Oou",
         path: ["Oou"],
@@ -79,7 +81,7 @@ function givenOptionsToMerge(): SaveUserOrgUnitOptions {
 function givenExpectedUsersReplaced(): User[] {
     return selectedUsers.map(user => ({
         ...user,
-        organisationUnits: selectedOrgUnits.map(({ id }) => ({ id, name: "", path: [] })),
+        organisationUnits: selectedOrgUnits.map(({ id }) => ({ id, name: "", code: "", path: [] })),
     }));
 }
 
@@ -87,7 +89,7 @@ function givenExpectedUsersMerged(): User[] {
     return selectedUsers.map(user => ({
         ...user,
         organisationUnits: _(selectedOrgUnits)
-            .map<OrgUnit>(({ id }) => ({ id, name: "", path: [] }))
+            .map<OrgUnit>(({ id }) => ({ id, name: "", code: "", path: [] }))
             .unionBy(user.organisationUnits, "id")
             .value(),
     }));

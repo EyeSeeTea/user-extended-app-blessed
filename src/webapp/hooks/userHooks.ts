@@ -2,12 +2,23 @@ import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import { Id } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { UpdateStrategy, AccessElements } from "../../domain/repositories/UserRepository";
+import { UpdateStrategy, AccessElements, ListOptions } from "../../domain/repositories/UserRepository";
 import { SaveUserOrgUnitOptions } from "../../domain/usecases/SaveUserOrgUnitUseCase";
 import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
+import { AllowedExportFormat, ColumnMappingKeys } from "../../domain/usecases/ExportUsersUseCase";
+import FileSaver from "file-saver";
+import { OrgUnitKey } from "../../domain/entities/OrgUnit";
+import { Maybe } from "../../types/utils";
 
 type UseSaveUsersOrgUnitsProps = { onSuccess: () => void };
+type UseExportUsersProps = {
+    onSuccess: () => void;
+    columns: ColumnMappingKeys[];
+    filterOptions: ListOptions;
+    orgUnitsField: OrgUnitKey;
+};
+
 type UseCopyInUserProps = { onSuccess: () => void };
 
 export function useGetUsersByIds(ids: Id[]) {
@@ -122,3 +133,45 @@ export function useCopyInUser(props: UseCopyInUserProps) {
 
     return { copyInUser };
 }
+
+export const useExportUsers = (props: UseExportUsersProps) => {
+    const { onSuccess, columns, filterOptions, orgUnitsField } = props;
+
+    const { compositionRoot } = useAppContext();
+    const snackbar = useSnackbar();
+    const loading = useLoading();
+
+    const exportUsers = React.useCallback(
+        (name: string, format: AllowedExportFormat, isEmptyTemplate: boolean) => {
+            loading.show();
+
+            const exportOptions = {
+                name,
+                columns,
+                filterOptions,
+                format,
+                orgUnitsField,
+                isEmptyTemplate,
+            };
+            return compositionRoot.users.export(exportOptions).run(
+                ({ blob, filename }) => {
+                    FileSaver.saveAs(blob, filename);
+                    onSuccess();
+                    snackbar.success(i18n.t("Table exported: {{filename}}", { filename, nsSeparator: false }));
+                    loading.hide();
+                },
+                error => {
+                    snackbar.error(error);
+                    loading.hide();
+                }
+            );
+        },
+        [columns, compositionRoot.users, filterOptions, onSuccess, snackbar, loading, orgUnitsField]
+    );
+
+    return {
+        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv", false), [exportUsers]),
+        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json", false), [exportUsers]),
+        exportEmptyTemplate: React.useCallback(() => exportUsers("empty-user-template", "csv", true), [exportUsers]),
+    };
+};

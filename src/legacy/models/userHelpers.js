@@ -1,11 +1,8 @@
 import _ from "lodash";
-import moment from "moment";
 import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
-import { getUserList } from "./userList";
-import { columns } from "../List/list.store";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -103,24 +100,6 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     return _.fromPairs(pairs);
 }
 
-function getColumnNameFromProperty(property) {
-    return columnNameFromPropertyMapping[property] || property;
-}
-
-function formatDate(stringDate) {
-    return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
-}
-
-function namesFromCollection(collection, field, toArray) {
-    const namesArray = _(collection?.toArray ? collection.toArray() : collection).map(field);
-
-    if (toArray) {
-        return namesArray;
-    } else {
-        return namesArray.join(fieldSplitChar);
-    }
-}
-
 function collectionFromNames(user, rowIndex, field, objectsByName) {
     const value = user[field];
     const names = (value || "")
@@ -152,26 +131,6 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     };
 
     return { objects, warnings, info };
-}
-
-function getPlainUser(user, { orgUnitsField }, toArray) {
-    const userCredentials = user.userCredentials || {};
-
-    return {
-        ...user,
-        username: userCredentials.username,
-        lastUpdated: formatDate(user.lastUpdated),
-        lastLogin: formatDate(userCredentials.lastLogin),
-        created: formatDate(user.created),
-        userRoles: namesFromCollection(userCredentials.userRoles, "displayName", toArray),
-        userGroups: namesFromCollection(user.userGroups, "displayName", toArray),
-        organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
-        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
-        searchOrganisationsUnits: namesFromCollection(user.teiSearchOrganisationUnits, orgUnitsField, toArray),
-        disabled: userCredentials.disabled,
-        openId: userCredentials.openId,
-        phoneNumber: user.phoneNumber,
-    };
 }
 
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
@@ -445,37 +404,6 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
     }
 }
 
-/* Get users from Dhis2 API and export given columns to a CSV or JSON string */
-async function exportUsers(d2, columns, filterOptions, { orgUnitsField }, exportToJSON) {
-    const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
-    const { users } = await getUserList(d2, filters, listOptions);
-
-    if (exportToJSON) {
-        const userRows = users.map(user => _.pick(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
-        return JSON.stringify(userRows, null, 4);
-    } else {
-        const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
-        const header = columns.map(getColumnNameFromProperty);
-        const table = [header, ...userRows];
-
-        return Papa.unparse(table);
-    }
-}
-
-async function exportTemplateToCsv() {
-    const columnsAdded = ["password"];
-    const columnsRemoved = ["lastUpdated", "created", "lastLogin"];
-    const columnKeysToExport = _(columns)
-        .map(column => column.name)
-        .difference(columnsRemoved)
-        .union(columnsAdded)
-        .value();
-    const header = _(columnKeysToExport).map(getColumnNameFromProperty).compact().value();
-    const table = [header];
-
-    return Papa.unparse(table);
-}
-
 async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
     return new Promise((resolve, reject) => {
         Papa.parse(file, {
@@ -592,9 +520,7 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
 }
 
 export {
-    exportTemplateToCsv,
     importFromCsv,
-    exportUsers,
     importFromJson,
     updateUsers,
     saveUsers,

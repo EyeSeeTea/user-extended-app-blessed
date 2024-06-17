@@ -65,7 +65,7 @@ export class SaveUserOrgUnitUseCase {
     }
 
     private createOrgUnit(id: Id): OrgUnit {
-        return { id, name: "", path: [] };
+        return { id, name: "", code: "", path: [] };
     }
 }
 
