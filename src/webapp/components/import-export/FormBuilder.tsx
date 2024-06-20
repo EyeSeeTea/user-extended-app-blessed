@@ -1,6 +1,8 @@
+// @ts-nocheck
 import CircularProgress from "material-ui/CircularProgress";
 import React, { useEffect, useCallback } from "react";
 import AsyncValidatorRunner from "../../../legacy/components/AsyncValidatorRunner";
+import { FormControl } from "@material-ui/core";
 
 export const FormBuilder: React.FC<FormBuilderProps> = props => {
     const {
@@ -229,10 +231,9 @@ export const FormBuilder: React.FC<FormBuilderProps> = props => {
 
     /**
      * Render the form fields.
-     *
-     * @returns {*} An array containing markup for each form field
      */
     const renderFields = useCallback(() => {
+        console.log("rendering fields", propsFields);
         const styles = {
             field: {
                 position: "relative",
@@ -244,6 +245,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = props => {
         };
 
         return propsFields.map(field => {
+            // console.log("rendering field", field);
             const { errorTextProp, changeEvent, ...props } = field.props || {};
             const fieldState = fields && fields[field.name] ? fields[field.name] : undefined;
 
@@ -268,9 +270,9 @@ export const FormBuilder: React.FC<FormBuilderProps> = props => {
                           setForm(stateClone.form);
                       }
                     : undefined;
-
             const errorText =
                 fieldState && fieldState.validating ? field.validatingLabelText || validatingLabelText : errorTextProp;
+            // const FieldComponent = <field.component></field.component>;
 
             return (
                 <FieldWrapperComponent key={field.name} style={Object.assign({}, styles.field, fieldWrapStyle)}>
@@ -278,34 +280,44 @@ export const FormBuilder: React.FC<FormBuilderProps> = props => {
                         <CircularProgress mode="indeterminate" size={20} style={styles.progress} />
                     ) : undefined}
                     {fieldState ? (
-                        <field.component
+                        // <FieldComponent
+                        //     value={fieldState.value}
+                        //     onChange={changeEvent && changeEvent === "onBlur" ? onBlurChangeHandler : changeHandler}
+                        //     onBlur={changeEvent && changeEvent === "onBlur" ? changeHandler : undefined}
+                        //     errorStyle={fieldState.validating ? styles.validatingErrorStyle : undefined}
+                        //     errorText={fieldState.valid ? errorText : fieldState.error}
+                        //     {...props}
+                        // />
+                        <FormControl
+                            component={field.component}
                             value={fieldState.value}
                             onChange={changeEvent && changeEvent === "onBlur" ? onBlurChangeHandler : changeHandler}
                             onBlur={changeEvent && changeEvent === "onBlur" ? changeHandler : undefined}
                             errorStyle={fieldState.validating ? styles.validatingErrorStyle : undefined}
                             errorText={fieldState.valid ? errorText : fieldState.error}
                             {...props}
+                            // style={fieldState.validating ? styles.validatingErrorStyle : undefined}
+                            // helperText={fieldState.valid ? errorText : fieldState.error}
+                            // error={fieldState.valid ? errorText : fieldState.error}
                         />
                     ) : undefined}
                 </FieldWrapperComponent>
             );
         });
     }, [
-        FieldWrapperComponent,
-        fieldWrapStyle,
+        // FieldWrapperComponent,
+        // fieldWrapStyle,
         fields,
-        form,
-        propsFields,
+        // form,
+        // propsFields,
         updateFieldState,
-        validateField,
-        validatingLabelText,
-        validatingProgressStyle,
+        // validateField,
+        // validatingLabelText,
+        // validatingProgressStyle,
     ]);
 
     /**
      * Render the component
-     *
-     * @returns {XML}
      */
     const render = () => {
         return (
@@ -462,34 +474,40 @@ export const FormBuilder: React.FC<FormBuilderProps> = props => {
 type FormBuilderProps = {
     id: any;
     fields: FieldsProp[];
-    validatingLabelText: string;
-    validatingProgressStyle: Record<string, any>;
+    validatingLabelText?: string;
+    validatingProgressStyle?: Record<string, any>;
     onUpdateField: Function;
     onUpdateFormStatus: Function;
-    style: Record<string, any>;
-    fieldWrapStyle: Record<string, any>;
-    fieldWrapper: React.ElementType | keyof JSX.IntrinsicElements;
-    mainWrapper: React.ElementType | keyof JSX.IntrinsicElements;
-    validateOnRender: boolean;
-    validateOnInitialRender: boolean;
+    style?: Record<string, any>;
+    fieldWrapStyle?: Record<string, any>;
+    fieldWrapper: React.ElementType;
+    mainWrapper: React.ElementType;
+    validateOnRender?: boolean;
+    validateOnInitialRender?: boolean;
     validateFullFormOnChanges: boolean;
     asyncValidationRunner?: AsyncValidatorRunner;
 };
 
-type FieldsProp = {
+export type FieldsProp = {
     name: keyof Fields;
-    value: any;
+    value?: any;
     component: React.ElementType | keyof JSX.IntrinsicElements;
     props: {
-        errorTextProp: string;
-        changeEvent: "onChange" | "onBlur";
+        name: keyof Fields;
+        errorTextProp?: string;
+        defaultToggled?: boolean;
+        changeEvent?: "onChange" | "onBlur";
+        onChange?: Function;
+        onToggle?: Function;
+        checked?: boolean;
+        style?: Record<string, any>;
     };
     validators: {
         validator: Function;
         message: string;
     }[];
-    asyncValidators: Function[];
-    validatingLabelText: string;
+    asyncValidators?: Function[];
+    validatingLabelText?: string;
 };
 
 type Field = {
@@ -500,7 +518,7 @@ type Field = {
     error: string | undefined;
 };
 
-type Fields = {
+export type Fields = {
     username: Field;
     password: Field;
     firstName: Field;

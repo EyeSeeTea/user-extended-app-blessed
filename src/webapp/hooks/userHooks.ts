@@ -113,3 +113,22 @@ export const useExportUsers = (props: UseExportUsersProps) => {
         exportEmptyTemplate: React.useCallback(() => exportUsers("empty-user-template", "csv", true), [exportUsers]),
     };
 };
+
+export function useGetAllUsers() {
+    const { compositionRoot } = useAppContext();
+    const [users, setUsers] = React.useState<User[]>();
+    const snackbar = useSnackbar();
+
+    React.useMemo(() => {
+        compositionRoot.users.listAll({}).run(
+            allUsers => {
+                setUsers(allUsers);
+            },
+            error => {
+                snackbar.error(error);
+            }
+        );
+    }, [compositionRoot, snackbar]);
+
+    return { users };
+}
