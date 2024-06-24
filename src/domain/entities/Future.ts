@@ -109,6 +109,15 @@ export class Future<E, D> {
         return Future.sequential(futures).map(listOfValues => _.flatten(listOfValues));
     }
 
+    static fromPromise<Data>(promise: Promise<Data>): Future<string, Data> {
+        return Future.fromComputation((resolve, reject) => {
+            promise.then(resolve).catch(err => {
+                return reject(err.toString());
+            });
+            return () => {};
+        });
+    }
+
     toVoid(): Future<E, void> {
         return this.map(() => undefined);
     }

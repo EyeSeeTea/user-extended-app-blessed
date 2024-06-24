@@ -3,6 +3,11 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
+import { GLOBAL_ORG_UNIT_CODE, setupLogger } from "../../utils/logger";
+import { buildUserWithoutPassword } from "../../data/utils";
+import { isDev } from "../..";
+import { appConfig } from "../../app-config";
+import { Namespaces } from "../../data/clients/storage/Namespaces";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -254,7 +259,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     }
 }
 
-function parseResponse(response, payload) {
+function parseResponse(response, payload, logger) {
     if (!response) {
         return { success: false };
     } else if (response.status !== "OK") {
@@ -265,8 +270,15 @@ function parseResponse(response, payload) {
             )
         );
         const error = _(errors).flatten().flatten().uniq().join("\n");
+        if (logger) {
+            logger.error(error);
+        }
         return { success: false, response, error, payload };
     } else {
+        if (logger) {
+            logger.success("Users saved");
+            logger.success(JSON.stringify(response));
+        }
         return { success: true, response, payload };
     }
 }
@@ -349,10 +361,10 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
     }));
 }
 
-function postMetadata(api, payload) {
+function postMetadata(api, payload, logger) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
+        .then(res => parseResponse(res, payload, logger))
         .catch(error => ({
             success: false,
             payload,
@@ -374,21 +386,46 @@ async function updateUsers(d2, users, mapper) {
     return postMetadata(api, payload);
 }
 
-async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate) {
+async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate, d2Api) {
     const userGroupsToSave = await getUserGroupsToSave(d2, api, users, existingUsersToUpdate);
     const payload = { users: users, userGroups: userGroupsToSave };
-    return postMetadata(api, payload);
+    let logger;
+    if (d2Api) {
+        logger = await getLogger(d2Api);
+        if (logger) {
+            logger.info("Saving Users");
+            logger.info(JSON.stringify({ users: buildUserWithoutPassword(users), userGroups: userGroupsToSave }));
+        }
+    }
+    return postMetadata(api, payload, logger);
+}
+
+async function getLogger(d2Api) {
+    if (!d2Api) return undefined;
+    const userStore = d2Api.dataStore(appConfig.appKey);
+    const loggerSettings = await userStore.get(Namespaces.LOGGER).getData();
+    const orgUnits = await d2Api.models.organisationUnits
+        .get({ fields: { id: true }, filter: { code: { eq: GLOBAL_ORG_UNIT_CODE } } })
+        .getData();
+    const orgUnitGlobal = orgUnits.objects[0];
+    if (!orgUnitGlobal) return undefined;
+    const logger = await setupLogger(d2Api.baseUrl, {
+        orgUnitId: orgUnitGlobal.id,
+        isDebug: isDev,
+        settings: loggerSettings,
+    });
+    return logger;
 }
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
-async function saveUsers(d2, users) {
+async function saveUsers(d2, users, d2Api) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate);
+    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate, d2Api);
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {

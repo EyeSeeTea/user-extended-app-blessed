@@ -1,18 +1,31 @@
 import React from "react";
 import styled from "styled-components";
-import { Info as InfoIcon } from "@material-ui/icons";
+import { Info as InfoIcon, Settings as SettingsIcon } from "@material-ui/icons";
 import { Link } from "react-router-dom";
 
 interface AboutProps {
+    icon: "about" | "settings";
     visible: boolean;
 }
 
-export const About: React.FC<AboutProps> = React.memo(({ visible }) => {
+const IconComponents = {
+    about: {
+        Component: InfoIcon,
+        path: "/about",
+    },
+    settings: {
+        Component: SettingsIcon,
+        path: "/settings",
+    },
+};
+
+export const About: React.FC<AboutProps> = React.memo(({ icon, visible }) => {
+    const IconDefinition = IconComponents[icon];
     return (
         <>
             {visible && (
-                <AboutButton to="/about">
-                    <InfoIcon fontSize="small" />
+                <AboutButton to={IconDefinition.path}>
+                    <IconDefinition.Component fontSize="small" />
                 </AboutButton>
             )}
         </>
@@ -20,12 +33,9 @@ export const About: React.FC<AboutProps> = React.memo(({ visible }) => {
 });
 
 const AboutButton = styled(Link)`
-    position: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
-    bottom: -3px;
-    right: 140px;
     z-index: 10002;
     background-color: #ff9800;
     color: white;

@@ -1,30 +1,37 @@
 import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
+import { ProgramLogger } from "@eyeseetea/d2-logger";
 import _ from "lodash";
+import { isDev } from "../..";
 import { Future, FutureData } from "../../domain/entities/Future";
+import { LoggerSettings } from "../../domain/entities/LoggerSettings";
 import { OrgUnit } from "../../domain/entities/OrgUnit";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
-import { Id, NamedRef } from "../../domain/entities/Ref";
+import { Id, NamedRef, Ref } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
+import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
+import { GLOBAL_ORG_UNIT_CODE, setupLogger } from "../../utils/logger";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
 import { Instance } from "../entities/Instance";
 import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
-import { chunkRequest, getErrorFromResponse } from "../utils";
+import { buildUserWithoutPassword, chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
     private userStorage: StorageClient;
+    private dataStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
         this.userStorage = new DataStoreStorageClient("user", instance);
+        this.dataStorage = new DataStoreStorageClient("global", instance);
     }
 
     private getLocales(users: User[]): FutureData<User[]> {
@@ -228,21 +235,74 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userIds = users.map(user => user.id);
 
-        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-            return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = _(existingUsers)
-                    .map(existingUser => {
-                        const user = users.find(user => user.id === existingUser.id);
-                        if (!user) return undefined;
-                        return this.buildUsersToSave(existingUser, user);
-                    })
-                    .compact()
-                    .value();
+        return this.getLogger().flatMap(logger => {
+            return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
+                return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
+                    const usersToSend = _(existingUsers)
+                        .map(existingUser => {
+                            const user = users.find(user => user.id === existingUser.id);
+                            if (!user) return undefined;
+                            return this.buildUsersToSave(existingUser, user);
+                        })
+                        .compact()
+                        .value();
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).flatMap(data => {
-                    return this.saveLocales(usersToSave).map(() => data);
+                    this.logMessage(logger, "info", "Saving Users");
+                    this.logMessage(logger, "info", {
+                        users: buildUserWithoutPassword(usersToSend as ApiUser[]),
+                        userGroups,
+                    });
+                    return apiToFuture(
+                        this.api.metadata.post({ users: usersToSend.map(s => ({ ...s, id: "789" })), userGroups })
+                    )
+                        .flatMap(data => {
+                            this.logMessage(logger, "success", "Users saved");
+                            this.logMessage(logger, "success", data);
+                            return this.saveLocales(usersToSave).map(() => data);
+                        })
+                        .flatMapError(error => {
+                            this.logMessage(logger, "error", error);
+                            return Future.error(error);
+                        });
                 });
             });
+        });
+    }
+
+    private logMessage(
+        logger: Maybe<ProgramLogger>,
+        messageType: "success" | "warn" | "info" | "error",
+        message: string | object
+    ): void {
+        if (logger) {
+            logger[messageType](typeof message === "string" ? message : JSON.stringify(message));
+        }
+    }
+
+    private getLogger(): FutureData<Maybe<ProgramLogger>> {
+        return Future.joinObj({
+            loggerSettings: this.dataStorage.getObject<LoggerSettings>(Namespaces.LOGGER),
+            globalOrgUnit: this.getGlobalOrgUnit(),
+        }).flatMap(({ loggerSettings, globalOrgUnit }) => {
+            return Future.fromPromise(
+                setupLogger(this.api.baseUrl, { orgUnitId: globalOrgUnit.id, isDebug: isDev, settings: loggerSettings })
+            ).flatMapError(error => {
+                console.warn(`Setup Logger error: ${error}`);
+                return Future.error(error);
+            });
+        });
+    }
+
+    private getGlobalOrgUnit(): FutureData<Ref> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true },
+                filter: { code: { eq: GLOBAL_ORG_UNIT_CODE } },
+            })
+        ).map(response => {
+            const globalOrgUnit = response.objects[0];
+            if (!globalOrgUnit) throw Error(`Cannot find global org unit with code ${GLOBAL_ORG_UNIT_CODE}`);
+            return { id: globalOrgUnit.id };
         });
     }
 
