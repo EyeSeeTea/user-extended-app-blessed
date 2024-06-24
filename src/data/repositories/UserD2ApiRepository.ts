@@ -252,9 +252,7 @@ export class UserD2ApiRepository implements UserRepository {
                         users: buildUserWithoutPassword(usersToSend as ApiUser[]),
                         userGroups,
                     });
-                    return apiToFuture(
-                        this.api.metadata.post({ users: usersToSend.map(s => ({ ...s, id: "789" })), userGroups })
-                    )
+                    return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups }))
                         .flatMap(data => {
                             this.logMessage(logger, "success", "Users saved");
                             this.logMessage(logger, "success", data);
