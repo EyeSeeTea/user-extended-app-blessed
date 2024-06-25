@@ -1,41 +1,82 @@
-import {
-    FormControl,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Tooltip,
-} from "@material-ui/core";
-// @ts-ignore
-import Validators from "d2-ui/lib/forms/Validators";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
-import { Chip, FontIcon, IconButton, TextField, RaisedButton } from "material-ui";
-import { Switch } from "@material-ui/core";
+import { FontIcon, RaisedButton } from "material-ui";
+import { Toggle } from "material-ui/Toggle";
 
-// @ts-ignore
-import React, { useEffect, useCallback, useMemo, ElementType } from "react";
+import React, { useState, useEffect, useCallback, SetStateAction } from "react";
 import LoadingMask from "../../../legacy/loading-mask/LoadingMask.component";
-import { fieldImportSuffix } from "../../../legacy/models/userHelpers";
-import { toBuilderValidator, validatePassword, validateUsername } from "../../../legacy/utils/validators";
-// import { Fields, FieldsProp } from "./FormBuilder";
-import { Fields, FieldsProp, FormBuilder } from "./FormBuilder";
-// import FormBuilder from "../../../legacy/components/FormBuilder.component";
+import { getExistingUsers } from "../../../legacy/models/userHelpers";
+import { Fields } from "./FormBuilder";
+// import { validateUsername } from "../../../legacy/utils/validators";
 
+import InfoDialog from "../../../legacy/components/InfoDialog";
 import ModalLoadingMask from "../../../legacy/components/ModalLoadingMask.component";
-import MultipleSelector from "../../../legacy/components/MultipleSelector.component";
 import { generateUid } from "../../../utils/uid";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
-import { Id } from "../../../domain/entities/Ref";
 import UserLegacy from "../../../legacy/models/user";
-import { User } from "../../../domain/entities/User";
 import { ApiUser } from "../../../data/repositories/UserD2ApiRepository";
-import { OrderedMap } from "immutable";
-import { OrgUnit } from "../../../domain/entities/OrgUnit";
+import {
+    CheckboxFieldFF,
+    composeValidators,
+    createMaxCharacterLength,
+    createMinCharacterLength,
+    createPattern,
+    hasValue,
+    string,
+} from "@dhis2/ui";
+import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
+import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
+import {
+    TableRow,
+    TextField,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableContainer,
+    Tooltip,
+} from "@material-ui/core";
+// import { Delete, ViewColumn } from "@material-ui/icons";
+import { IconButton, Chip } from "material-ui";
+import { Form, FormSpy, useForm } from "react-final-form";
+import { defaultUser, User } from "../../../domain/entities/User";
+import { ColumnSelectorDialog } from "../column-selector-dialog/ColumnSelectorDialog";
+import { UserFormField, getUserFieldName, userFormFields } from "../user-form/utils";
+import { UserRoleGroupFF } from "../user-form/components/UserRoleGroupFF";
+import { OrgUnitSelectorFF } from "../user-form/components/OrgUnitSelectorFF";
+import { PreviewInputFF } from "../form/fields/PreviewInputFF";
+import { ComponentProps, ComponentType } from "react";
+import { Field, UseFieldConfig } from "react-final-form";
+
+type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<FieldValue> &
+    Omit<ComponentProps<T>, "input" | "meta"> & {
+        name: string;
+        component: T;
+        value?: FieldValue;
+        initialValue?: FieldValue;
+        defaultValue?: FieldValue;
+    };
 
 const styles = {
+    dialogIcons: {
+        float: "right",
+    },
+    dialogTitle: {
+        margin: "0px 0px -1px",
+        padding: "24px 24px 20px",
+        fontsize: 24,
+        fontweight: "400",
+        lineheight: "32px",
+        display: "inline",
+    },
+    overwriteToggle: {
+        float: "left",
+        textalign: "left",
+        width: "33%",
+        marginleft: "20px",
+    },
+    // Table
     tableWrapper: {
         overflow: "visible",
     },
@@ -48,9 +89,6 @@ const styles = {
     addRowButton: {
         margin: 20,
         textAlign: "center" as const,
-    },
-    dialogIcons: {
-        float: "right",
     },
     header: {
         width: 150,
@@ -93,617 +131,491 @@ const styles = {
     },
 };
 
-export const ImportTable: React.FC<ImportTableProps> = React.memo(props => {
+export const ImportDialog: React.FC<ImportTableProps> = props => {
     const {
-        columns,
+        title,
+        usersFromFile,
+        columns: baseUserColumns,
         maxUsers,
+        onSave,
+        onRequestClose,
         templateUser = null,
         settings,
         api,
-        modelValuesByField,
-        existingUsers,
-        orgUnitRoots,
-        users,
-        updateUsers,
-        validateOnRender: validateOnRenderProp,
-        allowOverwrite,
-        // forceRender = _.noop(),
-        existingUsernames,
-        // fieldsInfo,
+        actionText,
+        warnings = [],
     } = props;
 
-    const { d2 } = useAppContext();
-    // console.log("props", props);
+    const { compositionRoot, d2 } = useAppContext();
 
-    // const [existingUsernames, setExistingUsernames] = React.useState<Set<any>>(new Set([]));
-    // const [isLoading, setIsLoading] = React.useState(true);
+    const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});
+    const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
+    const [infoDialog, setInfoDialog] = React.useState<{ title: string; body: string; response: string } | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
     const [isImporting, setIsImporting] = React.useState(false);
-    // const [users, setUsers] = React.useState(usersProp);
-    const [areUsersValid, setAreUsersValid] = React.useState<boolean | null>(null);
-    const [multipleSelector, setMultipleSelector] = React.useState<{
-        user: Partial<User>;
-        field: string;
-        selected: any;
-        options: any;
-    } | null>(null);
-    const [validateOnRender, setValidateOnRender] = React.useState(false);
+    // const [users, setUsers] = React.useState(OrderedMap<Id, Pick<User, keyof Fields>>([]));
+    const [allowOverwrite, setAllowOverwrite] = React.useState(false);
 
-    console.log("users props", { users: users.valueSeq().toJS() });
+    const loading = useLoading();
+    const snackbar = useSnackbar();
+    const [users, setUsers] = useState<User[]>(usersFromFile);
+    const [summary, setSummary] = useState<MetadataResponse[]>();
+    const [columns, setColumns] = useState<string[]>(baseUserColumns);
+    const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
-    const getUsernamesInTable = useCallback(
-        ({ skipId }: { skipId?: Id } = {}): Set<string> => {
-            const usernames = _(users.valueSeq().toJS())
-                .filter((user: User) => user.id !== skipId)
-                // @ts-ignore
-                .map<string>((user: User) => user.username)
-                .compact()
-                .value();
-            return new Set(usernames as string[]);
-        },
-        [users]
-    );
-
-    const [fieldsInfo, setFieldsInfo] = React.useState<FieldsInfo>();
+    const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(false);
     const [usersValidation, setUsersValidation] = React.useState({});
-
-    useEffect(
-        () => {
-            const buildUsersFields = () => {
-                // setIsLoading(true);
-                // const existingUsernamesSet = new Set(_.keys(existingUsers));
-                // setExistingUsernames(existingUsernamesSet);
-                setFieldsInfo(getFieldsInfo());
-                // setIsLoading(false);
-            };
-
-            buildUsersFields();
-        },
-        [
-            // users,
-            // updateUsers,
-            // allowOverwrite,
-            // existingUsers,
-            // existingUsernames,
-            // getUsernamesInTable,
-            // getUser
-        ]
-    );
-
-    const getFieldsInfo = (): FieldsInfo => {
-        const validators: Record<string, ValidatorsType> = {
-            isRequired: {
-                validator: Validators.isRequired,
-                message: d2.i18n.getTranslation(Validators.isRequired.message),
-            },
-            isValidEmail: {
-                validator: Validators.isEmail,
-                message: d2.i18n.getTranslation(Validators.isEmail.message),
-            },
-            isUsernameNonExisting: toBuilderValidator(
-                (username: string, userId: Id) =>
-                    validateUsername(
-                        allowOverwrite ? new Set() : existingUsernames,
-                        getUsernamesInTable({ skipId: userId }),
-                        username
-                    ),
-                (username: string, error: string): string => d2.i18n.getTranslation(`username_${error}`, { username })
-            ) as ValidatorsType,
-            isValidPassword: toBuilderValidator(
-                (password: string, userId: Id) => {
-                    // Existing users can have an empty password (so the current one is kept)
-                    // const allowEmptyPassword = existingUsernames.has(users.get(userId)!.username);
-                    const user = getUser(userId);
-                    if (!user || !user.username) return { isValid: true };
-                    const allowEmptyPassword = existingUsernames.has(user.username);
-                    return validatePassword(password, { allowEmpty: allowEmptyPassword });
-                },
-                (_password: string, error: string) => d2.i18n.getTranslation(`password_${error}`)
-            ) as ValidatorsType,
-            importWarnings: (objField: string) =>
-                toBuilderValidator(
-                    (_value: string, userId: Id): ValidatorsType => {
-                        const field = objField + fieldImportSuffix;
-                        const isValid = { isValid: true };
-                        const user = users.get(userId);
-                        // @ts-ignore
-                        if (!user) return isValid;
-                        // @ts-ignore
-                        const { hasDuplicates } = user[field] || {};
-                        // @ts-ignore
-                        return hasDuplicates ? { isValid: false } : isValid;
-                    },
-                    () => i18n.t("multiple_matches")
-                ),
-        };
-        return {
-            // @ts-ignore
-            username: { validators: [validators.isUsernameNonExisting] },
-            // @ts-ignore
-            password: { validators: [validators.isValidPassword] },
-            // @ts-ignore
-            firstName: { validators: [validators.isRequired] },
-            // @ts-ignore
-            surname: { validators: [validators.isRequired] },
-            // @ts-ignore
-            email: { validators: [validators.isValidEmail] },
-            // @ts-ignore
-            organisationUnits: { validators: [validators.importWarnings("organisationUnits")] },
-            dataViewOrganisationUnits: {
-                // @ts-ignore
-                validators: [validators.importWarnings("dataViewOrganisationUnits")],
-            },
-            searchOrganisationsUnits: {
-                // @ts-ignore
-                validators: [validators.importWarnings("searchOrganisationsUnits")],
-            },
-            _default: { validators: [] },
-        };
+    // console.log({ props });
+    const getUsername = (user: ApiUser | User): string => {
+        if ("userCredentials" in user) {
+            return user.userCredentials.username;
+        } else {
+            return user.username;
+        }
     };
 
-    const getUser = useCallback((userId: Id) => {
-        const user = users.get(userId);
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            const [existingUsersD2]: [UserLegacy[]] = await Promise.all([getExistingUsers(d2)]);
+            const existingUsersMapped = _.keyBy(existingUsersD2, getUsername) as Record<string, UserLegacy>;
+            setExistingUsers(existingUsersMapped as unknown as SetStateAction<Record<string, User>>);
+            setExistingUsersNames(existingUsersD2.map((_user: Partial<UserLegacy>) => getUsername(_user as ApiUser)));
+            setIsLoading(false);
+        };
 
-        if (user) {
-            return user;
-        } else {
-            throw new Error("Cannot get user with ID: " + userId);
-        }
+        fetchData();
+    }, [d2]);
+
+    const closeInfoDialog = () => {
+        setInfoDialog(null);
+    };
+
+    // const onSaveTable = async () => {
+    //     setIsImporting(true);
+    //     try {
+    //         // @ts-ignore
+    //         const errorResponse = await onSave(users.valueSeq().toJS());
+    //         if (errorResponse) {
+    //             setIsImporting(false);
+    //             // @ts-ignore
+    //             setInfoDialog({ response: errorResponse });
+    //         } else {
+    //             onRequestClose();
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //         setIsImporting(false);
+    //     }
+    // };
+
+    const toggleAllowOverwrite = () => {
+        setAllowOverwrite(!allowOverwrite);
+    };
+
+    const renderDialogTitle = () => {
+        const errorsCount = _(usersValidation)
+            .values()
+            .sumBy(isValid => (isValid ? 0 : 1));
+        const errorText =
+            errorsCount === 0
+                ? null
+                : i18n.t("{{n}} invalid users found, check in-line errors in table", { n: errorsCount });
+        const maxWarnings = 10;
+        const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
+
+        const warningText =
+            warnings.length === 0
+                ? null
+                : _([
+                      i18n.t("{{n}} warning(s) while importing file", { n: warnings.length }) + ":",
+                      // @ts-ignore
+                      ..._(warnings)
+                          .take(maxWarnings)
+                          .map((line, idx) => `${idx + 1}. ${line}`),
+                      hiddenWarnings > 0 ? i18n.t("and_n_more_warnings", { n: hiddenWarnings }) : null,
+                  ])
+                      .compact()
+                      .join("\n");
+
+        return (
+            <div>
+                <h3 style={styles.dialogTitle}>{title}</h3>
+                {errorText && (
+                    // @ts-ignore
+                    <span title={errorText} style={styles.dialogIcons}>
+                        <FontIcon className="material-icons">error</FontIcon>
+                    </span>
+                )}
+                {warningText && (
+                    // @ts-ignore
+                    <span title={warningText} style={styles.dialogIcons}>
+                        <FontIcon className="material-icons">warning</FontIcon>
+                    </span>
+                )}
+            </div>
+        );
+    };
+
+    const onSubmit = useCallback(
+        async ({ users }: { users: User[] }) => {
+            loading.show(true, i18n.t("Saving users"));
+
+            // const { data, error } = await compositionRoot.users.save(users).runAsync();
+            const { data, error } = await Promise.resolve({ data: { status: "OK" }, error: null });
+            console.log("onSubmit", { users });
+            loading.reset();
+
+            if (error) {
+                snackbar.error(error);
+                return error;
+            }
+
+            if (data && data.status === "ERROR") {
+                // @ts-ignore
+                setSummary([data]);
+            } else {
+                // close
+            }
+        },
+        [snackbar, loading]
+    );
+
+    const addRow = useCallback(() => {
+        const newUser = {
+            ...defaultUser,
+            id: generateUid(),
+            username: "",
+            password: `District123$`,
+        };
+
+        setUsers(users => users.concat(newUser));
     }, []);
 
-    // FormBuilder usually validates only the current field, which is faster, but sometimes we
-    // need to validate the form builder (i.e. checking uniqueness of fields). Call this method
-    // whenever you want to fully validate the form.
-    const validateOnNextRender = useCallback(
-        (toValidate = true) => {
-            setValidateOnRender(toValidate);
-        },
-        []
-        // [setValidateOnRender]
-    );
+    const closeSummary = () => setSummary(undefined);
+    let submit: any;
 
-    const shouldValidateOnNextRender = () => {
-        return validateOnRender;
-    };
-
-    const onUpdateField = (userId: Id, field: keyof Fields, value: any) => {
-        const user = getUser(userId) as unknown as User;
-        const importField = (field + fieldImportSuffix) as keyof User;
-        const fieldHasImportData = !!user[importField] && typeof user[importField] === "object";
-
-        const newUsers = users.set(userId, {
-            ...user,
-            [field]: value,
-            ...(fieldHasImportData ? { [importField]: { ...(user[importField] as User), hasDuplicates: false } } : {}),
-        });
-
-        const validators = (fieldsInfo && fieldsInfo[field] && fieldsInfo[field].validators) || [];
-        const shouldRender =
-            fieldHasImportData ||
-            !_.isEqual(
-                validators.map((validator: any) => validator.validator(value, userId)),
-                validators.map((validator: any) => validator.validator(user[field], userId))
-            );
-
-        updateUsers(newUsers);
-
-        // if (shouldRender) {
-        //     forceRender();
-        // }
-    };
-
-    // const onUpdateField = React.useCallback(
-    //     (userId: Id, field: string, value: any) => {
-    //         const user = getUser(userId) as unknown as ApiUser;
-    //         // Clear import warnings on field update
-    //         const importField = (field + fieldImportSuffix) as keyof ApiUser;
-    //         const fieldHasImportData = !!user[importField] && typeof user[importField] === "object";
-
-    //         // @ts-ignore
-    //         const newUsers = users.set(userId, {
-    //             ...user,
-    //             [field]: value,
-    //             // @ts-ignore
-    //             ...(fieldHasImportData ? { [importField]: { ...user[importField], hasDuplicates: false } } : {}),
-    //         });
-
-    //         const validators = (fieldsInfo && fieldsInfo[field] && fieldsInfo[field].validators) || [];
-    //         // Force re-render if validations change so new error messages are shown
-    //         const shouldRender =
-    //             fieldHasImportData ||
-    //             !_.isEqual(
-    //                 validators.map((validator: any) => validator.validator(value, userId)),
-    //                 // @ts-ignore
-    //                 validators.map((validator: any) => validator.validator(user[field], userId))
-    //             );
-
-    //         // validateOnNextRender(shouldRender);
-    //         updateUsers(newUsers);
-    //         console.log("onUpdateField", {
-    //             newUsers: newUsers.valueSeq().toJS(),
-    //             users: users.valueSeq().toJS(),
-    //             field,
-    //             value,
-    //         });
-    //         if (shouldRender) {
-    //             forceRender(new Date());
-    //         }
-
-    //         // Force a full validation when a username changed:
-    //         //   1) to check uniqueness across the table
-    //         //   2) to disable password validation on existing user
-    //         if (field === "username") {
-    //             validateOnNextRender();
-    //         }
-    //     },
-    //     []
-    //     // [fieldsInfo, getUser, setUsers, setForceRender, users, validateOnNextRender]
-    // );
-
-    const onUpdateFormStatus = useCallback(
-        (userId: Id, formStatus: any) => {
-            console.log("onUpdateFormStatus", { userId, formStatus });
-            const isValid = !formStatus.asyncValidating && formStatus.valid;
-            const newUsersValidation: Record<string, any> = { ...usersValidation, [userId]: isValid };
-            setUsersValidation(newUsersValidation);
-            // Call areUsersValid in parent
-            setAreUsersValid(users.keySeq().every((userId: Id) => newUsersValidation[userId]));
-        },
-        []
-        // [users, usersValidation]
-    );
-
-    const getInvalidUsernames = () => {
-        return new Set(Array.from(existingUsernames).concat(Array.from(getUsernamesInTable())));
-    };
-
-    const onTextFieldClicked = useCallback(
-        (userId: Id, field: string) => {
-            const options = modelValuesByField[field];
-            const user = getUser(userId);
-            const selected = user[field as keyof Fields] || [];
-            setMultipleSelector({ user, field, selected, options });
-        },
-        [getUser, modelValuesByField]
-    );
-
-    const getTextField = (
-        name: keyof FieldsInfo,
-        value: string,
-        { validators, message, userId, component, extraProps }: any
-    ) => {
-        // console.log(!value?.length ? message : "");
-        return {
-            name,
-            value: value || "",
-            component: component || TextField,
-            props: { name, type: "string", style: { width: "100%" }, ...extraProps },
-            // errorText: !value?.length ? message : "",
-            // errorText: validators
-            //     .map(({ message, validator }: { message: string; validator: (arg: any) => boolean }) =>
-            //         // @ts-ignore
-            //         validator(value, userId) ? message : ""
-            //     )
-            //     .pop(),
-            validators,
-        };
-    };
-
-    const getFields = useCallback(
-        (user: User) => {
-            const relationshipFields: (keyof FieldsInfo)[] = [
-                "userRoles",
-                "userGroups",
-                "organisationUnits",
-                "dataViewOrganisationUnits",
-                "searchOrganisationsUnits",
-            ];
-
-            const orgUnitsField = settings.get("organisationUnitsField");
-
-            return columns.map((field: keyof FieldsInfo): FieldsProp => {
-                // @ts-ignore
-                const value = user[field];
-
-                // const { validator, message } =
-                //     fieldsInfo && fieldsInfo[field] ? fieldsInfo[field].validators : fieldsInfo._default.validators;
-                const validators =
-                    fieldsInfo && fieldsInfo[field] ? fieldsInfo[field].validators : fieldsInfo?._default.validators;
-                // console.log({ field, value, message, validators });
-                const isMultipleValue = relationshipFields.includes(field);
-                const displayField =
-                    field === "organisationUnits" ||
-                    field === "dataViewOrganisationUnits" ||
-                    field === "searchOrganisationsUnits"
-                        ? orgUnitsField
-                        : "displayName";
-
-                if (isMultipleValue) {
-                    const values = value || [];
-
-                    const getCompactTextForCollection = (values: any, field: string) => {
-                        return values.map((value: any) => value[field]).join(", ");
-                    };
-
-                    const compactValue = _(values).isEmpty()
-                        ? "-"
-                        : `[${values.length}] ` + getCompactTextForCollection(values, displayField);
-                    const hoverText = _(values).map(displayField).join(", ");
-                    // const onClick = onTextFieldClicked(user.id, field);
-                    const onClick = (e: any) => {
-                        console.log("clicked", e);
-                        onTextFieldClicked(user.id, field);
-                    };
-                    // const onClick = (e: any) => console.log("clicked", e);
-
-                    // @ts-ignore
-                    return getTextField(field, compactValue, {
-                        validators,
-                        userId: user.id,
-                        component: (props: any) => (
-                            <TextField
-                                {...props}
-                                value={compactValue}
-                                title={hoverText}
-                                onClick={onClick}
-                                onChange={onClick}
-                            />
-                        ),
-                    });
-                } else if (field === "disabled") {
-                    return {
-                        name: field,
-                        component: Switch,
-                        props: {
-                            name: field,
-                            // defaultToggled: value,
-                            checked: Boolean(value),
-                            onChange: (_event: React.MouseEvent<HTMLInputElement>, isInputChecked: boolean) => {
-                                onUpdateField(user.id, field, isInputChecked);
-                            },
-                        },
-                        // @ts-ignore
-                        validators,
-                    };
-                } else {
-                    const extraProps = { changeevent: "onBlur" };
-                    // @ts-ignore
-                    return getTextField(field, value, {
-                        component: TextField,
-                        validators,
-                        userId: user.id,
-                        extraProps,
-                    });
-                }
-            });
-        },
-        []
-        // [fieldsInfo]
-    );
-
-    const addRow = () => {
-        let newUser: Partial<User>;
-
-        if (templateUser) {
-            const invalidUsernames = getInvalidUsernames();
-            const index = _.range(1, 1000).find(i => !invalidUsernames.has(`${templateUser.username}_${i}`));
-            newUser = {
-                id: generateUid(),
-                username: `${templateUser.username}_${index}`,
-                password: `District123_${index}`,
-                firstName: templateUser.attributes.firstName,
-                surname: templateUser.attributes.surname,
-                organisationUnits: templateUser.attributes.organisationUnits,
-                dataViewOrganisationUnits: templateUser.attributes.dataViewOrganisationUnits,
-                searchOrganisationsUnits: templateUser.attributes.searchOrganisationsUnits,
-                email: templateUser.attributes.email,
-                disabled: templateUser.attributes.disabled,
-            };
-        } else {
-            newUser = {
-                id: generateUid(),
-                username: "",
-                password: `District123$`,
-            };
-        }
-
-        updateUsers(users.set(newUser.id!, newUser));
-        validateOnNextRender();
-    };
-
-    const removeRow = React.useCallback(
-        (userId: Id | readonly never[]) => {
-            // @ts-ignore
-            updateUsers(users => users.filter((_user: Partial<User>) => _user.id !== userId));
-            setUsersValidation(prevUsersValidation => _.omit(prevUsersValidation, userId));
-            validateOnNextRender();
-        },
-        [validateOnNextRender]
-    );
-
-    const getRemoveRowHandler = React.useCallback((userId: Id) => () => removeRow(userId), [removeRow]);
-
-    const getOnUpdateField = useCallback(
-        // @ts-ignore
-        userId =>
-            (...args: any) =>
-                // @ts-ignore
-                onUpdateField(userId, ...args),
-        []
-    );
-    const getOnUpdateFormStatus = React.useCallback(
-        userId =>
-            (...args: any) =>
-                // @ts-ignore
-                onUpdateFormStatus(userId, ...args),
-        [onUpdateFormStatus]
-    );
-    // @ts-ignore
-
-    const getOnTextFieldClicked = React.useCallback((...args) => onTextFieldClicked(...args), [onTextFieldClicked]);
-
-    const renderTableRow = useCallback(({ id: userId, children }: { id: Id; children: React.ReactNode }) => {
-        const user = getUser(userId);
-        if (!user || !user.username) {
-            return null;
-        }
-        const index = users.keySeq().findIndex((_userId: any) => _userId === userId);
+    const renderTableRow = (user: User, rowIndex: number) => {
         const existingUser = existingUsers[user.username];
         const rowStyles = !allowOverwrite && existingUser ? styles.rowExistingUser : styles.row;
         const chipStyle = existingUser ? styles.chipExistingUser : undefined;
         const chipTitle = existingUser
             ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
             : "";
-        const chipText = (index + 1).toString() + (existingUser ? "-E" : "");
+        const chipText = (rowIndex + 1).toString() + (existingUser ? "-E" : "");
         return (
-            <TableRow style={rowStyles}>
+            <TableRow key={rowIndex} style={rowStyles}>
                 <TableCell>
                     <Tooltip title={chipTitle}>
                         <Chip style={chipStyle}>{chipText}</Chip>
                     </Tooltip>
                 </TableCell>
 
-                {children}
-
-                <TableCell>
-                    <IconButton
-                        style={styles.removeIcon}
-                        title={i18n.t("Remove user")}
-                        onClick={() => getRemoveRowHandler(userId)}
-                    >
-                        <FontIcon className="material-icons">delete</FontIcon>
-                    </IconButton>
-                </TableCell>
+                {_(columns)
+                    .map((value, columnIndex) => (
+                        <TableCell style={styles.row} key={`${rowIndex}-${columnIndex}-${value}`}>
+                            <RowItem
+                                key={`${rowIndex}-${columnIndex}-${value}`}
+                                rowIndex={rowIndex}
+                                columnIndex={columnIndex}
+                                data={{ columns, existingUsersNames }}
+                            />
+                        </TableCell>
+                    ))
+                    .value()}
             </TableRow>
         );
-    }, []);
-
-    const renderTableRowColumn = ({ children }: { children: React.ReactNode }) => {
-        return <TableCell>{children}</TableCell>;
     };
 
-    const renderTable = () => {
-        const canAddNewUser = users.size < maxUsers;
-        const headers = columns.map(_.startCase);
-        // const headers = columns;
-        const getColumnName = (header: string) => (_(d2.i18n.translations).has(header) ? i18n.t(header) : header);
-
-        return (
-            <TableContainer>
-                <Table
-                    stickyHeader={true}
-                    // wrapperStyle={styles.tableWrapper}
-                    style={styles.table}
-                    // bodyStyle={styles.tableBody}
-                >
-                    <TableHead
-                    // displaySelectAll={false}
-                    // adjustForCheckbox={false}
-                    >
-                        <TableRow>
-                            <TableCell style={styles.tableColumn}>#</TableCell>
-                            {headers.map((header: string) => (
-                                <TableCell key={header} style={styles.header}>
-                                    {getColumnName(header)}
-                                </TableCell>
-                            ))}
-                            <TableCell style={styles.actionsHeader}></TableCell>
-                        </TableRow>
-                    </TableHead>
-
-                    <TableBody
-                    // displayRowCheckbox={false}
-                    >
-                        {_.map(users.valueSeq().toJS(), (user: User) => {
-                            return (
-                                <FormBuilder
-                                    key={"form-" + user.id}
-                                    id={user.id}
-                                    fields={getFields(user)}
-                                    // onUpdateField={(v: any) => {
-                                    //     console.log("onUpdateField", v);
-                                    // }}
-                                    onUpdateFormStatus={(v: any) => {
-                                        // console.log("onUpdateFormStatus", v);
-                                    }}
-                                    // validateOnRender={shouldValidateOnNextRender()}
-                                    validateOnRender={true}
-                                    onUpdateField={getOnUpdateField(user.id)}
-                                    // onUpdateField={(...args: any) => onUpdateField(user.id, ...args)}
-                                    // onUpdateFormStatus={getOnUpdateFormStatus(user.id)}
-                                    validateFullFormOnChanges={true}
-                                    validateOnInitialRender={true}
-                                    mainWrapper={renderTableRow}
-                                    fieldWrapper={renderTableRowColumn}
-                                />
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-
-                <div style={styles.addRowButton}>
-                    <RaisedButton disabled={!canAddNewUser} label={i18n.t("add_user")} onClick={() => addRow} />
-                </div>
-            </TableContainer>
-        );
-    };
-
-    const onMultipleSelectorClose = () => {
-        setMultipleSelector(null);
-    };
-
-    const onMultipleSelectorChange = (selectedObjects: any, field: any, user: { id: any }) => {
-        onUpdateField(user.id, field, selectedObjects);
-        setMultipleSelector(null);
+    const updateFormState = (arg: any) => {
+        console.log("updateFormState", arg);
     };
 
     return (
-        <div>
+        <ConfirmationDialog
+            open={true}
+            title={renderDialogTitle()}
+            maxWidth={"lg"}
+            fullWidth={true}
+            cancelText={i18n.t("Close")}
+            onCancel={onRequestClose}
+            saveText={actionText}
+            onSave={event => submit(event)}
+
+            // disableSave={_.isEmpty(users) || !areUsersValid}
+        >
             {isImporting && <ModalLoadingMask />}
-            {/* {isLoading ? <LoadingMask /> : renderTable()} */}
-            {renderTable()}
-            {multipleSelector && (
-                <MultipleSelector
-                    api={api}
-                    field={multipleSelector.field}
-                    selected={multipleSelector.selected}
-                    options={multipleSelector.options}
-                    onClose={onMultipleSelectorClose}
-                    onChange={onMultipleSelectorChange}
-                    data={multipleSelector.user}
-                    orgUnitRoots={orgUnitRoots}
+
+            {isLoading ? (
+                <LoadingMask />
+            ) : (
+                <div>
+                    {columnSelectorOpen && (
+                        <ColumnSelectorDialog
+                            columns={userFormFields}
+                            visibleColumns={columns}
+                            onChange={setColumns}
+                            getName={getUserFieldName}
+                            onCancel={() => setColumnSelectorOpen(false)}
+                        />
+                    )}
+                    <TableContainer>
+                        <Form<{ users: User[] }>
+                            autocomplete="off"
+                            onSubmit={onSubmit}
+                            initialValues={{ users }}
+                            render={({ handleSubmit, values, submitError }) => {
+                                submit = handleSubmit;
+                                return (
+                                    <>
+                                        <FormSpy onChange={updateFormState} />
+
+                                        <form onSubmit={submit}>
+                                            <Table
+                                                stickyHeader={true}
+                                                style={styles.table}
+                                                // bodyStyle={styles.tableBody}
+                                                // wrapperStyle={styles.tableWrapper}
+                                            >
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell style={styles.tableColumn}>#</TableCell>
+                                                        {columns.map((header: string) => (
+                                                            <TableCell key={header} style={styles.header}>
+                                                                {header}
+                                                            </TableCell>
+                                                        ))}
+                                                        <TableCell style={styles.actionsHeader}>D</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody style={styles.tableBody}>
+                                                    {_.map(users, (user: User, rowIndex) =>
+                                                        renderTableRow(user, rowIndex)
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+
+                                            {/* {submitError && (
+                                            <NoticeBox title={i18n.t("Error saving users")} error={true}>
+                                                {submitError}
+                                            </NoticeBox>
+                                            )}*/}
+                                            <div style={styles.addRowButton}>
+                                                <RaisedButton
+                                                    // disabled={!canAddNewUser}
+                                                    label={i18n.t("Add user")}
+                                                    onClick={addRow}
+                                                />
+                                            </div>
+                                        </form>
+                                    </>
+                                );
+                            }}
+                        />
+                    </TableContainer>
+                </div>
+            )}
+
+            {infoDialog && (
+                <InfoDialog
+                    t={i18n.t}
+                    title={i18n.t("Error on metadata action")}
+                    onClose={() => closeInfoDialog()}
+                    response={infoDialog.response}
                 />
             )}
-        </div>
+
+            {showOverwriteToggle && !templateUser && (
+                <Toggle
+                    label={i18n.t("Overwrite existing users")}
+                    labelPosition="right"
+                    toggled={allowOverwrite}
+                    onToggle={toggleAllowOverwrite}
+                    // @ts-ignore
+                    style={styles.overwriteToggle}
+                />
+            )}
+        </ConfirmationDialog>
     );
-});
+};
 
 type ImportTableProps = {
-    api: any;
-    usersFromFile: any;
-    columns: (keyof FieldsInfo)[];
+    title: string;
+    usersFromFile: User[];
+    columns: (keyof Fields)[];
     maxUsers: number;
+    onSave: (users: UserLegacy[]) => Promise<any>;
+    onRequestClose: () => void;
     templateUser?: UserLegacy;
     settings: any;
+    api: any;
+    actionText: string;
     warnings: string[];
-    modelValuesByField: Record<string, any>;
-    validateOnRender: boolean;
-    users: OrderedMap<Id, Partial<User>>;
-    existingUsers: Record<string, User>;
-    orgUnitRoots: OrgUnit[] | null;
-    updateUsers: (users: OrderedMap<Id, Partial<User>>) => void;
-    allowOverwrite: boolean;
-    existingUsernames: Set<string>;
 };
 
-type FieldsInfo = {
-    [x in keyof Fields]: { validators: ValidatorsType[] };
-} & {
-    _default: { validators: [] };
+type RowItemProps = {
+    data: { columns: string[]; existingUsersNames: string[] };
+    columnIndex: number;
+    rowIndex: number;
 };
 
-type ValidatorsType =
-    | {
-          validator: Validators;
-          message: string;
-      }
-    | Function;
+const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
+    const form = useForm<{ users: User[] }>();
+    const deleteRow = columnIndex === data.columns.length;
+    const row = rowIndex;
+    const field = data.columns[columnIndex];
+
+    const removeRow = useCallback(() => {
+        const original = form.getState().values.users;
+        const users = [...original.slice(0, row), ...original.slice(row + 1)];
+        form.change("users", users);
+    }, [form, row]);
+    // console.log({ field, columnIndex, rowIndex, deleteRow: data.columns.length });
+
+    if (deleteRow) {
+        return (
+            <IconButton style={styles.removeIcon} title={i18n.t("Remove user")} onClick={removeRow}>
+                <FontIcon className="material-icons">delete</FontIcon>
+            </IconButton>
+        );
+    }
+
+    if (!field) return null;
+
+    return <RenderUserImportField row={row} field={field} existingUsersNames={data.existingUsersNames} />;
+};
+
+const RenderUserImportField: React.FC<{ row: number; field: UserFormField; existingUsersNames: string[] }> = ({
+    row,
+    field,
+    existingUsersNames,
+}) => {
+    const name = `users[${row}].${field}`;
+
+    const { validation, props: validationProps = {} } = useValidations(field);
+    const props = {
+        name,
+        placeholder: getUserFieldName(field),
+        validate: validation,
+        ...validationProps,
+    };
+
+    switch (field) {
+        case "userGroups":
+        case "userRoles":
+        case "organisationUnits":
+        case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
+            return (
+                <PreviewInputFF {...props}>
+                    <RenderField row={row} field={field} existingUsersNames={existingUsersNames} />
+                </PreviewInputFF>
+            );
+        default:
+            return <RenderField row={row} field={field} existingUsersNames={existingUsersNames} />;
+    }
+};
+
+const RenderField: React.FC<{ row: number; field: UserFormField; existingUsersNames: string[] }> = ({
+    row,
+    field,
+    existingUsersNames,
+}) => {
+    // const { values } = useFormState();
+    const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames);
+    const name = `users[${row}].${field}`;
+    const props = {
+        name,
+        placeholder: getUserFieldName(field),
+        validate: validation,
+        ...validationProps,
+    };
+
+    switch (field) {
+        case "firstName":
+        case "surname":
+        case "username":
+            return <FormTextField {...props} />;
+        case "password":
+            return (
+                <FormTextField
+                    {...props}
+                    type="password"
+                    // disabled={values.users[row].externalAuth === true}
+                />
+            );
+        case "userGroups":
+            return <FormFieldCustom {...props} component={UserRoleGroupFF} modelType="userGroups" />;
+        case "userRoles":
+            return <FormFieldCustom {...props} component={UserRoleGroupFF} modelType="userRoles" />;
+        case "organisationUnits":
+        case "dataViewOrganisationUnits":
+        case "searchOrganisationsUnits":
+            return <FormFieldCustom {...props} component={OrgUnitSelectorFF} />;
+        case "disabled":
+            return <FormFieldCustom {...props} component={CheckboxFieldFF} type={"checkbox"} />;
+        default:
+            return null;
+    }
+};
+
+const FormFieldCustom = <FieldValue, T extends ComponentType<any>>(props: FormFieldProps<FieldValue, T>) => {
+    return <Field<FieldValue> {...props} />;
+};
+
+const FormTextField = (props: any) => {
+    return (
+        <Field {...props}>
+            {props => {
+                const onChose = (event: any) => {
+                    console.log("CHANGE", { props });
+                    return props.input.onChange(event);
+                };
+                return (
+                    <div>
+                        <TextField
+                            name={props.input.name}
+                            value={props.input.value}
+                            onChange={onChose}
+                            error={!!props.meta.error}
+                            helperText={props.meta.error ? props.meta.error : ""}
+                        />
+                    </div>
+                );
+            }}
+        </Field>
+    );
+};
+
+const useValidations = (
+    field: UserFormField,
+    existingUsersNames: string[] = []
+): { validation?: (...args: any[]) => any; props?: object } => {
+    const userRequiredFields = ["username", "firstName", "surname"];
+
+    switch (field) {
+        case "username": {
+            return {
+                // TODO use legacyvalidateUsername
+                validation: (value: string) =>
+                    !existingUsersNames.includes(value) ? undefined : i18n.t("User already exists"),
+            };
+        }
+        case "password":
+            return {
+                validation: composeValidators(
+                    string,
+                    createMinCharacterLength(8),
+                    createMaxCharacterLength(255),
+                    createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
+                    createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
+                    createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
+                    createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
+                ),
+            };
+        default: {
+            const required = userRequiredFields.includes(field);
+            return { validation: required ? hasValue : undefined };
+        }
+    }
+};

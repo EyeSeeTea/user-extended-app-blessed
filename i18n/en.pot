@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-06-04T13:07:29.920Z\n"
-"PO-Revision-Date: 2024-06-04T13:07:29.920Z\n"
+"POT-Creation-Date: 2024-06-25T16:54:15.485Z\n"
+"PO-Revision-Date: 2024-06-25T16:54:15.485Z\n"
 
 msgid "ID"
 msgstr ""
@@ -74,9 +74,6 @@ msgstr ""
 msgid "Last modified by"
 msgstr ""
 
-msgid "created by"
-msgstr ""
-
 msgid "Copy to clipboard"
 msgstr ""
 
@@ -128,6 +125,48 @@ msgstr ""
 msgid "Export empty template"
 msgstr ""
 
+msgid "{{n}} invalid users found, check in-line errors in table"
+msgstr ""
+
+msgid "{{n}} warning(s) while importing file"
+msgstr ""
+
+msgid "Saving users"
+msgstr ""
+
+msgid "User already exists: {{id}}"
+msgstr ""
+
+msgid "Error saving users"
+msgstr ""
+
+msgid "Add user"
+msgstr ""
+
+msgid "Error on metadata action"
+msgstr ""
+
+msgid "Overwrite existing users"
+msgstr ""
+
+msgid "Remove user"
+msgstr ""
+
+msgid "User already exists"
+msgstr ""
+
+msgid "Password should contain at least one lowercase letter"
+msgstr ""
+
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr ""
+
+msgid "Password should contain at least one number"
+msgstr ""
+
+msgid "Password should have at least one special character"
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
@@ -162,9 +201,6 @@ msgid "Messages"
 msgstr ""
 
 msgid "JSON Response"
-msgstr ""
-
-msgid "Saving users"
 msgstr ""
 
 msgid "Update strategy: "
@@ -216,18 +252,6 @@ msgid "Please provide a valid identifier"
 msgstr ""
 
 msgid "Please provide a valid email"
-msgstr ""
-
-msgid "Password should contain at least one lowercase letter"
-msgstr ""
-
-msgid "Password should contain at least one UPPERCASE letter"
-msgstr ""
-
-msgid "Password should contain at least one number"
-msgstr ""
-
-msgid "Password should have at least one special character"
 msgstr ""
 
 msgid "Please provide a valid phone number"
@@ -445,12 +469,6 @@ msgstr ""
 msgid "Column settings"
 msgstr ""
 
-msgid "Error saving users"
-msgstr ""
-
-msgid "Add user"
-msgstr ""
-
 msgid "Delete"
 msgstr ""
 
@@ -470,4 +488,16 @@ msgid "Open in user management"
 msgstr ""
 
 msgid " and {{overflow}} more..."
+msgstr ""
+
+msgctxt "warnings"
+msgid "and_n_more"
+msgstr ""
+
+msgctxt "matches"
+msgid "multiple"
+msgstr ""
+
+msgctxt "user"
+msgid "add"
 msgstr ""
