@@ -43,6 +43,14 @@ export interface PreviewInputFFProps extends Pick<FieldRenderProps<string>, "nam
     placeholder: string;
     warning?: string;
     children: React.ReactNode;
+    component?: FunctionComponent<{
+        name: string;
+        value: string;
+        warning?: boolean;
+        error?: boolean;
+        validationText?: string;
+        onChange: () => void;
+    }>;
 }
 
 const buildValue = (value: unknown): string => {

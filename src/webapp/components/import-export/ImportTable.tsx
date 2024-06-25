@@ -496,6 +496,7 @@ const RenderUserImportField: React.FC<{ row: number; field: UserFormField; exist
         name,
         placeholder: getUserFieldName(field),
         validate: validation,
+        component: TextField,
         ...validationProps,
     };
 
