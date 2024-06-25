@@ -295,9 +295,11 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     const closeSummary = () => setSummary(undefined);
     let submit: any;
 
-    const renderTableRow = (user: User, rowIndex: number) => {
-        const existingUser = existingUsers[user.username];
-        const rowStyles = !allowOverwrite && existingUser ? styles.rowExistingUser : styles.row;
+    const renderTableRow = (user: User, rowIndex: number, users: User[]) => {
+        // TODO maybe useFormState();
+        const currentUsername = users[rowIndex]?.username || user.username;
+        const existingUser = existingUsers[currentUsername];
+        const rowStyles = !allowOverwrite && existingUsers[currentUsername] ? styles.rowExistingUser : styles.row;
         const chipStyle = existingUser ? styles.chipExistingUser : undefined;
         const chipTitle = existingUser
             ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
@@ -313,7 +315,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
 
                 {_(columns)
                     .map((value, columnIndex) => (
-                        <TableCell style={styles.row} key={`${rowIndex}-${columnIndex}-${value}`}>
+                        <TableCell key={`${rowIndex}-${columnIndex}-${value}`}>
                             <RowItem
                                 key={`${rowIndex}-${columnIndex}-${value}`}
                                 rowIndex={rowIndex}
@@ -373,12 +375,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                         <FormSpy onChange={updateFormState} />
 
                                         <form onSubmit={submit}>
-                                            <Table
-                                                stickyHeader={true}
-                                                style={styles.table}
-                                                // bodyStyle={styles.tableBody}
-                                                // wrapperStyle={styles.tableWrapper}
-                                            >
+                                            <Table stickyHeader={true} style={styles.table}>
                                                 <TableHead>
                                                     <TableRow>
                                                         <TableCell style={styles.tableColumn}>#</TableCell>
@@ -392,7 +389,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                                 </TableHead>
                                                 <TableBody style={styles.tableBody}>
                                                     {_.map(users, (user: User, rowIndex) =>
-                                                        renderTableRow(user, rowIndex)
+                                                        renderTableRow(user, rowIndex, values.users)
                                                     )}
                                                 </TableBody>
                                             </Table>
