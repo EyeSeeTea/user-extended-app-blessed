@@ -365,6 +365,8 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                             onSubmit={onSubmit}
                             initialValues={{ users }}
                             render={({ handleSubmit, values, submitError }) => {
+                                const canAddNewUser = values.users.length < maxUsers;
+
                                 submit = handleSubmit;
                                 return (
                                     <>
@@ -402,7 +404,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                             )}*/}
                                             <div style={styles.addRowButton}>
                                                 <RaisedButton
-                                                    // disabled={!canAddNewUser}
+                                                    disabled={!canAddNewUser}
                                                     label={i18n.t("Add user")}
                                                     onClick={addRow}
                                                 />
