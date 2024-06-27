@@ -444,6 +444,7 @@ async function getExistingUsers(d2, options = {}) {
         paging: false,
         fields: options.fields || "id,userCredentials[username]",
         ...options,
+        v: +new Date().getTime(),
     });
     return users;
 }
