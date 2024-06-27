@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
-import { GLOBAL_ORG_UNIT_CODE, setupLogger } from "../../utils/logger";
+import { setupLogger } from "../../utils/logger";
 import { buildUserWithoutPassword } from "../../data/utils";
 import { isDev } from "../..";
 import { appConfig } from "../../app-config";
@@ -404,13 +404,22 @@ async function getLogger(d2Api) {
     if (!d2Api) return undefined;
     const userStore = d2Api.dataStore(appConfig.appKey);
     const loggerSettings = await userStore.get(Namespaces.LOGGER).getData();
-    const orgUnits = await d2Api.models.organisationUnits
-        .get({ fields: { id: true }, filter: { code: { eq: GLOBAL_ORG_UNIT_CODE } } })
+    const user = await d2Api.currentUser
+        .get({ fields: { id: true, organisationUnits: { id: true, name: true, level: true } } })
         .getData();
-    const orgUnitGlobal = orgUnits.objects[0];
-    if (!orgUnitGlobal) return undefined;
+
+    const sortOrgUnitsByLevel = _(user.organisationUnits)
+        .orderBy(orgUnit => [orgUnit.level, orgUnit.name])
+        .value();
+
+    const firstOrgUnit = _(sortOrgUnitsByLevel).first();
+    if (!firstOrgUnit) {
+        console.warn(`Cannot found org. unit for user ${user.id}`);
+        return undefined;
+    }
+
     const logger = await setupLogger(d2Api.baseUrl, {
-        orgUnitId: orgUnitGlobal.id,
+        orgUnitId: firstOrgUnit.id,
         isDebug: isDev,
         settings: loggerSettings,
     });

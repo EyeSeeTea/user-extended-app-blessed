@@ -1,12 +1,12 @@
 import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
-import { ProgramLogger } from "@eyeseetea/d2-logger";
+import { TrackerProgramLogger } from "@eyeseetea/d2-logger";
 import _ from "lodash";
 import { isDev } from "../..";
 import { Future, FutureData } from "../../domain/entities/Future";
 import { LoggerSettings } from "../../domain/entities/LoggerSettings";
 import { OrgUnit } from "../../domain/entities/OrgUnit";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
-import { Id, NamedRef, Ref } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
@@ -14,7 +14,7 @@ import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
-import { GLOBAL_ORG_UNIT_CODE, setupLogger } from "../../utils/logger";
+import { setupLogger } from "../../utils/logger";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
@@ -100,7 +100,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     @cache()
     public getCurrent(): FutureData<User> {
-        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));
+        return apiToFuture(
+            this.api.currentUser.get({
+                fields: { ...fields, organisationUnits: { ...fields.organisationUnits, level: true } },
+            })
+        ).map(user => this.toDomainUser(user));
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
@@ -268,39 +272,38 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     private logMessage(
-        logger: Maybe<ProgramLogger>,
+        logger: Maybe<TrackerProgramLogger>,
         messageType: "success" | "warn" | "info" | "error",
         message: string | object
     ): void {
         if (logger) {
-            logger[messageType](typeof message === "string" ? message : JSON.stringify(message));
+            logger[messageType]({
+                config: { enrollmentId: "", trackedEntityId: "", programStageId: "", eventStatus: "ACTIVE" },
+                messages: [],
+            });
         }
     }
 
-    private getLogger(): FutureData<Maybe<ProgramLogger>> {
+    private getLogger(): FutureData<Maybe<TrackerProgramLogger>> {
         return Future.joinObj({
             loggerSettings: this.dataStorage.getObject<LoggerSettings>(Namespaces.LOGGER),
-            globalOrgUnit: this.getGlobalOrgUnit(),
-        }).flatMap(({ loggerSettings, globalOrgUnit }) => {
+            user: this.getCurrent(),
+        }).flatMap(({ loggerSettings, user }) => {
+            const sortOrgUnitsByLevel = _(user.organisationUnits)
+                .orderBy(orgUnit => [orgUnit.level, orgUnit.name])
+                .value();
+
+            const firstOrgUnit = _(sortOrgUnitsByLevel).first();
+            if (!firstOrgUnit) {
+                console.warn(`Cannot found org. unit for user ${user.username}`);
+                return Future.success(undefined);
+            }
             return Future.fromPromise(
-                setupLogger(this.api.baseUrl, { orgUnitId: globalOrgUnit.id, isDebug: isDev, settings: loggerSettings })
+                setupLogger(this.api.baseUrl, { orgUnitId: firstOrgUnit.id, isDebug: isDev, settings: loggerSettings })
             ).flatMapError(error => {
                 console.warn(`Setup Logger error: ${error}`);
                 return Future.error(error);
             });
-        });
-    }
-
-    private getGlobalOrgUnit(): FutureData<Ref> {
-        return apiToFuture(
-            this.api.models.organisationUnits.get({
-                fields: { id: true },
-                filter: { code: { eq: GLOBAL_ORG_UNIT_CODE } },
-            })
-        ).map(response => {
-            const globalOrgUnit = response.objects[0];
-            if (!globalOrgUnit) throw Error(`Cannot find global org unit with code ${GLOBAL_ORG_UNIT_CODE}`);
-            return { id: globalOrgUnit.id };
         });
     }
 

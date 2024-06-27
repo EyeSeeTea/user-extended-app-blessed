@@ -15,7 +15,13 @@ export class LoggerSettingsD2Repository implements LoggerSettingsRepository {
     get(): FutureData<LoggerSettings> {
         const $request = this.dataStorage.getOrCreateObject<LoggerSettings>(
             Namespaces.LOGGER,
-            LoggerSettings.create({ isEnabled: false, programId: "", messageId: "", messageTypeId: "" })
+            LoggerSettings.create({
+                isEnabled: false,
+                programId: "",
+                messageFileId: "",
+                programStageId: "",
+                usernameAttributeId: "",
+            })
         );
         return $request.map(settings => settings);
     }

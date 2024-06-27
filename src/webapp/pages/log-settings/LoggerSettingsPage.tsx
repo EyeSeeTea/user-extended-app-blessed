@@ -10,15 +10,16 @@ import { LoggerSettings } from "../../../domain/entities/LoggerSettings";
 import { useGoBack } from "../../hooks/useGoBack";
 import { PageHeader } from "../../components/page-header/PageHeader";
 
-export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
+export const LoggerSettingsPage: React.FC<{}> = () => {
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
     const goBack = useGoBack();
     const loading = useLoading();
     const [programs, setPrograms] = React.useState<Program[]>([]);
     const [selectedProgramId, setSelectedProgramId] = React.useState<Id | undefined>();
-    const [messageId, setMessageId] = React.useState<Id | undefined>();
-    const [messageType, setMessageType] = React.useState<Id | undefined>();
+    const [messageFileId, setMessageFileId] = React.useState<Id | undefined>();
+    const [programStageId, setProgramStageId] = React.useState<Id | undefined>();
+    const [userAttributeId, setUserAttributeId] = React.useState<Id | undefined>();
     const [enableLogger, setEnableLogger] = React.useState(false);
 
     React.useEffect(() => {
@@ -40,9 +41,10 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
         return compositionRoot.logger.get.execute().run(
             result => {
                 setSelectedProgramId(result.programId);
-                setMessageId(result.messageId);
-                setMessageType(result.messageTypeId);
+                setMessageFileId(result.messageFileId);
+                setProgramStageId(result.programStageId);
                 setEnableLogger(result.isEnabled);
+                setUserAttributeId(result.usernameAttributeId);
             },
             error => {
                 snackbar.error(error);
@@ -58,16 +60,32 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
 
     const onProgramChange = React.useCallback<DropdownProps["onChange"]>(value => {
         setSelectedProgramId(value);
-        setMessageId(undefined);
-        setMessageType(undefined);
+        setMessageFileId(undefined);
     }, []);
 
-    const dataElements =
+    const programStages =
         programs
             .find(program => program.id === selectedProgramId)
-            ?.dataElements.map(dataElement => ({ value: dataElement.id, text: dataElement.name })) || [];
+            ?.programStages.map(programStage => {
+                return { dataElements: programStage.dataElements, text: programStage.name, value: programStage.id };
+            }) || [];
 
-    const disableButton = !selectedProgramId || !messageId || !messageType;
+    const programAttributes =
+        programs
+            .find(program => program.id === selectedProgramId)
+            ?.attributes.map(attribute => {
+                return { text: attribute.name, value: attribute.id };
+            }) || [];
+
+    const dataElements = programStages.flatMap(programStage => {
+        if (programStage.value !== programStageId) return [];
+        return programStage.dataElements.map(dataElement => ({
+            value: dataElement.id,
+            text: dataElement.name,
+        }));
+    });
+
+    const disableButton = !selectedProgramId || !messageFileId || !programStageId || !userAttributeId;
 
     const onSubmit = React.useCallback<React.FormEventHandler<HTMLFormElement>>(
         event => {
@@ -77,8 +95,9 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
             LoggerSettings.build({
                 isEnabled: enableLogger,
                 programId: selectedProgramId,
-                messageId: messageId,
-                messageTypeId: messageType,
+                messageFileId: messageFileId,
+                programStageId: programStageId,
+                usernameAttributeId: userAttributeId,
             }).match({
                 success: settings => {
                     return compositionRoot.logger.save.execute(settings).run(
@@ -94,7 +113,16 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
                 },
             });
         },
-        [enableLogger, selectedProgramId, messageId, messageType, snackbar, disableButton, compositionRoot.logger.save]
+        [
+            enableLogger,
+            programStageId,
+            selectedProgramId,
+            messageFileId,
+            userAttributeId,
+            snackbar,
+            disableButton,
+            compositionRoot.logger.save,
+        ]
     );
 
     return (
@@ -110,24 +138,32 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsPageProps> = () => {
                 <DropDownContainer>
                     <Dropdown
                         items={programDropdownItems}
-                        label={i18n.t("Program Event")}
+                        label={i18n.t("Tracker Program")}
                         onChange={onProgramChange}
                         value={selectedProgramId}
                     />
 
                     <Dropdown
-                        items={dataElements}
-                        label={i18n.t("Message ID")}
-                        onChange={setMessageId}
-                        value={messageId}
+                        items={programAttributes}
+                        label={i18n.t("Username Attribute")}
+                        onChange={setUserAttributeId}
+                        value={userAttributeId}
+                    />
+
+                    <Dropdown
+                        items={programStages}
+                        label={i18n.t("Program Stages")}
+                        onChange={setProgramStageId}
+                        value={programStageId}
                     />
 
                     <Dropdown
                         items={dataElements}
-                        label={i18n.t("Message Type")}
-                        onChange={setMessageType}
-                        value={messageType}
+                        label={i18n.t("Message File ID")}
+                        onChange={setMessageFileId}
+                        value={messageFileId}
                     />
+
                     <ButtonContainer>
                         <Button type="submit" variant="contained" color="primary" disabled={disableButton} size="large">
                             {i18n.t("Save")}
@@ -156,5 +192,3 @@ const DropDownContainer = styled(FormGroup)`
 const ButtonContainer = styled.div`
     margin-inline-start: 10px;
 `;
-
-export type LoggerSettingsPageProps = {};
