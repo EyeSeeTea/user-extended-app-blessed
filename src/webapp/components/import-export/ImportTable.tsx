@@ -1,16 +1,13 @@
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import { FontIcon, RaisedButton } from "material-ui";
-import { Toggle } from "material-ui/Toggle";
 
-import React, { useState, useEffect, useCallback, SetStateAction } from "react";
-import LoadingMask from "../../../legacy/loading-mask/LoadingMask.component";
+import React, { useState, useEffect, useCallback, SetStateAction, ComponentProps, ComponentType } from "react";
 import { getExistingUsers } from "../../../legacy/models/userHelpers";
 import { Fields } from "./FormBuilder";
 // import { validateUsername } from "../../../legacy/utils/validators";
 
 import InfoDialog from "../../../legacy/components/InfoDialog";
-import ModalLoadingMask from "../../../legacy/components/ModalLoadingMask.component";
 import { generateUid } from "../../../utils/uid";
 import i18n from "../../../locales";
 import { useAppContext } from "../../contexts/app-context";
@@ -25,7 +22,6 @@ import {
     hasValue,
     string,
 } from "@dhis2/ui";
-import { MetadataResponse } from "@eyeseetea/d2-api/2.36";
 import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import {
     TableRow,
@@ -36,18 +32,19 @@ import {
     TableHead,
     TableContainer,
     Tooltip,
+    Switch,
+    FormControlLabel,
 } from "@material-ui/core";
 // import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton, Chip } from "material-ui";
-import { Form, FormSpy, useForm } from "react-final-form";
+import { Form, FormSpy, useForm, Field, UseFieldConfig } from "react-final-form";
+import { FormState } from "final-form";
 import { defaultUser, User } from "../../../domain/entities/User";
 import { ColumnSelectorDialog } from "../column-selector-dialog/ColumnSelectorDialog";
 import { UserFormField, getUserFieldName, userFormFields } from "../user-form/utils";
 import { UserRoleGroupFF } from "../user-form/components/UserRoleGroupFF";
 import { OrgUnitSelectorFF } from "../user-form/components/OrgUnitSelectorFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
-import { ComponentProps, ComponentType } from "react";
-import { Field, UseFieldConfig } from "react-final-form";
 
 type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<FieldValue> &
     Omit<ComponentProps<T>, "input" | "meta"> & {
@@ -160,7 +157,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     const [columns, setColumns] = useState<string[]>([...baseUserColumns, ""]);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
-    const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(false);
+    const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(true);
     const [usersValidation, setUsersValidation] = React.useState({});
 
     const loading = useLoading();
@@ -189,6 +186,16 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
         fetchData();
     }, [d2]);
 
+    const existingUserInTable = useCallback(
+        (newUsers: User[]) => {
+            if (!existingUsersNames) {
+                return false;
+            }
+            return newUsers.some(user => existingUsersNames.includes(user.username));
+        },
+        [existingUsersNames]
+    );
+
     const closeInfoDialog = () => {
         setInfoDialog(null);
     };
@@ -211,9 +218,9 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     //     }
     // };
 
-    const toggleAllowOverwrite = () => {
-        setAllowOverwrite(!allowOverwrite);
-    };
+    const toggleAllowOverwrite = useCallback((_event, newValue: boolean) => {
+        setAllowOverwrite(newValue);
+    }, []);
 
     const renderDialogTitle = () => {
         const errorsCount = _(usersValidation)
@@ -295,43 +302,47 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
 
     let submit: any;
 
-    const renderTableRow = (user: User, rowIndex: number, users: User[]) => {
-        // TODO maybe useFormState();
-        const currentUsername = users[rowIndex]?.username || user.username;
-        const existingUser = existingUsers[currentUsername];
-        const rowStyles = !allowOverwrite && existingUsers[currentUsername] ? styles.rowExistingUser : styles.row;
-        const chipStyle = existingUser ? styles.chipExistingUser : undefined;
-        const chipTitle = existingUser
-            ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
-            : "";
-        const chipText = (rowIndex + 1).toString() + (existingUser ? "-E" : "");
-        return (
-            <TableRow key={rowIndex} style={rowStyles}>
-                <TableCell>
-                    <Tooltip title={chipTitle}>
-                        <Chip style={chipStyle}>{chipText}</Chip>
-                    </Tooltip>
-                </TableCell>
+    const renderTableRow = useCallback(
+        (user: User, rowIndex: number, users: User[]) => {
+            // TODO maybe useFormState();
+            const currentUsername = users[rowIndex]?.username || user.username;
+            const existingUser = existingUsers[currentUsername];
+            const rowStyles = !allowOverwrite && existingUsers[currentUsername] ? styles.rowExistingUser : styles.row;
+            const chipStyle = existingUser ? styles.chipExistingUser : undefined;
+            const chipTitle = existingUser
+                ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
+                : "";
+            const chipText = (rowIndex + 1).toString() + (existingUser ? "-E" : "");
+            return (
+                <TableRow key={rowIndex} style={rowStyles}>
+                    <TableCell>
+                        <Tooltip title={chipTitle}>
+                            <Chip style={chipStyle}>{chipText}</Chip>
+                        </Tooltip>
+                    </TableCell>
 
-                {_(columns)
-                    .map((value, columnIndex) => (
-                        <TableCell key={`${rowIndex}-${columnIndex}-${value}`}>
-                            <RowItem
-                                key={`${rowIndex}-${columnIndex}-${value}`}
-                                rowIndex={rowIndex}
-                                columnIndex={columnIndex}
-                                data={{ columns, existingUsersNames }}
-                                onDelete={users => setUsers(users)}
-                            />
-                        </TableCell>
-                    ))
-                    .value()}
-            </TableRow>
-        );
-    };
+                    {_(columns)
+                        .map((value, columnIndex) => (
+                            <TableCell key={`${rowIndex}-${columnIndex}-${value}`}>
+                                <RowItem
+                                    key={`${rowIndex}-${columnIndex}-${value}`}
+                                    rowIndex={rowIndex}
+                                    columnIndex={columnIndex}
+                                    data={{ columns, existingUsersNames }}
+                                    onDelete={users => setUsers(users)}
+                                />
+                            </TableCell>
+                        ))
+                        .value()}
+                </TableRow>
+            );
+        },
+        [columns, existingUsersNames]
+    );
 
-    const updateFormState = (arg: any) => {
+    const updateFormState = ({ values: { users: updatedUsers }, errors, ...arg }: FormState<{ users: User[] }>) => {
         console.log("updateFormState", arg);
+        setShowOverwriteToggle(existingUserInTable(updatedUsers));
     };
 
     return (
@@ -407,6 +418,12 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                             }}
                         />
                     </TableContainer>
+                    {showOverwriteToggle && !templateUser && (
+                        <FormControlLabel
+                            control={<Switch checked={allowOverwrite} onChange={toggleAllowOverwrite} />}
+                            label={i18n.t("Overwrite existing users")}
+                        />
+                    )}
                 </div>
             )}
 
@@ -416,17 +433,6 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                     title={i18n.t("Error on metadata action")}
                     onClose={() => closeInfoDialog()}
                     response={infoDialog.response}
-                />
-            )}
-
-            {showOverwriteToggle && !templateUser && (
-                <Toggle
-                    label={i18n.t("Overwrite existing users")}
-                    labelPosition="right"
-                    toggled={allowOverwrite}
-                    onToggle={toggleAllowOverwrite}
-                    // @ts-ignore
-                    style={styles.overwriteToggle}
                 />
             )}
         </ConfirmationDialog>
