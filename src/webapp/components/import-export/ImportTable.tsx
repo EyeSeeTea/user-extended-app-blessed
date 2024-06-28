@@ -152,37 +152,38 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
     const [infoDialog, setInfoDialog] = React.useState<{ title: string; body: string; response: string } | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [isImporting, setIsImporting] = React.useState(false);
-    // const [users, setUsers] = React.useState(OrderedMap<Id, Pick<User, keyof Fields>>([]));
     const [allowOverwrite, setAllowOverwrite] = React.useState(false);
 
-    const loading = useLoading();
-    const snackbar = useSnackbar();
     const [users, setUsers] = useState<User[]>(usersFromFile);
-    const [summary, setSummary] = useState<MetadataResponse[]>();
+
     // Add a blank column to the end for delete buttons
     const [columns, setColumns] = useState<string[]>([...baseUserColumns, ""]);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
     const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(false);
     const [usersValidation, setUsersValidation] = React.useState({});
-    // console.log({ props });
-    const getUsername = (user: ApiUser | User): string => {
-        if ("userCredentials" in user) {
-            return user.userCredentials.username;
-        } else {
-            return user.username;
-        }
-    };
+
+    const loading = useLoading();
+    const snackbar = useSnackbar();
 
     useEffect(() => {
+        const getUsername = (user: ApiUser | User): string => {
+            if ("userCredentials" in user) {
+                return user.userCredentials.username;
+            } else {
+                return user.username;
+            }
+        };
+
         const fetchData = async () => {
             setIsLoading(true);
+            loading.show(true);
             const [existingUsersD2]: [UserLegacy[]] = await Promise.all([getExistingUsers(d2)]);
             const existingUsersMapped = _.keyBy(existingUsersD2, getUsername) as Record<string, UserLegacy>;
             setExistingUsers(existingUsersMapped as unknown as SetStateAction<Record<string, User>>);
             setExistingUsersNames(existingUsersD2.map((_user: Partial<UserLegacy>) => getUsername(_user as ApiUser)));
             setIsLoading(false);
+            loading.reset();
         };
 
         fetchData();
@@ -273,8 +274,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
             }
 
             if (data && data.status === "ERROR") {
-                // @ts-ignore
-                setSummary([data]);
+                // error
             } else {
                 // close
             }
@@ -293,7 +293,6 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
         setUsers(users => users.concat(newUser));
     }, []);
 
-    const closeSummary = () => setSummary(undefined);
     let submit: any;
 
     const renderTableRow = (user: User, rowIndex: number, users: User[]) => {
@@ -345,14 +344,9 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
             onCancel={onRequestClose}
             saveText={actionText}
             onSave={event => submit(event)}
-
             // disableSave={_.isEmpty(users) || !areUsersValid}
         >
-            {isImporting && <ModalLoadingMask />}
-
-            {isLoading ? (
-                <LoadingMask />
-            ) : (
+            {!isLoading && (
                 <div>
                     {columnSelectorOpen && (
                         <ColumnSelectorDialog
