@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-06-12T15:20:23.307Z\n"
-"PO-Revision-Date: 2024-06-12T15:20:23.307Z\n"
+"POT-Creation-Date: 2024-06-28T00:45:09.141Z\n"
+"PO-Revision-Date: 2024-06-28T00:45:09.141Z\n"
 
 msgid "ID"
 msgstr ""
@@ -449,6 +449,30 @@ msgid "Norwegian Refugee Council"
 msgstr ""
 
 msgid "MSF"
+msgstr ""
+
+msgid "Settings saved"
+msgstr ""
+
+msgid "Logger Settings"
+msgstr ""
+
+msgid "Enable Logger"
+msgstr ""
+
+msgid "Tracker Program"
+msgstr ""
+
+msgid "Username Attribute"
+msgstr ""
+
+msgid "Program Stages"
+msgstr ""
+
+msgid "Data Element File ID"
+msgstr ""
+
+msgid "Data Element DateTime"
 msgstr ""
 
 msgid "Edit users"
