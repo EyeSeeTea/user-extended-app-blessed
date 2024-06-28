@@ -18,6 +18,3 @@ li {
 .org-unit-dialog-selector > .MuiPaper-root {
     width: 100% !important;
 }
-body > iframe {
-    pointer-events: none;
-}
