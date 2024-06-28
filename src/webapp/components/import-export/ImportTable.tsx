@@ -160,7 +160,8 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     const snackbar = useSnackbar();
     const [users, setUsers] = useState<User[]>(usersFromFile);
     const [summary, setSummary] = useState<MetadataResponse[]>();
-    const [columns, setColumns] = useState<string[]>(baseUserColumns);
+    // Add a blank column to the end for delete buttons
+    const [columns, setColumns] = useState<string[]>([...baseUserColumns, ""]);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
     const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(false);
@@ -321,6 +322,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                 rowIndex={rowIndex}
                                 columnIndex={columnIndex}
                                 data={{ columns, existingUsersNames }}
+                                onDelete={users => setUsers(users)}
                             />
                         </TableCell>
                     ))
@@ -384,7 +386,6 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                                                 {header}
                                                             </TableCell>
                                                         ))}
-                                                        <TableCell style={styles.actionsHeader}>D</TableCell>
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody style={styles.tableBody}>
@@ -456,19 +457,19 @@ type RowItemProps = {
     data: { columns: string[]; existingUsersNames: string[] };
     columnIndex: number;
     rowIndex: number;
+    onDelete: (users: User[]) => void;
 };
 
-const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
+const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete }) => {
     const form = useForm<{ users: User[] }>();
-    const deleteRow = columnIndex === data.columns.length;
-    const row = rowIndex;
+    const deleteRow = columnIndex === data.columns.length - 1;
     const field = data.columns[columnIndex];
 
     const removeRow = useCallback(() => {
         const original = form.getState().values.users;
-        const users = [...original.slice(0, row), ...original.slice(row + 1)];
-        form.change("users", users);
-    }, [form, row]);
+        const users = [...original.slice(0, rowIndex), ...original.slice(rowIndex + 1)];
+        onDelete(users);
+    }, [form, onDelete, rowIndex]);
     // console.log({ field, columnIndex, rowIndex, deleteRow: data.columns.length });
 
     if (deleteRow) {
@@ -481,15 +482,15 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex }) => {
 
     if (!field) return null;
 
-    return <RenderUserImportField row={row} field={field} existingUsersNames={data.existingUsersNames} />;
+    return <RenderUserImportField rowIndex={rowIndex} field={field} existingUsersNames={data.existingUsersNames} />;
 };
 
-const RenderUserImportField: React.FC<{ row: number; field: UserFormField; existingUsersNames: string[] }> = ({
-    row,
+const RenderUserImportField: React.FC<{ rowIndex: number; field: UserFormField; existingUsersNames: string[] }> = ({
+    rowIndex,
     field,
     existingUsersNames,
 }) => {
-    const name = `users[${row}].${field}`;
+    const name = `users[${rowIndex}].${field}`;
 
     const { validation, props: validationProps = {} } = useValidations(field);
     const props = {
@@ -508,22 +509,22 @@ const RenderUserImportField: React.FC<{ row: number; field: UserFormField; exist
         case "searchOrganisationsUnits":
             return (
                 <PreviewInputFF {...props}>
-                    <RenderField row={row} field={field} existingUsersNames={existingUsersNames} />
+                    <RenderField rowIndex={rowIndex} field={field} existingUsersNames={existingUsersNames} />
                 </PreviewInputFF>
             );
         default:
-            return <RenderField row={row} field={field} existingUsersNames={existingUsersNames} />;
+            return <RenderField rowIndex={rowIndex} field={field} existingUsersNames={existingUsersNames} />;
     }
 };
 
-const RenderField: React.FC<{ row: number; field: UserFormField; existingUsersNames: string[] }> = ({
-    row,
+const RenderField: React.FC<{ rowIndex: number; field: UserFormField; existingUsersNames: string[] }> = ({
+    rowIndex,
     field,
     existingUsersNames,
 }) => {
     // const { values } = useFormState();
     const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames);
-    const name = `users[${row}].${field}`;
+    const name = `users[${rowIndex}].${field}`;
     const props = {
         name,
         placeholder: getUserFieldName(field),
