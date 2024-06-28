@@ -1,104 +1,91 @@
 import React from "react";
 import styled from "styled-components";
-import { Dropdown, DropdownProps, useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { Dropdown, DropdownItem, DropdownProps, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../contexts/app-context";
-import { Program } from "../../../domain/entities/Program";
-import { Id } from "../../../domain/entities/Ref";
+
 import i18n from "../../../locales";
 import { Button, Checkbox, FormControlLabel, FormGroup } from "@material-ui/core";
 import { LoggerSettings } from "../../../domain/entities/LoggerSettings";
 import { useGoBack } from "../../hooks/useGoBack";
 import { PageHeader } from "../../components/page-header/PageHeader";
+import { useGetLoggerSettings, usePrograms } from "./useLogger";
+import { Maybe } from "../../../types/utils";
+import { DataElementAttrs, ProgramStageAttrs } from "../../../domain/entities/Program";
+import { Id } from "../../../domain/entities/Ref";
+
+function convertToDropdownItem<T extends { id: string; name: string }>(data: T[]): DropdownItem[] {
+    return data.map(item => ({ value: item.id, text: item.name }));
+}
+
+function dataElementsByType(dataElements: DataElementAttrs[], valueType: "FILE" | "DATE"): DataElementAttrs[] {
+    return dataElements.filter(item => item.valueType === valueType);
+}
+
+function dataElementsByProgramStage(
+    programStages: ProgramStageAttrs[],
+    programStageId: Id,
+    valueType: "FILE" | "DATE"
+): DropdownItem[] {
+    const dataElements = programStages.flatMap(programStage => {
+        if (programStage.id !== programStageId) return [];
+        return convertToDropdownItem(dataElementsByType(programStage.dataElements, valueType));
+    });
+    return dataElements;
+}
 
 export const LoggerSettingsPage: React.FC<{}> = () => {
     const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
     const goBack = useGoBack();
-    const loading = useLoading();
-    const [programs, setPrograms] = React.useState<Program[]>([]);
-    const [selectedProgramId, setSelectedProgramId] = React.useState<Id | undefined>();
-    const [messageFileId, setMessageFileId] = React.useState<Id | undefined>();
-    const [programStageId, setProgramStageId] = React.useState<Id | undefined>();
-    const [userAttributeId, setUserAttributeId] = React.useState<Id | undefined>();
-    const [enableLogger, setEnableLogger] = React.useState(false);
 
-    React.useEffect(() => {
-        loading.show();
-        return compositionRoot.programs.get.execute().run(
-            result => {
-                setPrograms(result);
-                loading.hide();
-            },
-            error => {
-                snackbar.error(error);
-                loading.hide();
-            }
-        );
-    }, [compositionRoot.programs.get, snackbar, loading]);
-
-    React.useEffect(() => {
-        if (programs.length === 0) return;
-        return compositionRoot.logger.get.execute().run(
-            result => {
-                setSelectedProgramId(result.programId);
-                setMessageFileId(result.messageFileId);
-                setProgramStageId(result.programStageId);
-                setEnableLogger(result.isEnabled);
-                setUserAttributeId(result.usernameAttributeId);
-            },
-            error => {
-                snackbar.error(error);
-            }
-        );
-    }, [programs, compositionRoot.logger.get, snackbar]);
+    const { programs } = usePrograms();
+    const { settings, setSettings } = useGetLoggerSettings({ programs });
 
     const programDropdownItems = programs.map(program => ({ value: program.id, text: program.name }));
 
-    const onEnableLogger = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(event => {
-        setEnableLogger(event.target.checked);
-    }, []);
+    const currentProgram = programs.find(program => program.id === settings?.programId);
 
-    const onProgramChange = React.useCallback<DropdownProps["onChange"]>(value => {
-        setSelectedProgramId(value);
-        setMessageFileId(undefined);
-    }, []);
+    const programStages = currentProgram?.programStages || [];
 
-    const programStages =
-        programs
-            .find(program => program.id === selectedProgramId)
-            ?.programStages.map(programStage => {
-                return { dataElements: programStage.dataElements, text: programStage.name, value: programStage.id };
-            }) || [];
+    const programAttributes = convertToDropdownItem(currentProgram?.attributes || []);
 
-    const programAttributes =
-        programs
-            .find(program => program.id === selectedProgramId)
-            ?.attributes.map(attribute => {
-                return { text: attribute.name, value: attribute.id };
-            }) || [];
+    const dataElementsFile = dataElementsByProgramStage(programStages, settings?.programStageId || "", "FILE");
+    const dataElementsDate = dataElementsByProgramStage(programStages, settings?.programStageId || "", "DATE");
 
-    const dataElements = programStages.flatMap(programStage => {
-        if (programStage.value !== programStageId) return [];
-        return programStage.dataElements.map(dataElement => ({
-            value: dataElement.id,
-            text: dataElement.name,
-        }));
-    });
+    const disableButton = settings ? LoggerSettings.isNotValid(settings) : true;
 
-    const disableButton = !selectedProgramId || !messageFileId || !programStageId || !userAttributeId;
+    const onEnableLogger = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(
+        event => {
+            setSettings(prev => {
+                if (!prev) return undefined;
+                return LoggerSettings.create({ ...prev, isEnabled: event.target.checked });
+            });
+        },
+        [setSettings]
+    );
+
+    const onProgramChange = React.useCallback<DropdownProps["onChange"]>(
+        value => {
+            setSettings(prev => {
+                if (!prev) return undefined;
+                return LoggerSettings.create({
+                    ...prev,
+                    programId: value || "",
+                    dataElementFileId: "",
+                    programStageId: "",
+                    usernameAttributeId: "",
+                });
+            });
+        },
+        [setSettings]
+    );
 
     const onSubmit = React.useCallback<React.FormEventHandler<HTMLFormElement>>(
         event => {
             event.preventDefault();
-            if (disableButton) return false;
+            if (disableButton || !settings) return false;
 
-            LoggerSettings.build({
-                isEnabled: enableLogger,
-                programId: selectedProgramId,
-                messageFileId: messageFileId,
-                programStageId: programStageId,
-                usernameAttributeId: userAttributeId,
-            }).match({
+            LoggerSettings.build(settings).match({
                 success: settings => {
                     return compositionRoot.logger.save.execute(settings).run(
                         () => {
@@ -113,16 +100,17 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
                 },
             });
         },
-        [
-            enableLogger,
-            programStageId,
-            selectedProgramId,
-            messageFileId,
-            userAttributeId,
-            snackbar,
-            disableButton,
-            compositionRoot.logger.save,
-        ]
+        [settings, snackbar, disableButton, compositionRoot.logger.save]
+    );
+
+    const onChangeSettings = React.useCallback(
+        (value: Maybe<string>, key: keyof LoggerSettings) => {
+            setSettings(prev => {
+                if (!prev) return undefined;
+                return LoggerSettings.create({ ...prev, [key]: value || "" });
+            });
+        },
+        [setSettings]
     );
 
     return (
@@ -131,7 +119,7 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
             <SettingsForm onSubmit={onSubmit}>
                 <CheckboxContainer>
                     <FormControlLabel
-                        control={<Checkbox checked={enableLogger} onChange={onEnableLogger} />}
+                        control={<Checkbox checked={settings?.isEnabled || false} onChange={onEnableLogger} />}
                         label={i18n.t("Enable Logger")}
                     />
                 </CheckboxContainer>
@@ -140,28 +128,35 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
                         items={programDropdownItems}
                         label={i18n.t("Tracker Program")}
                         onChange={onProgramChange}
-                        value={selectedProgramId}
+                        value={settings?.programId}
                     />
 
                     <Dropdown
                         items={programAttributes}
                         label={i18n.t("Username Attribute")}
-                        onChange={setUserAttributeId}
-                        value={userAttributeId}
+                        onChange={value => onChangeSettings(value, "usernameAttributeId")}
+                        value={settings?.usernameAttributeId}
                     />
 
                     <Dropdown
-                        items={programStages}
+                        items={convertToDropdownItem(programStages)}
                         label={i18n.t("Program Stages")}
-                        onChange={setProgramStageId}
-                        value={programStageId}
+                        onChange={value => onChangeSettings(value, "programStageId")}
+                        value={settings?.programStageId}
                     />
 
                     <Dropdown
-                        items={dataElements}
-                        label={i18n.t("Message File ID")}
-                        onChange={setMessageFileId}
-                        value={messageFileId}
+                        items={dataElementsFile}
+                        label={i18n.t("Data Element File ID")}
+                        onChange={value => onChangeSettings(value, "dataElementFileId")}
+                        value={settings?.dataElementFileId}
+                    />
+
+                    <Dropdown
+                        items={dataElementsDate}
+                        label={i18n.t("Data Element DateTime")}
+                        onChange={value => onChangeSettings(value, "dataElementDateTimeId")}
+                        value={settings?.dataElementDateTimeId}
                     />
 
                     <ButtonContainer>

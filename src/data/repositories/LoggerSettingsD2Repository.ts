@@ -18,9 +18,10 @@ export class LoggerSettingsD2Repository implements LoggerSettingsRepository {
             LoggerSettings.create({
                 isEnabled: false,
                 programId: "",
-                messageFileId: "",
+                dataElementFileId: "",
                 programStageId: "",
                 usernameAttributeId: "",
+                dataElementDateTimeId: "",
             })
         );
         return $request.map(settings => settings);

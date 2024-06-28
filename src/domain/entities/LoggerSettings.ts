@@ -6,18 +6,29 @@ export type LoggerSettingsAttrs = {
     isEnabled: boolean;
     programId: Id;
     programStageId: Id;
-    messageFileId: Id;
+    dataElementFileId: Id;
     usernameAttributeId: Id;
+    dataElementDateTimeId: Id;
 };
 
 export class LoggerSettings extends Struct<LoggerSettingsAttrs>() {
     static build(data: LoggerSettingsAttrs): Either<Error, LoggerSettings> {
-        if (!data.programId || !data.messageFileId || !data.programStageId || !data.usernameAttributeId) {
-            return Either.error(
-                new Error("Program ID, program stage, user attribute and Message File ID are required")
-            );
+        if (this.isNotValid(data)) {
+            return Either.error(new Error("All fields are required"));
+        } else if (data.dataElementDateTimeId === data.dataElementFileId) {
+            return Either.error(new Error("File and DateTime dataElements cannot be the same"));
         }
 
         return Either.success(LoggerSettings.create(data));
+    }
+
+    static isNotValid(data: LoggerSettingsAttrs): boolean {
+        return (
+            !data.programId ||
+            !data.dataElementFileId ||
+            !data.programStageId ||
+            !data.usernameAttributeId ||
+            !data.dataElementDateTimeId
+        );
     }
 }

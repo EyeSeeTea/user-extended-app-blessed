@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { D2Api } from "./../../types/d2-api";
+import { D2Api, D2DataElement } from "./../../types/d2-api";
 import { FutureData } from "../../domain/entities/Future";
 import { DataElementAttrs, Program, ProgramStageAttrs } from "../../domain/entities/Program";
 import { ProgramRepository } from "../../domain/repositories/ProgramRepository";
@@ -15,7 +15,10 @@ export class ProgramD2Repository implements ProgramRepository {
                 fields: {
                     id: true,
                     displayName: true,
-                    programTrackedEntityAttributes: { id: true, displayName: true, valueType: true },
+                    programTrackedEntityAttributes: {
+                        trackedEntityAttribute: { id: true, displayName: true },
+                        valueType: true,
+                    },
                     programStages: {
                         id: true,
                         displayName: true,
@@ -34,12 +37,16 @@ export class ProgramD2Repository implements ProgramRepository {
                     const programStages = _(program.programStages)
                         .map((programStage): Maybe<ProgramStageAttrs> => {
                             const allDataElements = _(programStage.programStageDataElements)
-                                .map(
-                                    (psDe): Maybe<DataElementAttrs> =>
-                                        psDe.dataElement.valueType === "FILE_RESOURCE"
-                                            ? { id: psDe.dataElement.id, name: psDe.dataElement.displayName }
-                                            : undefined
-                                )
+                                .map((psDe): Maybe<DataElementAttrs> => {
+                                    const valueType = this.getFileTypeFromDataElement(psDe.dataElement.valueType);
+                                    return valueType
+                                        ? {
+                                              valueType: valueType,
+                                              id: psDe.dataElement.id,
+                                              name: psDe.dataElement.displayName,
+                                          }
+                                        : undefined;
+                                })
                                 .compact()
                                 .value();
 
@@ -54,12 +61,17 @@ export class ProgramD2Repository implements ProgramRepository {
                         .compact()
                         .value();
 
+                    if (programStages.length === 0) return undefined;
+
                     return Program.create({
                         attributes: _(program.programTrackedEntityAttributes)
                             .map(attribute => {
                                 if (attribute.valueType !== "TEXT" && attribute.valueType !== "LONG_TEXT")
                                     return undefined;
-                                return { id: attribute.id, name: attribute.displayName };
+                                return {
+                                    id: attribute.trackedEntityAttribute.id,
+                                    name: attribute.trackedEntityAttribute.displayName,
+                                };
                             })
                             .compact()
                             .value(),
@@ -72,5 +84,18 @@ export class ProgramD2Repository implements ProgramRepository {
                 .value();
             return programs;
         });
+    }
+
+    private getFileTypeFromDataElement(valueType: D2DataElement["valueType"]): "FILE" | "DATE" | undefined {
+        switch (valueType) {
+            case "FILE_RESOURCE":
+                return "FILE";
+            case "DATE":
+                return "DATE";
+            case "DATETIME":
+                return "DATE";
+            default:
+                return undefined;
+        }
     }
 }

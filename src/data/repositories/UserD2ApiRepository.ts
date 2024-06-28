@@ -1,9 +1,6 @@
 import { D2Api, D2UserSchema, MetadataResponse, SelectedPick } from "@eyeseetea/d2-api/2.36";
-import { TrackerProgramLogger } from "@eyeseetea/d2-logger";
 import _ from "lodash";
-import { isDev } from "../..";
 import { Future, FutureData } from "../../domain/entities/Future";
-import { LoggerSettings } from "../../domain/entities/LoggerSettings";
 import { OrgUnit } from "../../domain/entities/OrgUnit";
 import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { Id, NamedRef } from "../../domain/entities/Ref";
@@ -14,10 +11,10 @@ import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
-import { setupLogger } from "../../utils/logger";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
+import { D2ApiLogger, D2LoggerMessage } from "../D2ApiLogger";
 import { Instance } from "../entities/Instance";
 import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
@@ -26,12 +23,10 @@ import { buildUserWithoutPassword, chunkRequest, getErrorFromResponse } from "..
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
     private userStorage: StorageClient;
-    private dataStorage: StorageClient;
 
     constructor(instance: Instance) {
         this.api = getD2APiFromInstance(instance);
         this.userStorage = new DataStoreStorageClient("user", instance);
-        this.dataStorage = new DataStoreStorageClient("global", instance);
     }
 
     private getLocales(users: User[]): FutureData<User[]> {
@@ -251,19 +246,14 @@ export class UserD2ApiRepository implements UserRepository {
                         .compact()
                         .value();
 
-                    this.logMessage(logger, "info", "Saving Users");
-                    this.logMessage(logger, "info", {
-                        users: buildUserWithoutPassword(usersToSend as ApiUser[]),
-                        userGroups,
-                    });
+                    logger?.log({ users: buildUserWithoutPassword(usersToSend as ApiUser[]), userGroups });
                     return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups }))
                         .flatMap(data => {
-                            this.logMessage(logger, "success", "Users saved");
-                            this.logMessage(logger, "success", data);
+                            logger?.log(data);
                             return this.saveLocales(usersToSave).map(() => data);
                         })
                         .flatMapError(error => {
-                            this.logMessage(logger, "error", error);
+                            logger?.log({ error: error });
                             return Future.error(error);
                         });
                 });
@@ -271,39 +261,10 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    private logMessage(
-        logger: Maybe<TrackerProgramLogger>,
-        messageType: "success" | "warn" | "info" | "error",
-        message: string | object
-    ): void {
-        if (logger) {
-            logger[messageType]({
-                config: { enrollmentId: "", trackedEntityId: "", programStageId: "", eventStatus: "ACTIVE" },
-                messages: [],
-            });
-        }
-    }
-
-    private getLogger(): FutureData<Maybe<TrackerProgramLogger>> {
-        return Future.joinObj({
-            loggerSettings: this.dataStorage.getObject<LoggerSettings>(Namespaces.LOGGER),
-            user: this.getCurrent(),
-        }).flatMap(({ loggerSettings, user }) => {
-            const sortOrgUnitsByLevel = _(user.organisationUnits)
-                .orderBy(orgUnit => [orgUnit.level, orgUnit.name])
-                .value();
-
-            const firstOrgUnit = _(sortOrgUnitsByLevel).first();
-            if (!firstOrgUnit) {
-                console.warn(`Cannot found org. unit for user ${user.username}`);
-                return Future.success(undefined);
-            }
-            return Future.fromPromise(
-                setupLogger(this.api.baseUrl, { orgUnitId: firstOrgUnit.id, isDebug: isDev, settings: loggerSettings })
-            ).flatMapError(error => {
-                console.warn(`Setup Logger error: ${error}`);
-                return Future.error(error);
-            });
+    private getLogger(): FutureData<Maybe<D2LoggerMessage>> {
+        return this.getCurrent().flatMap(currentUser => {
+            const d2ApiTracker = new D2ApiLogger(this.api);
+            return d2ApiTracker.buildLogger(currentUser);
         });
     }
 

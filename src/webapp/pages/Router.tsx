@@ -11,7 +11,7 @@ import { AboutPage } from "./about/AboutPage";
 import { LoggerSettingsPage } from "./log-settings/LoggerSettingsPage";
 
 export const Router: React.FC = React.memo(() => {
-    const { api } = useAppContext();
+    const { api, currentUser } = useAppContext();
 
     return (
         <HashRouter>
@@ -25,7 +25,7 @@ export const Router: React.FC = React.memo(() => {
                     path="/"
                     element={
                         <LegacyAppWrapper>
-                            <ListHybrid api={api} />
+                            <ListHybrid api={api} currentUser={currentUser} />
                         </LegacyAppWrapper>
                     }
                 />
