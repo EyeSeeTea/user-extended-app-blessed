@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { TrackerProgramLogger } from "@eyeseetea/d2-logger";
-import { isDev } from "..";
 import { Future, FutureData } from "../domain/entities/Future";
 import { LoggerSettings } from "../domain/entities/LoggerSettings";
 import { User } from "../domain/entities/User";
@@ -28,7 +27,11 @@ export class D2ApiLogger {
         return this.dataStorage.getObject<LoggerSettings>(Namespaces.LOGGER).flatMap(loggerSettings => {
             const orgUnitId = this.getOrgUnitIdFromUser(user);
             if (!orgUnitId) return Future.success(undefined);
-            const loggerOptions = { orgUnitId: orgUnitId, isDebug: isDev, settings: loggerSettings };
+            const loggerOptions = {
+                orgUnitId: orgUnitId,
+                isDebug: window.location.host.includes("localhost"),
+                settings: loggerSettings,
+            };
             return Future.fromPromise(setupLogger(this.api.baseUrl, loggerOptions))
                 .flatMap(logger => {
                     if (!logger || !loggerSettings) return Future.success(undefined);

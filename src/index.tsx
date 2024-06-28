@@ -18,7 +18,7 @@ declare global {
     }
 }
 
-export const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development";
 
 async function getBaseUrl() {
     if (isDev) {
