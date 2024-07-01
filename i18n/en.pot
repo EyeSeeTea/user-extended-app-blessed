@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-06-25T16:54:15.485Z\n"
-"PO-Revision-Date: 2024-06-25T16:54:15.485Z\n"
+"POT-Creation-Date: 2024-07-01T16:31:12.654Z\n"
+"PO-Revision-Date: 2024-07-01T16:31:12.654Z\n"
 
 msgid "ID"
 msgstr ""
@@ -137,16 +137,13 @@ msgstr ""
 msgid "User already exists: {{id}}"
 msgstr ""
 
-msgid "Error saving users"
-msgstr ""
-
 msgid "Add user"
 msgstr ""
 
-msgid "Error on metadata action"
+msgid "Overwrite existing users"
 msgstr ""
 
-msgid "Overwrite existing users"
+msgid "Error on metadata action"
 msgstr ""
 
 msgid "Remove user"
@@ -467,6 +464,9 @@ msgid "Edit users"
 msgstr ""
 
 msgid "Column settings"
+msgstr ""
+
+msgid "Error saving users"
 msgstr ""
 
 msgid "Delete"
