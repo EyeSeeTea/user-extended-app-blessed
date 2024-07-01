@@ -33,6 +33,8 @@ import {
     Tooltip,
     Switch,
     FormControlLabel,
+    DialogTitle,
+    Typography,
 } from "@material-ui/core";
 // import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton, Chip } from "material-ui";
@@ -44,6 +46,7 @@ import { UserFormField, getUserFieldName, userFormFields } from "../user-form/ut
 import { UserRoleGroupFF } from "../user-form/components/UserRoleGroupFF";
 import { OrgUnitSelectorFF } from "../user-form/components/OrgUnitSelectorFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
+import styled from "styled-components";
 
 type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<FieldValue> &
     Omit<ComponentProps<T>, "input" | "meta"> & {
@@ -54,79 +57,6 @@ type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<F
         defaultValue?: FieldValue;
     };
 
-const styles: Record<string, React.CSSProperties> = {
-    dialogIcons: {
-        float: "right",
-    },
-    dialogTitle: {
-        margin: "0px 0px -1px",
-        padding: "24px 24px 20px",
-        fontSize: 24,
-        fontWeight: "bolder",
-        lineHeight: "32px",
-        display: "inline",
-    },
-    overwriteToggle: {
-        float: "left",
-        textAlign: "left",
-        width: "33%",
-        marginLeft: "20px",
-    },
-    // Table
-    tableWrapper: {
-        overflow: "visible",
-    },
-    table: {
-        marginBottom: 5,
-    },
-    tableBody: {
-        overflow: "visible",
-    },
-    addRowButton: {
-        margin: 20,
-        textAlign: "center" as const,
-    },
-    header: {
-        width: 150,
-        fontWeight: "bold",
-        fontSize: "1.2em",
-        overflow: "hidden",
-    },
-    cell: {
-        width: 150,
-    },
-    row: {
-        border: "none",
-    },
-    rowExistingUser: {
-        border: "none",
-        backgroundColor: "#FDD",
-    },
-    chipExistingUser: {
-        backgroundColor: "#FAA",
-    },
-    removeIcon: {
-        cursor: "pointer",
-    },
-    warningsInfo: {
-        textAlign: "left",
-        float: "left",
-        marginLeft: "20px",
-    },
-    tableColumn: {
-        width: 70,
-    },
-    actionsHeader: {
-        width: 50,
-        paddingLeft: "10px",
-        paddingRight: "10px",
-        overflow: "visible",
-    },
-    cancelButton: {
-        marginRight: 16,
-    },
-};
-
 export const ImportTable: React.FC<ImportTableProps> = props => {
     const {
         title,
@@ -136,8 +66,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         onSave,
         onRequestClose,
         templateUser = null,
-        settings,
-        api,
         actionText,
         warnings = [],
     } = props;
@@ -160,6 +88,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
     const [errorsCount, setErrorsCount] = React.useState(0);
     const [areUsersValid, setAreUsersValid] = React.useState(false);
+    const [forceValidateFields, setForceValidateFields] = React.useState(false);
 
     const loading = useLoading();
     const snackbar = useSnackbar();
@@ -250,21 +179,19 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         //           .join("\n");
 
         return (
-            <div>
-                <h3 style={styles.dialogTitle}>{title}</h3>
-                <span style={styles.dialogIcons}>
-                    {errorText && (
-                        <Tooltip title={errorText}>
-                            <FontIcon className="material-icons">error</FontIcon>
-                        </Tooltip>
-                    )}
-                    {warningText && (
-                        <Tooltip title={warningText}>
-                            <FontIcon className="material-icons">warning</FontIcon>
-                        </Tooltip>
-                    )}
-                </span>
-            </div>
+            <React.Fragment>
+                <StyledDialogTitle>{title}</StyledDialogTitle>
+                {errorText && (
+                    <DialogTooltip title={errorText}>
+                        <FontIcon className="material-icons">error</FontIcon>
+                    </DialogTooltip>
+                )}
+                {warningText && (
+                    <DialogTooltip title={warningText}>
+                        <FontIcon className="material-icons">warning</FontIcon>
+                    </DialogTooltip>
+                )}
+            </React.Fragment>
         );
     };
 
@@ -309,23 +236,21 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
             // TODO maybe useFormState();
             const currentUsername = users[rowIndex]?.username || user.username;
             const existingUser = existingUsers[currentUsername];
-            const rowStyles = !allowOverwrite && existingUsers[currentUsername] ? styles.rowExistingUser : styles.row;
-            const chipStyle = existingUser ? styles.chipExistingUser : undefined;
             const chipTitle = existingUser
                 ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
                 : "";
             const chipText = (rowIndex + 1).toString() + (existingUser ? "-E" : "");
             return (
-                <TableRow key={rowIndex} style={rowStyles}>
-                    <TableCell>
+                <StyledTableRow key={rowIndex} $isError={!allowOverwrite && !!existingUser}>
+                    <StyledTableCell>
                         <Tooltip title={chipTitle}>
-                            <Chip style={chipStyle}>{chipText}</Chip>
+                            <StyledChipExistingUser $isError={!!existingUser}>{chipText}</StyledChipExistingUser>
                         </Tooltip>
-                    </TableCell>
+                    </StyledTableCell>
 
                     {_(columns)
                         .map((value: string, columnIndex: number) => (
-                            <TableCell key={`${rowIndex}-${columnIndex}-${value}`}>
+                            <StyledTableCell key={`${rowIndex}-${columnIndex}-${value}`}>
                                 <RowItem
                                     key={`${rowIndex}-${columnIndex}-${value}`}
                                     rowIndex={rowIndex}
@@ -334,10 +259,10 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                     onDelete={users => setUsers(users)}
                                     allowOverwrite={allowOverwrite}
                                 />
-                            </TableCell>
+                            </StyledTableCell>
                         ))
                         .value()}
-                </TableRow>
+                </StyledTableRow>
             );
         },
         [columns, existingUsersNames, allowOverwrite]
@@ -386,31 +311,31 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                         <FormSpy onChange={updateFormState} />
 
                                         <form onSubmit={submit}>
-                                            <Table stickyHeader={true} style={styles.table}>
+                                            <Table stickyHeader={true}>
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell style={styles.tableColumn}>#</TableCell>
+                                                        <StyledTableColumn>#</StyledTableColumn>
                                                         {columns.map((header: string) => (
-                                                            <TableCell key={header} style={styles.header}>
+                                                            <StyledTableCellHeader key={header}>
                                                                 {header}
-                                                            </TableCell>
+                                                            </StyledTableCellHeader>
                                                         ))}
                                                     </TableRow>
                                                 </TableHead>
-                                                <TableBody style={styles.tableBody}>
+                                                <TableBody>
                                                     {_.map(users, (user: User, rowIndex: number) =>
                                                         renderTableRow(user, rowIndex, values.users)
                                                     )}
                                                 </TableBody>
                                             </Table>
 
-                                            <div style={styles.addRowButton}>
+                                            <AddButtonRow>
                                                 <RaisedButton
                                                     disabled={!canAddNewUser}
                                                     label={i18n.t("Add user")}
                                                     onClick={addRow}
                                                 />
-                                            </div>
+                                            </AddButtonRow>
                                         </form>
                                     </>
                                 );
@@ -473,9 +398,9 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
 
     if (deleteRow) {
         return (
-            <IconButton style={styles.removeIcon} title={i18n.t("Remove user")} onClick={removeRow}>
+            <StyledIconButton title={i18n.t("Remove user")} onClick={removeRow}>
                 <FontIcon className="material-icons">delete</FontIcon>
-            </IconButton>
+            </StyledIconButton>
         );
     }
 
@@ -558,13 +483,7 @@ const RenderField: React.FC<{
         case "username":
             return <FormTextField {...props} />;
         case "password":
-            return (
-                <FormTextField
-                    {...props}
-                    type="password"
-                    // disabled={values.users[row].externalAuth === true}
-                />
-            );
+            return <FormTextField {...props} type="password" />;
         case "userGroups":
             return <FormFieldCustom {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":
@@ -643,3 +562,49 @@ const useValidations = (
         }
     }
 };
+
+const StyledTableCellHeader = styled(TableCell)`
+    width: 150px;
+    font-weight: bold;
+    font-size: 1.2em;
+    overflow: hidden;
+`;
+
+const StyledTableCell = styled(TableCell)`
+    width: 150px;
+`;
+
+const StyledTableRow = styled(TableRow)<{ $isError?: boolean }>`
+    border: none;
+    background-color: ${({ $isError }) => ($isError ? "#fdd" : "initial")};
+`;
+
+const StyledChipExistingUser = styled(Chip)<{ $isError?: boolean }>`
+    background-color: ${({ $isError }) => ($isError ? "#faa" : "#e0e0e0e0")} !important;
+`;
+
+const StyledIconButton = styled(IconButton)`
+    cursor: pointer;
+`;
+
+const StyledTableColumn = styled(TableCell)`
+    width: 70px;
+`;
+
+const StyledDialogTitle = styled(DialogTitle)`
+    margin: 0px 0px -1px;
+    padding: 24px 24px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+    display: inline;
+`;
+
+const DialogTooltip = styled(Tooltip)`
+    float: right;
+`;
+
+const AddButtonRow = styled.div`
+    margin: 20px;
+    text-align: center;
+`;
