@@ -14,7 +14,6 @@ import { useAppContext } from "../../contexts/app-context";
 import UserLegacy from "../../../legacy/models/user";
 import { ApiUser } from "../../../data/repositories/UserD2ApiRepository";
 import {
-    CheckboxFieldFF,
     composeValidators,
     createMaxCharacterLength,
     createMinCharacterLength,
@@ -55,23 +54,23 @@ type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<F
         defaultValue?: FieldValue;
     };
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
     dialogIcons: {
         float: "right",
     },
     dialogTitle: {
         margin: "0px 0px -1px",
         padding: "24px 24px 20px",
-        fontsize: 24,
-        fontweight: "400",
-        lineheight: "32px",
+        fontSize: 24,
+        fontWeight: "bolder",
+        lineHeight: "32px",
         display: "inline",
     },
     overwriteToggle: {
         float: "left",
-        textalign: "left",
+        textAlign: "left",
         width: "33%",
-        marginleft: "20px",
+        marginLeft: "20px",
     },
     // Table
     tableWrapper: {
@@ -89,7 +88,7 @@ const styles = {
     },
     header: {
         width: 150,
-        fontwWight: "bold",
+        fontWeight: "bold",
         fontSize: "1.2em",
         overflow: "hidden",
     },
@@ -128,7 +127,7 @@ const styles = {
     },
 };
 
-export const ImportDialog: React.FC<ImportTableProps> = props => {
+export const ImportTable: React.FC<ImportTableProps> = props => {
     const {
         title,
         usersFromFile,
@@ -145,20 +144,22 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
 
     const { compositionRoot, d2 } = useAppContext();
 
+    const [users, setUsers] = useState<User[]>(usersFromFile);
     const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});
     const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
+
     const [infoDialog, setInfoDialog] = React.useState<{ title: string; body: string; response: string } | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [allowOverwrite, setAllowOverwrite] = React.useState(false);
 
-    const [users, setUsers] = useState<User[]>(usersFromFile);
+    const [allowOverwrite, setAllowOverwrite] = React.useState(false);
+    const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(true);
 
     // Add a blank column to the end for delete buttons
     const [columns, setColumns] = useState<string[]>([...baseUserColumns, ""]);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
-    const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(true);
-    const [usersValidation, setUsersValidation] = React.useState({});
+    const [errorsCount, setErrorsCount] = React.useState(0);
+    const [areUsersValid, setAreUsersValid] = React.useState(false);
 
     const loading = useLoading();
     const snackbar = useSnackbar();
@@ -218,14 +219,15 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
     //     }
     // };
 
-    const toggleAllowOverwrite = useCallback((_event, newValue: boolean) => {
-        setAllowOverwrite(newValue);
-    }, []);
+    const toggleAllowOverwrite = useCallback(
+        (_event, newValue: boolean) => {
+            setAreUsersValid(newValue || !errorsCount);
+            setAllowOverwrite(newValue);
+        },
+        [errorsCount]
+    );
 
     const renderDialogTitle = () => {
-        const errorsCount = _(usersValidation)
-            .values()
-            .sumBy(isValid => (isValid ? 0 : 1));
         const errorText =
             errorsCount === 0
                 ? null
@@ -233,35 +235,35 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
         const maxWarnings = 10;
         const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
 
-        const warningText =
-            warnings.length === 0
-                ? null
-                : _([
-                      i18n.t("{{n}} warning(s) while importing file", { n: warnings.length }) + ":",
-                      // @ts-ignore
-                      ..._(warnings)
-                          .take(maxWarnings)
-                          .map((line, idx) => `${idx + 1}. ${line}`),
-                      hiddenWarnings > 0 ? i18n.t("and_n_more_warnings", { n: hiddenWarnings }) : null,
-                  ])
-                      .compact()
-                      .join("\n");
+        const warningText = undefined;
+        // warnings.length === 0
+        //     ? null
+        //     : _([
+        //           i18n.t("{{n}} warning(s) while importing file", { n: warnings.length }) + ":",
+        //           // @ts-ignore
+        //           ..._(warnings)
+        //               .take(maxWarnings)
+        //               .map((line, idx) => `${idx + 1}. ${line}`),
+        //           hiddenWarnings > 0 ? i18n.t("and_n_more_warnings", { n: hiddenWarnings }) : null,
+        //       ])
+        //           .compact()
+        //           .join("\n");
 
         return (
             <div>
                 <h3 style={styles.dialogTitle}>{title}</h3>
-                {errorText && (
-                    // @ts-ignore
-                    <span title={errorText} style={styles.dialogIcons}>
-                        <FontIcon className="material-icons">error</FontIcon>
-                    </span>
-                )}
-                {warningText && (
-                    // @ts-ignore
-                    <span title={warningText} style={styles.dialogIcons}>
-                        <FontIcon className="material-icons">warning</FontIcon>
-                    </span>
-                )}
+                <span style={styles.dialogIcons}>
+                    {errorText && (
+                        <Tooltip title={errorText}>
+                            <FontIcon className="material-icons">error</FontIcon>
+                        </Tooltip>
+                    )}
+                    {warningText && (
+                        <Tooltip title={warningText}>
+                            <FontIcon className="material-icons">warning</FontIcon>
+                        </Tooltip>
+                    )}
+                </span>
             </div>
         );
     };
@@ -272,7 +274,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
 
             // const { data, error } = await compositionRoot.users.save(users).runAsync();
             const { data, error } = await Promise.resolve({ data: { status: "OK" }, error: null });
-            console.log("onSubmit", { users });
+
             loading.reset();
 
             if (error) {
@@ -322,7 +324,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                     </TableCell>
 
                     {_(columns)
-                        .map((value, columnIndex) => (
+                        .map((value: string, columnIndex: number) => (
                             <TableCell key={`${rowIndex}-${columnIndex}-${value}`}>
                                 <RowItem
                                     key={`${rowIndex}-${columnIndex}-${value}`}
@@ -330,6 +332,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                     columnIndex={columnIndex}
                                     data={{ columns, existingUsersNames }}
                                     onDelete={users => setUsers(users)}
+                                    allowOverwrite={allowOverwrite}
                                 />
                             </TableCell>
                         ))
@@ -337,11 +340,12 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                 </TableRow>
             );
         },
-        [columns, existingUsersNames]
+        [columns, existingUsersNames, allowOverwrite]
     );
 
-    const updateFormState = ({ values: { users: updatedUsers }, errors, ...arg }: FormState<{ users: User[] }>) => {
-        console.log("updateFormState", arg);
+    const updateFormState = ({ values: { users: updatedUsers }, errors }: FormState<{ users: User[] }>) => {
+        setErrorsCount(errors?.users?.length || 0);
+        setAreUsersValid(_.isEmpty(errors?.users));
         setShowOverwriteToggle(existingUserInTable(updatedUsers));
     };
 
@@ -355,7 +359,7 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
             onCancel={onRequestClose}
             saveText={actionText}
             onSave={event => submit(event)}
-            // disableSave={_.isEmpty(users) || !areUsersValid}
+            disableSave={_.isEmpty(users) || !areUsersValid}
         >
             {!isLoading && (
                 <div>
@@ -394,17 +398,12 @@ export const ImportDialog: React.FC<ImportTableProps> = props => {
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody style={styles.tableBody}>
-                                                    {_.map(users, (user: User, rowIndex) =>
+                                                    {_.map(users, (user: User, rowIndex: number) =>
                                                         renderTableRow(user, rowIndex, values.users)
                                                     )}
                                                 </TableBody>
                                             </Table>
 
-                                            {/* {submitError && (
-                                            <NoticeBox title={i18n.t("Error saving users")} error={true}>
-                                                {submitError}
-                                            </NoticeBox>
-                                            )}*/}
                                             <div style={styles.addRowButton}>
                                                 <RaisedButton
                                                     disabled={!canAddNewUser}
@@ -458,9 +457,10 @@ type RowItemProps = {
     columnIndex: number;
     rowIndex: number;
     onDelete: (users: User[]) => void;
+    allowOverwrite: boolean;
 };
 
-const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete }) => {
+const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete, allowOverwrite }) => {
     const form = useForm<{ users: User[] }>();
     const deleteRow = columnIndex === data.columns.length - 1;
     const field = data.columns[columnIndex];
@@ -470,7 +470,6 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
         const users = [...original.slice(0, rowIndex), ...original.slice(rowIndex + 1)];
         onDelete(users);
     }, [form, onDelete, rowIndex]);
-    // console.log({ field, columnIndex, rowIndex, deleteRow: data.columns.length });
 
     if (deleteRow) {
         return (
@@ -482,14 +481,22 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
 
     if (!field) return null;
 
-    return <RenderUserImportField rowIndex={rowIndex} field={field} existingUsersNames={data.existingUsersNames} />;
+    return (
+        <RenderUserImportField
+            rowIndex={rowIndex}
+            field={field}
+            existingUsersNames={data.existingUsersNames}
+            allowOverwrite={allowOverwrite}
+        />
+    );
 };
 
-const RenderUserImportField: React.FC<{ rowIndex: number; field: UserFormField; existingUsersNames: string[] }> = ({
-    rowIndex,
-    field,
-    existingUsersNames,
-}) => {
+const RenderUserImportField: React.FC<{
+    rowIndex: number;
+    field: UserFormField;
+    existingUsersNames: string[];
+    allowOverwrite: boolean;
+}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
     const name = `users[${rowIndex}].${field}`;
 
     const { validation, props: validationProps = {} } = useValidations(field);
@@ -509,21 +516,34 @@ const RenderUserImportField: React.FC<{ rowIndex: number; field: UserFormField; 
         case "searchOrganisationsUnits":
             return (
                 <PreviewInputFF {...props}>
-                    <RenderField rowIndex={rowIndex} field={field} existingUsersNames={existingUsersNames} />
+                    <RenderField
+                        rowIndex={rowIndex}
+                        field={field}
+                        existingUsersNames={existingUsersNames}
+                        allowOverwrite={allowOverwrite}
+                    />
                 </PreviewInputFF>
             );
         default:
-            return <RenderField rowIndex={rowIndex} field={field} existingUsersNames={existingUsersNames} />;
+            return (
+                <RenderField
+                    rowIndex={rowIndex}
+                    field={field}
+                    existingUsersNames={existingUsersNames}
+                    allowOverwrite={allowOverwrite}
+                />
+            );
     }
 };
 
-const RenderField: React.FC<{ rowIndex: number; field: UserFormField; existingUsersNames: string[] }> = ({
-    rowIndex,
-    field,
-    existingUsersNames,
-}) => {
+const RenderField: React.FC<{
+    rowIndex: number;
+    field: UserFormField;
+    existingUsersNames: string[];
+    allowOverwrite: boolean;
+}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
     // const { values } = useFormState();
-    const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames);
+    const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames, allowOverwrite);
     const name = `users[${rowIndex}].${field}`;
     const props = {
         name,
@@ -554,7 +574,7 @@ const RenderField: React.FC<{ rowIndex: number; field: UserFormField; existingUs
         case "searchOrganisationsUnits":
             return <FormFieldCustom {...props} component={OrgUnitSelectorFF} />;
         case "disabled":
-            return <FormFieldCustom {...props} component={CheckboxFieldFF} type={"checkbox"} />;
+            return <FormFieldCustom {...props} component={Switch} type={"checkbox"} />;
         default:
             return null;
     }
@@ -569,7 +589,6 @@ const FormTextField = (props: any) => {
         <Field {...props}>
             {props => {
                 const onChose = (event: any) => {
-                    console.log("CHANGE", { props });
                     return props.input.onChange(event);
                 };
                 return (
@@ -590,7 +609,8 @@ const FormTextField = (props: any) => {
 
 const useValidations = (
     field: UserFormField,
-    existingUsersNames: string[] = []
+    existingUsersNames: string[] = [],
+    allowOverwrite = false
 ): { validation?: (...args: any[]) => any; props?: object } => {
     const userRequiredFields = ["username", "firstName", "surname"];
 
@@ -598,8 +618,11 @@ const useValidations = (
         case "username": {
             return {
                 // TODO use legacyvalidateUsername
-                validation: (value: string) =>
-                    !existingUsersNames.includes(value) ? undefined : i18n.t("User already exists"),
+                validation: (value: string) => {
+                    const a = !existingUsersNames.includes(value) ? undefined : i18n.t("User already exists");
+                    if (allowOverwrite) return undefined;
+                    return a;
+                },
             };
         }
         case "password":
