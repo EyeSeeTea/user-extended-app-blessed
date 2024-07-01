@@ -2,6 +2,7 @@ import { InputField } from "@dhis2/ui";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import _ from "lodash";
+import { TextField } from "@material-ui/core";
 import React, { FunctionComponent, useState } from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 
@@ -11,7 +12,7 @@ export function PreviewInputFF({
     children,
     name,
     validate,
-    component: Component = InputField,
+    component = InputField,
 }: PreviewInputFFProps) {
     const [open, setOpen] = useState(false);
 
@@ -30,16 +31,26 @@ export function PreviewInputFF({
 
             <div onClick={() => setOpen(true)}>
                 <Field name={name} validate={validate}>
-                    {({ input, meta }) => (
-                        <Component
-                            name={input.name}
-                            value={buildValue(input.value)}
-                            onChange={() => {}}
-                            error={!!meta.error}
-                            warning={!!warning}
-                            validationText={warning ?? meta.error ?? meta.submitError}
-                        />
-                    )}
+                    {({ input, meta }) =>
+                        component === TextField ? (
+                            <TextField
+                                name={input.name}
+                                value={buildValue(input.value)}
+                                onChange={() => {}}
+                                error={!!meta.error}
+                                helperText={warning ?? meta.error ?? meta.submitError}
+                            />
+                        ) : (
+                            <InputField
+                                name={input.name}
+                                value={buildValue(input.value)}
+                                onChange={() => {}}
+                                error={!!meta.error}
+                                warning={!!warning}
+                                validationText={warning ?? meta.error ?? meta.submitError}
+                            />
+                        )
+                    }
                 </Field>
             </div>
         </React.Fragment>
