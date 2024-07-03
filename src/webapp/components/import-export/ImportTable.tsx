@@ -47,16 +47,23 @@ import { UserRoleGroupFF } from "../user-form/components/UserRoleGroupFF";
 import { OrgUnitSelectorFF } from "../user-form/components/OrgUnitSelectorFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import styled from "styled-components";
+import { FormFieldProps } from "../form/fields/FormField";
 
-type FormFieldProps<FieldValue, T extends ComponentType<any>> = UseFieldConfig<FieldValue> &
-    Omit<ComponentProps<T>, "input" | "meta"> & {
-        name: string;
-        component: T;
-        value?: FieldValue;
-        initialValue?: FieldValue;
-        defaultValue?: FieldValue;
-    };
+type ErrorMessage = { title: string; body: string; response: string };
 
+type ImportTableProps = {
+    title: string;
+    usersFromFile: User[];
+    columns: (keyof Fields)[];
+    maxUsers: number;
+    onSave: (users: User[]) => Promise<any>;
+    onRequestClose: () => void;
+    templateUser?: UserLegacy;
+    settings: any;
+    api: any;
+    actionText: string;
+    warnings: string[];
+};
 export const ImportTable: React.FC<ImportTableProps> = props => {
     const {
         title,
@@ -76,7 +83,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});
     const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
 
-    const [infoDialog, setInfoDialog] = React.useState<{ title: string; body: string; response: string } | null>(null);
+    const [infoDialog, setInfoDialog] = React.useState<ErrorMessage | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
     const [allowOverwrite, setAllowOverwrite] = React.useState(false);
@@ -88,7 +95,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
     const [errorsCount, setErrorsCount] = React.useState(0);
     const [areUsersValid, setAreUsersValid] = React.useState(false);
-    const [forceValidateFields, setForceValidateFields] = React.useState(false);
 
     const loading = useLoading();
     const snackbar = useSnackbar();
@@ -197,23 +203,22 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
-            loading.show(true, i18n.t("Saving users"));
+            loading.show(true, i18n.t("Importing users"));
+            const errorResponse = await onSave(users);
+
+            if (errorResponse) {
+                // setIsImporting(false);
+                // @ts-ignore
+                setInfoDialog({ response: errorResponse });
+                // snackbar.error(error);
+            } else {
+                onRequestClose();
+            }
 
             // const { data, error } = await compositionRoot.users.save(users).runAsync();
-            const { data, error } = await Promise.resolve({ data: { status: "OK" }, error: null });
+            // const { data, error } = await Promise.resolve({ data: { status: "OK" }, error: null });
 
             loading.reset();
-
-            if (error) {
-                snackbar.error(error);
-                return error;
-            }
-
-            if (data && data.status === "ERROR") {
-                // error
-            } else {
-                // close
-            }
         },
         [snackbar, loading]
     );
@@ -363,20 +368,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     );
 };
 
-type ImportTableProps = {
-    title: string;
-    usersFromFile: User[];
-    columns: (keyof Fields)[];
-    maxUsers: number;
-    onSave: (users: UserLegacy[]) => Promise<any>;
-    onRequestClose: () => void;
-    templateUser?: UserLegacy;
-    settings: any;
-    api: any;
-    actionText: string;
-    warnings: string[];
-};
-
 type RowItemProps = {
     data: { columns: string[]; existingUsersNames: string[] };
     columnIndex: number;
@@ -467,7 +458,6 @@ const RenderField: React.FC<{
     existingUsersNames: string[];
     allowOverwrite: boolean;
 }> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
-    // const { values } = useFormState();
     const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames, allowOverwrite);
     const name = `users[${rowIndex}].${field}`;
     const props = {
@@ -485,21 +475,21 @@ const RenderField: React.FC<{
         case "password":
             return <FormTextField {...props} type="password" />;
         case "userGroups":
-            return <FormFieldCustom {...props} component={UserRoleGroupFF} modelType="userGroups" />;
+            return <FormFieldDialog {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":
-            return <FormFieldCustom {...props} component={UserRoleGroupFF} modelType="userRoles" />;
+            return <FormFieldDialog {...props} component={UserRoleGroupFF} modelType="userRoles" />;
         case "organisationUnits":
         case "dataViewOrganisationUnits":
         case "searchOrganisationsUnits":
-            return <FormFieldCustom {...props} component={OrgUnitSelectorFF} />;
+            return <FormFieldDialog {...props} component={OrgUnitSelectorFF} />;
         case "disabled":
-            return <FormFieldCustom {...props} component={Switch} type={"checkbox"} />;
+            return <FormFieldDialog {...props} component={Switch} type={"checkbox"} />;
         default:
             return null;
     }
 };
 
-const FormFieldCustom = <FieldValue, T extends ComponentType<any>>(props: FormFieldProps<FieldValue, T>) => {
+const FormFieldDialog = <FieldValue, T extends ComponentType<any>>(props: FormFieldProps<FieldValue, T>) => {
     return <Field<FieldValue> {...props} />;
 };
 

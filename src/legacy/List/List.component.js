@@ -6,8 +6,6 @@ import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
 import CopyInUserDialog from "../components/CopyInUserDialog.component";
 import { ImportExport } from "../../webapp/components/import-export/ImportExport";
-import ImportTableOld from "../components/ImportTable.component";
-import { ImportTable } from "../../webapp/components/import-export/ImportTable";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import SettingsDialog from "../components/SettingsDialog.component";
@@ -15,7 +13,7 @@ import Settings from "../models/settings";
 import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import Filters from "./Filters.component";
-import { ImportDialog } from "../../webapp/components/import-export/ImportDialog";
+import { ImportTable } from "../../webapp/components/import-export/ImportTable";
 
 const initialSorting = ["name", "asc"];
 
@@ -235,6 +233,7 @@ export class ListHybrid extends React.Component {
     };
 
     getTest = () => {
+        // TODO replace with real data and displayName => name
         return {
             success: true,
             users: [
@@ -245,21 +244,21 @@ export class ListHybrid extends React.Component {
                     userRoles: [
                         {
                             id: "Ufph3mGRmMo",
-                            displayName: "Superuser",
+                            name: "Superuser",
                         },
                     ],
                     userGroups: [
                         {
                             id: "B6JNeAQ6akX",
-                            displayName: "_DATASET_Superuser",
+                            name: "_DATASET_Superuser",
                         },
                         {
                             id: "wl5cDMuUhmF",
-                            displayName: "Administrators",
+                            name: "Administrators",
                         },
                         {
                             id: "gXpmQO6eEOo",
-                            displayName: "_PROGRAM_Superuser",
+                            name: "_PROGRAM_Superuser",
                         },
                     ],
                     organisationUnits: [
@@ -267,7 +266,7 @@ export class ListHybrid extends React.Component {
                             id: "ImspTQPwCqd",
                             path: "/ImspTQPwCqd",
                             code: "OU_525",
-                            displayName: "Sierra Leone",
+                            name: "Sierra Leone",
                             shortName: "Sierra Leone",
                         },
                     ],
@@ -276,10 +275,11 @@ export class ListHybrid extends React.Component {
                             id: "ImspTQPwCqd",
                             path: "/ImspTQPwCqd",
                             code: "OU_525",
-                            displayName: "Sierra Leone",
+                            name: "Sierra Leone",
                             shortName: "Sierra Leone",
                         },
                     ],
+                    searchOrganisationsUnits: [],
                     disabled: false,
                     userRolesImport: {
                         hasDuplicates: false,
@@ -363,7 +363,7 @@ export class ListHybrid extends React.Component {
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 
-                {!importUsers.open && ImportTable && this.state.settings ? null : (
+                {!importUsers.open && this.state.settings ? null : (
                     // <ImportTableOld
                     //     api={this.props.api}
                     //     title={this.getTranslation("import")}
@@ -379,17 +379,13 @@ export class ListHybrid extends React.Component {
                     //     maxUsers={this.maxImportUsers}
                     //     settings={this.state.settings}
                     // />
-                    <ImportDialog
-                        api={this.props.api}
-                        title={this.getTranslation("import")}
+                    <ImportTable
                         onSave={this._importUsers}
                         onRequestClose={this._closeImportUsers}
-                        actionText={this.getTranslation("import")}
                         usersFromFile={this.getTest().users}
                         columns={this.getTest().columns}
                         warnings={this.getTest().warnings}
                         maxUsers={this.maxImportUsers}
-                        settings={this.state.settings}
                     />
                 )}
             </div>
