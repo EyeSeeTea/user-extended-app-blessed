@@ -43,8 +43,8 @@ export const userToExport: Partial<User> = {
             path: ["ImspTQPwCqd"],
         },
     ],
-    created: new Date("2013-03-11T09:51:41.232Z"),
-    lastUpdated: new Date("2024-06-04T06:25:46.788Z"),
+    created: getDateWithTimezoneOffset("2013-03-11T10:51:41.232Z"),
+    lastUpdated: getDateWithTimezoneOffset("2024-06-04T08:25:46.788Z"),
     apiUrl: "/dhis2/api/users/oXD88WWSQpR.json",
     searchOrganisationsUnits: [
         {
@@ -53,7 +53,7 @@ export const userToExport: Partial<User> = {
             path: ["eoYV2p74eVz"],
         },
     ] as OrgUnit[],
-    lastLogin: new Date("2013-12-30T09:16:43.235Z"),
+    lastLogin: getDateWithTimezoneOffset("2013-12-30T10:16:43.235Z"),
     status: "Active",
     disabled: false,
     lastModifiedBy: {
@@ -97,4 +97,10 @@ export const usersExportJSONBlob = buildBlob(
 
 function buildBlob(dataString: string) {
     return new Blob([dataString], { type: "text/plain;charset=utf-8" });
+}
+
+function getDateWithTimezoneOffset(date: string) {
+    const currentDate = new Date(date);
+    const userTimezoneOffset = currentDate.getTimezoneOffset() * 60000;
+    return new Date(currentDate.getTime() + userTimezoneOffset);
 }

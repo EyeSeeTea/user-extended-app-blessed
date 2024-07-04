@@ -163,6 +163,7 @@ export class UserD2ApiRepository implements UserRepository {
                             userCredentials: { ...fields.userCredentials, ...auditFields },
                         },
                         filter: { id: { in: usersIds } },
+                        v: +new Date().getTime(),
                     })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
@@ -194,6 +195,7 @@ export class UserD2ApiRepository implements UserRepository {
                     ...otherFilters,
                 },
                 order: `${sorting.field}:${sorting.order}`,
+                v: +new Date().getTime(),
             })
         );
         return userData$.map(({ objects }) => objects);
@@ -204,7 +206,7 @@ export class UserD2ApiRepository implements UserRepository {
         state: { initialPage: number; users: User[] } = { initialPage: 1, users: [] }
     ): FutureData<User[]> {
         const { initialPage, users } = state;
-        return this.list({ ...options, page: initialPage }).flatMap(({ pager, objects }) => {
+        return this.list({ ...options, pageSize: 100, page: initialPage }).flatMap(({ pager, objects }) => {
             const newUsers = [...users, ...objects];
             if (pager.page >= pager.pageCount) {
                 return Future.success(newUsers);

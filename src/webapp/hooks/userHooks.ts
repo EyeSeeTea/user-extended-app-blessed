@@ -2,7 +2,7 @@ import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import React from "react";
 import { Id } from "../../domain/entities/Ref";
 import { User } from "../../domain/entities/User";
-import { ListOptions, UpdateStrategy } from "../../domain/repositories/UserRepository";
+import { UpdateStrategy, AccessElements, ListOptions } from "../../domain/repositories/UserRepository";
 import { SaveUserOrgUnitOptions } from "../../domain/usecases/SaveUserOrgUnitUseCase";
 import { useAppContext } from "../contexts/app-context";
 import i18n from "../../locales";
@@ -17,6 +17,8 @@ type UseExportUsersProps = {
     filterOptions: ListOptions;
     orgUnitsField: OrgUnitKey;
 };
+
+type UseCopyInUserProps = { onSuccess: () => void };
 
 export function useGetUsersByIds(ids: Id[]) {
     const { compositionRoot } = useAppContext();
@@ -79,6 +81,58 @@ export function useSaveUsersOrgUnits(props: UseSaveUsersOrgUnitsProps) {
     return { saveUsersOrgUnits };
 }
 
+export function useGetAllUsers() {
+    const { compositionRoot } = useAppContext();
+    const [users, setUsers] = React.useState<User[]>();
+    const snackbar = useSnackbar();
+
+    React.useMemo(() => {
+        compositionRoot.users.listAll({}).run(
+            allUsers => {
+                setUsers(allUsers);
+            },
+            error => {
+                snackbar.error(error);
+            }
+        );
+    }, [compositionRoot, snackbar]);
+
+    return { users };
+}
+
+export function useCopyInUser(props: UseCopyInUserProps) {
+    const { onSuccess } = props;
+    const { compositionRoot } = useAppContext();
+    const snackbar = useSnackbar();
+    const loading = useLoading();
+
+    const copyInUser = React.useCallback(
+        (user: User, selectedUsersIds: Id[], updateStrategy: UpdateStrategy, accessElements: AccessElements) => {
+            loading.show(true, i18n.t("Saving..."));
+            return compositionRoot.users
+                .copyInUser({
+                    user,
+                    selectedUsersIds,
+                    updateStrategy,
+                    accessElements,
+                })
+                .run(
+                    () => {
+                        onSuccess();
+                        loading.hide();
+                    },
+                    error => {
+                        snackbar.error(error);
+                        loading.hide();
+                    }
+                );
+        },
+        [compositionRoot.users, onSuccess, snackbar, loading]
+    );
+
+    return { copyInUser };
+}
+
 export const useExportUsers = (props: UseExportUsersProps) => {
     const { onSuccess, columns, filterOptions, orgUnitsField } = props;
 
@@ -87,10 +141,17 @@ export const useExportUsers = (props: UseExportUsersProps) => {
     const loading = useLoading();
 
     const exportUsers = React.useCallback(
-        (name: string, format: AllowedExportFormat, isEmptyTemplate = false) => {
+        (name: string, format: AllowedExportFormat, isEmptyTemplate: boolean) => {
             loading.show();
 
-            const exportOptions = { name, columns, filterOptions, format, orgUnitsField, isEmptyTemplate };
+            const exportOptions = {
+                name,
+                columns,
+                filterOptions,
+                format,
+                orgUnitsField,
+                isEmptyTemplate,
+            };
             return compositionRoot.users.export(exportOptions).run(
                 ({ blob, filename }) => {
                     FileSaver.saveAs(blob, filename);
@@ -108,8 +169,8 @@ export const useExportUsers = (props: UseExportUsersProps) => {
     );
 
     return {
-        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv"), [exportUsers]),
-        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json"), [exportUsers]),
+        exportUsersToCSV: React.useCallback(() => exportUsers("users", "csv", false), [exportUsers]),
+        exportUsersToJSON: React.useCallback(() => exportUsers("users", "json", false), [exportUsers]),
         exportEmptyTemplate: React.useCallback(() => exportUsers("empty-user-template", "csv", true), [exportUsers]),
     };
 };

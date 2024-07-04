@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-07-03T16:53:54.201Z\n"
+"POT-Creation-Date: 2024-06-06T07:49:29.380Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -111,8 +111,44 @@ msgstr "Columnas a mostrar en tabla"
 msgid "Column"
 msgstr "Columna"
 
-msgid "Import/Export"
+#, fuzzy
+msgid "Copy in user: {{user}}"
+msgstr "Copiar a usuario"
+
+msgid "Select one toggle"
 msgstr ""
+
+msgid "Select at least one user"
+msgstr ""
+
+#, fuzzy
+msgid "Bulk update strategy: "
+msgstr "Estrategia de actualización: "
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr "Buscar"
+
+msgid "User Groups"
+msgstr ""
+
+msgid "OU Outputs"
+msgstr ""
+
+msgid "User Roles"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
+#, fuzzy
+msgid "Import/Export"
+msgstr "Importar"
 
 msgid "Import"
 msgstr "Importar"
@@ -210,15 +246,6 @@ msgstr "Guardando usuarios"
 msgid "Update strategy: "
 msgstr "Estrategia de actualización: "
 
-msgid "Merge"
-msgstr "Mezclar"
-
-msgid "Replace"
-msgstr "Reemplazar"
-
-msgid "Search"
-msgstr "Buscar"
-
 msgid "Assign roles to {{usernames}}"
 msgstr "Asignar roles a {{usernames}}"
 
@@ -226,7 +253,7 @@ msgid "Assign groups to {{usernames}}"
 msgstr "Asignar grupos a {{usernames}}"
 
 msgid "Bulk update strategy: {{strategy}}"
-msgstr "Estrategia de actualización masiva: {{strategy}}"
+msgstr ""
 
 msgid "Back"
 msgstr "Volver"
@@ -257,6 +284,20 @@ msgstr "Por favor proporcione un identificador válido"
 
 msgid "Please provide a valid email"
 msgstr "Por favor proporcione un correo electrónico válido"
+
+msgid "Password should contain at least one lowercase letter"
+msgstr "La contraseña debe contener al menos una letra minúscula"
+
+#, fuzzy
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr "La contraseña debe contener al menos una letra minúscula"
+
+msgid "Password should contain at least one number"
+msgstr "La contraseña debe contener al menos un número"
+
+#, fuzzy
+msgid "Password should have at least one special character"
+msgstr "La contraseña debe contener al menos una letra minúscula"
 
 msgid "Please provide a valid phone number"
 msgstr "Por favor proporcione un número de teléfono válido"
@@ -293,13 +334,6 @@ msgstr ""
 msgid "External authentication only (OpenID or LDAP)"
 msgstr "Solo autenticación externa (OpenID o LDAP)"
 
-msgid "User Roles"
-msgstr "Roles"
-
-msgid "User Groups"
-msgstr "Grupos"
-
-#, fuzzy
 msgid "Data Capture Organisation Units"
 msgstr "Unidades Organizativas de salida"
 
@@ -323,9 +357,6 @@ msgstr ""
 
 msgid "Last updated"
 msgstr "Última actualización"
-
-msgid "OU Capture"
-msgstr ""
 
 msgid "OU Output"
 msgstr ""

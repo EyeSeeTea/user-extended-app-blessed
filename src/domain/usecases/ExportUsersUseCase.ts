@@ -6,7 +6,6 @@ import i18n from "../../locales";
 import { Future, FutureData } from "../entities/Future";
 import { User } from "../entities/User";
 import { ListOptions, UserRepository } from "../repositories/UserRepository";
-import { UseCase } from "../../CompositionRoot";
 import { OrgUnitKey } from "../entities/OrgUnit";
 
 const fieldSplitChar = "||";
@@ -36,12 +35,12 @@ const columnNameFromPropertyMapping = {
     lastModifiedBy: i18n.t("Last modified by"),
 };
 
-export class ExportUsersUseCase implements UseCase {
+export class ExportUsersUseCase {
     constructor(private userRepository: UserRepository) {}
 
     public execute({
         filterOptions = {},
-        isEmptyTemplate,
+        isEmptyTemplate = false,
         ...options
     }: ExportUsersUseCaseOptions): FutureData<{ blob: Blob; filename: string }> {
         if (isEmptyTemplate) {
@@ -52,19 +51,27 @@ export class ExportUsersUseCase implements UseCase {
         });
     }
 
-    private getFilename({ name, format }: ExportUsersUseCaseOptions): string {
+    private getFilename({ name, format }: Pick<ExportUsersUseCaseOptions, "name" | "format">): string {
         const datetime = moment().format("YYYY-MM-DD_HH-mm-ss");
         return `${name}-${datetime}.${format}`;
     }
 
-    private buildBlobAndFilename(users: User[], options: ExportUsersUseCaseOptions) {
+    private buildBlobAndFilename(
+        users: User[],
+        { name, columns, format, orgUnitsField }: Omit<ExportUsersUseCaseOptions, "filterOptions" | "isEmptyTemplate">
+    ) {
         return {
-            blob: new Blob([this.buildExportDataString(users, options)], { type: "text/plain;charset=utf-8" }),
-            filename: this.getFilename(options),
+            blob: new Blob([this.buildExportDataString(users, { columns, format, orgUnitsField })], {
+                type: "text/plain;charset=utf-8",
+            }),
+            filename: this.getFilename({ name, format }),
         };
     }
 
-    private buildExportDataString(users: User[], { columns, format, orgUnitsField }: ExportUsersUseCaseOptions) {
+    private buildExportDataString(
+        users: User[],
+        { columns, format, orgUnitsField }: Pick<ExportUsersUseCaseOptions, "columns" | "format" | "orgUnitsField">
+    ) {
         switch (format) {
             case "json": {
                 const userRows = users.map(user => this.getPlainUser(user, columns, orgUnitsField, false));
@@ -147,8 +154,8 @@ export type AllowedExportFormat = "json" | "csv";
 export type ExportUsersUseCaseOptions = {
     name: string;
     columns: ColumnMappingKeys[];
-    filterOptions?: ListOptions;
+    filterOptions: ListOptions;
     format: AllowedExportFormat;
     orgUnitsField: OrgUnitKey;
-    isEmptyTemplate?: boolean;
+    isEmptyTemplate: boolean;
 };

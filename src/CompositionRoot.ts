@@ -19,6 +19,7 @@ import { SaveUserOrgUnitUseCase } from "./domain/usecases/SaveUserOrgUnitUseCase
 import { SaveUserStatusUseCase } from "./domain/usecases/SaveUserStatusUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
+import { CopyInUserUseCase } from "./domain/usecases/CopyInUserUseCase";
 
 export function getCompositionRoot(instance: Instance) {
     const instanceRepository = new InstanceD2ApiRepository(instance);
@@ -44,6 +45,7 @@ export function getCompositionRoot(instance: Instance) {
             remove: new RemoveUsersUseCase(userRepository),
             saveOrgUnits: new SaveUserOrgUnitUseCase(userRepository),
             export: new ExportUsersUseCase(userRepository),
+            copyInUser: new CopyInUserUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),

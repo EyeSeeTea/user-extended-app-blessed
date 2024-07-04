@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-07-03T16:53:54.201Z\n"
-"PO-Revision-Date: 2024-07-03T16:53:54.201Z\n"
+"POT-Creation-Date: 2024-06-12T15:20:23.307Z\n"
+"PO-Revision-Date: 2024-06-12T15:20:23.307Z\n"
 
 msgid "ID"
 msgstr ""
@@ -110,6 +110,39 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
+msgid "Copy in user: {{user}}"
+msgstr ""
+
+msgid "Select one toggle"
+msgstr ""
+
+msgid "Select at least one user"
+msgstr ""
+
+msgid "Bulk update strategy: "
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "User Groups"
+msgstr ""
+
+msgid "OU Outputs"
+msgstr ""
+
+msgid "User Roles"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
 msgid "Import/Export"
 msgstr ""
 
@@ -206,15 +239,6 @@ msgstr ""
 msgid "Update strategy: "
 msgstr ""
 
-msgid "Merge"
-msgstr ""
-
-msgid "Replace"
-msgstr ""
-
-msgid "Search"
-msgstr ""
-
 msgid "Assign roles to {{usernames}}"
 msgstr ""
 
@@ -287,12 +311,6 @@ msgstr ""
 msgid "External authentication only (OpenID or LDAP)"
 msgstr ""
 
-msgid "User Roles"
-msgstr ""
-
-msgid "User Groups"
-msgstr ""
-
 msgid "Data Capture Organisation Units"
 msgstr ""
 
@@ -315,9 +333,6 @@ msgid "Api URL"
 msgstr ""
 
 msgid "Last updated"
-msgstr ""
-
-msgid "OU Capture"
 msgstr ""
 
 msgid "OU Output"
