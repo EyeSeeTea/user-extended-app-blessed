@@ -76,7 +76,7 @@ export class ListHybrid extends React.Component {
                 open: false,
             },
             importUsers: {
-                open: true,
+                open: false,
             },
             copyUsers: {
                 open: false,
@@ -196,23 +196,22 @@ export class ListHybrid extends React.Component {
     };
 
     _openImportTable = importResult => {
-        // console.log("state", this.state.importUsers);
-        // console.log(importResult);
-        // this.setState({ importUsers: { open: true, ...importResult } });
         this.setState({ importUsers: { open: true, ...importResult } });
-        // console.log("state after", this.state.importUsers);
     };
 
     _importUsers = async users => {
-        const response = await saveUsers(this.context.d2, users);
-        if (response.success) {
-            const message = this.getTranslation("import_successful", { n: users.length });
-            snackActions.show({ message });
-            this.filterList();
-            return null;
-        } else {
-            return response;
-        }
+        console.log({ users });
+        const { data, error } = await this.props.compositionRoot.users.save(users).runAsync();
+        console.log({ data, error });
+        // const response = await saveUsers(this.context.d2, users);
+        // if (!error) {
+        //     const message = this.getTranslation("import_successful", { n: users.length });
+        //     snackActions.show({ message });
+        //     this.filterList();
+        //     return null;
+        // } else {
+        //     return error;
+        // }
     };
 
     _closeImportUsers = () => {
@@ -232,84 +231,6 @@ export class ListHybrid extends React.Component {
         }
     };
 
-    getTest = () => {
-        // TODO replace with real data and displayName => name
-        return {
-            success: true,
-            users: [
-                {
-                    username: "traore",
-                    firstName: "Alain",
-                    surname: "Traore",
-                    userRoles: [
-                        {
-                            id: "Ufph3mGRmMo",
-                            name: "Superuser",
-                        },
-                    ],
-                    userGroups: [
-                        {
-                            id: "B6JNeAQ6akX",
-                            name: "_DATASET_Superuser",
-                        },
-                        {
-                            id: "wl5cDMuUhmF",
-                            name: "Administrators",
-                        },
-                        {
-                            id: "gXpmQO6eEOo",
-                            name: "_PROGRAM_Superuser",
-                        },
-                    ],
-                    organisationUnits: [
-                        {
-                            id: "ImspTQPwCqd",
-                            path: "/ImspTQPwCqd",
-                            code: "OU_525",
-                            name: "Sierra Leone",
-                            shortName: "Sierra Leone",
-                        },
-                    ],
-                    dataViewOrganisationUnits: [
-                        {
-                            id: "ImspTQPwCqd",
-                            path: "/ImspTQPwCqd",
-                            code: "OU_525",
-                            name: "Sierra Leone",
-                            shortName: "Sierra Leone",
-                        },
-                    ],
-                    searchOrganisationsUnits: [],
-                    disabled: false,
-                    userRolesImport: {
-                        hasDuplicates: false,
-                    },
-                    userGroupsImport: {
-                        hasDuplicates: false,
-                    },
-                    organisationUnitsImport: {
-                        hasDuplicates: false,
-                    },
-                    dataViewOrganisationUnitsImport: {
-                        hasDuplicates: false,
-                    },
-                },
-            ],
-            columns: [
-                "username",
-                "password",
-                "firstName",
-                "surname",
-                "userRoles",
-                "userGroups",
-                "organisationUnits",
-                "dataViewOrganisationUnits",
-                "searchOrganisationsUnits",
-                "disabled",
-            ],
-            warnings: [],
-        };
-    };
 
     render() {
         const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
@@ -363,28 +284,15 @@ export class ListHybrid extends React.Component {
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 
-                {!importUsers.open && this.state.settings ? null : (
-                    // <ImportTableOld
-                    //     api={this.props.api}
-                    //     title={this.getTranslation("import")}
-                    //     onSave={this._importUsers}
-                    //     onRequestClose={this._closeImportUsers}
-                    //     actionText={this.getTranslation("import")}
-                    //     // users={importUsers.users}
-                    //     // columns={importUsers.columns}
-                    //     // warnings={importUsers.warnings}
-                    //     users={this.getTest().users}
-                    //     columns={this.getTest().columns}
-                    //     warnings={this.getTest().warnings}
-                    //     maxUsers={this.maxImportUsers}
-                    //     settings={this.state.settings}
-                    // />
+                {!importUsers.open ? null : (
                     <ImportTable
+                        title={this.getTranslation("import")}
+                        actionText={this.getTranslation("import")}
                         onSave={this._importUsers}
                         onRequestClose={this._closeImportUsers}
-                        usersFromFile={this.getTest().users}
-                        columns={this.getTest().columns}
-                        warnings={this.getTest().warnings}
+                        usersFromFile={importUsers.users}
+                        columns={importUsers.columns}
+                        warnings={importUsers.warnings}
                         maxUsers={this.maxImportUsers}
                     />
                 )}

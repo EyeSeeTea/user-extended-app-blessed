@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-07-01T16:31:12.654Z\n"
-"PO-Revision-Date: 2024-07-01T16:31:12.654Z\n"
+"POT-Creation-Date: 2024-07-03T16:53:54.201Z\n"
+"PO-Revision-Date: 2024-07-03T16:53:54.201Z\n"
 
 msgid "ID"
 msgstr ""
@@ -131,7 +131,7 @@ msgstr ""
 msgid "{{n}} warning(s) while importing file"
 msgstr ""
 
-msgid "Saving users"
+msgid "Importing users"
 msgstr ""
 
 msgid "User already exists: {{id}}"
@@ -198,6 +198,9 @@ msgid "Messages"
 msgstr ""
 
 msgid "JSON Response"
+msgstr ""
+
+msgid "Saving users"
 msgstr ""
 
 msgid "Update strategy: "
@@ -492,12 +495,4 @@ msgstr ""
 
 msgctxt "warnings"
 msgid "and_n_more"
-msgstr ""
-
-msgctxt "matches"
-msgid "multiple"
-msgstr ""
-
-msgctxt "user"
-msgid "add"
 msgstr ""

@@ -77,7 +77,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         warnings = [],
     } = props;
 
-    const { compositionRoot, d2 } = useAppContext();
+    const { d2 } = useAppContext();
 
     const [users, setUsers] = useState<User[]>(usersFromFile);
     const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-07-01T09:32:17.438Z\n"
+"POT-Creation-Date: 2024-07-03T16:53:54.201Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -132,7 +132,8 @@ msgstr ""
 msgid "{{n}} warning(s) while importing file"
 msgstr ""
 
-msgid "Saving users"
+#, fuzzy
+msgid "Importing users"
 msgstr "Guardando usuarios"
 
 msgid "User already exists: {{id}}"
@@ -202,6 +203,9 @@ msgstr "Mensajes"
 
 msgid "JSON Response"
 msgstr "Respuesta en JSON"
+
+msgid "Saving users"
+msgstr "Guardando usuarios"
 
 msgid "Update strategy: "
 msgstr "Estrategia de actualización: "
@@ -502,14 +506,6 @@ msgstr " y {{overflow}} más..."
 
 msgctxt "warnings"
 msgid "and_n_more"
-msgstr ""
-
-msgctxt "matches"
-msgid "multiple"
-msgstr ""
-
-msgctxt "user"
-msgid "add"
 msgstr ""
 
 #, fuzzy
