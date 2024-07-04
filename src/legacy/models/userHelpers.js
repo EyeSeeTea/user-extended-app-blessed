@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
+import { UserD2ApiRepository } from "../../data/repositories/UserD2ApiRepository";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -381,14 +382,17 @@ async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersT
 }
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
-async function saveUsers(d2, users) {
+async function saveUsers(d2, users, d2Api) {
     const api = d2.Api.getApi();
+    const userRepository = new UserD2ApiRepository({ url: d2Api.baseUrl });
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate);
+    const response = await postMetadata(api, { users: users });
+    await userRepository.getGroupsToSave(usersToSave, existingUsersToUpdate).runAsync();
+    return response;
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {

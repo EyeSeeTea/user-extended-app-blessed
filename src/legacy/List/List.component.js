@@ -199,7 +199,7 @@ export class ListHybrid extends React.Component {
     };
 
     _importUsers = async users => {
-        const response = await saveUsers(this.context.d2, users);
+        const response = await saveUsers(this.context.d2, users, this.props.api);
         if (response.success) {
             const message = this.getTranslation("import_successful", { n: users.length });
             snackActions.show({ message });

@@ -167,13 +167,60 @@ export class UserD2ApiRepository implements UserRepository {
                     })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
-                    return this.getLocales(users);
+                    return this.getUsersGroups(usersIds).flatMap(d2UsersWithGroups => {
+                        const usersWithGroups = this.addGroupsToUsers(users, d2UsersWithGroups);
+                        return this.getLocales(usersWithGroups);
+                    });
                 });
             },
             50
         );
 
         return $requests.map(_.flatten);
+    }
+
+    private addGroupsToUsers(users: User[], d2UsersWithGroups: D2UserGroupByKey): User[] {
+        return users.map((user): User => {
+            const userGroups = d2UsersWithGroups[user.id] || [];
+            return { ...user, userGroups: userGroups };
+        });
+    }
+
+    private getUsersGroups(usersIds: Id[]): FutureData<D2UserGroupByKey> {
+        const $requests = chunkRequest(usersIds, usersChunksIds => {
+            return apiToFuture(
+                this.api.models.userGroups.get({
+                    filter: { "users.id": { in: usersChunksIds } },
+                    fields: { id: true, displayName: true, users: true },
+                    paging: false,
+                })
+            ).map(response => {
+                return response.objects.map(d2Group => ({
+                    id: d2Group.id,
+                    name: d2Group.displayName,
+                    users: d2Group.users,
+                }));
+            });
+        });
+
+        return $requests.map(d2UsersGroups => {
+            const userGroups = _(d2UsersGroups)
+                .flatMap(group => group.users.map(user => ({ userId: user.id, group })))
+                .value();
+
+            const groupedByUser = _(userGroups)
+                .groupBy(ug => ug.userId)
+                .mapValues(groups =>
+                    groups.map(g => {
+                        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+                        const { users, ...groupWithoutUsers } = g.group;
+                        return groupWithoutUsers;
+                    })
+                )
+                .value();
+
+            return groupedByUser;
+        });
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -198,7 +245,15 @@ export class UserD2ApiRepository implements UserRepository {
                 v: +new Date().getTime(),
             })
         );
-        return userData$.map(({ objects }) => objects);
+        return userData$.flatMap(({ objects }) => {
+            return this.getUsersGroups(objects.map(user => user.id)).map(d2UsersGroups => {
+                const users = objects.map(user => {
+                    const userGroups = d2UsersGroups[user.id] || [];
+                    return { ...user, userGroups };
+                });
+                return users;
+            });
+        });
     }
 
     public listAll(
@@ -231,19 +286,20 @@ export class UserD2ApiRepository implements UserRepository {
         const userIds = users.map(user => user.id);
 
         return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-            return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = _(existingUsers)
-                    .map(existingUser => {
-                        const user = users.find(user => user.id === existingUser.id);
-                        if (!user) return undefined;
-                        return this.buildUsersToSave(existingUser, user);
-                    })
-                    .compact()
-                    .value();
+            const usersToSend = _(existingUsers)
+                .map(existingUser => {
+                    const user = users.find(user => user.id === existingUser.id);
+                    if (!user) return undefined;
+                    return this.buildUsersToSave(existingUser, user);
+                })
+                .compact()
+                .value();
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).flatMap(data => {
-                    return this.saveLocales(usersToSave).map(() => data);
-                });
+            return apiToFuture(this.api.metadata.post({ users: usersToSend })).flatMap(data => {
+                return Future.joinObj({
+                    saveLocales: this.saveLocales(usersToSave).map(() => data),
+                    saveGroups: this.getGroupsToSave(users, existingUsers),
+                }).map(() => data);
             });
         });
     }
@@ -330,42 +386,60 @@ export class UserD2ApiRepository implements UserRepository {
         return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
-    private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
-        const userIds = users.map(({ id }) => id);
-        const groupDictionary = _(users)
-            .flatMap(({ id, userGroups }) => userGroups.map(group => ({ id, group })))
-            .groupBy(({ group }) => group.id)
-            .mapValues(items => items.map(({ id }) => id))
-            .value();
+    getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
+        const allUsersGroups = this.buildUsersByGroupId(users);
+        const allExistingUsersGroups = this.buildUsersByGroupId(existing);
 
-        const existingGroupRefs = _.flatMap(existing, ({ userGroups }) => userGroups);
-        const newGroupRefs = _.flatMap(users, ({ userGroups }) => userGroups);
-        const allGroupRefs = _.concat(existingGroupRefs, newGroupRefs);
+        const groupsIdsToAdd = users.flatMap(user => {
+            return user.userGroups.map(userGroup => ({ id: userGroup.id }));
+        });
 
-        const groupInfo$ = apiToFuture(
-            this.api.metadata.get({
-                userGroups: {
-                    fields: { $owner: true },
-                    filter: { id: { in: _.uniq(allGroupRefs.map(oug => oug.id)) } }, // Review 414
-                },
+        const groupsIdsToDelete = users.flatMap(user => {
+            const existingUser = existing.find(({ id }) => id === user.id);
+            const difference = _.differenceWith(existingUser?.userGroups, user.userGroups, _.isEqual);
+            return difference.map(userGroup => ({ id: userGroup.id }));
+        });
+
+        const $requestsToAdd = this.buildRequestsGroups(groupsIdsToAdd, allUsersGroups, "add");
+        const $requestsToDelete = this.buildRequestsGroups(groupsIdsToDelete, allExistingUsersGroups, "delete");
+
+        return Future.sequential([...$requestsToAdd, ...$requestsToDelete]);
+    }
+
+    private buildRequestsGroups(groups: Array<{ id: Id }>, allUsersGroups: D2UserGroupByKey, action: D2ActionGroup) {
+        return _(groups)
+            .map(group => {
+                const users = allUsersGroups[group.id] || [];
+                if (users.length === 0) return undefined;
+                const userGroup = { id: group.id, users: users.map(({ id }) => ({ id })) };
+                return this.buildGroupsToSave(userGroup, action);
             })
-        );
+            .compact()
+            .value();
+    }
 
-        return groupInfo$.map(({ userGroups }) =>
-            userGroups
-                .map(group => {
-                    const cleanList = group.users.filter(({ id }) => !userIds.includes(id));
-                    const newItems = groupDictionary[group.id] ?? [];
-                    const users = [...cleanList, ...newItems.map(id => ({ id }))];
+    private buildUsersByGroupId(users: ApiUser[]): D2UserGroupByKey {
+        return _(users)
+            .flatMap(user =>
+                user.userGroups.map(group => ({
+                    groupId: group.id,
+                    user: user,
+                }))
+            )
+            .groupBy(x => x.groupId)
+            .mapValues(groupUsers => groupUsers.map(groupUser => groupUser.user))
+            .value();
+    }
 
-                    return { ...group, users };
-                })
-                .filter(group => {
-                    const newIds = group.users.map(({ id }) => id);
-                    const oldIds = userGroups.find(({ id }) => id === group.id)?.users.map(({ id }) => id) ?? [];
-
-                    return !_.isEqual(_.sortBy(oldIds), _.sortBy(newIds));
-                })
+    private buildGroupsToSave(userGroup: { id: Id; users: Array<{ id: Id }> }, action: D2ActionGroup) {
+        const isAdding = action === "add";
+        const usersIds = userGroup.users.map(({ id }) => ({ id: id }));
+        return apiToFuture(
+            this.api.request({
+                method: "post",
+                url: `/userGroups/${userGroup.id}/users`,
+                data: isAdding ? { additions: usersIds } : { deletions: usersIds },
+            })
         );
     }
 
@@ -551,3 +625,5 @@ type D2UserSettings = { keyDbLocale: LocaleCode; keyUiLocale: LocaleCode };
 type KeyLocale = "keyUiLocale" | "keyDbLocale";
 const UI_LOCALE_KEY = "keyUiLocale";
 const DB_LOCALE_KEY = "keyDbLocale";
+type D2UserGroupByKey = Record<Id, NamedRef[]>;
+type D2ActionGroup = "add" | "delete";
