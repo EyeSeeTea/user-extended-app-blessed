@@ -285,20 +285,6 @@ msgstr "Por favor proporcione un identificador válido"
 msgid "Please provide a valid email"
 msgstr "Por favor proporcione un correo electrónico válido"
 
-msgid "Password should contain at least one lowercase letter"
-msgstr "La contraseña debe contener al menos una letra minúscula"
-
-#, fuzzy
-msgid "Password should contain at least one UPPERCASE letter"
-msgstr "La contraseña debe contener al menos una letra minúscula"
-
-msgid "Password should contain at least one number"
-msgstr "La contraseña debe contener al menos un número"
-
-#, fuzzy
-msgid "Password should have at least one special character"
-msgstr "La contraseña debe contener al menos una letra minúscula"
-
 msgid "Please provide a valid phone number"
 msgstr "Por favor proporcione un número de teléfono válido"
 
