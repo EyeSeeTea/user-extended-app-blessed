@@ -521,7 +521,7 @@ const useValidations = (
     existingUsersNames: string[] = [],
     allowOverwrite = false
 ): { validation?: (...args: any[]) => any; props?: object } => {
-    const userRequiredFields = ["username", "firstName", "surname"];
+    const userRequiredFields = ["username", "firstName", "surname", "password"];
 
     switch (field) {
         case "username": {
