@@ -706,7 +706,11 @@ class ImportTableOld extends React.Component {
                 onSave={this.onSave}
                 disableSave={users.isEmpty() || !areUsersValid}
             >
-                {JSON.stringify({ empty: users.isEmpty(), areUsersValid: !areUsersValid, disable: users.isEmpty() || !areUsersValid})}
+                {JSON.stringify({
+                    empty: users.isEmpty(),
+                    areUsersValid: !areUsersValid,
+                    disable: users.isEmpty() || !areUsersValid,
+                })}
                 {isImporting && <ModalLoadingMask />}
 
                 {isLoading ? <LoadingMask /> : this.renderTable()}
