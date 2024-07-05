@@ -2,15 +2,12 @@ import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import { FontIcon, RaisedButton } from "material-ui";
 
-import React, { useState, useEffect, useCallback, SetStateAction, ComponentProps, ComponentType } from "react";
-import { getExistingUsers } from "../../../legacy/models/userHelpers";
+import React, { useState, useEffect, useCallback, SetStateAction, ComponentType } from "react";
 import { Fields } from "./FormBuilder";
-// import { validateUsername } from "../../../legacy/utils/validators";
 
 import InfoDialog from "../../../legacy/components/InfoDialog";
 import { generateUid } from "../../../utils/uid";
 import i18n from "../../../locales";
-import { useAppContext } from "../../contexts/app-context";
 import UserLegacy from "../../../legacy/models/user";
 import { ApiUser } from "../../../data/repositories/UserD2ApiRepository";
 import {
@@ -34,11 +31,9 @@ import {
     Switch,
     FormControlLabel,
     DialogTitle,
-    Typography,
 } from "@material-ui/core";
-// import { Delete, ViewColumn } from "@material-ui/icons";
 import { IconButton, Chip } from "material-ui";
-import { Form, FormSpy, useForm, Field, UseFieldConfig } from "react-final-form";
+import { Form, FormSpy, useForm, Field } from "react-final-form";
 import { FormState } from "final-form";
 import { defaultUser, User } from "../../../domain/entities/User";
 import { ColumnSelectorDialog } from "../column-selector-dialog/ColumnSelectorDialog";
@@ -48,15 +43,14 @@ import { OrgUnitSelectorFF } from "../user-form/components/OrgUnitSelectorFF";
 import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import styled from "styled-components";
 import { FormFieldProps } from "../form/fields/FormField";
-
-type ErrorMessage = { title: string; body: string; response: string };
+import { useGetAllUsers } from "../../hooks/userHooks";
 
 type ImportTableProps = {
     title: string;
     usersFromFile: User[];
     columns: (keyof Fields)[];
     maxUsers: number;
-    onSave: (users: User[]) => Promise<any>;
+    onSave: (users: User[]) => Promise<{ error: string }>;
     onRequestClose: () => void;
     templateUser?: UserLegacy;
     settings: any;
@@ -77,13 +71,11 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         warnings = [],
     } = props;
 
-    const { d2 } = useAppContext();
-
     const [users, setUsers] = useState<User[]>(usersFromFile);
     const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});
     const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
 
-    const [infoDialog, setInfoDialog] = React.useState<ErrorMessage | null>(null);
+    const [infoDialog, setInfoDialog] = React.useState<{ response: string }>();
     const [isLoading, setIsLoading] = React.useState(true);
 
     const [allowOverwrite, setAllowOverwrite] = React.useState(false);
@@ -99,60 +91,45 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const loading = useLoading();
     const snackbar = useSnackbar();
 
+    const { users: allUsers } = useGetAllUsers();
     useEffect(() => {
-        const getUsername = (user: ApiUser | User): string => {
+        const getUsername = (user: User | ApiUser): string => {
             if ("userCredentials" in user) {
                 return user.userCredentials.username;
             } else {
                 return user.username;
             }
         };
+        loading.show(true);
 
         const fetchData = async () => {
             setIsLoading(true);
-            loading.show(true);
-            const [existingUsersD2]: [UserLegacy[]] = await Promise.all([getExistingUsers(d2)]);
-            const existingUsersMapped = _.keyBy(existingUsersD2, getUsername) as Record<string, UserLegacy>;
+            if (!allUsers) {
+                return;
+            }
+            const existingUsersMapped = _.keyBy(allUsers, getUsername) as Record<string, User>;
             setExistingUsers(existingUsersMapped as unknown as SetStateAction<Record<string, User>>);
-            setExistingUsersNames(existingUsersD2.map((_user: Partial<UserLegacy>) => getUsername(_user as ApiUser)));
+            setExistingUsersNames(allUsers.map((user: User) => getUsername(user)));
             setIsLoading(false);
             loading.reset();
         };
 
         fetchData();
-    }, [d2]);
+    }, [allUsers, loading]);
 
     const existingUserInTable = useCallback(
         (newUsers: User[]) => {
             if (!existingUsersNames) {
                 return false;
             }
-            return newUsers.some(user => existingUsersNames.includes(user.username));
+            return _(newUsers).some(user => existingUsersNames.includes(user.username));
         },
         [existingUsersNames]
     );
 
     const closeInfoDialog = () => {
-        setInfoDialog(null);
+        setInfoDialog(undefined);
     };
-
-    // const onSaveTable = async () => {
-    //     setIsImporting(true);
-    //     try {
-    //         // @ts-ignore
-    //         const errorResponse = await onSave(users.valueSeq().toJS());
-    //         if (errorResponse) {
-    //             setIsImporting(false);
-    //             // @ts-ignore
-    //             setInfoDialog({ response: errorResponse });
-    //         } else {
-    //             onRequestClose();
-    //         }
-    //     } catch (err) {
-    //         console.error(err);
-    //         setIsImporting(false);
-    //     }
-    // };
 
     const toggleAllowOverwrite = useCallback(
         (_event, newValue: boolean) => {
@@ -170,19 +147,19 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         const maxWarnings = 10;
         const hiddenWarnings = Math.max(warnings.length - maxWarnings, 0);
 
-        const warningText = undefined;
-        // warnings.length === 0
-        //     ? null
-        //     : _([
-        //           i18n.t("{{n}} warning(s) while importing file", { n: warnings.length }) + ":",
-        //           // @ts-ignore
-        //           ..._(warnings)
-        //               .take(maxWarnings)
-        //               .map((line, idx) => `${idx + 1}. ${line}`),
-        //           hiddenWarnings > 0 ? i18n.t("and_n_more_warnings", { n: hiddenWarnings }) : null,
-        //       ])
-        //           .compact()
-        //           .join("\n");
+        const warningText =
+            warnings.length === 0
+                ? null
+                : _([
+                      i18n.t("{{n}} warning(s) while importing file", { n: warnings.length }) + ":",
+                      ..._(warnings)
+                          .take(maxWarnings)
+                          .map((line, idx) => `${idx + 1}. ${line}`)
+                          .value(),
+                      hiddenWarnings > 0 ? i18n.t("and_n_more_warnings", { n: hiddenWarnings }) : null,
+                  ])
+                      .compact()
+                      .join("\n");
 
         return (
             <React.Fragment>
@@ -204,19 +181,14 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             loading.show(true, i18n.t("Importing users"));
-            const errorResponse = await onSave(users);
+            const { error } = await onSave(users);
 
-            if (errorResponse) {
-                // setIsImporting(false);
-                // @ts-ignore
-                setInfoDialog({ response: errorResponse });
-                // snackbar.error(error);
+            if (error) {
+                setInfoDialog({ response: error });
+                snackbar.error(error);
             } else {
                 onRequestClose();
             }
-
-            // const { data, error } = await compositionRoot.users.save(users).runAsync();
-            // const { data, error } = await Promise.resolve({ data: { status: "OK" }, error: null });
 
             loading.reset();
         },
@@ -307,13 +279,19 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                             autocomplete="off"
                             onSubmit={onSubmit}
                             initialValues={{ users }}
-                            render={({ handleSubmit, values, submitError }) => {
+                            render={({ handleSubmit, values }) => {
                                 const canAddNewUser = values.users.length < maxUsers;
 
                                 submit = handleSubmit;
                                 return (
                                     <>
-                                        <FormSpy onChange={updateFormState} />
+                                        <FormSpy
+                                            onChange={(state: FormState<{ users: User[] }>) => {
+                                                requestAnimationFrame(() => {
+                                                    updateFormState(state);
+                                                });
+                                            }}
+                                        />
 
                                         <form onSubmit={submit}>
                                             <Table stickyHeader={true}>
@@ -328,8 +306,8 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody>
-                                                    {_.map(users, (user: User, rowIndex: number) =>
-                                                        renderTableRow(user, rowIndex, values.users)
+                                                    {_.map(users, (user: User, rowIndex: string) =>
+                                                        renderTableRow(user, Number(rowIndex), values.users)
                                                     )}
                                                 </TableBody>
                                             </Table>

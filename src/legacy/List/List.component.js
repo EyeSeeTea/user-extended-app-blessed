@@ -200,18 +200,15 @@ export class ListHybrid extends React.Component {
 
     _importUsers = async users => {
         console.log({ users });
-        const res = await this.props.compositionRoot.users.import({ users }).runAsync();
-        // const { data, error } = await this.props.compositionRoot.users.save(users).runAsync();
-        console.log({ res });
-        // const response = await saveUsers(this.context.d2, users);
-        // if (!error) {
-        //     const message = this.getTranslation("import_successful", { n: users.length });
-        //     snackActions.show({ message });
-        //     this.filterList();
-        //     return null;
-        // } else {
-        //     return error;
-        // }
+        const { error } = await this.props.compositionRoot.users.import({ users }).runAsync();
+        if (!error) {
+            const message = this.getTranslation("import_successful", { n: users.length });
+            snackActions.show({ message });
+            this.filterList();
+            return null;
+        } else {
+            return error;
+        }
     };
 
     _closeImportUsers = () => {
