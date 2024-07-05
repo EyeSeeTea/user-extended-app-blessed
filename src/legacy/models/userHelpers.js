@@ -88,14 +88,13 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                     .value();
             })
         );
-        console.log({ model, values, modelsByFieldList });
+
         const modelsByField = _(modelsByFieldList)
             .flatten()
             .groupBy(({ value }) => value)
             .mapValues(objs => objs.map(({ obj }) => obj))
             .value();
-        console.log({ model, modelsByField });
-        return [model, modelsByField];
+            return [model, modelsByField];
     });
 
     return _.fromPairs(pairs);
