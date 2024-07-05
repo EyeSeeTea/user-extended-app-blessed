@@ -44,7 +44,22 @@ import styled from "styled-components";
 import { FormFieldProps } from "../form/fields/FormField";
 import { useGetAllUsers } from "../../hooks/userHooks";
 
+const columnNameFromPropertyMapping: Record<Columns, string> = {
+    id: "ID",
+    username: "Username",
+    password: "Password",
+    firstName: "First name",
+    surname: "Surname",
+    userRoles: "Roles",
+    userGroups: "Groups",
+    organisationUnits: "OUCapture",
+    dataViewOrganisationUnits: "OUOutput",
+    searchOrganisationsUnits: "OUSearch",
+    disabled: "Disabled",
+};
+
 export type Columns =
+    | "id"
     | "username"
     | "password"
     | "firstName"
@@ -94,7 +109,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const [showOverwriteToggle, setShowOverwriteToggle] = React.useState(true);
 
     // Add a blank column to the end for delete buttons
-    const [columns, setColumns] = useState<string[]>([...baseUserColumns, ""]);
+    const [columns, setColumns] = useState<(Columns | "")[]>([...baseUserColumns, ""]);
     const [columnSelectorOpen, setColumnSelectorOpen] = useState<boolean>(false);
 
     const [errorsCount, setErrorsCount] = React.useState(0);
@@ -281,7 +296,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                         <ColumnSelectorDialog
                             columns={userFormFields}
                             visibleColumns={columns}
-                            onChange={setColumns}
+                            onChange={columns => setColumns(columns as Columns[])}
                             getName={getUserFieldName}
                             onCancel={() => setColumnSelectorOpen(false)}
                         />
@@ -312,7 +327,8 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                                         <StyledTableColumn>#</StyledTableColumn>
                                                         {columns.map((header: string) => (
                                                             <StyledTableCellHeader key={header}>
-                                                                {header}
+                                                                {columnNameFromPropertyMapping[header as Columns] ||
+                                                                    header}
                                                             </StyledTableCellHeader>
                                                         ))}
                                                     </TableRow>
@@ -548,6 +564,7 @@ const StyledTableCellHeader = styled(TableCell)`
     font-weight: bold;
     font-size: 1.2em;
     overflow: hidden;
+    white-space: nowrap;
 `;
 
 const StyledTableCell = styled(TableCell)`
