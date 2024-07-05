@@ -94,7 +94,7 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
             .groupBy(({ value }) => value)
             .mapValues(objs => objs.map(({ obj }) => obj))
             .value();
-            return [model, modelsByField];
+        return [model, modelsByField];
     });
 
     return _.fromPairs(pairs);

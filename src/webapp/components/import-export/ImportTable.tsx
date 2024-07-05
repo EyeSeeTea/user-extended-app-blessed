@@ -3,7 +3,6 @@ import _ from "lodash";
 import { FontIcon, RaisedButton } from "material-ui";
 
 import React, { useState, useEffect, useCallback, SetStateAction, ComponentType } from "react";
-import { Fields } from "./FormBuilder";
 
 import InfoDialog from "../../../legacy/components/InfoDialog";
 import { generateUid } from "../../../utils/uid";
@@ -45,10 +44,22 @@ import styled from "styled-components";
 import { FormFieldProps } from "../form/fields/FormField";
 import { useGetAllUsers } from "../../hooks/userHooks";
 
+export type Columns =
+    | "username"
+    | "password"
+    | "firstName"
+    | "surname"
+    | "userRoles"
+    | "userGroups"
+    | "organisationUnits"
+    | "dataViewOrganisationUnits"
+    | "searchOrganisationsUnits"
+    | "disabled";
+
 type ImportTableProps = {
     title: string;
     usersFromFile: User[];
-    columns: (keyof Fields)[];
+    columns: Columns[];
     maxUsers: number;
     onSave: (users: User[]) => Promise<{ error: string }>;
     onRequestClose: () => void;
@@ -58,6 +69,7 @@ type ImportTableProps = {
     actionText: string;
     warnings: string[];
 };
+
 export const ImportTable: React.FC<ImportTableProps> = props => {
     const {
         title,
