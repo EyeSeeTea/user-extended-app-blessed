@@ -19,7 +19,7 @@ import { fieldImportSuffix, getExistingUsers } from "../models/userHelpers";
 import { getModelValuesByField, getOrgUnitsRoots } from "../utils/dhis2Helpers";
 import { getCompactTextForModels } from "../utils/i18n";
 import { toBuilderValidator, validatePassword, validateUsername } from "../utils/validators";
-import { FormBuilder } from "../../webapp/components/import-export/FormBuilder";
+import FormBuilder from "./FormBuilder.component";
 import InfoDialog from "./InfoDialog";
 import ModalLoadingMask from "./ModalLoadingMask.component";
 import MultipleSelector from "./MultipleSelector.component";
