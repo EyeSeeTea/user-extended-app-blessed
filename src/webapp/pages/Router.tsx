@@ -8,7 +8,6 @@ import { UserBulkEditPage } from "./user-bulk-edit/UserBulkEditPage";
 import { UserEditPage } from "./user-edit/UserEditPage";
 import { About } from "../components/about/About";
 import { AboutPage } from "./about/AboutPage";
-import { LoggerSettingsPage } from "./log-settings/LoggerSettingsPage";
 
 export const Router: React.FC = React.memo(() => {
     const { api, currentUser } = useAppContext();
@@ -29,12 +28,9 @@ export const Router: React.FC = React.memo(() => {
                         </LegacyAppWrapper>
                     }
                 />
-
-                <Route path="/settings" element={<LoggerSettingsPage />} />
             </Routes>
             <IconsContainer>
                 <About icon="about" visible={true} />
-                <About icon="settings" visible={true} />
             </IconsContainer>
         </HashRouter>
     );
