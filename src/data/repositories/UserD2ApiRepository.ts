@@ -169,6 +169,7 @@ export class UserD2ApiRepository implements UserRepository {
                             userCredentials: { ...fields.userCredentials, ...auditFields },
                         },
                         filter: { id: { in: usersIds } },
+                        v: +new Date().getTime(),
                     })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
@@ -200,6 +201,7 @@ export class UserD2ApiRepository implements UserRepository {
                     ...otherFilters,
                 },
                 order: `${sorting.field}:${sorting.order}`,
+                v: +new Date().getTime(),
             })
         );
         return userData$.map(({ objects }) => objects);
