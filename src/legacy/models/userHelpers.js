@@ -323,12 +323,9 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .map(user => [user.userCredentials.username, (user.userGroups || []).map(ug => ug.id)])
         .fromPairs()
         .value();
-    const allUsers = await getExistingUsers(d2, {
-        fields: "id,userGroups[id],userCredentials[username]",
-    });
+
     const userGroupsInvolved = _(usersToSave).concat(existingUsersToUpdate).flatMap("userGroups").uniqBy("id").value();
     const usersByGroupId = _(usersToSave)
-        .concat(allUsers)
         .uniqBy(user => user.userCredentials.username)
         .flatMap(user => {
             const userGroupIds =
@@ -338,16 +335,19 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .groupBy("userGroupId")
         .mapValues(items => items.map(item => item.user))
         .value();
+
     const { userGroups } = await api.get("/userGroups", {
         filter: "id:in:[" + _(userGroupsInvolved).map("id").join(",") + "]",
         fields: ":owner",
         paging: false,
     });
 
-    return userGroups.map(userGroup => ({
-        ...userGroup,
-        users: usersByGroupId[userGroup.id].map(user => ({ id: user.id })),
-    }));
+    return userGroups.map(userGroup => {
+        const usersByGroup = _(usersByGroupId[userGroup.id])
+            .map(user => ({ id: user.id }))
+            .value();
+        return { ...userGroup, users: _(userGroup.users).concat(usersByGroup).value() };
+    });
 }
 
 function postMetadata(api, payload) {
