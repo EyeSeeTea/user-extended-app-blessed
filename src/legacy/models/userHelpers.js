@@ -391,7 +391,7 @@ async function saveUsers(d2, users, d2Api) {
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
     const response = await postMetadata(api, { users: users });
-    await userRepository.getGroupsToSave(usersToSave, existingUsersToUpdate).runAsync();
+    await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate).runAsync();
     return response;
 }
 

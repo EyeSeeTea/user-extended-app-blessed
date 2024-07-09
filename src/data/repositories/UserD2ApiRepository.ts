@@ -210,13 +210,7 @@ export class UserD2ApiRepository implements UserRepository {
 
             const groupedByUser = _(userGroups)
                 .groupBy(ug => ug.userId)
-                .mapValues(groups =>
-                    groups.map(g => {
-                        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-                        const { users, ...groupWithoutUsers } = g.group;
-                        return groupWithoutUsers;
-                    })
-                )
+                .mapValues(groups => groups.map(group => _.omit(group.group, ["users"])))
                 .value();
 
             return groupedByUser;
@@ -298,7 +292,7 @@ export class UserD2ApiRepository implements UserRepository {
             return apiToFuture(this.api.metadata.post({ users: usersToSend })).flatMap(data => {
                 return Future.joinObj({
                     saveLocales: this.saveLocales(usersToSave).map(() => data),
-                    saveGroups: this.getGroupsToSave(users, existingUsers),
+                    saveGroupsStats: this.updateUserGroups(users, existingUsers),
                 }).map(() => data);
             });
         });
@@ -386,7 +380,7 @@ export class UserD2ApiRepository implements UserRepository {
         return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
-    getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
+    updateUserGroups(users: ApiUser[], existing: ApiUser[]): FutureData<Stats> {
         const allUsersGroups = this.buildUsersByGroupId(users);
         const allExistingUsersGroups = this.buildUsersByGroupId(existing);
 
@@ -403,10 +397,16 @@ export class UserD2ApiRepository implements UserRepository {
         const $requestsToAdd = this.buildRequestsGroups(groupsIdsToAdd, allUsersGroups, "add");
         const $requestsToDelete = this.buildRequestsGroups(groupsIdsToDelete, allExistingUsersGroups, "delete");
 
-        return Future.sequential([...$requestsToAdd, ...$requestsToDelete]);
+        return Future.sequential([...$requestsToAdd, ...$requestsToDelete]).map(stats => {
+            return Stats.combine(stats);
+        });
     }
 
-    private buildRequestsGroups(groups: Array<{ id: Id }>, allUsersGroups: D2UserGroupByKey, action: D2ActionGroup) {
+    private buildRequestsGroups(
+        groups: Array<{ id: Id }>,
+        allUsersGroups: D2UserGroupByKey,
+        action: D2ActionGroup
+    ): FutureData<Stats>[] {
         return _(groups)
             .map(group => {
                 const users = allUsersGroups[group.id] || [];
@@ -431,16 +431,32 @@ export class UserD2ApiRepository implements UserRepository {
             .value();
     }
 
-    private buildGroupsToSave(userGroup: { id: Id; users: Array<{ id: Id }> }, action: D2ActionGroup) {
+    private buildGroupsToSave(
+        userGroup: { id: Id; users: Array<{ id: Id }> },
+        action: D2ActionGroup
+    ): FutureData<Stats> {
         const isAdding = action === "add";
         const usersIds = userGroup.users.map(({ id }) => ({ id: id }));
         return apiToFuture(
-            this.api.request({
+            this.api.request<Dhis2Response>({
                 method: "post",
                 url: `/userGroups/${userGroup.id}/users`,
                 data: isAdding ? { additions: usersIds } : { deletions: usersIds },
             })
-        );
+        ).flatMap(d2Response => {
+            const response = d2Response.response ? d2Response.response : d2Response;
+            const errorMessage = getErrorFromResponse(response.typeReports);
+            if (response.status === "ERROR") return Future.error(errorMessage);
+            return Future.success(
+                new Stats({
+                    created: response.stats.created,
+                    updated: response.stats.updated,
+                    ignored: response.stats.ignored,
+                    deleted: response.stats.deleted,
+                    errorMessage: errorMessage,
+                })
+            );
+        });
     }
 
     private toDomainUser(input: ApiUserWithAudit): User {
@@ -613,7 +629,11 @@ const defaultColumns: Array<keyof User> = [
 
 // in version 2.38 stats and typeReports are inside a response object
 type Dhis2Response = MetadataResponse & {
-    response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
+    response?: {
+        status: MetadataResponse["status"];
+        stats: MetadataResponse["stats"];
+        typeReports: MetadataResponse["typeReports"];
+    };
 };
 
 type D2UserAudit = {
