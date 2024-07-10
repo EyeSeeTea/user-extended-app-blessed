@@ -1,4 +1,3 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import _ from "lodash";
 import { FontIcon, RaisedButton } from "material-ui";
 
@@ -29,7 +28,11 @@ import {
     Tooltip,
     Switch,
     FormControlLabel,
+    Dialog,
     DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
 } from "@material-ui/core";
 import { IconButton, Chip } from "material-ui";
 import { Form, FormSpy, useForm, Field } from "react-final-form";
@@ -188,7 +191,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
         return (
             <React.Fragment>
-                <StyledDialogTitle>{title}</StyledDialogTitle>
+                {title}
                 {errorText && (
                     <DialogTooltip title={errorText}>
                         <FontIcon className="material-icons">error</FontIcon>
@@ -277,89 +280,85 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     };
 
     return (
-        <ConfirmationDialog
-            open={true}
-            title={renderDialogTitle()}
-            maxWidth={"lg"}
-            fullWidth={true}
-            cancelText={i18n.t("Close")}
-            onCancel={onRequestClose}
-            saveText={actionText}
-            onSave={event => submit(event)}
-            disableSave={_.isEmpty(users) || !areUsersValid}
-        >
-            {!isLoading && (
-                <div>
-                    {columnSelectorOpen && (
-                        <ColumnSelectorDialog
-                            columns={userFormFields}
-                            visibleColumns={columns}
-                            onChange={columns => setColumns(columns as Columns[])}
-                            getName={getUserFieldName}
-                            onCancel={() => setColumnSelectorOpen(false)}
-                        />
-                    )}
-                    <TableContainer>
-                        <Form<{ users: User[] }>
-                            autocomplete="off"
-                            onSubmit={onSubmit}
-                            initialValues={{ users }}
-                            render={({ handleSubmit, values }) => {
-                                const canAddNewUser = values.users.length < maxUsers;
+        <Dialog open={true} maxWidth={"lg"} fullWidth={true}>
+            <StyledDialogTitle>{renderDialogTitle()}</StyledDialogTitle>
+            <DialogContent>
+                {!isLoading && (
+                    <div>
+                        {columnSelectorOpen && (
+                            <ColumnSelectorDialog
+                                columns={userFormFields}
+                                visibleColumns={columns}
+                                onChange={columns => setColumns(columns as Columns[])}
+                                getName={getUserFieldName}
+                                onCancel={() => setColumnSelectorOpen(false)}
+                            />
+                        )}
+                        <TableContainer>
+                            <Form<{ users: User[] }>
+                                autocomplete="off"
+                                onSubmit={onSubmit}
+                                initialValues={{ users }}
+                                render={({ handleSubmit, values }) => {
+                                    const canAddNewUser = values.users.length < maxUsers;
+                                    return (
+                                        <>
+                                            <FormSpy
+                                                onChange={(state: FormState<{ users: User[] }>) => {
+                                                    requestAnimationFrame(() => {
+                                                        updateFormState(state);
+                                                    });
+                                                }}
+                                            />
 
-                                submit = handleSubmit;
-                                return (
-                                    <>
-                                        <FormSpy
-                                            onChange={(state: FormState<{ users: User[] }>) => {
-                                                requestAnimationFrame(() => {
-                                                    updateFormState(state);
-                                                });
-                                            }}
-                                        />
+                                            <form id="import-form" onSubmit={handleSubmit}>
+                                                <Table stickyHeader={true}>
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <StyledTableColumn>#</StyledTableColumn>
+                                                            {columns.map((header: string) => (
+                                                                <StyledTableCellHeader key={header}>
+                                                                    {columnNameFromPropertyMapping[header as Columns] ||
+                                                                        header}
+                                                                </StyledTableCellHeader>
+                                                            ))}
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {_.map(users, (user: User, rowIndex: string) =>
+                                                            renderTableRow(user, Number(rowIndex), values.users)
+                                                        )}
+                                                    </TableBody>
+                                                </Table>
 
-                                        <form onSubmit={submit}>
-                                            <Table stickyHeader={true}>
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <StyledTableColumn>#</StyledTableColumn>
-                                                        {columns.map((header: string) => (
-                                                            <StyledTableCellHeader key={header}>
-                                                                {columnNameFromPropertyMapping[header as Columns] ||
-                                                                    header}
-                                                            </StyledTableCellHeader>
-                                                        ))}
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {_.map(users, (user: User, rowIndex: string) =>
-                                                        renderTableRow(user, Number(rowIndex), values.users)
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-
-                                            <AddButtonRow>
-                                                <RaisedButton
-                                                    disabled={!canAddNewUser}
-                                                    label={i18n.t("Add user")}
-                                                    onClick={addRow}
-                                                />
-                                            </AddButtonRow>
-                                        </form>
-                                    </>
-                                );
-                            }}
-                        />
-                    </TableContainer>
-                    {showOverwriteToggle && !templateUser && (
-                        <FormControlLabel
-                            control={<Switch checked={allowOverwrite} onChange={toggleAllowOverwrite} />}
-                            label={i18n.t("Overwrite existing users")}
-                        />
-                    )}
-                </div>
-            )}
-
+                                                <AddButtonRow>
+                                                    <RaisedButton
+                                                        disabled={!canAddNewUser}
+                                                        label={i18n.t("Add user")}
+                                                        onClick={addRow}
+                                                    />
+                                                </AddButtonRow>
+                                            </form>
+                                        </>
+                                    );
+                                }}
+                            />
+                        </TableContainer>
+                        {showOverwriteToggle && !templateUser && (
+                            <FormControlLabel
+                                control={<Switch checked={allowOverwrite} onChange={toggleAllowOverwrite} />}
+                                label={i18n.t("Overwrite existing users")}
+                            />
+                        )}
+                    </div>
+                )}
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onRequestClose}>{i18n.t("Cancel")}</Button>
+                <Button disabled={_.isEmpty(users) || !areUsersValid} type="submit" form="import-form" color="primary">
+                    {actionText}
+                </Button>
+            </DialogActions>
             {infoDialog && (
                 <InfoDialog
                     t={i18n.t}
@@ -368,7 +367,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                     response={infoDialog.response}
                 />
             )}
-        </ConfirmationDialog>
+        </Dialog>
     );
 };
 

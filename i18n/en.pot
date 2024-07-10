@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-07-05T14:35:34.784Z\n"
-"PO-Revision-Date: 2024-07-05T14:35:34.784Z\n"
+"POT-Creation-Date: 2024-07-10T13:11:56.308Z\n"
+"PO-Revision-Date: 2024-07-10T13:11:56.308Z\n"
 
 msgid "ID"
 msgstr ""
@@ -176,6 +176,9 @@ msgstr ""
 msgid "Overwrite existing users"
 msgstr ""
 
+msgid "Cancel"
+msgstr ""
+
 msgid "Error on metadata action"
 msgstr ""
 
@@ -267,9 +270,6 @@ msgid "Error saving user"
 msgstr ""
 
 msgid "Save"
-msgstr ""
-
-msgid "Cancel"
 msgstr ""
 
 msgid "Please provide a valid identifier"
