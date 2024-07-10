@@ -53,6 +53,9 @@ const columnNameFromPropertyMapping: Record<Columns, string> = {
     password: "Password",
     firstName: "First name",
     surname: "Surname",
+    email: "Email",
+    phoneNumber: "Phone number",
+    openId: "Open ID",
     userRoles: "Roles",
     userGroups: "Groups",
     organisationUnits: "OUCapture",
@@ -67,6 +70,9 @@ export type Columns =
     | "password"
     | "firstName"
     | "surname"
+    | "email"
+    | "phoneNumber"
+    | "openId"
     | "userRoles"
     | "userGroups"
     | "organisationUnits"
@@ -473,10 +479,15 @@ const RenderField: React.FC<{
     switch (field) {
         case "firstName":
         case "surname":
+        case "openId":
         case "username":
             return <FormTextField {...props} />;
         case "password":
             return <FormTextField {...props} type="password" />;
+        case "email":
+            return <FormTextField {...props} type="email" />;
+        case "phoneNumber":
+            return <FormTextField {...props} type="tel" />;
         case "userGroups":
             return <FormFieldDialog {...props} component={UserRoleGroupFF} modelType="userGroups" />;
         case "userRoles":
@@ -537,6 +548,13 @@ const useValidations = (
                 },
             };
         }
+        case "email":
+            return {
+                validation: createPattern(
+                    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                    i18n.t("Please provide a valid email")
+                ),
+            };
         case "password":
             return {
                 validation: composeValidators(
@@ -548,6 +566,10 @@ const useValidations = (
                     createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
                     createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
                 ),
+            };
+        case "phoneNumber":
+            return {
+                validation: createPattern(/^\+?[0-9 \-()]+$/, i18n.t("Please provide a valid phone number")),
             };
         default: {
             const required = userRequiredFields.includes(field);
