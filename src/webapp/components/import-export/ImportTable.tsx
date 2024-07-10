@@ -79,8 +79,6 @@ type ImportTableProps = {
     onSave: (users: User[]) => Promise<{ error: string }>;
     onRequestClose: () => void;
     templateUser?: UserLegacy;
-    settings: any;
-    api: any;
     actionText: string;
     warnings: string[];
 };

@@ -569,21 +569,20 @@ class ImportTableOld extends React.Component {
                     </TableHead>
 
                     <TableBody displayRowCheckbox={false}>
-                        {_.map(users.valueSeq().toJS(), user =>  (
-                                <FormBuilder
-                                    key={"form-" + user.id}
-                                    id={user.id}
-                                    fields={this.getFields(user)}
-                                    onUpdateField={this.getOnUpdateField(user.id)}
-                                    onUpdateFormStatus={this.getOnUpdateFormStatus(user.id)}
-                                    validateOnRender={this.shouldValidateOnNextRender()}
-                                    validateFullFormOnChanges={true}
-                                    validateOnInitialRender={true}
-                                    mainWrapper={this.renderTableRow}
-                                    fieldWrapper={this.renderTableRowColumn}
-                                />
-                            )
-                        )}
+                        {_.map(users.valueSeq().toJS(), user => (
+                            <FormBuilder
+                                key={"form-" + user.id}
+                                id={user.id}
+                                fields={this.getFields(user)}
+                                onUpdateField={this.getOnUpdateField(user.id)}
+                                onUpdateFormStatus={this.getOnUpdateFormStatus(user.id)}
+                                validateOnRender={this.shouldValidateOnNextRender()}
+                                validateFullFormOnChanges={true}
+                                validateOnInitialRender={true}
+                                mainWrapper={this.renderTableRow}
+                                fieldWrapper={this.renderTableRowColumn}
+                            />
+                        ))}
                     </TableBody>
                 </Table>
 
