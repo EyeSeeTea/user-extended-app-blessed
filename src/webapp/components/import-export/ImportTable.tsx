@@ -127,7 +127,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         };
         loading.show(true);
 
-        const fetchData = async () => {
+        const fetchData = () => {
             setIsLoading(true);
             if (!allUsers) {
                 return;
