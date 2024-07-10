@@ -49,9 +49,9 @@ const modelByField = {
 };
 
 const queryFieldsByModel = {
-    userRoles: ["id", "name"],
-    userGroups: ["id", "name"],
-    organisationUnits: ["id", "path", "code", "name", "shortName"],
+    userRoles: ["id", "name", "displayName"],
+    userGroups: ["id", "name", "displayName"],
+    organisationUnits: ["id", "path", "code", "name", "displayName", "shortName"],
 };
 
 async function getAssociations(d2, objs, { orgUnitsField }) {
@@ -100,6 +100,19 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     return _.fromPairs(pairs);
 }
 
+function buildObjects(data, pathToArray) {
+    if (pathToArray) {
+        return _(data)
+            .flatMap(({ objs }) => objs)
+            .map(obj => ({ ...obj, path: [obj.path] || [] }))
+            .value();
+    } else {
+        return _(data)
+            .flatMap(({ objs }) => objs)
+            .value();
+    }
+}
+
 function collectionFromNames(user, rowIndex, field, objectsByName, pathToArray = false) {
     const value = user[field];
     const names = (value || "")
@@ -122,21 +135,11 @@ function collectionFromNames(user, rowIndex, field, objectsByName, pathToArray =
         .compact()
         .value();
 
-    let objects;
-    if (pathToArray) {
-        objects = _(data)
-            .flatMap(({ objs }) => objs)
-            .map(obj => ({ ...obj, path: [obj.path] || [] }))
-            .value();
-    } else {
-        objects = _(data)
-            .flatMap(({ objs }) => objs)
-            .value();
-    }
-
     const info = {
         hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates),
     };
+
+    const objects = buildObjects(data, pathToArray);
 
     return { objects, warnings, info };
 }
