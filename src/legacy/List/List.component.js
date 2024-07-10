@@ -199,7 +199,6 @@ export class ListHybrid extends React.Component {
     };
 
     _importUsers = async users => {
-        console.log({ users });
         const { error } = await this.props.compositionRoot.users.import({ users }).runAsync();
         if (!error) {
             const message = this.getTranslation("import_successful", { n: users.length });

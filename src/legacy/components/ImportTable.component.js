@@ -149,27 +149,19 @@ class ImportTableOld extends React.Component {
     componentDidMount = async () => {
         const { d2 } = this.context;
         const { users: usersArray, columns } = this.props;
-        // console.log("ImportTableOld props", this.props);
 
         const modelValuesByField = await getModelValuesByField(d2, columns);
-        // console.log("modelValuesByField", modelValuesByField);
         const orgUnitRoots = await getOrgUnitsRoots();
-        // console.log("orgUnitRoots", orgUnitRoots);
         const existingUsers = await getExistingUsers(d2);
-        // console.log("existingUsers", existingUsers);
         const getUsername = user => user.userCredentials.username;
         const existingUsernames = new Set(existingUsers.map(getUsername));
-
-        // console.log("existingUsernames", existingUsernames);
 
         const usersById = _(usersArray)
             .sortBy(user => !existingUsernames.has(user.username))
             .map(user => ({ id: generateUid(), ...user }))
             .map(user => [user.id, user])
             .value();
-        // console.log("usersById", usersById);
-        // console.log("keyBy: existingUsers", _.keyBy(existingUsers, getUsername));
-        // console.log("users: OrderedMap", new OrderedMap(usersById));
+
         this.setState({
             isLoading: false,
             existingUsers: _.keyBy(existingUsers, getUsername),
@@ -178,7 +170,6 @@ class ImportTableOld extends React.Component {
             modelValuesByField,
             orgUnitRoots,
         });
-        // console.log("ImportTableOld state", this.state);
     };
 
     getUser = userId => {
@@ -578,9 +569,7 @@ class ImportTableOld extends React.Component {
                     </TableHead>
 
                     <TableBody displayRowCheckbox={false}>
-                        {_.map(users.valueSeq().toJS(), user => {
-                            // console.log(this.getFields(user));
-                            return (
+                        {_.map(users.valueSeq().toJS(), user =>  (
                                 <FormBuilder
                                     key={"form-" + user.id}
                                     id={user.id}
@@ -593,8 +582,8 @@ class ImportTableOld extends React.Component {
                                     mainWrapper={this.renderTableRow}
                                     fieldWrapper={this.renderTableRowColumn}
                                 />
-                            );
-                        })}
+                            )
+                        )}
                     </TableBody>
                 </Table>
 
@@ -706,11 +695,6 @@ class ImportTableOld extends React.Component {
                 onSave={this.onSave}
                 disableSave={users.isEmpty() || !areUsersValid}
             >
-                {JSON.stringify({
-                    empty: users.isEmpty(),
-                    areUsersValid: !areUsersValid,
-                    disable: users.isEmpty() || !areUsersValid,
-                })}
                 {isImporting && <ModalLoadingMask />}
 
                 {isLoading ? <LoadingMask /> : this.renderTable()}
@@ -736,7 +720,6 @@ class ImportTableOld extends React.Component {
                         response={infoDialog.response}
                     />
                 )}
-                {JSON.stringify({ showOverwriteToggle, templateUser, infoDialog, isLoading })}
                 {showOverwriteToggle && !templateUser && (
                     <Toggle
                         label={this.t("overwrite_existing_users")}
