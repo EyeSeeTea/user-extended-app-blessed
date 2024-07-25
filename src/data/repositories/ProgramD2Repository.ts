@@ -66,7 +66,11 @@ export class ProgramD2Repository implements ProgramRepository {
                     return Program.create({
                         attributes: _(program.programTrackedEntityAttributes)
                             .map(attribute => {
-                                if (attribute.valueType !== "TEXT" && attribute.valueType !== "LONG_TEXT")
+                                if (
+                                    attribute.valueType !== "TEXT" &&
+                                    attribute.valueType !== "LONG_TEXT" &&
+                                    attribute.valueType !== "USERNAME"
+                                )
                                     return undefined;
                                 return {
                                     id: attribute.trackedEntityAttribute.id,

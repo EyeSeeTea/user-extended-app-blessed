@@ -8,7 +8,6 @@ import { ImportExport } from "../../webapp/components/import-export/ImportExport
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
-import SettingsDialog from "../components/SettingsDialog.component";
 import Settings from "../models/settings";
 import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
@@ -175,11 +174,7 @@ export class ListHybrid extends React.Component {
         );
     };
 
-    _openSettings = () => {
-        this.setState({ settingsVisible: true });
-    };
-
-    _closeSettings = newSettings => {
+    _openSettings = newSettings => {
         this.setState({
             settingsVisible: false,
             ...(newSettings ? { settings: newSettings } : {}),
@@ -228,7 +223,7 @@ export class ListHybrid extends React.Component {
     };
 
     render() {
-        const { replicateUser, listFilterOptions, importUsers, settings, settingsVisible } = this.state;
+        const { replicateUser, listFilterOptions, importUsers, settings } = this.state;
 
         return (
             <div>
@@ -261,8 +256,6 @@ export class ListHybrid extends React.Component {
                         </UserListTable>
                     </div>
                 </div>
-
-                {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 

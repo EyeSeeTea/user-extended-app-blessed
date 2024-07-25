@@ -4,14 +4,13 @@ import { Dropdown, DropdownItem, DropdownProps, useSnackbar } from "@eyeseetea/d
 import { useAppContext } from "../../contexts/app-context";
 
 import i18n from "../../../locales";
-import { Button, Checkbox, FormControlLabel, FormGroup } from "@material-ui/core";
+import { Button, FormControlLabel, FormGroup, Switch } from "@material-ui/core";
 import { LoggerSettings } from "../../../domain/entities/LoggerSettings";
-import { useGoBack } from "../../hooks/useGoBack";
-import { PageHeader } from "../../components/page-header/PageHeader";
 import { useGetLoggerSettings, usePrograms } from "./useLogger";
 import { Maybe } from "../../../types/utils";
 import { DataElementAttrs, ProgramStageAttrs } from "../../../domain/entities/Program";
 import { Id } from "../../../domain/entities/Ref";
+import { isSuperAdmin } from "../../../domain/entities/User";
 
 function convertToDropdownItem<T extends { id: string; name: string }>(data: T[]): DropdownItem[] {
     return data.map(item => ({ value: item.id, text: item.name }));
@@ -33,10 +32,15 @@ function dataElementsByProgramStage(
     return dataElements;
 }
 
-export const LoggerSettingsPage: React.FC<{}> = () => {
-    const { compositionRoot } = useAppContext();
+type LoggerSettingsProps = { onClose: () => void };
+
+export const LoggerSettingsPage: React.FC<LoggerSettingsProps> = props => {
+    const { onClose } = props;
+    const { compositionRoot, currentUser } = useAppContext();
+
+    const isAdmin = React.useMemo(() => isSuperAdmin(currentUser), [currentUser]);
+
     const snackbar = useSnackbar();
-    const goBack = useGoBack();
 
     const { programs } = usePrograms();
     const { settings, setSettings } = useGetLoggerSettings({ programs });
@@ -87,9 +91,10 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
 
             LoggerSettings.build(settings).match({
                 success: settings => {
-                    return compositionRoot.logger.save.execute(settings).run(
+                    return compositionRoot.logger.save.execute(settings, currentUser).run(
                         () => {
                             snackbar.success(i18n.t("Settings saved"));
+                            onClose();
                         },
                         error => snackbar.error(error)
                     );
@@ -100,7 +105,7 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
                 },
             });
         },
-        [settings, snackbar, disableButton, compositionRoot.logger.save]
+        [currentUser, settings, snackbar, disableButton, compositionRoot.logger.save, onClose]
     );
 
     const onChangeSettings = React.useCallback(
@@ -113,58 +118,63 @@ export const LoggerSettingsPage: React.FC<{}> = () => {
         [setSettings]
     );
 
+    if (!isAdmin) return <p>{i18n.t("Only admin user can edit logger settings")}</p>;
+
     return (
         <section>
-            <PageHeader onBackClick={goBack} title={i18n.t("Logger Settings")} />
             <SettingsForm onSubmit={onSubmit}>
                 <CheckboxContainer>
                     <FormControlLabel
-                        control={<Checkbox checked={settings?.isEnabled || false} onChange={onEnableLogger} />}
+                        control={<Switch checked={settings?.isEnabled || false} onChange={onEnableLogger} />}
                         label={i18n.t("Enable Logger")}
                     />
                 </CheckboxContainer>
-                <DropDownContainer>
-                    <Dropdown
-                        items={programDropdownItems}
-                        label={i18n.t("Tracker Program")}
-                        onChange={onProgramChange}
-                        value={settings?.programId}
-                    />
+                {settings?.isEnabled && (
+                    <DropDownContainer>
+                        <Dropdown
+                            items={programDropdownItems}
+                            label={i18n.t("Tracker Program")}
+                            onChange={onProgramChange}
+                            value={settings?.programId}
+                        />
 
-                    <Dropdown
-                        items={programAttributes}
-                        label={i18n.t("Username Attribute")}
-                        onChange={value => onChangeSettings(value, "usernameAttributeId")}
-                        value={settings?.usernameAttributeId}
-                    />
+                        <Dropdown
+                            items={programAttributes}
+                            label={i18n.t("Username Attribute")}
+                            onChange={value => onChangeSettings(value, "usernameAttributeId")}
+                            value={settings?.usernameAttributeId}
+                        />
 
-                    <Dropdown
-                        items={convertToDropdownItem(programStages)}
-                        label={i18n.t("Program Stages")}
-                        onChange={value => onChangeSettings(value, "programStageId")}
-                        value={settings?.programStageId}
-                    />
+                        <Dropdown
+                            items={convertToDropdownItem(programStages)}
+                            label={i18n.t("Program Stages")}
+                            onChange={value => onChangeSettings(value, "programStageId")}
+                            value={settings?.programStageId}
+                        />
 
-                    <Dropdown
-                        items={dataElementsFile}
-                        label={i18n.t("Data Element File ID")}
-                        onChange={value => onChangeSettings(value, "dataElementFileId")}
-                        value={settings?.dataElementFileId}
-                    />
+                        <Dropdown
+                            items={dataElementsFile}
+                            label={i18n.t("Data Element File ID")}
+                            onChange={value => onChangeSettings(value, "dataElementFileId")}
+                            value={settings?.dataElementFileId}
+                        />
 
-                    <Dropdown
-                        items={dataElementsDate}
-                        label={i18n.t("Data Element DateTime")}
-                        onChange={value => onChangeSettings(value, "dataElementDateTimeId")}
-                        value={settings?.dataElementDateTimeId}
-                    />
-
-                    <ButtonContainer>
-                        <Button type="submit" variant="contained" color="primary" disabled={disableButton} size="large">
-                            {i18n.t("Save")}
-                        </Button>
-                    </ButtonContainer>
-                </DropDownContainer>
+                        <Dropdown
+                            items={dataElementsDate}
+                            label={i18n.t("Data Element DateTime")}
+                            onChange={value => onChangeSettings(value, "dataElementDateTimeId")}
+                            value={settings?.dataElementDateTimeId}
+                        />
+                    </DropDownContainer>
+                )}
+                <ButtonContainer>
+                    <Button type="submit" variant="contained" color="primary" disabled={disableButton}>
+                        {i18n.t("Save")}
+                    </Button>
+                    <Button type="button" onClick={onClose}>
+                        {i18n.t("Close")}
+                    </Button>
+                </ButtonContainer>
             </SettingsForm>
         </section>
     );
@@ -185,5 +195,7 @@ const DropDownContainer = styled(FormGroup)`
 `;
 
 const ButtonContainer = styled.div`
-    margin-inline-start: 10px;
+    display: flex;
+    gap: 1em;
+    margin: 10px;
 `;

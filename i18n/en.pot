@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-06-28T00:45:09.141Z\n"
-"PO-Revision-Date: 2024-06-28T00:45:09.141Z\n"
+"POT-Creation-Date: 2024-07-08T18:07:48.975Z\n"
+"PO-Revision-Date: 2024-07-08T18:07:48.975Z\n"
 
 msgid "ID"
 msgstr ""
@@ -74,6 +74,9 @@ msgstr ""
 msgid "Last modified by"
 msgstr ""
 
+msgid "Only admin user can edit logger settings"
+msgstr ""
+
 msgid "Copy to clipboard"
 msgstr ""
 
@@ -101,7 +104,7 @@ msgstr ""
 msgid "Replicate error"
 msgstr ""
 
-msgid "Settings"
+msgid "Save"
 msgstr ""
 
 msgid "Columns to show in table"
@@ -215,6 +218,12 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+msgid "Settings"
+msgstr ""
+
+msgid "Logger"
+msgstr ""
+
 msgid "General info"
 msgstr ""
 
@@ -225,9 +234,6 @@ msgid "Other information"
 msgstr ""
 
 msgid "Error saving user"
-msgstr ""
-
-msgid "Save"
 msgstr ""
 
 msgid "Cancel"
@@ -452,9 +458,6 @@ msgid "MSF"
 msgstr ""
 
 msgid "Settings saved"
-msgstr ""
-
-msgid "Logger Settings"
 msgstr ""
 
 msgid "Enable Logger"
