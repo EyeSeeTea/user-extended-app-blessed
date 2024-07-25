@@ -118,7 +118,10 @@ export const LoggerSettingsPage: React.FC<LoggerSettingsProps> = props => {
         [setSettings]
     );
 
-    if (!isAdmin) return <p>{i18n.t("Only admin user can edit logger settings")}</p>;
+    if (!isAdmin)
+        return (
+            <ErrorPermissionContainer>{i18n.t("Only admin user can edit logger settings")}</ErrorPermissionContainer>
+        );
 
     return (
         <section>
@@ -198,4 +201,8 @@ const ButtonContainer = styled.div`
     display: flex;
     gap: 1em;
     margin: 10px;
+`;
+
+const ErrorPermissionContainer = styled.p`
+    padding-inline: 1em;
 `;
