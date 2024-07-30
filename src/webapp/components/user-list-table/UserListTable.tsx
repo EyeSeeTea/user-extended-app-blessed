@@ -33,6 +33,8 @@ import {
     getFirstThreeUserNames,
     UsersSelectedModal,
 } from "../users-remove-modal/UsersSelectedModal";
+import { SettingsDialogModal } from "../settings-dialog-modal/SettingsDialogModal";
+import Settings from "../../../legacy/models/settings";
 
 function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
     switch (action) {
@@ -102,6 +104,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
     const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
     const [actionType, setActionType] = useState<ActionType>();
+    const [showSettings, setShowSettings] = React.useState(false);
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -322,7 +325,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     name: "open-settings",
                     text: i18n.t("Settings"),
                     icon: <Tune />,
-                    onClick: () => openSettings(),
+                    onClick: () => setShowSettings(true),
                 },
             ],
             // TODO: Bug in ObjectsList
@@ -345,7 +348,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             // onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, onAction, userColumns]);
+    }, [enableReplicate, editUsers, onReorderColumns, reload, onAction, userColumns]);
 
     const refreshRows = useCallback(
         async (
@@ -470,6 +473,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [actionType, selectedUser, copyInUser]
     );
 
+    const onSettingsClose = React.useCallback(
+        (settings: Maybe<Settings>) => {
+            setShowSettings(false);
+            if (settings) {
+                openSettings(settings);
+            }
+        },
+        [openSettings]
+    );
+
     const selectedUsers = users && users.length > 0;
 
     return (
@@ -506,6 +519,8 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     visible
                 />
             )}
+
+            {showSettings && <SettingsDialogModal onClose={onSettingsClose} />}
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}
@@ -613,7 +628,7 @@ export type UserActionName =
     | "copy_in_user";
 
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
-    openSettings: () => void;
+    openSettings: (settings: Settings) => void;
     filters: ListFilters;
     canManage: string;
     rootJunction: "AND" | "OR";

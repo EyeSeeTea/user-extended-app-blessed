@@ -93,7 +93,7 @@ export interface AccessPermissions {
 }
 
 export const isSuperAdmin = (user: User): boolean => {
-    return _.some(user.authorities, authorities => authorities.includes("ALL"));
+    return user.authorities.includes("ALL");
 };
 
 export const hasReplicateAuthority = (user: User): boolean => {

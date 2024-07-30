@@ -7,16 +7,18 @@ import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
+import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
+import { D2ApiLogger, D2LoggerMessage } from "../D2ApiLogger";
 import { Instance } from "../entities/Instance";
 import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
-import { chunkRequest, getErrorFromResponse } from "../utils";
+import { buildUserWithoutPassword, chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -93,7 +95,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     @cache()
     public getCurrent(): FutureData<User> {
-        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));
+        return apiToFuture(
+            this.api.currentUser.get({
+                fields: { ...fields, organisationUnits: { ...fields.organisationUnits, level: true } },
+            })
+        ).map(user => this.toDomainUser(user));
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
@@ -230,21 +236,37 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userIds = users.map(user => user.id);
 
-        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-            return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
-                const usersToSend = _(existingUsers)
-                    .map(existingUser => {
-                        const user = users.find(user => user.id === existingUser.id);
-                        if (!user) return undefined;
-                        return this.buildUsersToSave(existingUser, user);
-                    })
-                    .compact()
-                    .value();
+        return this.getLogger().flatMap(logger => {
+            return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
+                return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
+                    const usersToSend = _(existingUsers)
+                        .map(existingUser => {
+                            const user = users.find(user => user.id === existingUser.id);
+                            if (!user) return undefined;
+                            return this.buildUsersToSave(existingUser, user);
+                        })
+                        .compact()
+                        .value();
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).flatMap(data => {
-                    return this.saveLocales(usersToSave).map(() => data);
+                    logger?.log({ users: buildUserWithoutPassword(usersToSend as ApiUser[]), userGroups });
+                    return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups }))
+                        .flatMap(data => {
+                            logger?.log(data);
+                            return this.saveLocales(usersToSave).map(() => data);
+                        })
+                        .flatMapError(error => {
+                            logger?.log({ error: error });
+                            return Future.error(error);
+                        });
                 });
             });
+        });
+    }
+
+    private getLogger(): FutureData<Maybe<D2LoggerMessage>> {
+        return this.getCurrent().flatMap(currentUser => {
+            const d2ApiTracker = new D2ApiLogger(this.api);
+            return d2ApiTracker.buildLogger(currentUser);
         });
     }
 
