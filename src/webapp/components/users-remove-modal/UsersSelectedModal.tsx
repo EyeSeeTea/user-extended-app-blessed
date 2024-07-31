@@ -20,7 +20,8 @@ export type ActionType =
     | "disable"
     | "assign_to_org_units_capture"
     | "assign_to_org_units_output"
-    | "assign_to_org_units_search";
+    | "assign_to_org_units_search"
+    | "copy_in_user";
 
 function getMessagesByActionType(actionType: ActionType): { title: string } {
     if (actionType === "remove") {

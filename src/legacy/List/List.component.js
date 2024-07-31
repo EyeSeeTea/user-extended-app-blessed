@@ -4,12 +4,10 @@ import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
-import CopyInUserDialog from "../components/CopyInUserDialog.component";
-import ImportExport from "../components/ImportExport.component";
+import { ImportExport } from "../../webapp/components/import-export/ImportExport";
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
-import SettingsDialog from "../components/SettingsDialog.component";
 import Settings from "../models/settings";
 import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
@@ -124,10 +122,10 @@ export class ListHybrid extends React.Component {
     };
 
     filterList = () => {
-        const order = this.state.sorting ? this.state.sorting[0] + ":i" + this.state.sorting[1] : null;
+        const sorting = this.state.sorting ? { field: this.state.sorting[0], order: this.state.sorting[1] } : undefined;
         const { filters, query } = this.state;
 
-        this.setState({ isLoading: true, listFilterOptions: { order: order, query: query, ...filters } });
+        this.setState({ isLoading: true, listFilterOptions: { sorting, search: query, ...filters } });
     };
 
     convertObjsToMenuItems = objs => {
@@ -176,11 +174,7 @@ export class ListHybrid extends React.Component {
         );
     };
 
-    _openSettings = () => {
-        this.setState({ settingsVisible: true });
-    };
-
-    _closeSettings = newSettings => {
+    _openSettings = newSettings => {
         this.setState({
             settingsVisible: false,
             ...(newSettings ? { settings: newSettings } : {}),
@@ -200,7 +194,7 @@ export class ListHybrid extends React.Component {
     };
 
     _importUsers = async users => {
-        const response = await saveUsers(this.context.d2, users);
+        const response = await saveUsers(this.context.d2, users, this.props.api, this.props.currentUser);
         if (response.success) {
             const message = this.getTranslation("import_successful", { n: users.length });
             snackActions.show({ message });
@@ -223,15 +217,13 @@ export class ListHybrid extends React.Component {
     _onAction = async (ids, action) => {
         if (action === "replicate_table" || action === "replicate_template") {
             this.setAssignState("replicateUser", { user: ids[0], open: true, action });
-        } else if (action === "copy_in") {
+        } else if (action === "copy_in_user") {
             this.setAssignState("copyUsers", { users: ids, open: true, action });
         }
     };
 
     render() {
-        const { d2 } = this.context;
-
-        const { replicateUser, listFilterOptions, copyUsers, importUsers, settings, settingsVisible } = this.state;
+        const { replicateUser, listFilterOptions, importUsers, settings } = this.state;
 
         return (
             <div>
@@ -251,33 +243,19 @@ export class ListHybrid extends React.Component {
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
 
                             <div className="user-management-control pagination" style={{ order: 11 }}>
-                                <ImportExport
-                                    d2={d2}
-                                    columns={this.state.visibleColumns}
-                                    filterOptions={listFilterOptions}
-                                    onImport={this._openImportTable}
-                                    maxUsers={this.maxImportUsers}
-                                    settings={settings}
-                                />
+                                {settings && (
+                                    <ImportExport
+                                        columns={this.state.visibleColumns}
+                                        filterOptions={listFilterOptions}
+                                        onImport={this._openImportTable}
+                                        maxUsers={this.maxImportUsers}
+                                        settings={settings}
+                                    />
+                                )}
                             </div>
                         </UserListTable>
                     </div>
                 </div>
-
-                {copyUsers.open ? (
-                    <CopyInUserDialog
-                        user={copyUsers.users}
-                        onSuccess={() => {
-                            this.setState({
-                                reloadTableKey: this.state.reloadTableKey + 1,
-                                copyUsers: { open: false, users: [] },
-                            });
-                        }}
-                        onCancel={() => this.setState({ copyUsers: { open: false, users: [] } })}
-                    />
-                ) : null}
-
-                {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 

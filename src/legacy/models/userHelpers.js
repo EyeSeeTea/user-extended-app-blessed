@@ -1,11 +1,10 @@
 import _ from "lodash";
-import moment from "moment";
 import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
-import { getUserList } from "./userList";
-import { columns } from "../List/list.store";
+import { buildUserWithoutPassword } from "../../data/utils";
+import { D2ApiLogger } from "../../data/D2ApiLogger";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
@@ -103,24 +102,6 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
     return _.fromPairs(pairs);
 }
 
-function getColumnNameFromProperty(property) {
-    return columnNameFromPropertyMapping[property] || property;
-}
-
-function formatDate(stringDate) {
-    return stringDate ? moment(stringDate).format("YYYY-MM-DD HH:mm:ss") : null;
-}
-
-function namesFromCollection(collection, field, toArray) {
-    const namesArray = _(collection?.toArray ? collection.toArray() : collection).map(field);
-
-    if (toArray) {
-        return namesArray;
-    } else {
-        return namesArray.join(fieldSplitChar);
-    }
-}
-
 function collectionFromNames(user, rowIndex, field, objectsByName) {
     const value = user[field];
     const names = (value || "")
@@ -152,26 +133,6 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
     };
 
     return { objects, warnings, info };
-}
-
-function getPlainUser(user, { orgUnitsField }, toArray) {
-    const userCredentials = user.userCredentials || {};
-
-    return {
-        ...user,
-        username: userCredentials.username,
-        lastUpdated: formatDate(user.lastUpdated),
-        lastLogin: formatDate(userCredentials.lastLogin),
-        created: formatDate(user.created),
-        userRoles: namesFromCollection(userCredentials.userRoles, "displayName", toArray),
-        userGroups: namesFromCollection(user.userGroups, "displayName", toArray),
-        organisationUnits: namesFromCollection(user.organisationUnits, orgUnitsField, toArray),
-        dataViewOrganisationUnits: namesFromCollection(user.dataViewOrganisationUnits, orgUnitsField, toArray),
-        searchOrganisationsUnits: namesFromCollection(user.teiSearchOrganisationUnits, orgUnitsField, toArray),
-        disabled: userCredentials.disabled,
-        openId: userCredentials.openId,
-        phoneNumber: user.phoneNumber,
-    };
 }
 
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
@@ -295,7 +256,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     }
 }
 
-function parseResponse(response, payload) {
+function parseResponse(response, payload, logger) {
     if (!response) {
         return { success: false };
     } else if (response.status !== "OK") {
@@ -306,8 +267,10 @@ function parseResponse(response, payload) {
             )
         );
         const error = _(errors).flatten().flatten().uniq().join("\n");
+        logger?.log({ error: error });
         return { success: false, response, error, payload };
     } else {
+        logger?.log(response);
         return { success: true, response, payload };
     }
 }
@@ -363,12 +326,9 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .map(user => [user.userCredentials.username, (user.userGroups || []).map(ug => ug.id)])
         .fromPairs()
         .value();
-    const allUsers = await getExistingUsers(d2, {
-        fields: "id,userGroups[id],userCredentials[username]",
-    });
+
     const userGroupsInvolved = _(usersToSave).concat(existingUsersToUpdate).flatMap("userGroups").uniqBy("id").value();
     const usersByGroupId = _(usersToSave)
-        .concat(allUsers)
         .uniqBy(user => user.userCredentials.username)
         .flatMap(user => {
             const userGroupIds =
@@ -378,22 +338,25 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .groupBy("userGroupId")
         .mapValues(items => items.map(item => item.user))
         .value();
+
     const { userGroups } = await api.get("/userGroups", {
         filter: "id:in:[" + _(userGroupsInvolved).map("id").join(",") + "]",
         fields: ":owner",
         paging: false,
     });
 
-    return userGroups.map(userGroup => ({
-        ...userGroup,
-        users: usersByGroupId[userGroup.id].map(user => ({ id: user.id })),
-    }));
+    return userGroups.map(userGroup => {
+        const usersByGroup = _(usersByGroupId[userGroup.id])
+            .map(user => ({ id: user.id }))
+            .value();
+        return { ...userGroup, users: _(userGroup.users).concat(usersByGroup).value() };
+    });
 }
 
-function postMetadata(api, payload) {
+function postMetadata(api, payload, logger) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
+        .then(res => parseResponse(res, payload, logger))
         .catch(error => ({
             success: false,
             payload,
@@ -415,21 +378,28 @@ async function updateUsers(d2, users, mapper) {
     return postMetadata(api, payload);
 }
 
-async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate) {
+async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate, d2Api, currentUser) {
     const userGroupsToSave = await getUserGroupsToSave(d2, api, users, existingUsersToUpdate);
     const payload = { users: users, userGroups: userGroupsToSave };
-    return postMetadata(api, payload);
+    if (d2Api && currentUser) {
+        const d2ApiTracker = new D2ApiLogger(d2Api);
+        const { data: d2Logger } = await d2ApiTracker.buildLogger(currentUser).runAsync();
+        d2Logger?.log({ users: buildUserWithoutPassword(users), userGroups: userGroupsToSave });
+        return postMetadata(api, payload, d2Logger);
+    } else {
+        return postMetadata(api, payload, undefined);
+    }
 }
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
-async function saveUsers(d2, users) {
+async function saveUsers(d2, users, d2Api, currentUser) {
     const api = d2.Api.getApi();
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate);
+    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate, d2Api, currentUser);
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {
@@ -443,37 +413,6 @@ async function saveCopyInUsers(d2, users, copyUserGroups) {
     } else {
         return postMetadata(api, { users: users });
     }
-}
-
-/* Get users from Dhis2 API and export given columns to a CSV or JSON string */
-async function exportUsers(d2, columns, filterOptions, { orgUnitsField }, exportToJSON) {
-    const { filters, ...listOptions } = { ...filterOptions, pageSize: 1e6 };
-    const { users } = await getUserList(d2, filters, listOptions);
-
-    if (exportToJSON) {
-        const userRows = users.map(user => _.pick(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
-        return JSON.stringify(userRows, null, 4);
-    } else {
-        const userRows = users.map(user => _.at(getPlainUser(user, { orgUnitsField }, exportToJSON), columns));
-        const header = columns.map(getColumnNameFromProperty);
-        const table = [header, ...userRows];
-
-        return Papa.unparse(table);
-    }
-}
-
-async function exportTemplateToCsv() {
-    const columnsAdded = ["password"];
-    const columnsRemoved = ["lastUpdated", "created", "lastLogin"];
-    const columnKeysToExport = _(columns)
-        .map(column => column.name)
-        .difference(columnsRemoved)
-        .union(columnsAdded)
-        .value();
-    const header = _(columnKeysToExport).map(getColumnNameFromProperty).compact().value();
-    const table = [header];
-
-    return Papa.unparse(table);
 }
 
 async function importFromCsv(d2, file, { maxUsers, orgUnitsField }) {
@@ -516,6 +455,7 @@ async function getExistingUsers(d2, options = {}) {
         paging: false,
         fields: options.fields || "id,userCredentials[username]",
         ...options,
+        v: +new Date().getTime(),
     });
     return users;
 }
@@ -592,9 +532,7 @@ function getPayload(d2, parentUser, destUsers, fields, updateStrategy) {
 }
 
 export {
-    exportTemplateToCsv,
     importFromCsv,
-    exportUsers,
     importFromJson,
     updateUsers,
     saveUsers,

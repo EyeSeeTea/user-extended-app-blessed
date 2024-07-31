@@ -2,6 +2,7 @@ import { Instance } from "./data/entities/Instance";
 import { InstanceD2ApiRepository } from "./data/repositories/InstanceD2ApiRepository";
 import { MetadataD2ApiRepository } from "./data/repositories/MetadataD2ApiRepository";
 import { UserD2ApiRepository } from "./data/repositories/UserD2ApiRepository";
+import { ExportUsersUseCase } from "./domain/usecases/ExportUsersUseCase";
 import { GetColumnsUseCase } from "./domain/usecases/GetColumnsUseCase";
 import { GetCurrentUserUseCase } from "./domain/usecases/GetCurrentUserUseCase";
 import { GetInstanceLocalesUseCase } from "./domain/usecases/GetInstanceLocalesUseCase";
@@ -11,19 +12,35 @@ import { GetUsersByIdsUseCase } from "./domain/usecases/GetUsersByIdsUseCase";
 import { ListAllUserIdsUseCase } from "./domain/usecases/ListAllUserIdsUseCase";
 import { ListMetadataUseCase } from "./domain/usecases/ListMetadataUseCase";
 import { ListUsersUseCase } from "./domain/usecases/ListUsersUseCase";
+import { ListAllUsersUseCase } from "./domain/usecases/ListAllUsersUseCase";
 import { RemoveUsersUseCase } from "./domain/usecases/RemoveUsersUseCase";
 import { SaveColumnsUseCase } from "./domain/usecases/SaveColumnsUseCase";
 import { SaveUserOrgUnitUseCase } from "./domain/usecases/SaveUserOrgUnitUseCase";
 import { SaveUserStatusUseCase } from "./domain/usecases/SaveUserStatusUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
+import { CopyInUserUseCase } from "./domain/usecases/CopyInUserUseCase";
+import { GetProgramsUseCase } from "./domain/usecases/GetProgramsUseCase";
+import { ProgramD2Repository } from "./data/repositories/ProgramD2Repository";
+import { getD2APiFromInstance } from "./utils/d2-api";
+import { LoggerSettingsD2Repository } from "./data/repositories/LoggerSettingsD2Repository";
+import { GetLoggerSettingsUseCase } from "./domain/usecases/GetLoggerSettingsUseCase";
+import { SaveLoggerSettingsUseCase } from "./domain/usecases/SaveLoggerSettingsUseCase";
 
 export function getCompositionRoot(instance: Instance) {
+    const api = getD2APiFromInstance(instance);
     const instanceRepository = new InstanceD2ApiRepository(instance);
     const userRepository = new UserD2ApiRepository(instance);
     const metadataRepository = new MetadataD2ApiRepository(instance);
+    const programRepository = new ProgramD2Repository(api);
+    const loggerSettingsRepository = new LoggerSettingsD2Repository(instance);
 
     return {
+        logger: {
+            get: new GetLoggerSettingsUseCase(loggerSettingsRepository),
+            save: new SaveLoggerSettingsUseCase(loggerSettingsRepository),
+        },
+        programs: { get: new GetProgramsUseCase(programRepository) },
         instance: getExecute({
             getVersion: new GetInstanceVersionUseCase(instanceRepository),
             getLocales: new GetInstanceLocalesUseCase(instanceRepository),
@@ -31,6 +48,7 @@ export function getCompositionRoot(instance: Instance) {
         users: getExecute({
             getCurrent: new GetCurrentUserUseCase(userRepository),
             list: new ListUsersUseCase(userRepository),
+            listAll: new ListAllUsersUseCase(userRepository),
             listAllIds: new ListAllUserIdsUseCase(userRepository),
             get: new GetUsersByIdsUseCase(userRepository),
             save: new SaveUsersUseCase(userRepository),
@@ -40,6 +58,8 @@ export function getCompositionRoot(instance: Instance) {
             saveColumns: new SaveColumnsUseCase(userRepository),
             remove: new RemoveUsersUseCase(userRepository),
             saveOrgUnits: new SaveUserOrgUnitUseCase(userRepository),
+            export: new ExportUsersUseCase(userRepository),
+            copyInUser: new CopyInUserUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),

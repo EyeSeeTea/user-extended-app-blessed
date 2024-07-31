@@ -17,21 +17,24 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { hasReplicateAuthority, User } from "../../../domain/entities/User";
-import { ListFilters, UpdateStrategy } from "../../../domain/repositories/UserRepository";
+import { ListFilters, UpdateStrategy, AccessElements } from "../../../domain/repositories/UserRepository";
 import { SaveUserOrgUnitOptions } from "../../../domain/usecases/SaveUserOrgUnitUseCase";
 import i18n from "../../../locales";
 import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { useReload } from "../../hooks/useReload";
-import { useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
+import { useCopyInUser, useGetAllUsers, useGetUsersByIds, useSaveUsersOrgUnits } from "../../hooks/userHooks";
 import { MultiSelectorDialog, MultiSelectorDialogProps } from "../multi-selector-dialog/MultiSelectorDialog";
 import { OrgUnitDialogSelector } from "../orgunit-dialog-selector/OrgUnitDialogSelector";
+import { CopyInUserDialog } from "../copy-in-user-dialog/CopyInUserDialog";
 import {
     ActionType,
     generateMessage,
     getFirstThreeUserNames,
     UsersSelectedModal,
 } from "../users-remove-modal/UsersSelectedModal";
+import { SettingsDialogModal } from "../settings-dialog-modal/SettingsDialogModal";
+import Settings from "../../../legacy/models/settings";
 
 function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
     switch (action) {
@@ -41,6 +44,7 @@ function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions[
             return "output";
         case "assign_to_org_units_search":
             return "search";
+        case "copy_in_user":
         case "disable":
         case "enable":
         case "remove":
@@ -58,6 +62,10 @@ function isActionTypeOrgUnit(actionType: Maybe<ActionType>): boolean {
 
 function isActionTypeEnableOrRemove(actionType: Maybe<ActionType>): boolean {
     return actionType === "disable" || actionType === "enable" || actionType === "remove";
+}
+
+function isActionTypeCopyInUser(actionType: Maybe<ActionType>): boolean {
+    return actionType === "copy_in_user";
 }
 
 function buildOrgUnitTitleByAction(
@@ -96,12 +104,15 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
     const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
     const [actionType, setActionType] = useState<ActionType>();
+    const [showSettings, setShowSettings] = React.useState(false);
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
     const navigate = useNavigate();
+    const userColumns = useUserColumns();
 
     const { users, setUsers } = useGetUsersByIds(selectedUserIds);
+    const { users: allUsers } = useGetAllUsers();
 
     const onCleanSelectedUsers = React.useCallback(() => {
         setSelectedUserIds([]);
@@ -110,6 +121,13 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     }, [setUsers]);
 
     const { saveUsersOrgUnits } = useSaveUsersOrgUnits({
+        onSuccess: React.useCallback(() => {
+            onCleanSelectedUsers();
+            reload();
+        }, [onCleanSelectedUsers, reload]),
+    });
+
+    const { copyInUser } = useCopyInUser({
         onSuccess: React.useCallback(() => {
             onCleanSelectedUsers();
             reload();
@@ -144,7 +162,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
     const baseConfig = useMemo((): TableConfig<User> => {
         return {
-            columns,
+            columns: userColumns,
             details: [
                 { name: "name", text: i18n.t("Name") },
                 { name: "username", text: i18n.t("Username") },
@@ -181,7 +199,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     text: i18n.t("Copy in user"),
                     icon: <Icon>content_copy</Icon>,
                     multiple: false,
-                    onClick: users => onAction(users, "copy_in"),
+                    onClick: users => {
+                        setSelectedUserIds(users);
+                        setActionType("copy_in_user");
+                    },
                     isActive: checkAccess(["update"]),
                 },
                 {
@@ -304,7 +325,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                     name: "open-settings",
                     text: i18n.t("Settings"),
                     icon: <Tune />,
-                    onClick: () => openSettings(),
+                    onClick: () => setShowSettings(true),
                 },
             ],
             // TODO: Bug in ObjectsList
@@ -327,7 +348,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
             // onActionButtonClick: () => navigate("/new"),
             onReorderColumns,
         };
-    }, [openSettings, enableReplicate, editUsers, onReorderColumns, reload, onAction]);
+    }, [enableReplicate, editUsers, onReorderColumns, reload, onAction, userColumns]);
 
     const refreshRows = useCallback(
         async (
@@ -438,6 +459,30 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         });
     }, [actionType, users, ouCaptureI18n, ouOutputI18n, ouSearchI18n]);
 
+    const selectedUser = useMemo(() => {
+        if (!users || selectedUserIds.length !== 1) return undefined;
+        return users.find(user => user.id === selectedUserIds[0]);
+    }, [users, selectedUserIds]);
+
+    const onSaveCopyInUser = React.useCallback(
+        (selectedUsersIds: Id[], updateStrategy: UpdateStrategy, accessElements: AccessElements) => {
+            if (selectedUser && actionType) {
+                copyInUser(selectedUser, selectedUsersIds, updateStrategy, accessElements);
+            }
+        },
+        [actionType, selectedUser, copyInUser]
+    );
+
+    const onSettingsClose = React.useCallback(
+        (settings: Maybe<Settings>) => {
+            setShowSettings(false);
+            if (settings) {
+                openSettings(settings);
+            }
+        },
+        [openSettings]
+    );
+
     const selectedUsers = users && users.length > 0;
 
     return (
@@ -465,6 +510,18 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                 />
             )}
 
+            {actionType && isActionTypeCopyInUser(actionType) && selectedUser && allUsers && (
+                <CopyInUserDialog
+                    user={selectedUser}
+                    usersList={allUsers}
+                    onCancel={onCleanSelectedUsers}
+                    onSave={onSaveCopyInUser}
+                    visible
+                />
+            )}
+
+            {showSettings && <SettingsDialogModal onClose={onSettingsClose} />}
+
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}
             </ObjectsList>
@@ -472,74 +529,79 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     );
 };
 
-export const columns: TableColumn<User>[] = [
-    { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
-    { name: "username", sortable: false, text: i18n.t("Username") },
-    { name: "firstName", sortable: true, text: i18n.t("First name") },
-    { name: "surname", sortable: true, text: i18n.t("Surname") },
-    { name: "email", sortable: true, text: i18n.t("Email") },
-    { name: "phoneNumber", text: i18n.t("Phone number") },
-    { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
-    { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
-    { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
-    { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
-    {
-        name: "userRoles",
-        sortable: false,
-        text: i18n.t("Roles"),
-        getValue: user => buildEllipsizedList(user.userRoles),
-        hidden: true,
-    },
-    {
-        name: "userGroups",
-        sortable: false,
-        text: i18n.t("Groups"),
-        getValue: user => buildEllipsizedList(user.userGroups),
-        hidden: true,
-    },
-    {
-        name: "organisationUnits",
-        sortable: false,
-        text: i18n.t("Data capture organisation units"),
-        getValue: user => buildEllipsizedList(user.organisationUnits),
-    },
-    {
-        name: "dataViewOrganisationUnits",
-        sortable: false,
-        text: i18n.t("Data view organisation units"),
-        getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
-    },
-    {
-        name: "searchOrganisationsUnits",
-        sortable: false,
-        text: i18n.t("Search organisation units"),
-        getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
-    },
-    { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
-    {
-        name: "status",
-        sortable: true,
-        text: i18n.t("Status"),
-    },
-    {
-        name: "disabled",
-        sortable: false,
-        text: i18n.t("Disabled"),
-        getValue: row => (row.disabled ? <Check /> : undefined),
-    },
-    {
-        name: "createdBy",
-        sortable: false,
-        text: i18n.t("Created By"),
-        getValue: row => row.createdBy?.username || "",
-    },
-    {
-        name: "lastModifiedBy",
-        sortable: false,
-        text: i18n.t("Last Modified By"),
-        getValue: row => row.lastModifiedBy?.username || "",
-    },
-];
+function useUserColumns() {
+    const columns = React.useMemo((): TableColumn<User>[] => {
+        return [
+            { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
+            { name: "username", sortable: false, text: i18n.t("Username") },
+            { name: "firstName", sortable: true, text: i18n.t("First name") },
+            { name: "surname", sortable: true, text: i18n.t("Surname") },
+            { name: "email", sortable: true, text: i18n.t("Email") },
+            { name: "phoneNumber", text: i18n.t("Phone number") },
+            { name: "openId", sortable: false, text: i18n.t("Open ID"), hidden: true },
+            { name: "created", sortable: true, text: i18n.t("Created"), hidden: true },
+            { name: "lastUpdated", sortable: true, text: i18n.t("Last updated"), hidden: true },
+            { name: "apiUrl", sortable: false, text: i18n.t("API URL"), hidden: true },
+            {
+                name: "userRoles",
+                sortable: false,
+                text: i18n.t("Roles"),
+                getValue: user => buildEllipsizedList(user.userRoles),
+                hidden: true,
+            },
+            {
+                name: "userGroups",
+                sortable: false,
+                text: i18n.t("Groups"),
+                getValue: user => buildEllipsizedList(user.userGroups),
+                hidden: true,
+            },
+            {
+                name: "organisationUnits",
+                sortable: false,
+                text: i18n.t("Data capture organisation units"),
+                getValue: user => buildEllipsizedList(user.organisationUnits),
+            },
+            {
+                name: "dataViewOrganisationUnits",
+                sortable: false,
+                text: i18n.t("Data view organisation units"),
+                getValue: user => buildEllipsizedList(user.dataViewOrganisationUnits),
+            },
+            {
+                name: "searchOrganisationsUnits",
+                sortable: false,
+                text: i18n.t("Search organisation units"),
+                getValue: user => buildEllipsizedList(user.searchOrganisationsUnits),
+            },
+            { name: "lastLogin", sortable: false, text: i18n.t("Last login") },
+            {
+                name: "status",
+                sortable: true,
+                text: i18n.t("Status"),
+            },
+            {
+                name: "disabled",
+                sortable: false,
+                text: i18n.t("Disabled"),
+                getValue: row => (row.disabled ? <Check /> : undefined),
+            },
+            {
+                name: "createdBy",
+                sortable: false,
+                text: i18n.t("Created By"),
+                getValue: row => row.createdBy?.username || "",
+            },
+            {
+                name: "lastModifiedBy",
+                sortable: false,
+                text: i18n.t("Last Modified By"),
+                getValue: row => row.lastModifiedBy?.username || "",
+            },
+        ];
+    }, []);
+    return columns;
+}
 
 function checkAccess(requiredKeys: string[]) {
     return (users: User[]) =>
@@ -557,10 +619,16 @@ function isStateActionVisible(action: string) {
         currentUserHasUpdateAccessOn(users) && _(users).some(user => user.disabled === requiredDisabledValue);
 }
 
-export type UserActionName = "remove" | "disable" | "enable" | "replicate_template" | "replicate_table" | "copy_in";
+export type UserActionName =
+    | "remove"
+    | "disable"
+    | "enable"
+    | "replicate_template"
+    | "replicate_table"
+    | "copy_in_user";
 
 export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loading"> {
-    openSettings: () => void;
+    openSettings: (settings: Settings) => void;
     filters: ListFilters;
     canManage: string;
     rootJunction: "AND" | "OR";
