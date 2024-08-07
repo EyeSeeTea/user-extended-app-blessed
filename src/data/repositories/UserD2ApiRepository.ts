@@ -7,16 +7,18 @@ import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
+import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
+import { D2ApiLogger, D2LoggerMessage } from "../D2ApiLogger";
 import { Instance } from "../entities/Instance";
 import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
-import { chunkRequest, getErrorFromResponse } from "../utils";
+import { buildUserWithoutPassword, chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -93,7 +95,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     @cache()
     public getCurrent(): FutureData<User> {
-        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));
+        return apiToFuture(
+            this.api.currentUser.get({
+                fields: { ...fields, organisationUnits: { ...fields.organisationUnits, level: true } },
+            })
+        ).map(user => this.toDomainUser(user));
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
@@ -279,22 +285,40 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userIds = users.map(user => user.id);
 
-        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-            const usersToSend = _(existingUsers)
-                .map(existingUser => {
-                    const user = users.find(user => user.id === existingUser.id);
-                    if (!user) return undefined;
-                    return this.buildUsersToSave(existingUser, user);
-                })
-                .compact()
-                .value();
+        return this.getLogger().flatMap(logger => {
+            return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
+                const usersToSend = _(existingUsers)
+                    .map(existingUser => {
+                        const user = users.find(user => user.id === existingUser.id);
+                        if (!user) return undefined;
+                        return this.buildUsersToSave(existingUser, user);
+                    })
+                    .compact()
+                    .value();
 
-            return apiToFuture(this.api.metadata.post({ users: usersToSend })).flatMap(data => {
-                return Future.joinObj({
-                    saveLocales: this.saveLocales(usersToSave).map(() => data),
-                    saveGroupsStats: this.updateUserGroups(users, existingUsers),
-                }).map(() => data);
+                logger?.log({ users: buildUserWithoutPassword(usersToSend as ApiUser[]) });
+                return apiToFuture(this.api.metadata.post({ users: usersToSend }))
+                    .flatMap(data => {
+                        return Future.joinObj({
+                            saveLocales: this.saveLocales(usersToSave),
+                            saveGroupsStats: this.updateUserGroups(users, existingUsers, logger),
+                        }).map(() => {
+                            logger?.log(data);
+                            return data;
+                        });
+                    })
+                    .flatMapError(error => {
+                        logger?.log({ error: error });
+                        return Future.error(error);
+                    });
             });
+        });
+    }
+
+    private getLogger(): FutureData<Maybe<D2LoggerMessage>> {
+        return this.getCurrent().flatMap(currentUser => {
+            const d2ApiTracker = new D2ApiLogger(this.api);
+            return d2ApiTracker.buildLogger(currentUser);
         });
     }
 
@@ -380,7 +404,7 @@ export class UserD2ApiRepository implements UserRepository {
         return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
-    updateUserGroups(users: ApiUser[], existing: ApiUser[]): FutureData<Stats> {
+    updateUserGroups(users: ApiUser[], existing: ApiUser[], logger: Maybe<D2LoggerMessage>): FutureData<Stats> {
         const allUsersGroups = this.buildUsersByGroupId(users);
         const allExistingUsersGroups = this.buildUsersByGroupId(existing);
 
@@ -398,6 +422,7 @@ export class UserD2ApiRepository implements UserRepository {
         const $requestsToDelete = this.buildRequestsGroups(groupsIdsToDelete, allExistingUsersGroups, "delete");
 
         return Future.sequential([...$requestsToAdd, ...$requestsToDelete]).map(stats => {
+            logger?.log({ groupsIdsToAdd: groupsIdsToAdd, groupsIdsToDelete: groupsIdsToDelete });
             return Stats.combine(stats);
         });
     }
@@ -447,15 +472,7 @@ export class UserD2ApiRepository implements UserRepository {
             const response = d2Response.response ? d2Response.response : d2Response;
             const errorMessage = getErrorFromResponse(response.typeReports);
             if (response.status === "ERROR") return Future.error(errorMessage);
-            return Future.success(
-                new Stats({
-                    created: response.stats.created,
-                    updated: response.stats.updated,
-                    ignored: response.stats.ignored,
-                    deleted: response.stats.deleted,
-                    errorMessage: errorMessage,
-                })
-            );
+            return Future.success(new Stats({ ...response.stats, errorMessage: errorMessage }));
         });
     }
 

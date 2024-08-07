@@ -8,7 +8,6 @@ import { ImportExport } from "../../webapp/components/import-export/ImportExport
 import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
-import SettingsDialog from "../components/SettingsDialog.component";
 import Settings from "../models/settings";
 import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
@@ -175,11 +174,7 @@ export class ListHybrid extends React.Component {
         );
     };
 
-    _openSettings = () => {
-        this.setState({ settingsVisible: true });
-    };
-
-    _closeSettings = newSettings => {
+    _openSettings = newSettings => {
         this.setState({
             settingsVisible: false,
             ...(newSettings ? { settings: newSettings } : {}),
@@ -199,7 +194,7 @@ export class ListHybrid extends React.Component {
     };
 
     _importUsers = async users => {
-        const response = await saveUsers(this.context.d2, users, this.props.api);
+        const response = await saveUsers(this.context.d2, users, this.props.api, this.props.currentUser);
         if (response.success) {
             const message = this.getTranslation("import_successful", { n: users.length });
             snackActions.show({ message });
@@ -228,7 +223,7 @@ export class ListHybrid extends React.Component {
     };
 
     render() {
-        const { replicateUser, listFilterOptions, importUsers, settings, settingsVisible } = this.state;
+        const { replicateUser, listFilterOptions, importUsers, settings } = this.state;
 
         return (
             <div>
@@ -261,8 +256,6 @@ export class ListHybrid extends React.Component {
                         </UserListTable>
                     </div>
                 </div>
-
-                {settingsVisible && <SettingsDialog settings={settings} onRequestClose={this._closeSettings} />}
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
 

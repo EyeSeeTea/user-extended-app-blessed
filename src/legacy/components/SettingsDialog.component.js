@@ -1,4 +1,3 @@
-import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import TextField from "d2-ui/lib/form-fields/TextField";
 import FormBuilder from "d2-ui/lib/forms/FormBuilder.component";
 import Validators from "d2-ui/lib/forms/Validators";
@@ -8,6 +7,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import Dropdown from "./Dropdown.component";
 import i18n from "../../locales";
+import { Button } from "@material-ui/core";
 
 export default class SettingsDialog extends React.Component {
     static propTypes = {
@@ -113,24 +113,21 @@ export default class SettingsDialog extends React.Component {
         const saveIsEnabled = settings && _(formStatuses).values().every();
 
         return (
-            <ConfirmationDialog
-                title={i18n.t("Settings")}
-                open={true}
-                onCancel={this.cancel}
-                onSave={this.save}
-                disabled={!saveIsEnabled}
-                maxWidth={"lg"}
-                fullWidth={true}
-            >
-                <div style={{ padding: 10, margin: 10 }}>
-                    <FormBuilder
-                        validateOnRender={false}
-                        fields={this.getFields("importExport")}
-                        onUpdateFormStatus={status => _.defer(this.onUpdateFormStatus, "importExport", status)}
-                        onUpdateField={this.onUpdateField}
-                    />
-                </div>
-            </ConfirmationDialog>
+            <div style={{ padding: 10, margin: 10 }}>
+                <FormBuilder
+                    validateOnRender={false}
+                    fields={this.getFields("importExport")}
+                    onUpdateFormStatus={status => _.defer(this.onUpdateFormStatus, "importExport", status)}
+                    onUpdateField={this.onUpdateField}
+                />
+
+                <section style={{ display: "flex", gap: "1em" }}>
+                    <Button variant="contained" color="primary" disabled={!saveIsEnabled} onClick={this.save}>
+                        {i18n.t("Save")}
+                    </Button>
+                    <Button onClick={this.cancel}>{i18n.t("Close")}</Button>
+                </section>
+            </div>
         );
     }
 }
