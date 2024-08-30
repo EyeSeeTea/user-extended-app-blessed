@@ -7,16 +7,18 @@ import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
+import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
 import { getD2APiFromInstance, joinPaths } from "../../utils/d2-api";
 import { apiToFuture } from "../../utils/futures";
 import { DataStoreStorageClient } from "../clients/storage/DataStoreStorageClient";
 import { Namespaces } from "../clients/storage/Namespaces";
 import { StorageClient } from "../clients/storage/StorageClient";
+import { D2ApiLogger, D2LoggerMessage } from "../D2ApiLogger";
 import { Instance } from "../entities/Instance";
 import { ApiD2OrgUnit } from "../models/DHIS2Model";
 import { ApiUserModel } from "../models/UserModel";
-import { chunkRequest, getErrorFromResponse } from "../utils";
+import { buildUserWithoutPassword, chunkRequest, getErrorFromResponse } from "../utils";
 
 export class UserD2ApiRepository implements UserRepository {
     private api: D2Api;
@@ -93,7 +95,11 @@ export class UserD2ApiRepository implements UserRepository {
 
     @cache()
     public getCurrent(): FutureData<User> {
-        return apiToFuture(this.api.currentUser.get({ fields })).map(user => this.toDomainUser(user));
+        return apiToFuture(
+            this.api.currentUser.get({
+                fields: { ...fields, organisationUnits: { ...fields.organisationUnits, level: true } },
+            })
+        ).map(user => this.toDomainUser(user));
     }
 
     public list(options: ListOptions): FutureData<PaginatedResponse<User>> {
@@ -163,16 +169,58 @@ export class UserD2ApiRepository implements UserRepository {
                             userCredentials: { ...fields.userCredentials, ...auditFields },
                         },
                         filter: { id: { in: usersIds } },
+                        v: +new Date().getTime(),
                     })
                 ).flatMap(({ objects }) => {
                     const users = objects.map(user => this.toDomainUser(user));
-                    return this.getLocales(users);
+                    return this.getUsersGroups(usersIds).flatMap(d2UsersWithGroups => {
+                        const usersWithGroups = this.addGroupsToUsers(users, d2UsersWithGroups);
+                        return this.getLocales(usersWithGroups);
+                    });
                 });
             },
             50
         );
 
         return $requests.map(_.flatten);
+    }
+
+    private addGroupsToUsers(users: User[], d2UsersWithGroups: D2UserGroupByKey): User[] {
+        return users.map((user): User => {
+            const userGroups = d2UsersWithGroups[user.id] || [];
+            return { ...user, userGroups: userGroups };
+        });
+    }
+
+    private getUsersGroups(usersIds: Id[]): FutureData<D2UserGroupByKey> {
+        const $requests = chunkRequest(usersIds, usersChunksIds => {
+            return apiToFuture(
+                this.api.models.userGroups.get({
+                    filter: { "users.id": { in: usersChunksIds } },
+                    fields: { id: true, displayName: true, users: true },
+                    paging: false,
+                })
+            ).map(response => {
+                return response.objects.map(d2Group => ({
+                    id: d2Group.id,
+                    name: d2Group.displayName,
+                    users: d2Group.users,
+                }));
+            });
+        });
+
+        return $requests.map(d2UsersGroups => {
+            const userGroups = _(d2UsersGroups)
+                .flatMap(group => group.users.map(user => ({ userId: user.id, group })))
+                .value();
+
+            const groupedByUser = _(userGroups)
+                .groupBy(ug => ug.userId)
+                .mapValues(groups => groups.map(group => _.omit(group.group, ["users"])))
+                .value();
+
+            return groupedByUser;
+        });
     }
 
     private getFullUsers(options: ListOptions): FutureData<ApiUser[]> {
@@ -194,9 +242,36 @@ export class UserD2ApiRepository implements UserRepository {
                     ...otherFilters,
                 },
                 order: `${sorting.field}:${sorting.order}`,
+                v: +new Date().getTime(),
             })
         );
-        return userData$.map(({ objects }) => objects);
+        return userData$.flatMap(({ objects }) => {
+            return this.getUsersGroups(objects.map(user => user.id)).map(d2UsersGroups => {
+                const users = objects.map(user => {
+                    const userGroups = d2UsersGroups[user.id] || [];
+                    return { ...user, userGroups };
+                });
+                return users;
+            });
+        });
+    }
+
+    public listAll(
+        options: ListOptions,
+        state: { initialPage: number; users: User[] } = { initialPage: 1, users: [] }
+    ): FutureData<User[]> {
+        const { initialPage, users } = state;
+        return this.list({ ...options, pageSize: 100, page: initialPage }).flatMap(({ pager, objects }) => {
+            const newUsers = [...users, ...objects];
+            if (pager.page >= pager.pageCount) {
+                return Future.success(newUsers);
+            } else {
+                return this.listAll(options, {
+                    initialPage: initialPage + 1,
+                    users: newUsers,
+                });
+            }
+        });
     }
 
     public save(usersToSave: User[]): FutureData<MetadataResponse> {
@@ -210,8 +285,8 @@ export class UserD2ApiRepository implements UserRepository {
 
         const userIds = users.map(user => user.id);
 
-        return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-            return this.getGroupsToSave(users, existingUsers).flatMap(userGroups => {
+        return this.getLogger().flatMap(logger => {
+            return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
                 const usersToSend = _(existingUsers)
                     .map(existingUser => {
                         const user = users.find(user => user.id === existingUser.id);
@@ -221,10 +296,29 @@ export class UserD2ApiRepository implements UserRepository {
                     .compact()
                     .value();
 
-                return apiToFuture(this.api.metadata.post({ users: usersToSend, userGroups })).flatMap(data => {
-                    return this.saveLocales(usersToSave).map(() => data);
-                });
+                logger?.log({ users: buildUserWithoutPassword(usersToSend as ApiUser[]) });
+                return apiToFuture(this.api.metadata.post({ users: usersToSend }))
+                    .flatMap(data => {
+                        return Future.joinObj({
+                            saveLocales: this.saveLocales(usersToSave),
+                            saveGroupsStats: this.updateUserGroups(users, existingUsers, logger),
+                        }).map(() => {
+                            logger?.log(data);
+                            return data;
+                        });
+                    })
+                    .flatMapError(error => {
+                        logger?.log({ error: error });
+                        return Future.error(error);
+                    });
             });
+        });
+    }
+
+    private getLogger(): FutureData<Maybe<D2LoggerMessage>> {
+        return this.getCurrent().flatMap(currentUser => {
+            const d2ApiTracker = new D2ApiLogger(this.api);
+            return d2ApiTracker.buildLogger(currentUser);
         });
     }
 
@@ -310,43 +404,76 @@ export class UserD2ApiRepository implements UserRepository {
         return this.userStorage.saveObject<Array<keyof User>>(Namespaces.VISIBLE_COLUMNS, columns);
     }
 
-    private getGroupsToSave(users: ApiUser[], existing: ApiUser[]) {
-        const userIds = users.map(({ id }) => id);
-        const groupDictionary = _(users)
-            .flatMap(({ id, userGroups }) => userGroups.map(group => ({ id, group })))
-            .groupBy(({ group }) => group.id)
-            .mapValues(items => items.map(({ id }) => id))
-            .value();
+    updateUserGroups(users: ApiUser[], existing: ApiUser[], logger: Maybe<D2LoggerMessage>): FutureData<Stats> {
+        const allUsersGroups = this.buildUsersByGroupId(users);
+        const allExistingUsersGroups = this.buildUsersByGroupId(existing);
 
-        const existingGroupRefs = _.flatMap(existing, ({ userGroups }) => userGroups);
-        const newGroupRefs = _.flatMap(users, ({ userGroups }) => userGroups);
-        const allGroupRefs = _.concat(existingGroupRefs, newGroupRefs);
+        const groupsIdsToAdd = users.flatMap(user => {
+            return user.userGroups.map(userGroup => ({ id: userGroup.id }));
+        });
 
-        const groupInfo$ = apiToFuture(
-            this.api.metadata.get({
-                userGroups: {
-                    fields: { $owner: true },
-                    filter: { id: { in: _.uniq(allGroupRefs.map(oug => oug.id)) } }, // Review 414
-                },
+        const groupsIdsToDelete = users.flatMap(user => {
+            const existingUser = existing.find(({ id }) => id === user.id);
+            const difference = _.differenceWith(existingUser?.userGroups, user.userGroups, _.isEqual);
+            return difference.map(userGroup => ({ id: userGroup.id }));
+        });
+
+        const $requestsToAdd = this.buildRequestsGroups(groupsIdsToAdd, allUsersGroups, "add");
+        const $requestsToDelete = this.buildRequestsGroups(groupsIdsToDelete, allExistingUsersGroups, "delete");
+
+        return Future.sequential([...$requestsToAdd, ...$requestsToDelete]).map(stats => {
+            logger?.log({ groupsIdsToAdd: groupsIdsToAdd, groupsIdsToDelete: groupsIdsToDelete });
+            return Stats.combine(stats);
+        });
+    }
+
+    private buildRequestsGroups(
+        groups: Array<{ id: Id }>,
+        allUsersGroups: D2UserGroupByKey,
+        action: D2ActionGroup
+    ): FutureData<Stats>[] {
+        return _(groups)
+            .map(group => {
+                const users = allUsersGroups[group.id] || [];
+                if (users.length === 0) return undefined;
+                const userGroup = { id: group.id, users: users.map(({ id }) => ({ id })) };
+                return this.buildGroupsToSave(userGroup, action);
             })
-        );
+            .compact()
+            .value();
+    }
 
-        return groupInfo$.map(({ userGroups }) =>
-            userGroups
-                .map(group => {
-                    const cleanList = group.users.filter(({ id }) => !userIds.includes(id));
-                    const newItems = groupDictionary[group.id] ?? [];
-                    const users = [...cleanList, ...newItems.map(id => ({ id }))];
+    private buildUsersByGroupId(users: ApiUser[]): D2UserGroupByKey {
+        return _(users)
+            .flatMap(user =>
+                user.userGroups.map(group => ({
+                    groupId: group.id,
+                    user: user,
+                }))
+            )
+            .groupBy(x => x.groupId)
+            .mapValues(groupUsers => groupUsers.map(groupUser => groupUser.user))
+            .value();
+    }
 
-                    return { ...group, users };
-                })
-                .filter(group => {
-                    const newIds = group.users.map(({ id }) => id);
-                    const oldIds = userGroups.find(({ id }) => id === group.id)?.users.map(({ id }) => id) ?? [];
-
-                    return !_.isEqual(_.sortBy(oldIds), _.sortBy(newIds));
-                })
-        );
+    private buildGroupsToSave(
+        userGroup: { id: Id; users: Array<{ id: Id }> },
+        action: D2ActionGroup
+    ): FutureData<Stats> {
+        const isAdding = action === "add";
+        const usersIds = userGroup.users.map(({ id }) => ({ id: id }));
+        return apiToFuture(
+            this.api.request<Dhis2Response>({
+                method: "post",
+                url: `/userGroups/${userGroup.id}/users`,
+                data: isAdding ? { additions: usersIds } : { deletions: usersIds },
+            })
+        ).flatMap(d2Response => {
+            const response = d2Response.response ? d2Response.response : d2Response;
+            const errorMessage = getErrorFromResponse(response.typeReports);
+            if (response.status === "ERROR") return Future.error(errorMessage);
+            return Future.success(new Stats({ ...response.stats, errorMessage: errorMessage }));
+        });
     }
 
     private toDomainUser(input: ApiUserWithAudit): User {
@@ -464,7 +591,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 }
 
-const orgUnitsFields = { id: true, name: true, path: true } as const;
+const orgUnitsFields = { id: true, name: true, code: true, path: true } as const;
 
 const auditFields = {
     createdBy: { id: true, displayName: true },
@@ -519,7 +646,11 @@ const defaultColumns: Array<keyof User> = [
 
 // in version 2.38 stats and typeReports are inside a response object
 type Dhis2Response = MetadataResponse & {
-    response?: { stats: MetadataResponse["stats"]; typeReports: MetadataResponse["typeReports"] };
+    response?: {
+        status: MetadataResponse["status"];
+        stats: MetadataResponse["stats"];
+        typeReports: MetadataResponse["typeReports"];
+    };
 };
 
 type D2UserAudit = {
@@ -531,3 +662,5 @@ type D2UserSettings = { keyDbLocale: LocaleCode; keyUiLocale: LocaleCode };
 type KeyLocale = "keyUiLocale" | "keyDbLocale";
 const UI_LOCALE_KEY = "keyUiLocale";
 const DB_LOCALE_KEY = "keyDbLocale";
+type D2UserGroupByKey = Record<Id, NamedRef[]>;
+type D2ActionGroup = "add" | "delete";

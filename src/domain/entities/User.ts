@@ -45,7 +45,7 @@ export interface UserAudit {
     username: string;
 }
 
-const emptyOrgUnit: OrgUnit = { id: "", name: "", path: [] };
+const emptyOrgUnit: OrgUnit = { id: "", name: "", code: "", path: [] };
 
 export const defaultUser: User = {
     id: "",
@@ -93,7 +93,7 @@ export interface AccessPermissions {
 }
 
 export const isSuperAdmin = (user: User): boolean => {
-    return _.some(user.authorities, authorities => authorities.includes("ALL"));
+    return user.authorities.includes("ALL");
 };
 
 export const hasReplicateAuthority = (user: User): boolean => {

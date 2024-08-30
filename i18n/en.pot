@@ -5,8 +5,77 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-05-10T09:58:18.688Z\n"
-"PO-Revision-Date: 2024-05-10T09:58:18.688Z\n"
+"POT-Creation-Date: 2024-07-08T18:07:48.975Z\n"
+"PO-Revision-Date: 2024-07-08T18:07:48.975Z\n"
+
+msgid "ID"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Surname"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Phone number"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "Last login"
+msgstr ""
+
+msgid "API URL"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Roles"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "OUCapture"
+msgstr ""
+
+msgid "OUOutput"
+msgstr ""
+
+msgid "OUSearch"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Open ID"
+msgstr ""
+
+msgid "Created by"
+msgstr ""
+
+msgid "Last modified by"
+msgstr ""
+
+msgid "Only admin user can edit logger settings"
+msgstr ""
 
 msgid "Copy to clipboard"
 msgstr ""
@@ -35,7 +104,7 @@ msgstr ""
 msgid "Replicate error"
 msgstr ""
 
-msgid "Settings"
+msgid "Save"
 msgstr ""
 
 msgid "Columns to show in table"
@@ -44,13 +113,55 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
+msgid "Copy in user: {{user}}"
+msgstr ""
+
+msgid "Select one toggle"
+msgstr ""
+
+msgid "Select at least one user"
+msgstr ""
+
+msgid "Bulk update strategy: "
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "User Groups"
+msgstr ""
+
+msgid "OU Outputs"
+msgstr ""
+
+msgid "User Roles"
+msgstr ""
+
+msgid "OU Capture"
+msgstr ""
+
+msgid "Import/Export"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Export to CSV"
+msgstr ""
+
+msgid "Export to JSON"
+msgstr ""
+
+msgid "Export empty template"
+msgstr ""
+
 msgid "Type"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "Updated"
 msgstr ""
 
 msgid "Deleted"
@@ -77,12 +188,6 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
-msgid "Import"
-msgstr ""
-
-msgid "Status"
-msgstr ""
-
 msgid "Summary"
 msgstr ""
 
@@ -96,15 +201,6 @@ msgid "Saving users"
 msgstr ""
 
 msgid "Update strategy: "
-msgstr ""
-
-msgid "Merge"
-msgstr ""
-
-msgid "Replace"
-msgstr ""
-
-msgid "Search"
 msgstr ""
 
 msgid "Assign roles to {{usernames}}"
@@ -122,6 +218,12 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+msgid "Settings"
+msgstr ""
+
+msgid "Logger"
+msgstr ""
+
 msgid "General info"
 msgstr ""
 
@@ -132,9 +234,6 @@ msgid "Other information"
 msgstr ""
 
 msgid "Error saving user"
-msgstr ""
-
-msgid "Save"
 msgstr ""
 
 msgid "Cancel"
@@ -167,22 +266,7 @@ msgstr ""
 msgid "First Name"
 msgstr ""
 
-msgid "Name"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
 msgid "Account expiration date"
-msgstr ""
-
-msgid "Surname"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Email"
 msgstr ""
 
 msgid "Phone Number"
@@ -203,16 +287,7 @@ msgstr ""
 msgid "Twitter"
 msgstr ""
 
-msgid "Disabled"
-msgstr ""
-
 msgid "External authentication only (OpenID or LDAP)"
-msgstr ""
-
-msgid "User Roles"
-msgstr ""
-
-msgid "User Groups"
 msgstr ""
 
 msgid "Data Capture Organisation Units"
@@ -222,9 +297,6 @@ msgid "Data View Organisation Units"
 msgstr ""
 
 msgid "Search Organisation Units"
-msgstr ""
-
-msgid "Open ID"
 msgstr ""
 
 msgid "LDAP identifier"
@@ -240,24 +312,6 @@ msgid "Api URL"
 msgstr ""
 
 msgid "Last updated"
-msgstr ""
-
-msgid "Last login"
-msgstr ""
-
-msgid "ID"
-msgstr ""
-
-msgid "API URL"
-msgstr ""
-
-msgid "Roles"
-msgstr ""
-
-msgid "Groups"
-msgstr ""
-
-msgid "OU Capture"
 msgstr ""
 
 msgid "OU Output"
@@ -323,12 +377,6 @@ msgstr ""
 msgid "User ID"
 msgstr ""
 
-msgid "First name"
-msgstr ""
-
-msgid "Phone number"
-msgstr ""
-
 msgid "Data capture organisation units"
 msgstr ""
 
@@ -362,6 +410,9 @@ msgid "Confirm"
 msgstr ""
 
 msgid "Saving..."
+msgstr ""
+
+msgid "Table exported: {{filename}}"
 msgstr ""
 
 msgid "Distributed under GNU GLPv3"
@@ -404,6 +455,27 @@ msgid "Norwegian Refugee Council"
 msgstr ""
 
 msgid "MSF"
+msgstr ""
+
+msgid "Settings saved"
+msgstr ""
+
+msgid "Enable Logger"
+msgstr ""
+
+msgid "Tracker Program"
+msgstr ""
+
+msgid "Username Attribute"
+msgstr ""
+
+msgid "Program Stages"
+msgstr ""
+
+msgid "Data Element File ID"
+msgstr ""
+
+msgid "Data Element DateTime"
 msgstr ""
 
 msgid "Edit users"
