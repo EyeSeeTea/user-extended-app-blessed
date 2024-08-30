@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
+import { UserD2ApiRepository } from "../../data/repositories/UserD2ApiRepository";
 import { buildUserWithoutPassword } from "../../data/utils";
 import { D2ApiLogger } from "../../data/D2ApiLogger";
 
@@ -394,12 +395,25 @@ async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersT
 /* Save array of users (plain attributes), updating existing one, creating new ones */
 async function saveUsers(d2, users, d2Api, currentUser) {
     const api = d2.Api.getApi();
+    const userRepository = new UserD2ApiRepository({ url: d2Api.baseUrl });
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate, d2Api, currentUser);
+    const d2Logger = await buildLogger(d2Api, currentUser);
+    d2Logger?.log({ users: buildUserWithoutPassword(users) });
+    const response = await postMetadata(api, { users: users }, d2Logger);
+    await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
+    return response;
+}
+
+async function buildLogger(d2Api, currentUser) {
+    if (!d2Api || !currentUser) return undefined;
+
+    const d2ApiTracker = new D2ApiLogger(d2Api);
+    const { data: d2Logger } = await d2ApiTracker.buildLogger(currentUser).runAsync();
+    return d2Logger;
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {
