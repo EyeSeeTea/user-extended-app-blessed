@@ -12,7 +12,8 @@ const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles"];
+// NOTE: UEApp allows to create a user without organisationUnits, but DHIS2 User App does not.
+const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles", "organisationUnits"];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
@@ -404,6 +405,7 @@ async function saveUsers(d2, users, d2Api, currentUser) {
     const d2Logger = await buildLogger(d2Api, currentUser);
     d2Logger?.log({ users: buildUserWithoutPassword(users) });
     const response = await postMetadata(api, { users: users }, d2Logger);
+    // NOTE: this executes even when postMetadata fails
     await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
     return response;
 }
