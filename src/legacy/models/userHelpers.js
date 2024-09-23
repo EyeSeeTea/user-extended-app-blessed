@@ -404,7 +404,7 @@ async function saveUsers(d2, users, d2Api, currentUser) {
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
     const d2Logger = await buildLogger(d2Api, currentUser);
     d2Logger?.log({ users: buildUserWithoutPassword(users) });
-    const response = await postMetadata(api, { users: users }, d2Logger);
+    const response = await postMetadata(api, { users: usersToSave }, d2Logger);
     // NOTE: this executes even when postMetadata fails
     await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
     return response;
