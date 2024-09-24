@@ -1,6 +1,6 @@
 import { InputField } from "@dhis2/ui";
 import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
-import i18n from "@eyeseetea/d2-ui-components/locales";
+import i18n from "../../../../locales";
 import _ from "lodash";
 import React, { useState } from "react";
 import { Field, FieldRenderProps } from "react-final-form";

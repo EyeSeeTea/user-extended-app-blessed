@@ -1,5 +1,5 @@
 import { Button, ButtonStrip, NoticeBox } from "@dhis2/ui";
-import i18n from "@eyeseetea/d2-ui-components/locales";
+import i18n from "../../../locales";
 import { Paper, Step, StepLabel, Stepper } from "@material-ui/core";
 import { ArrowBack, ArrowForward } from "@material-ui/icons";
 import { FORM_ERROR } from "final-form";
@@ -10,59 +10,6 @@ import styled from "styled-components";
 import { User } from "../../../domain/entities/User";
 import { useGoBack } from "../../hooks/useGoBack";
 import { UserEditWizardStep, UserEditWizardStepProps } from "./UserEditWizardStep";
-
-const steps: WizardStep[] = [
-    {
-        key: `general-info`,
-        label: i18n.t("General info"),
-        component: UserEditWizardStep,
-        props: {
-            fields: [
-                "username",
-                "firstName",
-                "surname",
-                "email",
-                "externalAuth",
-                "password",
-                "openId",
-                "ldapId",
-                "accountExpiry",
-            ],
-        },
-    },
-
-    {
-        key: `assignment`,
-        label: i18n.t("Assignment"),
-        component: UserEditWizardStep,
-        props: {
-            fields: [
-                "userRoles",
-                "organisationUnits",
-                "dataViewOrganisationUnits",
-                "searchOrganisationsUnits",
-                "userGroups",
-            ],
-        },
-    },
-    {
-        key: `other`,
-        label: i18n.t("Other information"),
-        component: UserEditWizardStep,
-        props: {
-            fields: [
-                "uiLocale",
-                "dbLocale",
-                "phoneNumber",
-                "whatsApp",
-                "facebookMessenger",
-                "skype",
-                "telegram",
-                "twitter",
-            ],
-        },
-    },
-];
 
 interface WizardStep {
     key: string;
@@ -94,6 +41,61 @@ export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, on
         [onSave, goBack]
     );
 
+    const steps = React.useMemo((): WizardStep[] => {
+        return [
+            {
+                key: `general-info`,
+                label: i18n.t("General info"),
+                component: UserEditWizardStep,
+                props: {
+                    fields: [
+                        "username",
+                        "firstName",
+                        "surname",
+                        "email",
+                        "externalAuth",
+                        "password",
+                        "openId",
+                        "ldapId",
+                        "accountExpiry",
+                    ],
+                },
+            },
+
+            {
+                key: `assignment`,
+                label: i18n.t("Assignment"),
+                component: UserEditWizardStep,
+                props: {
+                    fields: [
+                        "userRoles",
+                        "organisationUnits",
+                        "dataViewOrganisationUnits",
+                        "searchOrganisationsUnits",
+                        "userGroups",
+                    ],
+                },
+            },
+            {
+                key: `other`,
+                label: i18n.t("Other information"),
+                component: UserEditWizardStep,
+                props: {
+                    fields: [
+                        "uiLocale",
+                        "dbLocale",
+                        "phoneNumber",
+                        "whatsApp",
+                        "facebookMessenger",
+                        "skype",
+                        "telegram",
+                        "twitter",
+                    ],
+                },
+            },
+        ];
+    }, []);
+
     return (
         <Form<{ users: User[] }>
             autocomplete="off"
@@ -107,7 +109,7 @@ export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, on
                         </NoticeBox>
                     )}
 
-                    <Wizard onCancel={onCancel}>
+                    <Wizard steps={steps} onCancel={onCancel}>
                         {steps.map(({ component: Component, props, key }) => (
                             <Component key={key} isEdit={isEdit} {...props} />
                         ))}
@@ -118,7 +120,7 @@ export const UserEditWizard: React.FC<UserEditWizardProps> = ({ user, onSave, on
     );
 };
 
-const Wizard: React.FC<{ onCancel: any }> = ({ children, onCancel }) => {
+const Wizard: React.FC<{ steps: WizardStep[]; onCancel: any }> = ({ children, onCancel, steps }) => {
     const [step, setStep] = useState<string>(steps[0]?.key ?? "");
     const index = _.findIndex(steps, ({ key }) => key === step);
     const page = index > 0 ? index : 0;
@@ -129,14 +131,14 @@ const Wizard: React.FC<{ onCancel: any }> = ({ children, onCancel }) => {
             const index = steps.findIndex(({ key }) => key === step);
             return steps[index + 1]?.key ?? step;
         });
-    }, []);
+    }, [steps]);
 
     const onPrev = useCallback(() => {
         setStep(step => {
             const index = steps.findIndex(({ key }) => key === step);
             return steps[index - 1]?.key ?? step;
         });
-    }, []);
+    }, [steps]);
 
     const jumpStep = useCallback((currentStep: string) => setStep(currentStep), []);
 
