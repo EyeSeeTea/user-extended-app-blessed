@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-07-08T18:07:48.975Z\n"
-"PO-Revision-Date: 2024-07-08T18:07:48.975Z\n"
+"POT-Creation-Date: 2024-09-24T10:51:56.735Z\n"
+"PO-Revision-Date: 2024-09-24T10:51:56.735Z\n"
 
 msgid "ID"
 msgstr ""
@@ -224,6 +224,9 @@ msgstr ""
 msgid "Logger"
 msgstr ""
 
+msgid "Error saving user"
+msgstr ""
+
 msgid "General info"
 msgstr ""
 
@@ -231,9 +234,6 @@ msgid "Assignment"
 msgstr ""
 
 msgid "Other information"
-msgstr ""
-
-msgid "Error saving user"
 msgstr ""
 
 msgid "Cancel"
