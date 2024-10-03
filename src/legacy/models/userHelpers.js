@@ -3,13 +3,17 @@ import Papa from "papaparse";
 import { generateUid } from "d2/lib/uid";
 
 import { mapPromise, listWithInFilter } from "../utils/dhis2Helpers";
+import { UserD2ApiRepository } from "../../data/repositories/UserD2ApiRepository";
+import { buildUserWithoutPassword } from "../../data/utils";
+import { D2ApiLogger } from "../../data/D2ApiLogger";
 
 // Delimiter to use in multiple-value fields (roles, groups, orgUnits)
 const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles"];
+// NOTE: UEApp allows to create a user without organisationUnits, but DHIS2 User App does not.
+const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles", "organisationUnits"];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
@@ -258,7 +262,7 @@ async function getUsersFromCsv(d2, file, csv, { maxUsers, orgUnitsField }) {
     }
 }
 
-function parseResponse(response, payload) {
+function parseResponse(response, payload, logger) {
     if (!response) {
         return { success: false };
     } else if (response.status !== "OK") {
@@ -269,8 +273,10 @@ function parseResponse(response, payload) {
             )
         );
         const error = _(errors).flatten().flatten().uniq().join("\n");
+        logger?.log({ error: error });
         return { success: false, response, error, payload };
     } else {
+        logger?.log(response);
         return { success: true, response, payload };
     }
 }
@@ -326,12 +332,9 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .map(user => [user.userCredentials.username, (user.userGroups || []).map(ug => ug.id)])
         .fromPairs()
         .value();
-    const allUsers = await getExistingUsers(d2, {
-        fields: "id,userGroups[id],userCredentials[username]",
-    });
+
     const userGroupsInvolved = _(usersToSave).concat(existingUsersToUpdate).flatMap("userGroups").uniqBy("id").value();
     const usersByGroupId = _(usersToSave)
-        .concat(allUsers)
         .uniqBy(user => user.userCredentials.username)
         .flatMap(user => {
             const userGroupIds =
@@ -341,22 +344,25 @@ async function getUserGroupsToSave(d2, api, usersToSave, existingUsersToUpdate) 
         .groupBy("userGroupId")
         .mapValues(items => items.map(item => item.user))
         .value();
+
     const { userGroups } = await api.get("/userGroups", {
         filter: "id:in:[" + _(userGroupsInvolved).map("id").join(",") + "]",
         fields: ":owner",
         paging: false,
     });
 
-    return userGroups.map(userGroup => ({
-        ...userGroup,
-        users: usersByGroupId[userGroup.id].map(user => ({ id: user.id })),
-    }));
+    return userGroups.map(userGroup => {
+        const usersByGroup = _(usersByGroupId[userGroup.id])
+            .map(user => ({ id: user.id }))
+            .value();
+        return { ...userGroup, users: _(userGroup.users).concat(usersByGroup).value() };
+    });
 }
 
-function postMetadata(api, payload) {
+function postMetadata(api, payload, logger) {
     return api
         .post("metadata?importStrategy=CREATE_AND_UPDATE&mergeMode=REPLACE", payload)
-        .then(res => parseResponse(res, payload))
+        .then(res => parseResponse(res, payload, logger))
         .catch(error => ({
             success: false,
             payload,
@@ -378,21 +384,42 @@ async function updateUsers(d2, users, mapper) {
     return postMetadata(api, payload);
 }
 
-async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate) {
+async function getUserGroupsToSaveAndPostMetadata(d2, api, users, existingUsersToUpdate, d2Api, currentUser) {
     const userGroupsToSave = await getUserGroupsToSave(d2, api, users, existingUsersToUpdate);
     const payload = { users: users, userGroups: userGroupsToSave };
-    return postMetadata(api, payload);
+    if (d2Api && currentUser) {
+        const d2ApiTracker = new D2ApiLogger(d2Api);
+        const { data: d2Logger } = await d2ApiTracker.buildLogger(currentUser).runAsync();
+        d2Logger?.log({ users: buildUserWithoutPassword(users), userGroups: userGroupsToSave });
+        return postMetadata(api, payload, d2Logger);
+    } else {
+        return postMetadata(api, payload, undefined);
+    }
 }
 
 /* Save array of users (plain attributes), updating existing one, creating new ones */
-async function saveUsers(d2, users) {
+async function saveUsers(d2, users, d2Api, currentUser) {
     const api = d2.Api.getApi();
+    const userRepository = new UserD2ApiRepository({ url: d2Api.baseUrl });
     const existingUsersToUpdate = await getExistingUsers(d2, {
         fields: ":owner,userCredentials,userGroups[id]",
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
-    return getUserGroupsToSaveAndPostMetadata(d2, api, usersToSave, existingUsersToUpdate);
+    const d2Logger = await buildLogger(d2Api, currentUser);
+    d2Logger?.log({ users: buildUserWithoutPassword(users) });
+    const response = await postMetadata(api, { users: usersToSave }, d2Logger);
+    // NOTE: this executes even when postMetadata fails
+    await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
+    return response;
+}
+
+async function buildLogger(d2Api, currentUser) {
+    if (!d2Api || !currentUser) return undefined;
+
+    const d2ApiTracker = new D2ApiLogger(d2Api);
+    const { data: d2Logger } = await d2ApiTracker.buildLogger(currentUser).runAsync();
+    return d2Logger;
 }
 
 async function saveCopyInUsers(d2, users, copyUserGroups) {

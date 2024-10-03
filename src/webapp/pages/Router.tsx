@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { LegacyAppWrapper } from "../../legacy/LegacyApp";
 import { ListHybrid } from "../../legacy/List/List.component";
@@ -28,7 +29,19 @@ export const Router: React.FC = React.memo(() => {
                     }
                 />
             </Routes>
-            <About visible={true} />
+            <IconsContainer>
+                <About icon="about" visible={true} />
+            </IconsContainer>
         </HashRouter>
     );
 });
+
+const IconsContainer = styled.div`
+    align-items: center;
+    bottom: -3px;
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    position: fixed;
+    right: 80px;
+`;
