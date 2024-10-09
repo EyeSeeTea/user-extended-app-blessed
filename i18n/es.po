@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-07-10T13:25:42.121Z\n"
+"POT-Creation-Date: 2024-10-09T16:34:04.982Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -290,12 +290,6 @@ msgstr ""
 
 msgid "Other information"
 msgstr "Otra información"
-
-msgid "Error saving user"
-msgstr "Error al guardar usuario"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid "Please provide a valid identifier"
 msgstr "Por favor proporcione un identificador válido"

@@ -534,7 +534,7 @@ function useUserColumns() {
         return [
             { name: "id", sortable: false, text: i18n.t("User ID"), hidden: true },
             { name: "username", sortable: false, text: i18n.t("Username") },
-            { name: "firstName", sortable: true, text: i18n.t("First name") },
+            { name: "firstName", sortable: true, text: i18n.t("First Name") },
             { name: "surname", sortable: true, text: i18n.t("Surname") },
             { name: "email", sortable: true, text: i18n.t("Email") },
             { name: "phoneNumber", text: i18n.t("Phone number") },
