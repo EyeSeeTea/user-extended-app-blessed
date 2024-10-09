@@ -287,9 +287,10 @@ export class UserD2ApiRepository implements UserRepository {
 
         return this.getLogger().flatMap(logger => {
             return this.getFullUsers({ filters: { id: ["in", userIds] } }).flatMap(existingUsers => {
-                const usersToSend = _(existingUsers)
-                    .map(existingUser => {
-                        const user = users.find(user => user.id === existingUser.id);
+                const usersToSend = _(userIds)
+                    .map(userId => {
+                        const existingUser = existingUsers.find(user => user.id === userId);
+                        const user = users.find(user => user.id === userId);
                         if (!user) return undefined;
                         return this.buildUsersToSave(existingUser, user);
                     })
@@ -322,9 +323,9 @@ export class UserD2ApiRepository implements UserRepository {
         });
     }
 
-    private buildUsersToSave(existingUser: ApiUser, user: ApiUser) {
+    private buildUsersToSave(existingUser: Maybe<ApiUser>, user: ApiUser) {
         return {
-            ...existingUser,
+            ...(existingUser || {}),
             ...user,
             // include these fields here and in userCredentials due to a bug in v2.38
             userRoles: user.userCredentials.userRoles,
@@ -333,7 +334,7 @@ export class UserD2ApiRepository implements UserRepository {
             openId: user.userCredentials.openId,
             password: user.userCredentials.password,
             userCredentials: {
-                ...existingUser.userCredentials,
+                ...(existingUser || {}).userCredentials,
                 ...user.userCredentials,
                 id: user.id,
                 accountExpiry: user.userCredentials.accountExpiry ? user.userCredentials.accountExpiry : undefined,

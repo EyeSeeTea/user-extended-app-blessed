@@ -50,11 +50,15 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
                     return importFromJson(d2, file, { maxUsers, orgUnitsField });
                 }
             })
-            .then(onImport)
-            .catch(err => snackbar.error(err.toString()))
-            .finally(() => {
-                closeMenu();
+            .then(result => {
                 loading.hide();
+                closeMenu();
+                onImport(result);
+            })
+            .catch(err => {
+                snackbar.error(err.toString());
+                loading.hide();
+                closeMenu();
             });
     };
 

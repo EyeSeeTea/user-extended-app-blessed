@@ -16,7 +16,7 @@ import {
     hasValue,
     string,
 } from "@dhis2/ui";
-import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { useLoading } from "@eyeseetea/d2-ui-components";
 import {
     TableRow,
     TextField,
@@ -46,6 +46,7 @@ import { PreviewInputFF } from "../form/fields/PreviewInputFF";
 import styled from "styled-components";
 import { FormFieldProps } from "../form/fields/FormField";
 import { useGetAllUsers } from "../../hooks/userHooks";
+import { Maybe } from "../../../types/utils";
 
 const columnNameFromPropertyMapping: Record<Columns, string> = {
     id: "ID",
@@ -104,7 +105,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         actionText,
         warnings = [],
     } = props;
-
     const [users, setUsers] = useState<User[]>(usersFromFile);
     const [existingUsers, setExistingUsers] = React.useState<Record<string, User>>({});
     const [existingUsersNames, setExistingUsersNames] = React.useState<string[]>([]);
@@ -123,7 +123,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const [areUsersValid, setAreUsersValid] = React.useState(false);
 
     const loading = useLoading();
-    const snackbar = useSnackbar();
 
     const { users: allUsers } = useGetAllUsers();
     useEffect(() => {
@@ -215,18 +214,18 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const onSubmit = useCallback(
         async ({ users }: { users: User[] }) => {
             loading.show(true, i18n.t("Importing users"));
-            const { error } = await onSave(users);
-
-            if (error) {
-                setInfoDialog({ response: error });
-                snackbar.error(error);
-            } else {
-                onRequestClose();
-            }
-
-            loading.reset();
+            onSave(users)
+                .then(() => {
+                    onRequestClose();
+                    loading.hide();
+                })
+                .catch(error => {
+                    onRequestClose();
+                    setInfoDialog({ response: error });
+                    loading.hide();
+                });
         },
-        [snackbar, loading]
+        [loading, onRequestClose, onSave]
     );
 
     const addRow = useCallback(() => {
@@ -239,8 +238,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
         setUsers(users => users.concat(newUser));
     }, []);
-
-    let submit: any;
 
     const renderTableRow = useCallback(
         (user: User, rowIndex: number, users: User[]) => {
@@ -276,7 +273,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                 </StyledTableRow>
             );
         },
-        [columns, existingUsersNames, allowOverwrite]
+        [columns, existingUsers, existingUsersNames, allowOverwrite]
     );
 
     const updateFormState = ({ values: { users: updatedUsers }, errors }: FormState<{ users: User[] }>) => {
@@ -507,21 +504,23 @@ const FormFieldDialog = <FieldValue, T extends ComponentType<any>>(props: FormFi
     return <Field<FieldValue> {...props} />;
 };
 
-const FormTextField = (props: any) => {
+const FormTextField = (props: FormTextFieldProps) => {
     return (
         <Field {...props}>
-            {props => {
-                const onChose = (event: any) => {
-                    return props.input.onChange(event);
+            {fieldProps => {
+                const validationErrorMessage = props.validate ? props.validate(fieldProps.input.value) : "";
+                const thereIsAnError = Boolean(validationErrorMessage);
+                const onChose = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+                    return fieldProps.input.onChange(event);
                 };
                 return (
                     <div>
                         <TextField
-                            name={props.input.name}
-                            value={props.input.value}
+                            name={fieldProps.input.name}
+                            value={fieldProps.input.value}
                             onChange={onChose}
-                            error={!!props.meta.error}
-                            helperText={props.meta.error ? props.meta.error : ""}
+                            error={thereIsAnError}
+                            helperText={validationErrorMessage}
                         />
                     </div>
                 );
@@ -530,21 +529,20 @@ const FormTextField = (props: any) => {
     );
 };
 
+const userRequiredFields = ["username", "firstName", "surname", "password"];
+
 const useValidations = (
     field: UserFormField,
     existingUsersNames: string[] = [],
     allowOverwrite = false
-): { validation?: (...args: any[]) => any; props?: object } => {
-    const userRequiredFields = ["username", "firstName", "surname", "password"];
-
+): { validation?: (...args: any[]) => Maybe<string>; props?: object } => {
     switch (field) {
         case "username": {
             return {
-                // TODO use legacyvalidateUsername
                 validation: (value: string) => {
-                    const a = !existingUsersNames.includes(value) ? undefined : i18n.t("User already exists");
-                    if (allowOverwrite) return undefined;
-                    return a;
+                    const errorMessage = !existingUsersNames.includes(value) ? "" : i18n.t("User already exists");
+                    if (allowOverwrite) return "";
+                    return errorMessage;
                 },
             };
         }
@@ -576,6 +574,13 @@ const useValidations = (
             return { validation: required ? hasValue : undefined };
         }
     }
+};
+
+type FormTextFieldProps = {
+    name: string;
+    placeholder: string;
+    type?: string;
+    validate?: (value: Maybe<string>) => Maybe<string>;
 };
 
 const StyledTableCellHeader = styled(TableCell)`

@@ -8,7 +8,6 @@ import { ImportExport } from "../../webapp/components/import-export/ImportExport
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import Settings from "../models/settings";
-import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import Filters from "./Filters.component";
 import { ImportTable } from "../../webapp/components/import-export/ImportTable";
@@ -194,15 +193,18 @@ export class ListHybrid extends React.Component {
     };
 
     _importUsers = async users => {
-        const { error } = await this.props.compositionRoot.users.import({ users }).runAsync();
-        if (!error) {
-            const message = this.getTranslation("import_successful", { n: users.length });
-            snackActions.show({ message });
-            this.filterList();
-            return null;
-        } else {
-            return error;
-        }
+        return this.props.compositionRoot.users
+            .import({ users })
+            .runAsync()
+            .then(() => {
+                const message = this.getTranslation("import_successful", { n: users.length });
+                snackActions.show({ message });
+                this.filterList();
+                return null;
+            })
+            .catch(error => {
+                snackActions.show({ error });
+            });
     };
 
     _closeImportUsers = () => {
