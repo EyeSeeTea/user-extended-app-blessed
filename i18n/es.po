@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-10-09T16:34:04.982Z\n"
+"POT-Creation-Date: 2024-10-10T01:46:23.785Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -171,9 +171,11 @@ msgstr ""
 msgid "{{n}} warning(s) while importing file"
 msgstr ""
 
-#, fuzzy
 msgid "Importing users"
-msgstr "Guardando usuarios"
+msgstr "Importar usuarios"
+
+msgid "Users imported successfully"
+msgstr "Usuarios importados correctamente"
 
 msgid "User already exists: {{id}}"
 msgstr ""
@@ -181,9 +183,8 @@ msgstr ""
 msgid "Add user"
 msgstr "Agregar usuario"
 
-#, fuzzy
 msgid "Overwrite existing users"
-msgstr "Error al guardar usuarios"
+msgstr "Actualizar usuarios existentes"
 
 msgid "Cancel"
 msgstr "Cancelar"
@@ -191,9 +192,8 @@ msgstr "Cancelar"
 msgid "Error on metadata action"
 msgstr ""
 
-#, fuzzy
 msgid "Remove user"
-msgstr "Eliminar"
+msgstr "Eliminar usuario"
 
 msgid "User already exists"
 msgstr ""

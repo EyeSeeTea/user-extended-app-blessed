@@ -16,7 +16,7 @@ import {
     hasValue,
     string,
 } from "@dhis2/ui";
-import { useLoading } from "@eyeseetea/d2-ui-components";
+import { useLoading, useSnackbar } from "@eyeseetea/d2-ui-components";
 import {
     TableRow,
     TextField,
@@ -47,6 +47,8 @@ import styled from "styled-components";
 import { FormFieldProps } from "../form/fields/FormField";
 import { useGetAllUsers } from "../../hooks/userHooks";
 import { Maybe } from "../../../types/utils";
+import { useAppContext } from "../../contexts/app-context";
+import { ImportUser } from "../../../domain/entities/ImportUser";
 
 const columnNameFromPropertyMapping: Record<Columns, string> = {
     id: "ID",
@@ -85,8 +87,7 @@ type ImportTableProps = {
     title: string;
     usersFromFile: User[];
     columns: Columns[];
-    maxUsers: number;
-    onSave: (users: User[]) => Promise<{ error: string }>;
+    onSave: (users: User[]) => void;
     onRequestClose: () => void;
     templateUser?: UserLegacy;
     actionText: string;
@@ -98,7 +99,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         title,
         usersFromFile,
         columns: baseUserColumns,
-        maxUsers,
         onSave,
         onRequestClose,
         templateUser = null,
@@ -121,6 +121,8 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
     const [errorsCount, setErrorsCount] = React.useState(0);
     const [areUsersValid, setAreUsersValid] = React.useState(false);
+    const { compositionRoot } = useAppContext();
+    const snackbar = useSnackbar();
 
     const loading = useLoading();
 
@@ -212,20 +214,23 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     };
 
     const onSubmit = useCallback(
-        async ({ users }: { users: User[] }) => {
+        ({ users }: { users: User[] }) => {
             loading.show(true, i18n.t("Importing users"));
-            onSave(users)
-                .then(() => {
+            compositionRoot.users.import({ users }).run(
+                () => {
                     onRequestClose();
                     loading.hide();
-                })
-                .catch(error => {
+                    onSave([]);
+                    snackbar.success(i18n.t("Users imported successfully"));
+                },
+                error => {
                     onRequestClose();
-                    setInfoDialog({ response: error });
                     loading.hide();
-                });
+                    snackbar.error(error);
+                }
+            );
         },
-        [loading, onRequestClose, onSave]
+        [loading, onRequestClose, onSave, snackbar, compositionRoot.users]
     );
 
     const addRow = useCallback(() => {
@@ -241,7 +246,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 
     const renderTableRow = useCallback(
         (user: User, rowIndex: number, users: User[]) => {
-            // TODO maybe useFormState();
             const currentUsername = users[rowIndex]?.username || user.username;
             const existingUser = existingUsers[currentUsername];
             const chipTitle = existingUser
@@ -303,7 +307,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                 onSubmit={onSubmit}
                                 initialValues={{ users }}
                                 render={({ handleSubmit, values }) => {
-                                    const canAddNewUser = values.users.length < maxUsers;
+                                    const canAddNewUser = values.users.length < ImportUser.MAX_USERS;
                                     return (
                                         <>
                                             <FormSpy

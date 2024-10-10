@@ -33,8 +33,11 @@ import {
     getFirstThreeUserNames,
     UsersSelectedModal,
 } from "../users-remove-modal/UsersSelectedModal";
-import { SettingsDialogModal } from "../settings-dialog-modal/SettingsDialogModal";
+import { SettingsDialogModal, useImportSettings } from "../settings-dialog-modal/SettingsDialogModal";
 import Settings from "../../../legacy/models/settings";
+import { FilterOption, ImportExport, ImportResult } from "../import-export/ImportExport";
+import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
+import { ImportTable } from "../import-export/ImportTable";
 
 function convertActionToOrgUnitType(action: ActionType): SaveUserOrgUnitOptions["orgUnitType"] {
     switch (action) {
@@ -96,15 +99,20 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     children,
     reloadTableKey,
     onAction,
+    filterOption,
 }) => {
     const { compositionRoot, currentUser } = useAppContext();
     const [reloadKey, reload] = useReload();
 
     const [multiSelectorDialogProps, openMultiSelectorDialog] = useState<MultiSelectorDialogProps>();
     const [visibleColumns, setVisibleColumns] = useState<Array<keyof User>>();
+    const [mappingColumns, setMappingColumns] = useState<ColumnMappingKeys[]>();
     const [selectedUserIds, setSelectedUserIds] = useState<Id[]>([]);
     const [actionType, setActionType] = useState<ActionType>();
     const [showSettings, setShowSettings] = React.useState(false);
+    const [showImportModal, setShowImportModal] = React.useState(false);
+    const [importResult, setImportResult] = React.useState<ImportResult>();
+    const { importSettings } = useImportSettings();
 
     const enableReplicate = hasReplicateAuthority(currentUser);
     const snackbar = useSnackbar();
@@ -149,9 +157,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     );
 
     const onReorderColumns = useCallback(
-        (columns: Array<keyof User>) => {
+        (columns: ColumnMappingKeys[]) => {
             if (!visibleColumns || !columns.length) return;
             onChangeVisibleColumns(columns);
+            setMappingColumns(columns);
             compositionRoot.users.saveColumns(columns).run(
                 () => {},
                 error => snackbar.error(error)
@@ -483,6 +492,21 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         [openSettings]
     );
 
+    const closeImportModal = React.useCallback(
+        (options: { reloadTable: boolean }) => {
+            if (options.reloadTable) {
+                reload();
+            }
+            setShowImportModal(false);
+        },
+        [reload]
+    );
+
+    const showImportDialog = React.useCallback((importResult: ImportResult) => {
+        setImportResult(importResult);
+        setShowImportModal(true);
+    }, []);
+
     const selectedUsers = users && users.length > 0;
 
     return (
@@ -524,7 +548,29 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
             <ObjectsList<User> {...tableProps} columns={columnsToShow}>
                 {children}
+                <div className="user-management-control pagination" style={{ order: 11 }}>
+                    {importSettings && mappingColumns && (
+                        <ImportExport
+                            columns={mappingColumns}
+                            filterOptions={filterOption}
+                            onImport={showImportDialog}
+                            settings={importSettings}
+                        />
+                    )}
+                </div>
             </ObjectsList>
+
+            {showImportModal && importResult && (
+                <ImportTable
+                    title={i18n.t("Import")}
+                    actionText={i18n.t("Import")}
+                    onSave={() => closeImportModal({ reloadTable: true })}
+                    onRequestClose={() => closeImportModal({ reloadTable: false })}
+                    usersFromFile={importResult.users}
+                    columns={importResult.columns}
+                    warnings={importResult.warnings}
+                />
+            )}
         </React.Fragment>
     );
 };
@@ -636,6 +682,7 @@ export interface UserListTableProps extends Pick<ObjectsTableProps<User>, "loadi
     onChangeSearch: (search: string) => void;
     reloadTableKey: number;
     onAction: (ids: string[], action: UserActionName) => void;
+    filterOption: FilterOption;
 }
 
 function buildEllipsizedList(items: NamedRef[], limit = 3) {
