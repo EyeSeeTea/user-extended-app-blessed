@@ -49,6 +49,7 @@ import { useGetAllUsers } from "../../hooks/userHooks";
 import { Maybe } from "../../../types/utils";
 import { useAppContext } from "../../contexts/app-context";
 import { ImportUser } from "../../../domain/entities/ImportUser";
+import { UserLogic } from "../../../domain/entities/UserLogic";
 
 const columnNameFromPropertyMapping: Record<Columns, string> = {
     id: "ID",
@@ -216,7 +217,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     const onSubmit = useCallback(
         ({ users }: { users: User[] }) => {
             loading.show(true, i18n.t("Importing users"));
-            compositionRoot.users.import({ users }).run(
+            return compositionRoot.users.import({ users }).run(
                 () => {
                     onRequestClose();
                     loading.hide();
@@ -224,7 +225,6 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                     snackbar.success(i18n.t("Users imported successfully"));
                 },
                 error => {
-                    onRequestClose();
                     loading.hide();
                     snackbar.error(error);
                 }
@@ -238,7 +238,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
             ...defaultUser,
             id: generateUid(),
             username: "",
-            password: `District123$`,
+            password: UserLogic.DEFAULT_PASSWORD,
         };
 
         setUsers(users => users.concat(newUser));
@@ -260,20 +260,18 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                         </Tooltip>
                     </StyledTableCell>
 
-                    {_(columns)
-                        .map((value: string, columnIndex: number) => (
-                            <StyledTableCell key={`${rowIndex}-${columnIndex}-${value}`}>
-                                <RowItem
-                                    key={`${rowIndex}-${columnIndex}-${value}`}
-                                    rowIndex={rowIndex}
-                                    columnIndex={columnIndex}
-                                    data={{ columns, existingUsersNames }}
-                                    onDelete={users => setUsers(users)}
-                                    allowOverwrite={allowOverwrite}
-                                />
-                            </StyledTableCell>
-                        ))
-                        .value()}
+                    {columns.map((value: string, columnIndex: number) => (
+                        <StyledTableCell key={`${rowIndex}-${columnIndex}-${value}`}>
+                            <RowItem
+                                key={`${rowIndex}-${columnIndex}-${value}`}
+                                rowIndex={rowIndex}
+                                columnIndex={columnIndex}
+                                data={{ columns, existingUsersNames }}
+                                onDelete={users => setUsers(users)}
+                                allowOverwrite={allowOverwrite}
+                            />
+                        </StyledTableCell>
+                    ))}
                 </StyledTableRow>
             );
         },
@@ -287,7 +285,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     };
 
     return (
-        <Dialog open={true} maxWidth={"lg"} fullWidth={true}>
+        <Dialog open maxWidth="lg" fullWidth>
             <StyledDialogTitle>{renderDialogTitle()}</StyledDialogTitle>
             <DialogContent>
                 {!isLoading && (
@@ -498,9 +496,22 @@ const RenderField: React.FC<{
         case "searchOrganisationsUnits":
             return <FormFieldDialog {...props} component={OrgUnitSelectorFF} />;
         case "disabled":
-            return <FormFieldDialog {...props} component={Switch} type={"checkbox"} />;
+            return (
+                <Field {...props} type="checkbox">
+                    {fieldProps => {
+                        return (
+                            <Switch
+                                checked={fieldProps.input.checked}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    return fieldProps.input.onChange(event);
+                                }}
+                            />
+                        );
+                    }}
+                </Field>
+            );
         default:
-            return null;
+            return <FormTextField {...props} />;
     }
 };
 

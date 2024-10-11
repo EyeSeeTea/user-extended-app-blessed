@@ -6,6 +6,7 @@ import { PaginatedResponse } from "../../domain/entities/PaginatedResponse";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { Stats } from "../../domain/entities/Stats";
 import { LocaleCode, User } from "../../domain/entities/User";
+import { UserLogic } from "../../domain/entities/UserLogic";
 import { ListOptions, UpdateStrategy, UserRepository } from "../../domain/repositories/UserRepository";
 import { Maybe } from "../../types/utils";
 import { cache } from "../../utils/cache";
@@ -65,9 +66,9 @@ export class UserD2ApiRepository implements UserRepository {
     private getLocaleValueByType(user: User, keyLocale: KeyLocale): string {
         switch (keyLocale) {
             case DB_LOCALE_KEY:
-                return user.dbLocale;
+                return UserLogic.setDefaultLanguage(user.dbLocale);
             case UI_LOCALE_KEY:
-                return user.uiLocale;
+                return UserLogic.setDefaultLanguage(user.uiLocale);
         }
     }
 

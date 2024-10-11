@@ -4,9 +4,7 @@ import { User, defaultUser } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepository";
 import { UseCase } from "../../CompositionRoot";
 import { generateUid } from "../../utils/uid";
-import { Maybe } from "../../types/utils";
-import { MetadataResponse } from "@eyeseetea/d2-api/api";
-import { OrgUnit } from "../entities/OrgUnit";
+import { UserLogic } from "../entities/UserLogic";
 
 const columnNameFromPropertyMapping = {
     id: "ID",
@@ -32,12 +30,15 @@ const columnNameFromPropertyMapping = {
 export class ImportUsersUseCase implements UseCase {
     constructor(private userRepository: UserRepository) {}
 
-    public execute({ users }: ImportUsersUseCaseOptions): FutureData<MetadataResponse> {
+    public execute({ users }: ImportUsersUseCaseOptions): FutureData<void> {
         const usernameList = users.map(user => user.username);
         return Future.join2(
             this.userRepository.listAll({ filters: { "userCredentials.username": ["in", usernameList] } }),
             this.userRepository.getCurrent()
         ).flatMap(([usersFromDB, currentUser]: [User[], User]) => {
+            const hasRequiredFields = UserLogic.validateHasRequiredFields(users);
+            if (!hasRequiredFields)
+                return Future.error("All users must have at least one Organisation Unit, Role and Group");
             const mergedUsers = this.mergeUsers(users, usersFromDB, currentUser);
             return this.saveUsers(mergedUsers);
         });
@@ -56,10 +57,8 @@ export class ImportUsersUseCase implements UseCase {
                     ...user,
                     name: `${user.firstName} ${user.surname}`,
                     lastModifiedBy: { id, username },
-                    dbLocale: this.setDefaultLanguage(dbUser.dbLocale),
-                    uiLocale: this.setDefaultLanguage(dbUser.uiLocale),
-                    dataViewOrganisationUnits: this.getOrgUnitRef(dbUser, user, "dataViewOrganisationUnits"),
-                    searchOrganisationsUnits: this.getOrgUnitRef(dbUser, user, "searchOrganisationsUnits"),
+                    dbLocale: UserLogic.setDefaultLanguage(dbUser.dbLocale),
+                    uiLocale: UserLogic.setDefaultLanguage(dbUser.uiLocale),
                 };
             }
             return {
@@ -69,27 +68,14 @@ export class ImportUsersUseCase implements UseCase {
                 name: `${user.firstName} ${user.surname}`,
                 createdBy: { id, username },
                 lastModifiedBy: { id, username },
-                dbLocale: this.setDefaultLanguage(user.dbLocale),
-                uiLocale: this.setDefaultLanguage(user.uiLocale),
+                dbLocale: UserLogic.setDefaultLanguage(user.dbLocale),
+                uiLocale: UserLogic.setDefaultLanguage(user.uiLocale),
             };
         });
     }
 
-    private getOrgUnitRef(
-        dbUser: User,
-        user: Partial<User>,
-        orgUnitFieldName: "dataViewOrganisationUnits" | "organisationUnits" | "searchOrganisationsUnits"
-    ): OrgUnit[] {
-        const orgUnits = user[orgUnitFieldName] || [];
-        return _(dbUser[orgUnitFieldName]).concat(orgUnits).value();
-    }
-
-    private setDefaultLanguage(language: Maybe<string>): string {
-        return language || "en";
-    }
-
-    private saveUsers(users: User[]): FutureData<MetadataResponse> {
-        return this.userRepository.save(users);
+    private saveUsers(users: User[]): FutureData<void> {
+        return this.userRepository.save(users).toVoid();
     }
 }
 

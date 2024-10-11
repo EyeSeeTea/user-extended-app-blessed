@@ -129,7 +129,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName, pathToArray =
         missingValue =>
             `Value not found: ${missingValue} [username=${username || "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    if (!value || !objectsByName) return { objects: [], warnings };
+    if (!value || !objectsByName) return { objects: undefined, warnings };
 
     const data = _(names)
         .map(name => {
