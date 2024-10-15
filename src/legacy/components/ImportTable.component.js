@@ -103,10 +103,9 @@ const styles = {
     },
 };
 
-class ImportTable extends React.Component {
+class ImportTableOld extends React.Component {
     constructor(props, context) {
         super(props);
-
         const { d2 } = context;
         this.t = d2.i18n.getTranslation.bind(d2.i18n);
         this.getFieldsInfo = memoize(this.getFieldsInfo.bind(this));
@@ -552,12 +551,12 @@ class ImportTable extends React.Component {
         return (
             <TableContainer>
                 <Table
-                    fixedHeader={true}
+                    stickyHeader={true}
                     wrapperStyle={styles.tableWrapper}
                     style={styles.table}
                     bodyStyle={styles.tableBody}
                 >
-                    <TableHead displaySelectAll={false} adjustForCheckbox={false}>
+                    <TableHead adjustForCheckbox={false}>
                         <TableRow>
                             <TableCell style={styles.tableColumn}>#</TableCell>
                             {headers.map(header => (
@@ -720,7 +719,6 @@ class ImportTable extends React.Component {
                         response={infoDialog.response}
                     />
                 )}
-
                 {showOverwriteToggle && !templateUser && (
                     <Toggle
                         label={this.t("overwrite_existing_users")}
@@ -735,11 +733,11 @@ class ImportTable extends React.Component {
     }
 }
 
-ImportTable.contextTypes = {
+ImportTableOld.contextTypes = {
     d2: PropTypes.object.isRequired,
 };
 
-ImportTable.propTypes = {
+ImportTableOld.propTypes = {
     title: PropTypes.string.isRequired,
     initialUsers: PropTypes.arrayOf(PropTypes.object),
     onSave: PropTypes.func.isRequired,
@@ -752,11 +750,11 @@ ImportTable.propTypes = {
     settings: PropTypes.object.isRequired,
 };
 
-ImportTable.defaultProps = {
+ImportTableOld.defaultProps = {
     initialUsers: [],
     templateUser: null,
     maxUsers: null,
     warnings: [],
 };
 
-export default ImportTable;
+export default ImportTableOld;

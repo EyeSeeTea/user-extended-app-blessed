@@ -4,12 +4,9 @@ import ViewColumnIcon from "material-ui/svg-icons/action/view-column";
 import PropTypes from "prop-types";
 import React from "react";
 import { UserListTable } from "../../webapp/components/user-list-table/UserListTable";
-import { ImportExport } from "../../webapp/components/import-export/ImportExport";
-import ImportTable from "../components/ImportTable.component";
 import ReplicateUserFromTable from "../components/ReplicateUserFromTable.component";
 import ReplicateUserFromTemplate from "../components/ReplicateUserFromTemplate.component";
 import Settings from "../models/settings";
-import { saveUsers } from "../models/userHelpers";
 import snackActions from "../Snackbar/snack.actions";
 import Filters from "./Filters.component";
 
@@ -189,26 +186,6 @@ export class ListHybrid extends React.Component {
         this.setState({ query }, this.filterList);
     };
 
-    _openImportTable = importResult => {
-        this.setState({ importUsers: { open: true, ...importResult } });
-    };
-
-    _importUsers = async users => {
-        const response = await saveUsers(this.context.d2, users, this.props.api, this.props.currentUser);
-        if (response.success) {
-            const message = this.getTranslation("import_successful", { n: users.length });
-            snackActions.show({ message });
-            this.filterList();
-            return null;
-        } else {
-            return response;
-        }
-    };
-
-    _closeImportUsers = () => {
-        this.setState({ importUsers: { open: false } });
-    };
-
     _onFiltersChange = filters => {
         const canManage = filters.canManage;
         this.setState({ filters, canManage }, this.filterList);
@@ -223,7 +200,7 @@ export class ListHybrid extends React.Component {
     };
 
     render() {
-        const { replicateUser, listFilterOptions, importUsers, settings } = this.state;
+        const { replicateUser, listFilterOptions } = this.state;
 
         return (
             <div>
@@ -239,40 +216,14 @@ export class ListHybrid extends React.Component {
                             onChangeSearch={this._updateQuery}
                             reloadTableKey={this.state.reloadTableKey}
                             onAction={this._onAction}
+                            filterOption={listFilterOptions}
                         >
                             <Filters onChange={this._onFiltersChange} showSearch={false} api={this.props.api} />
-
-                            <div className="user-management-control pagination" style={{ order: 11 }}>
-                                {settings && (
-                                    <ImportExport
-                                        columns={this.state.visibleColumns}
-                                        filterOptions={listFilterOptions}
-                                        onImport={this._openImportTable}
-                                        maxUsers={this.maxImportUsers}
-                                        settings={settings}
-                                    />
-                                )}
-                            </div>
                         </UserListTable>
                     </div>
                 </div>
 
                 {replicateUser.open ? this.getReplicateDialog(replicateUser) : null}
-
-                {!importUsers.open ? null : (
-                    <ImportTable
-                        api={this.props.api}
-                        title={this.getTranslation("import")}
-                        onSave={this._importUsers}
-                        onRequestClose={this._closeImportUsers}
-                        actionText={this.getTranslation("import")}
-                        users={importUsers.users}
-                        columns={importUsers.columns}
-                        warnings={importUsers.warnings}
-                        maxUsers={this.maxImportUsers}
-                        settings={this.state.settings}
-                    />
-                )}
             </div>
         );
     }

@@ -10,7 +10,7 @@ import { About } from "../components/about/About";
 import { AboutPage } from "./about/AboutPage";
 
 export const Router: React.FC = React.memo(() => {
-    const { api, currentUser } = useAppContext();
+    const { api } = useAppContext();
 
     return (
         <HashRouter>
@@ -24,7 +24,7 @@ export const Router: React.FC = React.memo(() => {
                     path="/"
                     element={
                         <LegacyAppWrapper>
-                            <ListHybrid api={api} currentUser={currentUser} />
+                            <ListHybrid api={api} />
                         </LegacyAppWrapper>
                     }
                 />
