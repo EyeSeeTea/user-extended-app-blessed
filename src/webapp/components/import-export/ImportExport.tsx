@@ -12,10 +12,13 @@ import { useSnackbar, useLoading } from "@eyeseetea/d2-ui-components";
 import { ColumnMappingKeys } from "../../../domain/usecases/ExportUsersUseCase";
 import { useExportUsers } from "../../hooks/userHooks";
 import Settings from "../../../legacy/models/settings";
+import { User } from "../../../domain/entities/User";
+import { Columns } from "./ImportTable";
+import { ImportUser } from "../../../domain/entities/ImportUser";
 
 export const ImportExport: React.FC<ImportExportProps> = props => {
     const { d2 } = useAppContext();
-    const { columns, filterOptions, onImport, maxUsers, settings } = props;
+    const { columns, filterOptions, onImport, settings } = props;
     const snackbar = useSnackbar();
     const loading = useLoading();
     const [isMenuOpen, setMenuOpen] = React.useState(false);
@@ -45,16 +48,20 @@ export const ImportExport: React.FC<ImportExportProps> = props => {
                 const file = files[0];
                 if (!file) return;
                 if (file.type === "text/csv") {
-                    return importFromCsv(d2, file, { maxUsers, orgUnitsField });
+                    return importFromCsv(d2, file, { maxUsers: ImportUser.MAX_USERS, orgUnitsField });
                 } else if (file.type === "application/json") {
-                    return importFromJson(d2, file, { maxUsers, orgUnitsField });
+                    return importFromJson(d2, file, { maxUsers: ImportUser.MAX_USERS, orgUnitsField });
                 }
             })
-            .then(onImport)
-            .catch(err => snackbar.error(err.toString()))
-            .finally(() => {
-                closeMenu();
+            .then(result => {
                 loading.hide();
+                closeMenu();
+                onImport(result);
+            })
+            .catch(err => {
+                snackbar.error(err.toString());
+                loading.hide();
+                closeMenu();
             });
     };
 
@@ -101,7 +108,8 @@ export type FilterOption = { search: string; sorting: { field: string; order: "a
 export type ImportExportProps = {
     columns: ColumnMappingKeys[];
     filterOptions: FilterOption;
-    onImport: (result: any) => void;
-    maxUsers: number;
+    onImport: (result: ImportResult) => void;
     settings: Settings;
 };
+
+export type ImportResult = { columns: Columns[]; users: User[]; success: boolean; warnings: string[] };

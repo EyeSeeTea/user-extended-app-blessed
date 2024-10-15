@@ -53,9 +53,9 @@ const modelByField = {
 };
 
 const queryFieldsByModel = {
-    userRoles: ["id", "displayName"],
-    userGroups: ["id", "displayName"],
-    organisationUnits: ["id", "path", "code", "displayName", "shortName"],
+    userRoles: ["id", "name", "displayName"],
+    userGroups: ["id", "name", "displayName"],
+    organisationUnits: ["id", "path", "code", "name", "displayName", "shortName"],
 };
 
 async function getAssociations(d2, objs, { orgUnitsField }) {
@@ -73,9 +73,9 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
 
     const pairs = await mapPromise(_.toPairs(valuesByField), async ([model, values]) => {
         const fields = queryFieldsByModel[model];
-        const matchField = model === "organisationUnits" ? orgUnitsField : "displayName";
-        // On org units, match both by shortName and displayName
-        const dbFields = matchField === "shortName" ? [matchField, "displayName"] : [matchField];
+        const matchField = model === "organisationUnits" ? orgUnitsField : "name";
+        // On org units, match both by shortName and name
+        const dbFields = matchField === "shortName" ? [matchField, "name"] : [matchField];
 
         const modelsByFieldList = await Promise.all(
             dbFields.map(async dbField => {
@@ -92,19 +92,32 @@ async function getAssociations(d2, objs, { orgUnitsField }) {
                     .value();
             })
         );
+
         const modelsByField = _(modelsByFieldList)
             .flatten()
             .groupBy(({ value }) => value)
             .mapValues(objs => objs.map(({ obj }) => obj))
             .value();
-
         return [model, modelsByField];
     });
 
     return _.fromPairs(pairs);
 }
 
-function collectionFromNames(user, rowIndex, field, objectsByName) {
+function buildObjects(data, pathToArray) {
+    if (pathToArray) {
+        return _(data)
+            .flatMap(({ objs }) => objs)
+            .map(obj => ({ ...obj, path: [obj.path] || [] }))
+            .value();
+    } else {
+        return _(data)
+            .flatMap(({ objs }) => objs)
+            .value();
+    }
+}
+
+function collectionFromNames(user, rowIndex, field, objectsByName, pathToArray = false) {
     const value = user[field];
     const names = (value || "")
         .split(fieldSplitChar)
@@ -116,7 +129,7 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
         missingValue =>
             `Value not found: ${missingValue} [username=${username || "-"} csv-row=${rowIndex} csv-column=${field}]`
     );
-    if (!value || !objectsByName) return { warnings };
+    if (!value || !objectsByName) return { objects: undefined, warnings };
 
     const data = _(names)
         .map(name => {
@@ -126,13 +139,11 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
         .compact()
         .value();
 
-    const objects = _(data)
-        .flatMap(({ objs }) => objs)
-        .value();
-
     const info = {
         hasDuplicates: _(data).some(({ hasDuplicates }) => hasDuplicates),
     };
+
+    const objects = buildObjects(data, pathToArray);
 
     return { objects, warnings, info };
 }
@@ -140,21 +151,14 @@ function collectionFromNames(user, rowIndex, field, objectsByName) {
 function getPlainUserFromRow(user, modelValuesByField, rowIndex) {
     const byField = modelValuesByField;
     const relationships = {
-        userRoles: collectionFromNames(user, rowIndex, "userRoles", byField.userRoles),
-        userGroups: collectionFromNames(user, rowIndex, "userGroups", byField.userGroups),
-        organisationUnits: collectionFromNames(user, rowIndex, "organisationUnits", byField.organisationUnits),
-        dataViewOrganisationUnits: collectionFromNames(
-            user,
-            rowIndex,
-            "dataViewOrganisationUnits",
-            byField.organisationUnits
-        ),
-        searchOrganisationsUnits: collectionFromNames(
-            user,
-            rowIndex,
-            "searchOrganisationsUnits",
-            byField.organisationUnits
-        ),
+        userRoles: collectionFromNames(user, rowIndex, "userRoles", byField.userRoles) || [],
+        userGroups: collectionFromNames(user, rowIndex, "userGroups", byField.userGroups) || [],
+        organisationUnits:
+            collectionFromNames(user, rowIndex, "organisationUnits", byField.organisationUnits, true) || [],
+        dataViewOrganisationUnits:
+            collectionFromNames(user, rowIndex, "dataViewOrganisationUnits", byField.organisationUnits, true) || [],
+        searchOrganisationsUnits:
+            collectionFromNames(user, rowIndex, "searchOrganisationsUnits", byField.organisationUnits, true) || [],
     };
     const warnings = _(relationships).values().flatMap("warnings").value();
     const objectRelationships = _(relationships).mapValues("objects").value();
