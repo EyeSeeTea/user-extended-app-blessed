@@ -307,7 +307,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                 autocomplete="off"
                                 onSubmit={onSubmit}
                                 initialValues={{ users }}
-                                render={({ handleSubmit, values }) => {
+                                render={({ handleSubmit, form, values }) => {
                                     const canAddNewUser = values.users.length < ImportUser.MAX_USERS;
                                     return (
                                         <>
