@@ -168,7 +168,10 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     };
 
     const toggleAllowOverwrite = useCallback(
-        (_event, newValue: boolean) => {
+        (_event, newValue: boolean, form) => {
+            requestAnimationFrame(() => {
+                form.change("updateValidation", newValue);
+            });
             setAreUsersValid(newValue || !errorsCount);
             setAllowOverwrite(newValue);
         },
@@ -344,17 +347,24 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                                     />
                                                 </AddButtonRow>
                                             </form>
+                                            {showOverwriteToggle && !templateUser && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            checked={allowOverwrite}
+                                                            onChange={(event, newValue) =>
+                                                                toggleAllowOverwrite(event, newValue, form)
+                                                            }
+                                                        />
+                                                    }
+                                                    label={i18n.t("Overwrite existing users")}
+                                                />
+                                            )}
                                         </>
                                     );
                                 }}
                             />
                         </TableContainer>
-                        {showOverwriteToggle && !templateUser && (
-                            <FormControlLabel
-                                control={<Switch checked={allowOverwrite} onChange={toggleAllowOverwrite} />}
-                                label={i18n.t("Overwrite existing users")}
-                            />
-                        )}
                     </div>
                 )}
             </DialogContent>
