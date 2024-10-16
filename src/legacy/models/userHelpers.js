@@ -12,8 +12,16 @@ const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-// NOTE: UEApp allows to create a user without organisationUnits, but DHIS2 User App does not.
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles", "organisationUnits"];
+// NOTE: userGroups is not a required property, but the app will not work without it
+const requiredPropertiesOnImport = [
+    "username",
+    "password",
+    "firstName",
+    "surname",
+    "userRoles",
+    "userGroups",
+    "organisationUnits",
+];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 

@@ -544,7 +544,15 @@ const FormTextField = (props: FormTextFieldProps) => {
     );
 };
 
-const userRequiredFields = ["username", "firstName", "surname", "password"];
+const userRequiredFields = [
+    "username",
+    "firstName",
+    "surname",
+    "password",
+    "userRoles",
+    "userGroups",
+    "organisationUnits",
+];
 
 const useValidations = (
     field: UserFormField,
@@ -555,8 +563,9 @@ const useValidations = (
         case "username": {
             return {
                 validation: (value: string) => {
-                    const errorMessage = !existingUsersNames.includes(value) ? "" : i18n.t("User already exists");
                     if (allowOverwrite) return "";
+                    if (!value) return i18n.t("Please provide a username");
+                    const errorMessage = !existingUsersNames.includes(value) ? "" : i18n.t("User already exists");
                     return errorMessage;
                 },
             };
@@ -570,19 +579,37 @@ const useValidations = (
             };
         case "password":
             return {
-                validation: composeValidators(
-                    string,
-                    createMinCharacterLength(8),
-                    createMaxCharacterLength(255),
-                    createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
-                    createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
-                    createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
-                    createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
-                ),
+                validation: (value: string) => {
+                    if (!allowOverwrite && !value) {
+                        return i18n.t("Please provide a password");
+                    } else {
+                        const validators = composeValidators(
+                            string,
+                            createMinCharacterLength(8),
+                            createMaxCharacterLength(255),
+                            createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
+                            createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
+                            createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
+                            createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
+                        );
+                        return validators(value);
+                    }
+                },
             };
         case "phoneNumber":
             return {
                 validation: createPattern(/^\+?[0-9 \-()]+$/, i18n.t("Please provide a valid phone number")),
+            };
+        case "userRoles":
+        case "userGroups":
+        case "organisationUnits":
+            // NOTE: userGroups is not a mandatory field but its required by src/domain/usecases/ImportUsersUseCase.ts
+            return {
+                validation: (value: string[]) => {
+                    const errorMessage = "Please select at least one item";
+                    if (!value) return i18n.t(errorMessage);
+                    return value.length > 0 ? undefined : i18n.t(errorMessage);
+                },
             };
         default: {
             const required = userRequiredFields.includes(field);
