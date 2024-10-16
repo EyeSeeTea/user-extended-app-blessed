@@ -49,7 +49,7 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
     );
 
     React.useEffect(() => {
-        const ids = input.value.map(({ id }: NamedRef) => id);
+        const ids = Array.isArray(input.value) ? input.value.map(({ id }: NamedRef) => id) : [];
         return compositionRoot.metadata.getOrgUnitPaths(ids).run(
             items => {
                 setSelectedPaths(items.map(orgUnit => joinPaths(orgUnit)));
