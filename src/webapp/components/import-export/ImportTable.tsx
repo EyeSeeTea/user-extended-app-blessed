@@ -565,8 +565,18 @@ const useValidations = (
                 validation: (value: string) => {
                     if (allowOverwrite) return "";
                     if (!value) return i18n.t("Please provide a username");
-                    const errorMessage = !existingUsersNames.includes(value) ? "" : i18n.t("User already exists");
-                    return errorMessage;
+                    const existingUser = existingUsersNames.includes(value);
+                    if (allowOverwrite && existingUser) return "";
+                    if (existingUser) {
+                        return i18n.t("User already exists");
+                    } else {
+                        const validators = composeValidators(
+                            string,
+                            createMinCharacterLength(2),
+                            createMaxCharacterLength(140)
+                        );
+                        return validators(value);
+                    }
                 },
             };
         }
