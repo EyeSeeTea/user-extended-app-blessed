@@ -398,6 +398,8 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
     const form = useForm<{ users: User[] }>();
     const deleteRow = columnIndex === data.columns.length - 1;
     const field = data.columns[columnIndex];
+    const username = form.getState().values.users[rowIndex]?.username;
+    const isExistingUser = username ? data.existingUsersNames.includes(username) : false;
 
     const removeRow = useCallback(() => {
         const original = form.getState().values.users;
@@ -419,8 +421,8 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
         <RenderUserImportField
             rowIndex={rowIndex}
             field={field}
-            existingUsersNames={data.existingUsersNames}
             allowOverwrite={allowOverwrite}
+            isExistingUser={isExistingUser}
         />
     );
 };
@@ -428,9 +430,9 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
 const RenderUserImportField: React.FC<{
     rowIndex: number;
     field: UserFormField;
-    existingUsersNames: string[];
     allowOverwrite: boolean;
-}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
+    isExistingUser: boolean;
+}> = ({ rowIndex, field, allowOverwrite, isExistingUser }) => {
     const name = `users[${rowIndex}].${field}`;
 
     const { validation, props: validationProps = {} } = useValidations(field);
@@ -453,8 +455,8 @@ const RenderUserImportField: React.FC<{
                     <RenderField
                         rowIndex={rowIndex}
                         field={field}
-                        existingUsersNames={existingUsersNames}
                         allowOverwrite={allowOverwrite}
+                        isExistingUser={isExistingUser}
                     />
                 </PreviewInputFF>
             );
@@ -463,8 +465,8 @@ const RenderUserImportField: React.FC<{
                 <RenderField
                     rowIndex={rowIndex}
                     field={field}
-                    existingUsersNames={existingUsersNames}
                     allowOverwrite={allowOverwrite}
+                    isExistingUser={isExistingUser}
                 />
             );
     }
@@ -473,10 +475,10 @@ const RenderUserImportField: React.FC<{
 const RenderField: React.FC<{
     rowIndex: number;
     field: UserFormField;
-    existingUsersNames: string[];
     allowOverwrite: boolean;
-}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
-    const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames, allowOverwrite);
+    isExistingUser: boolean;
+}> = ({ rowIndex, field, allowOverwrite, isExistingUser }) => {
+    const { validation, props: validationProps = {} } = useValidations(field, allowOverwrite, isExistingUser);
     const name = `users[${rowIndex}].${field}`;
     const props = {
         name,
@@ -566,18 +568,16 @@ const userRequiredFields = [
 
 const useValidations = (
     field: UserFormField,
-    existingUsersNames: string[] = [],
-    allowOverwrite = false
+    allowOverwrite = false,
+    isExistingUser = false
 ): { validation?: (...args: any[]) => Maybe<string>; props?: object } => {
     switch (field) {
         case "username": {
             return {
                 validation: (value: string) => {
-                    if (allowOverwrite) return "";
                     if (!value) return i18n.t("Please provide a username");
-                    const existingUser = existingUsersNames.includes(value);
-                    if (allowOverwrite && existingUser) return "";
-                    if (existingUser) {
+                    if (allowOverwrite && isExistingUser) return "";
+                    if (isExistingUser) {
                         return i18n.t("User already exists");
                     } else {
                         const validators = composeValidators(
@@ -600,7 +600,8 @@ const useValidations = (
         case "password":
             return {
                 validation: (value: string) => {
-                    if (!allowOverwrite && !value) {
+                    if (isExistingUser && !value) return "";
+                    if (!value) {
                         return i18n.t("Please provide a password");
                     } else {
                         const validators = composeValidators(
