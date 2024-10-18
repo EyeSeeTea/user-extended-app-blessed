@@ -589,7 +589,7 @@ export class UserD2ApiRepository implements UserRepository {
     }
 
     private getApiOrgUnits(orgUnits: OrgUnit[]): ApiD2OrgUnit[] {
-        const tmp = _.compact(
+        return _.compact(
             orgUnits.map(orgUnit => {
                 if (orgUnit.id === "") {
                     return undefined;
@@ -600,8 +600,6 @@ export class UserD2ApiRepository implements UserRepository {
                 };
             })
         );
-        console.debug("getApiOrgUnits", orgUnits, tmp);
-        return tmp;
     }
 }
 

@@ -14,7 +14,7 @@ export const NamedRefModel: Codec<NamedRef> = Schema.object({
 export const OrgUnitModel = Schema.object({
     id: Schema.string,
     name: Schema.string,
-    code: Schema.string,
+    code: Schema.optionalSafe(Schema.string, ""),
     path: Schema.string,
 });
 
