@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-10-10T02:03:30.660Z\n"
-"PO-Revision-Date: 2024-10-10T02:03:30.660Z\n"
+"POT-Creation-Date: 2024-10-21T20:07:31.924Z\n"
+"PO-Revision-Date: 2024-10-21T20:07:31.924Z\n"
 
 msgid "ID"
 msgstr ""
@@ -191,10 +191,19 @@ msgstr ""
 msgid "Remove user"
 msgstr ""
 
+msgid "Duplicated username: {{username}}"
+msgstr ""
+
+msgid "Please provide a username"
+msgstr ""
+
 msgid "User already exists"
 msgstr ""
 
 msgid "Please provide a valid email"
+msgstr ""
+
+msgid "Please provide a password"
 msgstr ""
 
 msgid "Password should contain at least one lowercase letter"
