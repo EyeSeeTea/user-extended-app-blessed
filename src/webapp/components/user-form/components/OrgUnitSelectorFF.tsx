@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { FieldState, NoticeBox } from "@dhis2/ui";
 import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import React from "react";
@@ -5,6 +6,8 @@ import styled from "styled-components";
 import { NamedRef } from "../../../../domain/entities/Ref";
 import { joinPaths, orgUnitControls, orgUnitListParams } from "../../../../utils/d2-api";
 import { useAppContext } from "../../../contexts/app-context";
+import { OrgUnit } from "../../../../domain/entities/OrgUnit";
+import { Maybe } from "../../../../types/utils";
 
 export type OrgUnitSelectorFFProps = {
     input: any;
@@ -29,11 +32,14 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
             return compositionRoot.metadata.getOrgUnitPaths(selectedIds).run(
                 orgUnits => {
                     input.onChange(
-                        selectedIds.map(id => {
-                            const orgUnitDetails = orgUnits.find(orgUnit => orgUnit.id === id);
-                            if (!orgUnitDetails) return { id, name: "", path: "" };
-                            return orgUnitDetails;
-                        })
+                        _(selectedIds)
+                            .map((id): Maybe<OrgUnit> => {
+                                const orgUnitDetails = orgUnits.find(orgUnit => orgUnit.id === id);
+                                if (!orgUnitDetails) return undefined;
+                                return orgUnitDetails;
+                            })
+                            .compact()
+                            .value()
                     );
                 },
                 error => console.error(error)
@@ -43,7 +49,7 @@ export const OrgUnitSelectorFF = ({ input, meta, validationText, ...rest }: OrgU
     );
 
     React.useEffect(() => {
-        const ids = input.value.map(({ id }: NamedRef) => id);
+        const ids = Array.isArray(input.value) ? input.value.map(({ id }: NamedRef) => id) : [];
         return compositionRoot.metadata.getOrgUnitPaths(ids).run(
             items => {
                 setSelectedPaths(items.map(orgUnit => joinPaths(orgUnit)));

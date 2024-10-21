@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-09-24T10:51:56.735Z\n"
-"PO-Revision-Date: 2024-09-24T10:51:56.735Z\n"
+"POT-Creation-Date: 2024-10-21T20:07:31.924Z\n"
+"PO-Revision-Date: 2024-10-21T20:07:31.924Z\n"
 
 msgid "ID"
 msgstr ""
@@ -161,6 +161,66 @@ msgstr ""
 msgid "Export empty template"
 msgstr ""
 
+msgid "{{n}} invalid users found, check in-line errors in table"
+msgstr ""
+
+msgid "{{n}} warning(s) while importing file"
+msgstr ""
+
+msgid "Importing users"
+msgstr ""
+
+msgid "Users imported successfully"
+msgstr ""
+
+msgid "User already exists: {{id}}"
+msgstr ""
+
+msgid "Add user"
+msgstr ""
+
+msgid "Overwrite existing users"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Error on metadata action"
+msgstr ""
+
+msgid "Remove user"
+msgstr ""
+
+msgid "Duplicated username: {{username}}"
+msgstr ""
+
+msgid "Please provide a username"
+msgstr ""
+
+msgid "User already exists"
+msgstr ""
+
+msgid "Please provide a valid email"
+msgstr ""
+
+msgid "Please provide a password"
+msgstr ""
+
+msgid "Password should contain at least one lowercase letter"
+msgstr ""
+
+msgid "Password should contain at least one UPPERCASE letter"
+msgstr ""
+
+msgid "Password should contain at least one number"
+msgstr ""
+
+msgid "Password should have at least one special character"
+msgstr ""
+
+msgid "Please provide a valid phone number"
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
@@ -236,28 +296,7 @@ msgstr ""
 msgid "Other information"
 msgstr ""
 
-msgid "Cancel"
-msgstr ""
-
 msgid "Please provide a valid identifier"
-msgstr ""
-
-msgid "Please provide a valid email"
-msgstr ""
-
-msgid "Password should contain at least one lowercase letter"
-msgstr ""
-
-msgid "Password should contain at least one UPPERCASE letter"
-msgstr ""
-
-msgid "Password should contain at least one number"
-msgstr ""
-
-msgid "Password should have at least one special character"
-msgstr ""
-
-msgid "Please provide a valid phone number"
 msgstr ""
 
 msgid "Please provide a valid international phone number (+0123456789)"
@@ -487,9 +526,6 @@ msgstr ""
 msgid "Error saving users"
 msgstr ""
 
-msgid "Add user"
-msgstr ""
-
 msgid "Delete"
 msgstr ""
 
@@ -509,4 +545,8 @@ msgid "Open in user management"
 msgstr ""
 
 msgid " and {{overflow}} more..."
+msgstr ""
+
+msgctxt "warnings"
+msgid "and_n_more"
 msgstr ""
