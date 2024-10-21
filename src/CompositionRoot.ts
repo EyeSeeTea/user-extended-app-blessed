@@ -20,6 +20,7 @@ import { SaveUserStatusUseCase } from "./domain/usecases/SaveUserStatusUseCase";
 import { SaveUsersUseCase } from "./domain/usecases/SaveUsersUseCase";
 import { UpdateUserPropUseCase } from "./domain/usecases/UpdateUserPropUseCase";
 import { CopyInUserUseCase } from "./domain/usecases/CopyInUserUseCase";
+import { ImportUsersUseCase } from "./domain/usecases/ImportUsersUseCase";
 import { GetProgramsUseCase } from "./domain/usecases/GetProgramsUseCase";
 import { ProgramD2Repository } from "./data/repositories/ProgramD2Repository";
 import { getD2APiFromInstance } from "./utils/d2-api";
@@ -60,6 +61,7 @@ export function getCompositionRoot(instance: Instance) {
             saveOrgUnits: new SaveUserOrgUnitUseCase(userRepository),
             export: new ExportUsersUseCase(userRepository),
             copyInUser: new CopyInUserUseCase(userRepository),
+            import: new ImportUsersUseCase(userRepository),
         }),
         metadata: getExecute({
             list: new ListMetadataUseCase(metadataRepository),

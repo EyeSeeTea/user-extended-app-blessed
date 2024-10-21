@@ -25,7 +25,7 @@ export const TransferFF = ({
 }: TransferFFProps) => {
     const isLoading = loading || (showLoadingStatus && meta.validating);
     const message = validationText ?? meta.error ?? meta.submitError;
-    const selected = input.value.map(({ id }: NamedRef) => id);
+    const selected = Array.isArray(input.value) ? input.value.map(({ id }: NamedRef) => id) : [];
 
     const onChange = useCallback(
         ({ selected }: { selected: string[] }) => {
