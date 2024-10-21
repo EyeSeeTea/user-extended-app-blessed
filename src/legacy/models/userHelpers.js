@@ -12,8 +12,16 @@ const fieldSplitChar = "||";
 
 export const fieldImportSuffix = "Import";
 
-// NOTE: UEApp allows to create a user without organisationUnits, but DHIS2 User App does not.
-const requiredPropertiesOnImport = ["username", "password", "firstName", "surname", "userRoles", "organisationUnits"];
+// NOTE: userGroups is not a required property, but the app will not work without it
+const requiredPropertiesOnImport = [
+    "username",
+    "password",
+    "firstName",
+    "surname",
+    "userRoles",
+    "userGroups",
+    "organisationUnits",
+];
 
 const propertiesIgnoredOnImport = ["id", "created", "lastUpdated", "lastLogin"];
 
@@ -313,7 +321,18 @@ function getUsersToSave(users, existingUsersToUpdate) {
     const usersToUpdate = existingUsersToUpdate.map(existingUser =>
         getUserPayloadFromPlainAttributes(existingUser, usersByUsername[existingUser.userCredentials.username])
     );
-    return usersToCreate.concat(usersToUpdate);
+    const allUsers = usersToCreate.concat(usersToUpdate);
+
+    // NOTE: Aditional fields present in this user objects made updateUserGroups fail
+    // when comparing with the metadata as the objects were not identical.
+    return allUsers.map(user => {
+        return {
+            ...user,
+            userRoles: user.userRoles.map(role => ({ id: role.id })),
+            organisationUnits: user.organisationUnits.map(ou => ({ id: ou.id })),
+            userGroups: user.userGroups.map(ug => ({ id: ug.id })),
+        };
+    });
 }
 
 /*
@@ -406,11 +425,16 @@ async function saveUsers(d2, users, d2Api, currentUser) {
         filter: "userCredentials.username:in:[" + _(users).map("username").join(",") + "]",
     });
     const usersToSave = getUsersToSave(users, existingUsersToUpdate);
+
     const d2Logger = await buildLogger(d2Api, currentUser);
     d2Logger?.log({ users: buildUserWithoutPassword(users) });
+
     const response = await postMetadata(api, { users: usersToSave }, d2Logger);
-    // NOTE: this executes even when postMetadata fails
-    await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
+
+    if (response.success) {
+        await userRepository.updateUserGroups(usersToSave, existingUsersToUpdate, d2Logger).runAsync();
+    }
+
     return response;
 }
 

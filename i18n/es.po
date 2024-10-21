@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-10-10T01:46:23.785Z\n"
+"POT-Creation-Date: 2024-10-21T20:05:12.594Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -195,11 +195,20 @@ msgstr ""
 msgid "Remove user"
 msgstr "Eliminar usuario"
 
+msgid "Duplicated username: {{username}}"
+msgstr "Usuario duplicado: {{user}}"
+
+msgid "Please provide a username"
+msgstr "Por favor proporcione un nombre de usuario"
+
 msgid "User already exists"
 msgstr ""
 
 msgid "Please provide a valid email"
 msgstr "Por favor proporcione un correo electrónico válido"
+
+msgid "Please provide a password"
+msgstr "Por favor proporcione una contraseña"
 
 msgid "Password should contain at least one lowercase letter"
 msgstr "La contraseña debe contener al menos una letra minúscula"

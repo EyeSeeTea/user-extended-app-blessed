@@ -39,6 +39,10 @@ export class ImportUsersUseCase implements UseCase {
             const hasRequiredFields = UserLogic.validateHasRequiredFields(users);
             if (!hasRequiredFields)
                 return Future.error("All users must have at least one Organisation Unit, Role and Group");
+
+            const hasDuplicatedUsernames = _.uniq(usernameList).length !== usernameList.length;
+            if (hasDuplicatedUsernames) return Future.error("Usernames must be unique");
+
             const mergedUsers = this.mergeUsers(users, usersFromDB, currentUser);
             return this.saveUsers(mergedUsers);
         });

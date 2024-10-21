@@ -168,7 +168,10 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
     };
 
     const toggleAllowOverwrite = useCallback(
-        (_event, newValue: boolean) => {
+        (_event, newValue: boolean, form) => {
+            requestAnimationFrame(() => {
+                form.change("updateValidation", newValue);
+            });
             setAreUsersValid(newValue || !errorsCount);
             setAllowOverwrite(newValue);
         },
@@ -233,15 +236,16 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
         [loading, onRequestClose, onSave, snackbar, compositionRoot.users]
     );
 
-    const addRow = useCallback(() => {
-        const newUser = {
+    const addRow = useCallback((currentUsers: User[]) => {
+        const newUser: User = {
             ...defaultUser,
             id: generateUid(),
             username: "",
             password: UserLogic.DEFAULT_PASSWORD,
+            userRoles: [],
+            userGroups: [],
         };
-
-        setUsers(users => users.concat(newUser));
+        setUsers(currentUsers.concat(newUser));
     }, []);
 
     const renderTableRow = useCallback(
@@ -252,6 +256,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                 ? i18n.t("User already exists: {{id}}", { id: existingUser.id, nsSeparator: false })
                 : "";
             const chipText = (rowIndex + 1).toString() + (existingUser ? "-E" : "");
+            const duplicateUsernames = findDuplicatesInUsernames(users);
             return (
                 <StyledTableRow key={rowIndex} $isError={!allowOverwrite && !!existingUser}>
                     <StyledTableCell>
@@ -266,7 +271,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                 key={`${rowIndex}-${columnIndex}-${value}`}
                                 rowIndex={rowIndex}
                                 columnIndex={columnIndex}
-                                data={{ columns, existingUsersNames }}
+                                data={{ columns, duplicateUsernames, existingUsersNames }}
                                 onDelete={users => setUsers(users)}
                                 allowOverwrite={allowOverwrite}
                             />
@@ -304,7 +309,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                 autocomplete="off"
                                 onSubmit={onSubmit}
                                 initialValues={{ users }}
-                                render={({ handleSubmit, values }) => {
+                                render={({ handleSubmit, form, values }) => {
                                     const canAddNewUser = values.users.length < ImportUser.MAX_USERS;
                                     return (
                                         <>
@@ -340,21 +345,31 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
                                                     <RaisedButton
                                                         disabled={!canAddNewUser}
                                                         label={i18n.t("Add user")}
-                                                        onClick={addRow}
+                                                        onClick={() => {
+                                                            const currentUsers = form.getState().values.users;
+                                                            addRow(currentUsers);
+                                                        }}
                                                     />
                                                 </AddButtonRow>
                                             </form>
+                                            {showOverwriteToggle && !templateUser && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            checked={allowOverwrite}
+                                                            onChange={(event, newValue) =>
+                                                                toggleAllowOverwrite(event, newValue, form)
+                                                            }
+                                                        />
+                                                    }
+                                                    label={i18n.t("Overwrite existing users")}
+                                                />
+                                            )}
                                         </>
                                     );
                                 }}
                             />
                         </TableContainer>
-                        {showOverwriteToggle && !templateUser && (
-                            <FormControlLabel
-                                control={<Switch checked={allowOverwrite} onChange={toggleAllowOverwrite} />}
-                                label={i18n.t("Overwrite existing users")}
-                            />
-                        )}
                     </div>
                 )}
             </DialogContent>
@@ -377,7 +392,7 @@ export const ImportTable: React.FC<ImportTableProps> = props => {
 };
 
 type RowItemProps = {
-    data: { columns: string[]; existingUsersNames: string[] };
+    data: { columns: string[]; duplicateUsernames?: DuplicateInfo; existingUsersNames: string[] };
     columnIndex: number;
     rowIndex: number;
     onDelete: (users: User[]) => void;
@@ -388,6 +403,8 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
     const form = useForm<{ users: User[] }>();
     const deleteRow = columnIndex === data.columns.length - 1;
     const field = data.columns[columnIndex];
+    const username = form.getState().values.users[rowIndex]?.username;
+    const isExistingUser = username ? data.existingUsersNames.includes(username) : false;
 
     const removeRow = useCallback(() => {
         const original = form.getState().values.users;
@@ -409,8 +426,9 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
         <RenderUserImportField
             rowIndex={rowIndex}
             field={field}
-            existingUsersNames={data.existingUsersNames}
             allowOverwrite={allowOverwrite}
+            isExistingUser={isExistingUser}
+            duplicateUsernames={data.duplicateUsernames}
         />
     );
 };
@@ -418,9 +436,10 @@ const RowItem: React.FC<RowItemProps> = ({ data, columnIndex, rowIndex, onDelete
 const RenderUserImportField: React.FC<{
     rowIndex: number;
     field: UserFormField;
-    existingUsersNames: string[];
     allowOverwrite: boolean;
-}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
+    isExistingUser: boolean;
+    duplicateUsernames?: DuplicateInfo;
+}> = ({ duplicateUsernames, rowIndex, field, allowOverwrite, isExistingUser }) => {
     const name = `users[${rowIndex}].${field}`;
 
     const { validation, props: validationProps = {} } = useValidations(field);
@@ -443,8 +462,8 @@ const RenderUserImportField: React.FC<{
                     <RenderField
                         rowIndex={rowIndex}
                         field={field}
-                        existingUsersNames={existingUsersNames}
                         allowOverwrite={allowOverwrite}
+                        isExistingUser={isExistingUser}
                     />
                 </PreviewInputFF>
             );
@@ -453,8 +472,9 @@ const RenderUserImportField: React.FC<{
                 <RenderField
                     rowIndex={rowIndex}
                     field={field}
-                    existingUsersNames={existingUsersNames}
                     allowOverwrite={allowOverwrite}
+                    isExistingUser={isExistingUser}
+                    duplicateUsernames={duplicateUsernames}
                 />
             );
     }
@@ -463,10 +483,11 @@ const RenderUserImportField: React.FC<{
 const RenderField: React.FC<{
     rowIndex: number;
     field: UserFormField;
-    existingUsersNames: string[];
     allowOverwrite: boolean;
-}> = ({ rowIndex, field, existingUsersNames, allowOverwrite }) => {
-    const { validation, props: validationProps = {} } = useValidations(field, existingUsersNames, allowOverwrite);
+    isExistingUser: boolean;
+    duplicateUsernames?: DuplicateInfo;
+}> = ({ duplicateUsernames, rowIndex, field, allowOverwrite, isExistingUser }) => {
+    const { validation, props: validationProps = {} } = useValidations(field, allowOverwrite, isExistingUser);
     const name = `users[${rowIndex}].${field}`;
     const props = {
         name,
@@ -479,8 +500,9 @@ const RenderField: React.FC<{
         case "firstName":
         case "surname":
         case "openId":
-        case "username":
             return <FormTextField {...props} />;
+        case "username":
+            return <FormTextField {...props} duplicateUsernames={duplicateUsernames} rowIndex={rowIndex} />;
         case "password":
             return <FormTextField {...props} type="password" />;
         case "email":
@@ -519,12 +541,23 @@ const FormFieldDialog = <FieldValue, T extends ComponentType<any>>(props: FormFi
     return <Field<FieldValue> {...props} />;
 };
 
+function getDuplicateUsernameError(options: { duplicate: DuplicateInfo; rowIndex?: number }): string {
+    if (options.rowIndex === undefined) return "";
+    const { duplicate, rowIndex } = options;
+    return duplicate.indexes.includes(rowIndex)
+        ? i18n.t("Duplicated username: {{username}}", { nsSeparator: false, username: duplicate.duplicateValue })
+        : "";
+}
+
 const FormTextField = (props: FormTextFieldProps) => {
     return (
         <Field {...props}>
             {fieldProps => {
                 const validationErrorMessage = props.validate ? props.validate(fieldProps.input.value) : "";
-                const thereIsAnError = Boolean(validationErrorMessage);
+                const duplicateUserNameErrorMessage = props.duplicateUsernames
+                    ? getDuplicateUsernameError({ duplicate: props.duplicateUsernames, rowIndex: props.rowIndex })
+                    : "";
+                const thereIsAnError = Boolean(validationErrorMessage) || fieldProps.meta.error;
                 const onChose = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
                     return fieldProps.input.onChange(event);
                 };
@@ -534,8 +567,8 @@ const FormTextField = (props: FormTextFieldProps) => {
                             name={fieldProps.input.name}
                             value={fieldProps.input.value}
                             onChange={onChose}
-                            error={thereIsAnError}
-                            helperText={validationErrorMessage}
+                            error={duplicateUserNameErrorMessage.length > 0 || thereIsAnError}
+                            helperText={duplicateUserNameErrorMessage || validationErrorMessage}
                         />
                     </div>
                 );
@@ -544,20 +577,37 @@ const FormTextField = (props: FormTextFieldProps) => {
     );
 };
 
-const userRequiredFields = ["username", "firstName", "surname", "password"];
+const userRequiredFields = [
+    "username",
+    "firstName",
+    "surname",
+    "password",
+    "userRoles",
+    "userGroups",
+    "organisationUnits",
+];
 
 const useValidations = (
     field: UserFormField,
-    existingUsersNames: string[] = [],
-    allowOverwrite = false
+    allowOverwrite = false,
+    isExistingUser = false
 ): { validation?: (...args: any[]) => Maybe<string>; props?: object } => {
     switch (field) {
         case "username": {
             return {
                 validation: (value: string) => {
-                    const errorMessage = !existingUsersNames.includes(value) ? "" : i18n.t("User already exists");
-                    if (allowOverwrite) return "";
-                    return errorMessage;
+                    if (!value) return i18n.t("Please provide a username");
+                    if (allowOverwrite && isExistingUser) return "";
+                    if (isExistingUser) {
+                        return i18n.t("User already exists");
+                    } else {
+                        const validators = composeValidators(
+                            string,
+                            createMinCharacterLength(2),
+                            createMaxCharacterLength(140)
+                        );
+                        return validators(value);
+                    }
                 },
             };
         }
@@ -570,19 +620,38 @@ const useValidations = (
             };
         case "password":
             return {
-                validation: composeValidators(
-                    string,
-                    createMinCharacterLength(8),
-                    createMaxCharacterLength(255),
-                    createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
-                    createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
-                    createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
-                    createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
-                ),
+                validation: (value: string) => {
+                    if (isExistingUser && !value) return "";
+                    if (!value) {
+                        return i18n.t("Please provide a password");
+                    } else {
+                        const validators = composeValidators(
+                            string,
+                            createMinCharacterLength(8),
+                            createMaxCharacterLength(255),
+                            createPattern(/.*[a-z]/, i18n.t("Password should contain at least one lowercase letter")),
+                            createPattern(/.*[A-Z]/, i18n.t("Password should contain at least one UPPERCASE letter")),
+                            createPattern(/.*[0-9]/, i18n.t("Password should contain at least one number")),
+                            createPattern(/[^A-Za-z0-9]/, i18n.t("Password should have at least one special character"))
+                        );
+                        return validators(value);
+                    }
+                },
             };
         case "phoneNumber":
             return {
                 validation: createPattern(/^\+?[0-9 \-()]+$/, i18n.t("Please provide a valid phone number")),
+            };
+        case "userRoles":
+        case "userGroups":
+        case "organisationUnits":
+            // NOTE: userGroups is not a mandatory field but its required by src/domain/usecases/ImportUsersUseCase.ts
+            return {
+                validation: (value: string[]) => {
+                    const errorMessage = "Please select at least one item";
+                    if (!value) return i18n.t(errorMessage);
+                    return value.length > 0 ? undefined : i18n.t(errorMessage);
+                },
             };
         default: {
             const required = userRequiredFields.includes(field);
@@ -596,6 +665,8 @@ type FormTextFieldProps = {
     placeholder: string;
     type?: string;
     validate?: (value: Maybe<string>) => Maybe<string>;
+    duplicateUsernames?: DuplicateInfo;
+    rowIndex?: number;
 };
 
 const StyledTableCellHeader = styled(TableCell)`
@@ -644,3 +715,19 @@ const AddButtonRow = styled.div`
     margin: 20px;
     text-align: center;
 `;
+
+interface DuplicateInfo {
+    indexes: number[];
+    duplicateValue: string;
+}
+
+function findDuplicatesInUsernames(users: User[]): DuplicateInfo | undefined {
+    const groupedUsers = _(users)
+        .groupBy(user => user.username)
+        .pickBy(group => group.length > 1)
+        .mapValues(group => group.map(item => _.findIndex(users, item)))
+        .value();
+
+    const [duplicateValue, indexes] = _.toPairs(groupedUsers)[0] || [undefined, []];
+    return duplicateValue ? { indexes, duplicateValue } : undefined;
+}
