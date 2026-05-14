@@ -1,3 +1,7 @@
+⚠️ **Repository Archived.** This repository is no longer maintained. To ensure you have the latest features and support, please use our updated version here:  https://github.com/EyeSeeTea/user-extended 
+And don't miss out on latest developments and DHIS2 news! Follow us on [Linkedin]() and the [DHIS2 Community of Practice](). 
+ 
+ 
  <img height="120" src="https://github.com/EyeSeeTea/user-extended-app-blessed/blob/gh-pages/img/logo.png" alt="User-Extended App Logo">
 
 User-Extended App is a DHIS2 Web Application part of [EyeSeeTea's DHIS2 Suite](https://eyeseetea.com/dhis2-apps/) that provides a quick, easy and integrated way to perform common operations to DHIS2 users.
